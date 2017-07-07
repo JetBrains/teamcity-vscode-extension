@@ -1,0 +1,45 @@
+{
+    "name": "teamcity-extension-for-vscode",
+    "displayName": "teamcity-vccode",
+    "description": "TeamCity integrarion for VSCode",
+    "version": "0.0.1",
+    "publisher": "rugpanov",
+    "engines": {
+        "vscode": "^1.13.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [{
+            "command": "teamcity.signIn",
+            "title": "Signin",
+            "category": "TeamCity"
+        },
+        {
+            "command": "teamcity.signOut",
+            "title": "Signout",
+            "category": "TeamCity"
+        }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "tsc -p ./",
+        "compile": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0",
+        "mocha": "^2.3.3",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32",
+        "@types/xml2js": "^0.0.32",
+        "@types/xmlhttprequest": "^1.8.0"
+    }
+}
