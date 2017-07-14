@@ -2,24 +2,24 @@
 
 export class Credential{
     private _serverURL : string;
-    private _username : string;
-    private _password : string;
+    private _user : string;
+    private _pass : string;
 
-    public constructor(_serverURL, _username, _password){
+    public constructor(_serverURL, _user, _pass){
         this._serverURL = _serverURL;
-        this._username = _username;
-        this._password = _password;
+        this._user = _user;
+        this._pass = _pass;
     }
 
     public get serverURL() : string{
         return this._serverURL;
     }
     
-    public get username() : string{
-        return this._username;
+    public get user() : string{
+        return this._user;
     }
 
-    public get password() : string{
-        return this._password;
+    public get pass() : string{
+        return this._pass;
     }
 }

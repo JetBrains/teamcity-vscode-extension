@@ -1,2 +1,9 @@
 out
 node_modules
+.vscode/**
+.vscode-test/**
+out/test/**
+.idea
+**/*.map
+tsconfig.json
+vsc-extension-quickstart.md
