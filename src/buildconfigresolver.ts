@@ -3,7 +3,7 @@ import { Credential } from "./credentialstore/credential";
 import { Strings } from "./utils/strings";
 import { Constants } from "./utils/constants";
 import xmlrpc = require("xmlrpc");
-import forge = require('node-forge');
+import forge = require("node-forge");
 const BigInteger = forge.jsbn.BigInteger;
 
 export interface BuildConfigResolver{

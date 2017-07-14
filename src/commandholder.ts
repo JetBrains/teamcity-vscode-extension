@@ -22,7 +22,11 @@ export class CommandHolder{
     public async signIn() {
         const defaultURL : string = this.getDefaultURL();
         const defaultUsername : string = this.getDefaultUsername();
-        const url: string = await window.showInputBox({ value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false });
+        let url: string = await window.showInputBox({ value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false });
+        //we should prevent exception in case of slash in the end ("localhost:80/). url should be contained without it" 
+        if (url != undefined && url.length !== 0){
+            url = url.replace(/\/$/, "");
+        }
         let user: string = await window.showInputBox({ value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
         if (user === undefined || user.length <= 0) {
             user = defaultUsername;

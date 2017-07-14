@@ -3,6 +3,7 @@
 import { Credential } from "./credential";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Strings } from "../utils/strings";
+import { Constants } from "../utils/constants";
 
 import XHR = require("xmlhttprequest");
 
@@ -42,10 +43,10 @@ export class CredentialStore{
                 if (request.readyState !== request.DONE) {
                     return;
                 }
-                if (request.status === 200){//HTTP_STATUS_OK = 200;
+                if (request.status === Constants.HTTP_STATUS_OK){
                     VsCodeUtils.showInfoMessage(Strings.SUCCESSFULLY_SIGNEDIN);
                     resolve(true);
-                }else if (request.status === 401){//HTTP_STATUS_UNAUTHORIZED = 401;
+                }else if (request.status === Constants.HTTP_STATUS_UNAUTHORIZED){
                     VsCodeUtils.showErrorMessage(Strings.STATUS_CODE_401);  
                     resolve(false);     
                 }else{
