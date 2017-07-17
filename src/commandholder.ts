@@ -1,18 +1,26 @@
 "use struct";
 
-import { window, SourceControlInputBox, scm, QuickDiffProvider, WorkspaceEdit, workspace, extensions} from "vscode";
+import { window, SourceControlInputBox, scm, QuickDiffProvider, WorkspaceEdit, workspace, extensions, SourceControlResourceState} from "vscode";
 import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
-import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
-import { CvsSupportProvider, GitSupportProvider } from "./cvssupportprovider";
+import { FileController } from "./utils/filecontroller";
+import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./remoterun/buildconfigresolver";
+import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
+import { CvsSupportProvider, GitSupportProvider } from "./remoterun/cvssupportprovider";
+import { BuildConfig } from "./remoterun/configexplorer";
+
 
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
 import forge = require('node-forge');
-                    
+
+import * as cp from "child_process";  
+import * as path from "path";
+import * as fs from "fs";
+
 export class CommandHolder{
     private _extManager : ExtensionManager;
     public constructor(extManager : ExtensionManager) {
@@ -33,13 +41,12 @@ export class CommandHolder{
         }
         const pass = await window.showInputBox({ prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + ")", placeHolder: "", password: true });
         const creds : Credential = new Credential(url, user, pass);
-        this._extManager.credentialStore.setCredential(creds);  
+        await this._extManager.credentialStore.setCredential(creds);  
     }
     
     public async remoteRun(){
-        const cred : Credential = this._extManager.credentialStore.getCredential();
-        if (!cred) {
-            VsCodeUtils.displayNoCredentialsMessage();
+        const cred : Credential = await this.tryGetCreds();
+        if (cred == undefined) {
             return;
         }
         const confResolver : BuildConfigResolver = new XmlRpcBuildConfigResolver(cred);
@@ -48,8 +55,33 @@ export class CommandHolder{
         const cvsProvider : CvsSupportProvider = new GitSupportProvider();
         
         const args : string[] = await cvsProvider.formatChangedFilenames(changedFiles);
-        const conf : string[] = await confResolver.getSuitableBuildConfig(args);
-        window.showQuickPick(conf);
+        
+        const configs : BuildConfig[] = await confResolver.getSuitableBuildConfig(args);
+        VsCodeUtils.showInfoMessage("Please specify builds for remote run.");
+        
+        this._extManager.сonfigExplorer.setConfigs(configs);
+        this._extManager.сonfigExplorer.refresh();
+    }
+
+    public async remoteRunWithChosenConfigs(){
+        const cred : Credential = await this.tryGetCreds();
+        if (cred == undefined) {
+            return;
+        }
+
+        const inclConfigs : BuildConfig[] = this._extManager.сonfigExplorer.getInclBuilds();
+        if (inclConfigs === undefined || inclConfigs.length === 0){
+            VsCodeUtils.displayNoSelectedConfigsMessage();
+            return;
+        }
+        this._extManager.сonfigExplorer.setConfigs([]);
+        this._extManager.сonfigExplorer.refresh();
+
+        const patchSender : PatchSender = new TccPatchSender();
+        const api = extensions.getExtension("vscode.git").exports;
+        const changedFiles : SourceControlResourceState[] = api.getResources();//TODO: change api!
+        const commitMessage : string = scm.inputBox.value;
+        patchSender.remoteRun(cred, inclConfigs, changedFiles, commitMessage);
     }
 
     private getDefaultURL() : string {
@@ -93,12 +125,25 @@ export class CommandHolder{
         };
     }
 
-    private _xmlRpcClient = undefined;
+    public moveToSecondProvider(config : BuildConfig){
+        config.changeState();
+        this._extManager.сonfigExplorer.refresh();
+    }
+
     public async signOut() : Promise<void> {
-        const config = workspace.getConfiguration('git');
         this._extManager.cleanUp();
     }
-    
 
-
+    public async tryGetCreds() : Promise<Credential> {
+        let cred : Credential = this._extManager.credentialStore.getCredential();
+        if (!cred) {
+            await this.signIn();
+            cred = this._extManager.credentialStore.getCredential();
+            if (!cred) {
+                VsCodeUtils.displayNoCredentialsMessage();
+                return undefined;
+            }            
+        }
+        return cred;
+    }
 }

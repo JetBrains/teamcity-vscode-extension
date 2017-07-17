@@ -3,12 +3,15 @@
 import { Disposable} from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
 import { CommandHolder } from "./commandholder";
+import { BuildConfigTreeDataProvider } from './remoterun/configexplorer';
 
 export class ExtensionManager implements Disposable {
     private _credentialStore : CredentialStore;
     private _commandHolder : CommandHolder;
+    private _сonfigExplorer : BuildConfigTreeDataProvider;
 
-    public async Initialize() : Promise<void> {
+    public async Initialize(сonfigExplorer: BuildConfigTreeDataProvider) : Promise<void> {
+        this._сonfigExplorer = сonfigExplorer;
         this._credentialStore = new CredentialStore(); 
         this._commandHolder = new CommandHolder(this);
     }
@@ -30,7 +33,11 @@ export class ExtensionManager implements Disposable {
         return this._commandHolder;
     }
 
-    public get credentialStore() : CredentialStore{
+    public get credentialStore() : CredentialStore {
         return this._credentialStore;
+    }
+
+    public get сonfigExplorer() : BuildConfigTreeDataProvider {
+        return this._сonfigExplorer;
     }
 }

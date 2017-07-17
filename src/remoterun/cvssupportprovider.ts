@@ -1,13 +1,17 @@
 "use struct";
 
 import { workspace, SourceControlResourceState } from "vscode";
-import { VsCodeUtils } from "./utils/vscodeutils";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import * as cp from 'child_process';
 
 export interface CvsSupportProvider{
     formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]>;
+    generateConfigFileContent() : Promise<string>;
 }
 
+/**
+ * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath. 
+ */
 export class GitSupportProvider implements CvsSupportProvider{
     private readonly _workspaceRootPath : string;
 
@@ -15,6 +19,11 @@ export class GitSupportProvider implements CvsSupportProvider{
         this._workspaceRootPath = workspace.rootPath;
     }
 
+    /**
+     * 
+     * @param changedFiles - changed file for remote run.
+     * @result - A promise for array of formatted names of files, that are required for TeamCity remote run.
+     */
     public async formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]>{
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
@@ -62,5 +71,18 @@ export class GitSupportProvider implements CvsSupportProvider{
             })
         });
         return prom;
+    }
+
+    /*Currently @username part of content was removed by me. TODO: understand what is it and for which purpose is it used. */
+    public async generateConfigFileContent() : Promise<string> {
+        const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
+         const prom : Promise<string> = new Promise((resolve, reject) => {
+            cp.exec(getRemoteUrlCommand, (err, remoteUrl) => {
+                if (err || remoteUrl === undefined || remoteUrl.length === 0) reject(err);
+                resolve(remoteUrl.trim());    
+            })
+        });
+        const remoteUrl : string = await prom;
+        return `.=jetbrains.git://|${remoteUrl}|`;
     }
 }

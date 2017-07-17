@@ -30,8 +30,33 @@
         "command": "teamcity.remoteRun",
         "title": "Remote Run",
         "category": "TeamCity"
-      }
-    ]
+      },
+      {
+			"command": "teamcity.configexplorer.remoterun",
+				"title": "Remote Run With Chosen Build Configurations",
+				"icon": {
+					"light": "resources/icons/light/remoterun.png",
+					"dark": "resources/icons/light/remoterun.png"
+				}
+			}
+    ],
+    "views": {
+			"explorer": [
+				{
+					"id": "сonfigExplorer",
+					"name": "TeamCity Build Configs"
+				}
+			]
+    },
+    "menus": {
+			"view/title": [
+				{
+					"command": "teamcity.configexplorer.remoterun",
+					"when": "view == сonfigExplorer",
+					"group": "navigation"
+				}
+			]
+		}
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",

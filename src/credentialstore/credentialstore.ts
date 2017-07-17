@@ -16,6 +16,7 @@ export class CredentialStore{
         if (checkResult){
             this._creds = creds;
         }
+        return;
     }
 
     public getCredential() : Credential {
