@@ -1,4 +1,4 @@
-"use struct";
+"use strict";
 
 import { Disposable} from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
@@ -8,10 +8,10 @@ import { BuildConfigTreeDataProvider } from './remoterun/configexplorer';
 export class ExtensionManager implements Disposable {
     private _credentialStore : CredentialStore;
     private _commandHolder : CommandHolder;
-    private _сonfigExplorer : BuildConfigTreeDataProvider;
+    private _configExplorer : BuildConfigTreeDataProvider;
 
-    public async Initialize(сonfigExplorer: BuildConfigTreeDataProvider) : Promise<void> {
-        this._сonfigExplorer = сonfigExplorer;
+    public async Initialize(configExplorer: BuildConfigTreeDataProvider) : Promise<void> {
+        this._configExplorer = configExplorer;
         this._credentialStore = new CredentialStore(); 
         this._commandHolder = new CommandHolder(this);
     }
@@ -37,7 +37,7 @@ export class ExtensionManager implements Disposable {
         return this._credentialStore;
     }
 
-    public get сonfigExplorer() : BuildConfigTreeDataProvider {
-        return this._сonfigExplorer;
+    public get configExplorer() : BuildConfigTreeDataProvider {
+        return this._configExplorer;
     }
 }

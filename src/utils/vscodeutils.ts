@@ -1,8 +1,7 @@
-"use struct";
+"use strict";
 
 import { window } from "vscode";
 import { Strings } from "../utils/strings";
-import { BuildConfig } from "../remoterun/configexplorer";
 
 export class VsCodeUtils{
 
@@ -31,15 +30,5 @@ export class VsCodeUtils{
     public static async displayNoTccUtilMessage(): Promise<void> {
         let displayError: string = Strings.NO_TCC_UTIL;
         VsCodeUtils.showErrorMessage(displayError);
-    }
-
-    public static indexOfBuildConfig(searched : BuildConfig, array : BuildConfig[]) : number{
-        for (let i : number = 0; i < array.length; i++){
-            const elem : BuildConfig = array[i];
-            if (elem.id === searched.id){
-                return i;
-            }
-        }
-        return -1;
     }
 }

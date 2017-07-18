@@ -1,47 +1,41 @@
-"use struct";
+"use strict";
 import { Credential } from "../credentialstore/credential";
 import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
-import { BuildConfig } from "./configexplorer";
+import { BuildConfig } from "../remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
 import forge = require("node-forge");
 import xml2js = require('xml2js');
 const BigInteger = forge.jsbn.BigInteger;
 
-export interface BuildConfigResolver{
-    /* async */ getSuitableBuildConfig( changedFiles : string[]) : Promise<BuildConfig[]>;
+export interface BuildConfigResolver {
+    /* async */ getSuitableBuildConfig( tcFormatedFilePaths : string[], cred : Credential) : Promise<BuildConfig[]>;
 }
 
-export class XmlRpcBuildConfigResolver implements BuildConfigResolver{
-    private readonly _xmlRpcClient;
-    private readonly _creds : Credential;
+export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
+    private _xmlRpcClient;
+    private _cred : Credential;
     
     /**
      * 
-     * @param creds - credential of TeamCity user who try to connect to TeamCity. It isn't validated in constructor, but shouldn't be undefined. 
-     * There is no opportunity to change it after creation of XmlRpcBuildConfigResolver instance.
-     */
-    constructor(creds : Credential){
-        if (!creds){
-            throw "Credential should not be undefined.";
-        }
-        this._xmlRpcClient = xmlrpc.createClient({ url: creds.serverURL + "/RPC2", cookies: true });
-        this._creds = creds;
-    }
-
-    /**
-     * 
-     * @param changedFiles - AbsPaths to changed files. The information is required to create request for suitableBuildConfigIds.
+     * @param tcFormatedFilePaths - Сhanged file paths in particular format. The information is required to create request for suitableBuildConfigIds.
+     * @param cred - credential of TeamCity user who try to connect to TeamCity. 
      * @return - A promise for an array of BuildConfig objects, that are releted to changed files.
      */
-    public async getSuitableBuildConfig(changedFiles : string[]) : Promise<BuildConfig[]> {
+    public async getSuitableBuildConfig(tcFormatedFilePaths : string[], cred : Credential) : Promise<BuildConfig[]> {
+        if (!cred) {
+            throw "Credential should not be undefined.";
+        }
+        this._xmlRpcClient = xmlrpc.createClient( { url: cred.serverURL + "/RPC2", cookies: true } );
+        this._cred = cred;
+
         const rsaPublicKey = await this.getRSAPublicKey();
         await this.xmlRpcAuthentication(rsaPublicKey);
-        const configIds : string[] =  await this.requestConfigIds(changedFiles);
+        const configIds : string[] =  await this.requestConfigIds(tcFormatedFilePaths);
         const configsInfo : string[] = await this.getRelatedConfigs(configIds); 
         let buildConfigs : BuildConfig[] = [];
-        for (let i = 0; i < configIds.length; i++){
-            if (!configsInfo[configIds[i]]){
+        for (let i = 0; i < configIds.length; i++) {
+            if (!configsInfo[configIds[i]]) {
                 continue;
             }
             buildConfigs.push(new BuildConfig(configIds[i], configsInfo[configIds[i]]))
@@ -54,7 +48,7 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver{
      * @return - Promise for RSAPublicKey object from node-forge module. 
      */
     private async getRSAPublicKey() : Promise<any> {
-        try{
+        try {
             return new Promise((resolve, reject) => {
                 this._xmlRpcClient.methodCall('RemoteAuthenticationServer.getPublicKey', [], (err, data) => {
                     if(err !== null || data === undefined) {
@@ -71,7 +65,7 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver{
                     resolve(rsaPublicKey);
                 });
             });
-        } catch(err){
+        } catch(err) {
             throw Strings.RCA_PUBLIC_KEY_EXCEPTION + " /n caused by: " + err;
         }
     }
@@ -82,21 +76,21 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver{
      * @return - Promise<any>. In case of success the local XmlRpcClient object should be filled by received sessionIdKey.
      */
     private async xmlRpcAuthentication(rsaPublicKey) {
-        if (!rsaPublicKey){
+        if (!rsaPublicKey) {
             throw Strings.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
         }
-        try{
-            const pass = this._creds.pass;
+        try {
+            const pass = this._cred.pass;
             const encPass = rsaPublicKey.encrypt(pass);
             const hexEncPass = forge.util.createBuffer(encPass).toHex();
             return new Promise((resolve, reject) => {
-                this._xmlRpcClient.methodCall('RemoteAuthenticationServer.authenticate', [this._creds.user, hexEncPass], (err, sessId) => {
+                this._xmlRpcClient.methodCall('RemoteAuthenticationServer.authenticate', [this._cred.user, hexEncPass], (err, sessId) => {
                     if(err !== null || sessId === undefined || sessId.length == 0) return reject(err);
                     this._xmlRpcClient.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessId);
                     resolve();
                 });
             });
-        } catch(err){
+        } catch(err) {
             throw Strings.XMLRPC_AUTH_EXCEPTION + " /n caused by: " + err;
         }
     }
@@ -206,7 +200,7 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver{
      */
     public getTestObject() : any {
         let testObject : any = {};
-        testObject._creds = this._creds;
+        testObject._cred = this._cred;
         testObject._xmlRpcClient = this._xmlRpcClient;
         testObject.extractKeys = this.extractKeys; 
         testObject.getRSAPublicKey = this.getRSAPublicKey; 

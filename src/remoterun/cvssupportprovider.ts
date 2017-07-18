@@ -1,10 +1,9 @@
-"use struct";
+"use strict";
 
 import { workspace, SourceControlResourceState } from "vscode";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import * as cp from 'child_process';
+import * as cp from 'child-process-promise';
 
-export interface CvsSupportProvider{
+export interface CvsSupportProvider {
     formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]>;
     generateConfigFileContent() : Promise<string>;
 }
@@ -12,10 +11,10 @@ export interface CvsSupportProvider{
 /**
  * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath. 
  */
-export class GitSupportProvider implements CvsSupportProvider{
+export class GitSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
 
-    public constructor(){
+    public constructor() {
         this._workspaceRootPath = workspace.rootPath;
     }
 
@@ -24,13 +23,13 @@ export class GitSupportProvider implements CvsSupportProvider{
      * @param changedFiles - changed file for remote run.
      * @result - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]>{
+    public async formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]> {
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         const lastRevHash = await this.getLastRevision(remoteBranch);
         let formatedChangedFiles = [];
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
-        for (let i = 0; i < changedFiles.length; i++){
+        for (let i = 0; i < changedFiles.length; i++) {
             const absolutePath : string = changedFiles[i].resourceUri.fsPath;
             const relativePath : string = absolutePath.replace(this._workspaceRootPath, "");
             formatedChangedFiles.push(`jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`);
@@ -40,49 +39,43 @@ export class GitSupportProvider implements CvsSupportProvider{
 
     private async getRemoteBrunch() {
         const getRemoteBranchCommand : string = `git -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
-        const prom = new Promise((resolve, reject) => {
-            cp.exec(getRemoteBranchCommand, (err, remoteBranch) => {
-                if (err || remoteBranch === undefined || remoteBranch.length === 0) reject(err);
-                remoteBranch = remoteBranch.replace(/'/g, "");
-                resolve(remoteBranch);    
-            })
-        });
-        return prom;
+        const prom = await cp.exec(getRemoteBranchCommand);
+        const remoteBranch : string = prom.stdout;
+        if (remoteBranch === undefined || remoteBranch.length === 0){
+            throw "Remote branch wasn't determined."
+        }
+        return remoteBranch.replace(/'/g, "");
     }
 
     private async getLastRevision(remoteBranch ) {
         const getLastRevCommand : string = `git -C "${this._workspaceRootPath}" merge-base HEAD ${remoteBranch}`;   
-        const prom = new Promise((resolve, reject) => {
-            cp.exec(getLastRevCommand, (err, lastRevHash) => {
-                if (err || lastRevHash === undefined || lastRevHash.length === 0) reject(err);
-                resolve(lastRevHash.trim());    
-            })
-        });
-        return prom;
+        const prom = await cp.exec(getLastRevCommand);
+        const lastRevHash : string = prom.stdout;
+        if (lastRevHash === undefined || lastRevHash.length === 0){
+            throw "Revision of last commit wasn't determined."
+        }
+        return lastRevHash.trim();
     }
 
     private async getFirstMonthRev() {
         const date : Date = new Date();
         const getFirstMonthRevCommand : string = `git -C "${this._workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
-        const prom = new Promise((resolve, reject) => {
-            cp.exec(getFirstMonthRevCommand, (err, firstRevHash) => {
-                if (err || firstRevHash === undefined || firstRevHash.length === 0) reject(err);
-                resolve(firstRevHash.split("\n")[0]);    
-            })
-        });
-        return prom;
+        let prom = await cp.exec(getFirstMonthRevCommand);
+        let firstRevHash : string = prom.stdout;
+        if (firstRevHash === undefined){
+            firstRevHash = "";
+        }
+        return firstRevHash.split("\n")[0];
     }
 
     /*Currently @username part of content was removed by me. TODO: understand what is it and for which purpose is it used. */
     public async generateConfigFileContent() : Promise<string> {
         const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
-         const prom : Promise<string> = new Promise((resolve, reject) => {
-            cp.exec(getRemoteUrlCommand, (err, remoteUrl) => {
-                if (err || remoteUrl === undefined || remoteUrl.length === 0) reject(err);
-                resolve(remoteUrl.trim());    
-            })
-        });
-        const remoteUrl : string = await prom;
-        return `.=jetbrains.git://|${remoteUrl}|`;
+        let prom = await cp.exec(getRemoteUrlCommand);
+        let remoteUrl : string = prom.stdout;
+        if (remoteUrl === undefined || remoteUrl.length === 0){
+            throw "Remote url wasn't determined."
+        }
+        return `.=jetbrains.git://|${remoteUrl.trim()}|`;
     }
 }

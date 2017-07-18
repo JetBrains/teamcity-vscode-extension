@@ -1,4 +1,4 @@
-"use struct";
+"use strict";
 
 export class Strings {
     static readonly PROVIDE_USERNAME : string = "Provide the username for TeamCity server.";

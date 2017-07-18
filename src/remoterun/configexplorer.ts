@@ -1,5 +1,4 @@
-import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Event, window, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from 'vscode';
-import { VsCodeUtils } from "../utils/vscodeutils"
+import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Event, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from 'vscode';
 import * as path from 'path';
 
 export class BuildConfig {
@@ -28,20 +27,20 @@ export class BuildConfig {
     }
 }
 
-export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig>{
+export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig> {
 	private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
 	readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 	private _configs : BuildConfig[] = [];
 	
 	public refresh(config?: BuildConfig): void {
-		if (!config){
+		if (!config) {
 			this._onDidChangeTreeData.fire();
 			return;
 		}
 		this._onDidChangeTreeData.fire();
 	}
 
-	public setConfigs(configs: BuildConfig[]){
+	public setConfigs(configs: BuildConfig[]) {
 		this._configs = configs;
 	}
 
@@ -67,7 +66,7 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig
 	 * It detemines which objects will shown inside the TeamCity Build Config section.
 	 */
 	public getChildren(element?: BuildConfig): BuildConfig[] | Thenable<BuildConfig[]> {
-        if (!element){
+        if (!element) {
 			/* values for root container */
 			return this._configs;
 		}
@@ -79,8 +78,8 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig
 	 */
 	public getInclBuilds(): BuildConfig[] {
 		let result : BuildConfig[] = [];
-		for (let i = 0; i < this._configs.length; i++){
-			if (this._configs[i].isIncl){
+		for (let i = 0; i < this._configs.length; i++) {
+			if (this._configs[i].isIncl) {
 				result.push(this._configs[i]);
 			}
 		}
