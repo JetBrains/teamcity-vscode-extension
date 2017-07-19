@@ -5,11 +5,12 @@ import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
+import { CvsProvider } from "./utils/constants";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
 import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
-import { CvsSupportProvider, GitSupportProvider } from "./remoterun/cvssupportprovider";
+import { CvsSupportProvider } from "./remoterun/cvsprovider";
+import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { BuildConfig } from "./remoterun/configexplorer";
-
 
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
@@ -30,7 +31,7 @@ export class CommandHolder {
         if (url != undefined && url.length !== 0) {
             url = url.replace(/\/$/, "");
         }
-        let user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
+        let user: string = await window.showInputBox( { value: this.getDefaultUsername() || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
         if (user === undefined || user.length <= 0) {
             user = defaultUsername;
         }
@@ -46,11 +47,9 @@ export class CommandHolder {
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
 
-        const api = extensions.getExtension("vscode.git").exports;
-        const changedFiles = api.getResources();
-        const cvsProvider : CvsSupportProvider = new GitSupportProvider();
+        const cvsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
         
-        const tcFormatedFilePaths : string[] = await cvsProvider.formatChangedFilenames(changedFiles);
+        const tcFormatedFilePaths : string[] = await cvsProvider.getFormattedFilenames();
         const configs : BuildConfig[] = await apiProvider.getSuitableBuildConfig(tcFormatedFilePaths, cred);
         VsCodeUtils.showInfoMessage("Please specify builds for remote run.");
         
@@ -73,10 +72,7 @@ export class CommandHolder {
         this._extManager.configExplorer.refresh();
 
         const patchSender : PatchSender = new TccPatchSender();
-        const api = extensions.getExtension("vscode.git").exports;
-        const changedFiles : SourceControlResourceState[] = api.getResources();//TODO: change api!
-        const commitMessage : string = scm.inputBox.value;
-        patchSender.remoteRun(cred, inclConfigs, changedFiles, commitMessage);
+        patchSender.remoteRun(cred, inclConfigs);
     }
 
     private getDefaultURL() : string {
@@ -93,6 +89,8 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
+        let res : CvsProvider = await VsCodeUtils.getActiveScm(); 
+        console.log(res);
         this._extManager.cleanUp();
     }
 

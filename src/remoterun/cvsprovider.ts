@@ -1,11 +1,13 @@
 "use strict";
 
-import { workspace, SourceControlResourceState } from "vscode";
+import { workspace, SourceControlResourceState, extensions } from "vscode";
+import { Constants } from "../utils/constants";
 import * as cp from 'child-process-promise';
 
 export interface CvsSupportProvider {
-    formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]>;
+    getFormattedFilenames() : Promise<string[]>;
     generateConfigFileContent() : Promise<string>;
+    getAbsPaths() : Promise<string[]>;
 }
 
 /**
@@ -20,20 +22,22 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     /**
      * 
-     * @param changedFiles - changed file for remote run.
      * @result - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async formatChangedFilenames(changedFiles : SourceControlResourceState[] ) : Promise<string[]> {
+    public async getFormattedFilenames() : Promise<string[]> {
+        const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+        const changedFiles = api.getResources();
+
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         const lastRevHash = await this.getLastRevision(remoteBranch);
         let formatedChangedFiles = [];
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
-        for (let i = 0; i < changedFiles.length; i++) {
-            const absolutePath : string = changedFiles[i].resourceUri.fsPath;
+        changedFiles.forEach((row) => {
+            const absolutePath : string = row.resourceUri.fsPath;
             const relativePath : string = absolutePath.replace(this._workspaceRootPath, "");
             formatedChangedFiles.push(`jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`);
-        }
+        });
         return formatedChangedFiles;
     }
 
@@ -77,5 +81,56 @@ export class GitSupportProvider implements CvsSupportProvider {
             throw "Remote url wasn't determined."
         }
         return `.=jetbrains.git://|${remoteUrl.trim()}|`;
+    }
+
+    public async getAbsPaths() : Promise<string[]> {
+        try{ 
+            const absPaths : string[] = [];
+            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            const changedFiles : SourceControlResourceState[] = api.getResources(); //TODO: change api!
+            changedFiles.forEach((row) => {
+                absPaths.push(row.resourceUri.fsPath);
+            });
+            return absPaths;
+        }catch(err){
+            return [];
+        }
+    }
+}
+
+export class TfsSupportProvider implements CvsSupportProvider {
+
+    public async getFormattedFilenames() : Promise<string[]> {
+        let formatFilenames : string[] = [];
+        let api : any = extensions.getExtension("ms-vsts.team").exports;
+        let guid : string = api.getCollectionId();
+        let serverUris : string[] = api.getCheckinServerUris();
+        if ( serverUris === undefined ){
+            return [];
+        }
+        serverUris.forEach((row) => {
+            formatFilenames.push(`tfs://guid://${guid}${row}`);
+        });
+        return formatFilenames;
+    }
+    
+    public async generateConfigFileContent() : Promise<string> {
+        let api : any = extensions.getExtension("ms-vsts.team").exports;
+        let guid : any = api.getCollectionId();
+        let projectRootPath : any = api.getProjectRootPath();
+        return `.=tfs://guid://${guid.trim()}/$/${projectRootPath.trim()}`;
+    }
+    
+    public async getAbsPaths() : Promise<string[]> {
+        try{
+            let absPaths : string[] = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports.getCheckinInfo().files;
+            if (absPaths){
+                return absPaths;
+            }else{
+                return [];
+            }
+        }catch(err){
+            return [];
+        }
     }
 }

@@ -74,35 +74,3 @@ export class TCXmlRpcApiProvider implements TCApiProvider {
         return configResolver.getSuitableBuildConfig(tcFormatedFilePaths, cred);
     }
 }
-
-        // const p : Promise<boolean> = new Promise((resolve, reject) => {
-        //     if (!creds) {
-        //         VsCodeUtils.displayNoCredentialsMessage();
-        //         resolve(false);
-        //     }
-        //     const XMLHttpRequest = XHR.XMLHttpRequest;
-        //     var xhr = new XMLHttpRequest();
-        //     xhr.send();
-        //     const request : XHR.XMLHttpRequest = new XMLHttpRequest();
-        //     const url = creds.serverURL + "/app/rest/";
-        //     request.open("GET", url, true);
-        //     request.setRequestHeader("Authorization", "Basic " + new Buffer(creds.user + ":" + creds.pass).toString("base64"));
-            
-        //     request.send();
-        //     request.onreadystatechange = function() {
-        //         if (request.readyState !== request.DONE) {
-        //             return;
-        //         }
-        //         if (request.status === Constants.HTTP_STATUS_OK) {
-        //             VsCodeUtils.showInfoMessage(Strings.SUCCESSFULLY_SIGNEDIN);
-        //             resolve(true);
-        //         }else if (request.status === Constants.HTTP_STATUS_UNAUTHORIZED) {
-        //             VsCodeUtils.showErrorMessage(Strings.STATUS_CODE_401);  
-        //             resolve(false);     
-        //         }else {
-        //             VsCodeUtils.showErrorMessage(Strings.UNEXPECTED_EXCEPTION);              
-        //             resolve(false);                              
-        //         }
-        //     }
-        // });
-        // return p;

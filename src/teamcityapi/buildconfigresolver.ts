@@ -16,6 +16,8 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
     private _xmlRpcClient;
     private _cred : Credential;
     
+    
+    //TODO: simplify it! Think of try/catch
     /**
      * 
      * @param tcFormatedFilePaths - Сhanged file paths in particular format. The information is required to create request for suitableBuildConfigIds.
@@ -31,8 +33,14 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
 
         const rsaPublicKey = await this.getRSAPublicKey();
         await this.xmlRpcAuthentication(rsaPublicKey);
-        const configIds : string[] =  await this.requestConfigIds(tcFormatedFilePaths);
+        let configIds : string[] = [];
+        try{
+            configIds = await this.requestConfigIds(tcFormatedFilePaths);
+        }catch(err){
+            throw Strings.GET_SUITABLE_CONFIG_EXCEPTION;
+        }
         const configsInfo : string[] = await this.getRelatedConfigs(configIds); 
+
         let buildConfigs : BuildConfig[] = [];
         for (let i = 0; i < configIds.length; i++) {
             if (!configsInfo[configIds[i]]) {
@@ -100,21 +108,22 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
      * @param changedFiles - AbsPaths to changed files.
      * @return - Array of all suitable Build Config Ids. 
      */
-    private async requestConfigIds(changedFiles : string[]) : Promise<string[]> {
+    private async requestConfigIds(serverPaths : string[]) : Promise<string[]> {
         if (this._xmlRpcClient.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined){
             throw "You are not authorized";
         }
-        try{
-            const prom : Promise<string[]> = new Promise((resolve, reject) => { 
-                this._xmlRpcClient.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
-                    if(err !== null || confIds === undefined) return reject(err);
-                    resolve(confIds);
-                });
+        //Sometimes Server Path contains incorrect backslash simbols.
+        let changedFiles : string[] = []
+        serverPaths.forEach((row) => {
+            changedFiles.push(row.replace(/\\/g, "/"));
+        });
+        const prom : Promise<string[]> = new Promise((resolve, reject) => { 
+            this._xmlRpcClient.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
+                if(err !== null || confIds === undefined) return reject(err);
+                resolve(confIds);
             });
-            return prom;
-        }catch(err){
-            throw Strings.GET_SUITABLE_CONFIG_EXCEPTION + " /n caused by: " + err;
-        }
+        });
+        return prom;
     }
 
     /**

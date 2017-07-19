@@ -34,28 +34,26 @@ export class VsCodeUtils{
         VsCodeUtils.showErrorMessage(displayError);
     }
 
+    /**
+     * Currently there is no a public vscode api to detect an active scm provider.
+     * TeamCity Extension tries to get staged resources from external extensions to detect an scm provider.
+     * @result - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs} 
+     */
     public static async getActiveScm() : Promise<CvsProvider> {
         let gitExt = extensions.getExtension(Constants.GIT_EXTENSION_ID);
-        if (gitExt &&
-            gitExt.isActive && 
-            gitExt.exports &&
-            gitExt.exports.getResources &&
-            gitExt.exports.getResources() && 
-            gitExt.exports.getResources().length > 0){
+        try{
+            if (gitExt.exports.getResources().length > 0){
                 return CvsProvider.Git;
             }
+        }catch(err){
+            //An exception means that Git extension isn't active at the moment
+        }
 
         let tfsExt = extensions.getExtension(Constants.TFS_EXTENSION_ID);
         try{
-            if (tfsExt && 
-                tfsExt.isActive &&
-                tfsExt.exports &&
-                tfsExt.exports.getCheckinServerUris &&
-                tfsExt.exports.getCheckinServerUris() &&
-                tfsExt.exports.getCheckinServerUris() &&
-                tfsExt.exports.getCheckinServerUris().length > 0){
+            if (tfsExt.exports.getCheckinServerUris().length > 0){
                     return CvsProvider.Tfs;
-                }
+            }
         }catch(err){
             //An exception means that Tfs extension isn't active at the moment
         }
