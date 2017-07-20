@@ -14,7 +14,7 @@ export class Credential {
     public get serverURL() : string {
         return this._serverURL;
     }
-    
+
     public get user() : string {
         return this._user;
     }

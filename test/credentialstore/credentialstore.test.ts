@@ -3,7 +3,7 @@
 import { assert } from "chai";
 import { Credential } from "../../src/credentialstore/credential";
 import { CredentialStore } from "../../src/credentialstore/credentialstore";
-var http = require("http");
+const http = require("http");
 
 suite("CredentialStore", function() {
 
@@ -17,10 +17,10 @@ suite("CredentialStore", function() {
         const cs : CredentialStore = new CredentialStore();
         const serv = http.createServer(function (req, res) {
             serv.close();
-            res.writeHead(200, {'Content-Type': 'text/html'});
+            res.writeHead(200, {"Content-Type": "text/html"});
             res.end();
-        }).listen(8239); 
-        cs.setCredential(creds).then(()=>{
+        }).listen(8239);
+        cs.setCredential(creds).then(() => {
             assert.equal(cs.getCredential(), creds);
         });
     });
@@ -31,12 +31,12 @@ suite("CredentialStore", function() {
         const cs : CredentialStore = new CredentialStore();
         const serv = http.createServer(function (req, res) {
             serv.close();
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            res.end(); 
-        }).listen(7239); 
+            res.writeHead(200, {"Content-Type": "text/html"});
+            res.end();
+        }).listen(7239);
         cs.setCredential(creds).then(() => {
             cs.setCredential(creds2).then(() => {
-                assert.equal(cs.getCredential(),creds2);
+                assert.equal(cs.getCredential(), creds2);
             });
         });
     });
@@ -49,4 +49,3 @@ suite("CredentialStore", function() {
         assert.equal(cs.getCredential(), undefined);
     });
 });
-

@@ -25,7 +25,7 @@ suite("ConfigExplorer", () => {
     });
 
     test("should verify BuildConfigTreeDataProvider setConfigs", function() {
-        let bcArr : BuildConfig[] = [];
+        const bcArr : BuildConfig[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
         bcArr.push(new BuildConfig("id1", "label1"));
         bcArr.push(new BuildConfig("id2", "label2"));
@@ -34,11 +34,11 @@ suite("ConfigExplorer", () => {
     });
 
     test("should verify BuildConfigTreeDataProvider getInclBuilds", function() {
-        let bcArr : BuildConfig[] = [];
+        const bcArr : BuildConfig[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
         bcArr.push(new BuildConfig("id1", "label1"));
         assert.equal(configExplorer.getInclBuilds.length, 0);
-        let bc : BuildConfig = new BuildConfig("id2", "label2");
+        const bc : BuildConfig = new BuildConfig("id2", "label2");
         bc.changeState();
         bcArr.push(bc);
         configExplorer.setConfigs(bcArr);

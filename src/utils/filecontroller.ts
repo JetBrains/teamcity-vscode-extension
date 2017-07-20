@@ -2,7 +2,7 @@
 import * as fs from "fs";
 
 export class FileController {
-    
+
     /* Abs path should not contains symbols like " */
     public static async exists(fileName : string) : Promise<boolean> {
         const prom : Promise<boolean> = new Promise((resolve, reject) => {
@@ -23,12 +23,12 @@ export class FileController {
                     reject(err);
                 }
                 resolve();
-            })
+            });
         });
     }
 
     /* If file with this name exists, it will be rewritten */
-    public static async createFileAsync(fileAbsPath : string, fileContent : string){
+    public static async createFileAsync(fileAbsPath : string, fileContent : string) {
         const exist : boolean = await this.exists(fileAbsPath);
         if (exist) {
             await this.removeFileAsync(fileAbsPath);
@@ -39,7 +39,7 @@ export class FileController {
                     reject(err);
                 }
                 resolve();
-            })
+            });
         });
     }
 }

@@ -22,10 +22,10 @@ suite("BuildConfigResolver", () => {
 
     test("should verify XmlRpcBuildConfigResolver extractKeys - incorrect value", function() {
         const confResolver : XmlRpcBuildConfigResolver = new XmlRpcBuildConfigResolver();
-        assert.isNull(confResolver.getTestObject().extractKeys("qwerrtyu12345678"));
-        assert.isNull(confResolver.getTestObject().extractKeys("qwerrtyu:12345678:zxcvbnmb"));
+        assert.equal(confResolver.getTestObject().extractKeys("qwerrtyu12345678"), undefined);
+        assert.equal(confResolver.getTestObject().extractKeys("qwerrtyu:12345678:zxcvbnmb"), undefined);
     });
-    
+
     test("should verify XmlRpcBuildConfigResolver collectConfigs", function() {
         const fakeXmlResponse : string[] = [];
         fakeXmlResponse.push(`<Project><myProjectId>_Root</myProjectId><myExternalId>_Root</myExternalId><name>&lt;Root project&gt;</name><desc>Contains all other projects</desc><status>1</status><configs/></Project>`);

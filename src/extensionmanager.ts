@@ -3,7 +3,7 @@
 import { Disposable} from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
 import { CommandHolder } from "./commandholder";
-import { BuildConfigTreeDataProvider } from './remoterun/configexplorer';
+import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
 
 export class ExtensionManager implements Disposable {
     private _credentialStore : CredentialStore;
@@ -12,7 +12,7 @@ export class ExtensionManager implements Disposable {
 
     public async Initialize(configExplorer: BuildConfigTreeDataProvider) : Promise<void> {
         this._configExplorer = configExplorer;
-        this._credentialStore = new CredentialStore(); 
+        this._credentialStore = new CredentialStore();
         this._commandHolder = new CommandHolder(this);
     }
 

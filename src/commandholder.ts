@@ -15,7 +15,7 @@ import { BuildConfig } from "./remoterun/configexplorer";
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
-import forge = require('node-forge');
+import forge = require("node-forge");
 
 export class CommandHolder {
     private _extManager : ExtensionManager;
@@ -27,8 +27,8 @@ export class CommandHolder {
         const defaultURL : string = this.getDefaultURL();
         const defaultUsername : string = this.getDefaultUsername();
         let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
-        //we should prevent exception in case of slash in the end ("localhost:80/). url should be contained without it" 
-        if (url != undefined && url.length !== 0) {
+        //we should prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
+        if (url !== undefined && url.length !== 0) {
             url = url.replace(/\/$/, "");
         }
         let user: string = await window.showInputBox( { value: this.getDefaultUsername() || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
@@ -37,27 +37,29 @@ export class CommandHolder {
         }
         const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + ")", placeHolder: "", password: true } );
         const creds : Credential = new Credential(url, user, pass);
-        await this._extManager.credentialStore.setCredential(creds);  
+        await this._extManager.credentialStore.setCredential(creds);
     }
-    
+
     public async remoteRun() {
         const cred : Credential = await this.tryGetCredentials();
-        if (cred == undefined) {
+        if (cred === undefined) {
             return;
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
         const cvsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+        if ( cvsProvider === undefined ) {
+            throw "There is no changes detected.";
+        }
         const tcFormatedFilePaths : string[] = await cvsProvider.getFormattedFilenames();
         const configs : BuildConfig[] = await apiProvider.getSuitableBuildConfig(tcFormatedFilePaths, cred);
         VsCodeUtils.showInfoMessage("Please specify builds for remote run.");
-        
         this._extManager.configExplorer.setConfigs(configs);
         this._extManager.configExplorer.refresh();
     }
 
     public async remoteRunWithChosenConfigs() {
         const cred : Credential = await this.tryGetCredentials();
-        if (cred == undefined) {
+        if (cred === undefined) {
             return;
         }
 
@@ -81,13 +83,13 @@ export class CommandHolder {
         return "teamcity";
     }
 
-    public moveToSecondProvider(config : BuildConfig) {
+    public changeConfigState(config : BuildConfig) {
         config.changeState();
         this._extManager.configExplorer.refresh();
     }
 
     public async signOut() : Promise<void> {
-        let res : CvsProvider = await VsCodeUtils.getActiveScm(); 
+        const res : CvsProvider = await VsCodeUtils.getActiveScm();
         console.log(res);
         this._extManager.cleanUp();
     }
@@ -100,7 +102,7 @@ export class CommandHolder {
             if (!cred) {
                 VsCodeUtils.displayNoCredentialsMessage();
                 return undefined;
-            }            
+            }
         }
         return cred;
     }
