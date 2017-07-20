@@ -21,8 +21,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * 
-     * @result - A promise for array of formatted names of files, that are required for TeamCity remote run.
+     * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
     public async getFormattedFilenames() : Promise<string[]> {
         const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
@@ -72,7 +71,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return firstRevHash.split("\n")[0];
     }
 
-    /*Currently @username part of content was removed by me. TODO: understand what is it and for which purpose is it used. */
+    /* Currently @username part of content was removed by me. TODO: understand what is it and for which purpose is it used. */
     public async generateConfigFileContent() : Promise<string> {
         const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
         let prom = await cp.exec(getRemoteUrlCommand);
@@ -83,6 +82,10 @@ export class GitSupportProvider implements CvsSupportProvider {
         return `.=jetbrains.git://|${remoteUrl.trim()}|`;
     }
 
+    /**
+     * This method uses git extension api to get absolute paths of staged files.
+     * @return absolute paths of staged files.
+     */
     public async getAbsPaths() : Promise<string[]> {
         try{ 
             const absPaths : string[] = [];
@@ -102,7 +105,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
 
     public async getFormattedFilenames() : Promise<string[]> {
         let formatFilenames : string[] = [];
-        let api : any = extensions.getExtension("ms-vsts.team").exports;
+        let api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
         let guid : string = api.getCollectionId();
         let serverUris : string[] = api.getCheckinServerUris();
         if ( serverUris === undefined ){
@@ -113,14 +116,22 @@ export class TfsSupportProvider implements CvsSupportProvider {
         });
         return formatFilenames;
     }
-    
+
+    /**
+     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
+     * @return content of the ".teamcity-mappings.properties" file
+     */
     public async generateConfigFileContent() : Promise<string> {
-        let api : any = extensions.getExtension("ms-vsts.team").exports;
+        let api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
         let guid : any = api.getCollectionId();
         let projectRootPath : any = api.getProjectRootPath();
         return `.=tfs://guid://${guid.trim()}/$/${projectRootPath.trim()}`;
     }
     
+    /**
+     * This method uses tfs extension api to get absolute paths of staged files.
+     * @return absolute paths of staged files.
+     */
     public async getAbsPaths() : Promise<string[]> {
         try{
             let absPaths : string[] = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports.getCheckinInfo().files;

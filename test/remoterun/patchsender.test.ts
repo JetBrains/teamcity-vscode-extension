@@ -29,17 +29,9 @@ suite("PatchSender", () => {
         assert.equal(patchSender.getTestObject().configArray2String(bcArr), '"id,id2"');
     });
 
-    test("should verify TccPatchSender fileArray2String", function() {
+    test("should verify TccPatchSender filePaths2String", function() {
         const patchSender : TccPatchSender = new TccPatchSender();
-        const res1Uri : Uri = new Uri();
-        const res1 : SourceControlResourceState = {
-            resourceUri: res1Uri
-        }
-        const res2Uri : Uri = new Uri();
-
-        const res2 : SourceControlResourceState = {
-            resourceUri: res1Uri
-        }
-        assert.equal(patchSender.getTestObject().fileArray2String([res1, res2]), '"" ""');
+       
+        assert.equal(patchSender.getTestObject().filePaths2String(["path1:/to/file", "path2:/to/file"]), '"path1:/to/file" "path2:/to/file"');
     });
 });

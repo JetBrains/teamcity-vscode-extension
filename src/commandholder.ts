@@ -46,9 +46,7 @@ export class CommandHolder {
             return;
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
-
         const cvsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
-        
         const tcFormatedFilePaths : string[] = await cvsProvider.getFormattedFilenames();
         const configs : BuildConfig[] = await apiProvider.getSuitableBuildConfig(tcFormatedFilePaths, cred);
         VsCodeUtils.showInfoMessage("Please specify builds for remote run.");

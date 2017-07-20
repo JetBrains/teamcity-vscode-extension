@@ -6,6 +6,10 @@ import { CvsProvider } from "../utils/constants";
 
 export class CvsSupportProviderFactory{
 
+    /**
+     * This method detects an active cvs provider and 
+     * @return an appropriate CvsSupportProvider implementation 
+     */
     public static async getCvsSupportProvider() : Promise<CvsSupportProvider> {
         let activeCvs : CvsProvider = await VsCodeUtils.getActiveScm();
         if (activeCvs === CvsProvider.Git){

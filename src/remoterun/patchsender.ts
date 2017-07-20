@@ -72,7 +72,7 @@ export class TccPatchSender implements PatchSender {
     }
 
     /**
-     * @result - line in the format ${"buildconfig1,buildConfig2,...,buildconfigN"}
+     * @return - line in the format ${"buildconfig1,buildConfig2,...,buildconfigN"}
      */ 
     private configArray2String(configsArr : BuildConfig[]) : string {
         if (!configsArr) {
@@ -86,7 +86,7 @@ export class TccPatchSender implements PatchSender {
     }
 
     /**
-     * @result - line in the format ${"absFilePath1 absFilePath2 ... absFilePathN"}
+     * @return - line in the format ${"absFilePath1 absFilePath2 ... absFilePathN"}
      */
     private filePaths2String(changedFiles : string[]) : string {
         let changedFilesSB = [];

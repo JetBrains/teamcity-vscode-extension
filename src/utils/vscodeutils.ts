@@ -37,7 +37,7 @@ export class VsCodeUtils{
     /**
      * Currently there is no a public vscode api to detect an active scm provider.
      * TeamCity Extension tries to get staged resources from external extensions to detect an scm provider.
-     * @result - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs} 
+     * @return - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs} 
      */
     public static async getActiveScm() : Promise<CvsProvider> {
         let gitExt = extensions.getExtension(Constants.GIT_EXTENSION_ID);
