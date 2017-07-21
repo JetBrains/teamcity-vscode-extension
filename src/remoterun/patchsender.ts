@@ -12,7 +12,7 @@ import { CvsSupportProviderFactory } from "./cvsproviderfactory";
 import { workspace, SourceControlResourceState } from "vscode";
 
 export interface PatchSender {
-    /* async */ remoteRun(cred : Credential, configs : BuildConfig[], commitMessage? : string);
+    /* async */ remoteRun(cred : Credential, configs : BuildConfig[], changedFiles : string[], commitMessage? : string);
 }
 
 /**
@@ -20,7 +20,7 @@ export interface PatchSender {
  */
 export class TccPatchSender implements PatchSender {
 
-    public async remoteRun(cred : Credential, configs : BuildConfig[], commitMessage? : string) {
+    public async remoteRun(cred : Credential, configs : BuildConfig[], changedFiles : string[], commitMessage? : string) {
         const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`;
         if (!FileController.exists(tccPath)) {
             VsCodeUtils.displayNoTccUtilMessage();
@@ -50,7 +50,6 @@ export class TccPatchSender implements PatchSender {
         /* Step 3. Preparing arguments and executing the tcc.jat util. */
         try {
             const configListAsString : string = this.configArray2String(configs);
-            const changedFiles : string[] = await cvsProvider.getAbsPaths();
             const filePathsAsString : string = this.filePaths2String(changedFiles);
             const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${commitMessage}" -c ${configListAsString} ${filePathsAsString}`;
             const prom = await cp.exec(runBuildCommand);
@@ -59,7 +58,7 @@ export class TccPatchSender implements PatchSender {
             }
             console.log(prom.stdout);
         }catch (err) {
-            VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jat util: " + err);
+            VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
             return;
         }
         /* Step 4. Removing the config file for the tcc.jar util.*/

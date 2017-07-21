@@ -1,8 +1,8 @@
 "use strict";
 
-import { window, extensions } from "vscode";
+import { window, extensions, Extension } from "vscode";
 import { Strings } from "../utils/strings";
-import { CvsProvider, Constants } from "../utils/constants";
+import { CvsProviderTypes, Constants } from "../utils/constants";
 
 export class VsCodeUtils {
 
@@ -38,11 +38,11 @@ export class VsCodeUtils {
      * TeamCity Extension tries to get staged resources from external extensions to detect an scm provider.
      * @return - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs}
      */
-    public static async getActiveScm() : Promise<CvsProvider> {
-        const gitExt = extensions.getExtension(Constants.GIT_EXTENSION_ID);
+    public static async getActiveScm() : Promise<CvsProviderTypes> {
+        const gitExt : Extension<any> = extensions.getExtension(Constants.GIT_EXTENSION_ID);
         try {
-            if (gitExt.exports.getResources().length > 0) {
-                return CvsProvider.Git;
+            if (gitExt.isActive && gitExt.exports.getResources().length > 0) {
+                return CvsProviderTypes.Git;
             }
         }catch (err) {
             console.log(err);
@@ -51,13 +51,14 @@ export class VsCodeUtils {
 
         const tfsExt = extensions.getExtension(Constants.TFS_EXTENSION_ID);
         try {
-            if (tfsExt.exports.getCheckinServerUris().length > 0) {
-                    return CvsProvider.Tfs;
+            const isActive = tfsExt.isActive;
+            if (tfsExt.isActive && tfsExt.exports.getCheckinServerUris().length > 0) {
+                    return CvsProviderTypes.Tfs;
             }
         }catch (err) {
             console.log(err);
             //An exception means that Tfs extension isn't active at the moment
         }
-        return CvsProvider.UndefinedCvs;
+        return CvsProviderTypes.UndefinedCvs;
     }
 }

@@ -2,7 +2,7 @@
 
 import { CvsSupportProvider, GitSupportProvider, TfsSupportProvider } from "./cvsprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
-import { CvsProvider } from "../utils/constants";
+import { CvsProviderTypes } from "../utils/constants";
 
 export class CvsSupportProviderFactory {
 
@@ -11,10 +11,10 @@ export class CvsSupportProviderFactory {
      * @return an appropriate CvsSupportProvider implementation
      */
     public static async getCvsSupportProvider() : Promise<CvsSupportProvider> {
-        const activeCvs : CvsProvider = await VsCodeUtils.getActiveScm();
-        if (activeCvs === CvsProvider.Git) {
+        const activeCvs : CvsProviderTypes = await VsCodeUtils.getActiveScm();
+        if (activeCvs === CvsProviderTypes.Git) {
             return new GitSupportProvider();
-        }else if (activeCvs === CvsProvider.Tfs) {
+        }else if (activeCvs === CvsProviderTypes.Tfs) {
             return new TfsSupportProvider();
         }else {
             //TODO: think of behaviour in this case

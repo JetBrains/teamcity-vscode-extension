@@ -5,12 +5,13 @@ import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
-import { CvsProvider } from "./utils/constants";
+import { CvsProviderTypes } from "./utils/constants";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
 import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { BuildConfig } from "./remoterun/configexplorer";
+import { CheckinInfo } from "./utils/interfaces";
 
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
@@ -19,6 +20,8 @@ import forge = require("node-forge");
 
 export class CommandHolder {
     private _extManager : ExtensionManager;
+    private _checkinInfo : CheckinInfo;
+    private _cvsProvider : CvsSupportProvider;
     public constructor(extManager : ExtensionManager) {
         this._extManager = extManager;
     }
@@ -40,19 +43,20 @@ export class CommandHolder {
         await this._extManager.credentialStore.setCredential(creds);
     }
 
-    public async remoteRun() {
+    public async getSuitableConfigs() {
         const cred : Credential = await this.tryGetCredentials();
         if (cred === undefined) {
             return;
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
-        const cvsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
-        if ( cvsProvider === undefined ) {
+        this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+        if ( this._cvsProvider === undefined ) {
             throw "There is no changes detected.";
         }
-        const tcFormatedFilePaths : string[] = await cvsProvider.getFormattedFilenames();
+        const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const configs : BuildConfig[] = await apiProvider.getSuitableBuildConfig(tcFormatedFilePaths, cred);
-        VsCodeUtils.showInfoMessage("Please specify builds for remote run.");
+        this._checkinInfo = await this._cvsProvider.getRequiredCheckinInfo();
+        VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         this._extManager.configExplorer.setConfigs(configs);
         this._extManager.configExplorer.refresh();
     }
@@ -62,7 +66,6 @@ export class CommandHolder {
         if (cred === undefined) {
             return;
         }
-
         const inclConfigs : BuildConfig[] = this._extManager.configExplorer.getInclBuilds();
         if (inclConfigs === undefined || inclConfigs.length === 0) {
             VsCodeUtils.displayNoSelectedConfigsMessage();
@@ -70,9 +73,12 @@ export class CommandHolder {
         }
         this._extManager.configExplorer.setConfigs([]);
         this._extManager.configExplorer.refresh();
-
         const patchSender : PatchSender = new TccPatchSender();
-        patchSender.remoteRun(cred, inclConfigs);
+        await patchSender.remoteRun(cred, inclConfigs, this._checkinInfo.files, this._checkinInfo.comment);
+
+        const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
+        VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);
+        this._cvsProvider.requestForPostCommit(this._checkinInfo);
     }
 
     private getDefaultURL() : string {
@@ -89,8 +95,9 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
-        const res : CvsProvider = await VsCodeUtils.getActiveScm();
-        console.log(res);
+        const api = extensions.getExtension("vscode.git").exports;
+        api.commitStaged(async () => "lalalalala");
+        console.log(api);
         this._extManager.cleanUp();
     }
 

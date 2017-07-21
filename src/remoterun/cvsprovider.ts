@@ -1,13 +1,15 @@
 "use strict";
 
-import { workspace, SourceControlResourceState, extensions } from "vscode";
+import { workspace, SourceControlResourceState, extensions, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { Constants } from "../utils/constants";
+import { CheckinInfo } from "../utils/interfaces";
 import * as cp from "child-process-promise";
 
 export interface CvsSupportProvider {
     getFormattedFilenames() : Promise<string[]>;
     generateConfigFileContent() : Promise<string>;
-    getAbsPaths() : Promise<string[]>;
+    getRequiredCheckinInfo() : Promise<CheckinInfo>;
+    requestForPostCommit(checkinInfo : CheckinInfo);
 }
 
 /**
@@ -84,9 +86,9 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     /**
      * This method uses git extension api to get absolute paths of staged files.
-     * @return absolute paths of staged files.
+     * @return absolute paths of staged files or [] if requiest was failed.
      */
-    public async getAbsPaths() : Promise<string[]> {
+    private async getAbsPaths() : Promise<string[]> {
         try {
             const absPaths : string[] = [];
             const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
@@ -97,6 +99,56 @@ export class GitSupportProvider implements CvsSupportProvider {
             return absPaths;
         }catch (err) {
             return [];
+        }
+    }
+
+    /**
+     * This method uses git extension api to checkin info. It is required to execute post-commit.
+     * In case of git there are no workItemIds
+     * @return CheckinInfo object
+     */
+    public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
+        //Git extension bug: If commit message is empty git won't commit anything
+        const commitMessage: string = scm.inputBox.value === "" ? " " : scm.inputBox.value;
+        const absPaths : string[] = await this.getAbsPaths();
+        return {
+                files: absPaths,
+                comment: commitMessage,
+                workItemIds: []
+            };
+    }
+
+    /**
+     * Commit all staged (at the moment of a post-commit) files with new content.
+     * Should user changes them since build config run, it works incorrect.
+     * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
+     */
+    public async requestForPostCommit(checkinInfo : CheckinInfo) {
+        const choices: QuickPickItem[] = [];
+        const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit/push your changes?";
+        const NO_LABEL : string = "No, thank you";
+        const COMMIT_LABEL : string = "Commit";
+        const COMMIT_AND_PUSH_LABEL : string = "Commit and Push";
+        choices.push({ label: NO_LABEL, description: undefined });
+        choices.push({ label: COMMIT_LABEL, description: undefined });
+        choices.push({ label: COMMIT_AND_PUSH_LABEL, description: undefined });
+        const options : QuickPickOptions = {
+            ignoreFocusOut: true,
+            matchOnDescription: false,
+            placeHolder: GIT_COMMIT_PUSH_INTRO_MESSAGE
+        };
+        const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
+        if (nextGitOperation === undefined) {
+            return;
+        }
+        if (nextGitOperation.label === COMMIT_LABEL) {
+            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            await api.commitStagedWithMessage(async () => checkinInfo.comment);
+        }
+        if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
+            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            await api.commitStagedWithMessage(async () => checkinInfo.comment);
+            await api.push();
         }
     }
 }
@@ -129,19 +181,33 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method uses tfs extension api to get absolute paths of staged files.
-     * @return absolute paths of staged files.
+     * This method uses tfs extension api to checkin info. It is required to execute post-commit.
+     * @return CheckinInfo object
      */
-    public async getAbsPaths() : Promise<string[]> {
-        try {
-            const absPaths : string[] = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports.getCheckinInfo().files;
-            if (absPaths) {
-                return absPaths;
-            }else {
-                return [];
-            }
-        }catch (err) {
-            return [];
+    public getRequiredCheckinInfo() : Promise<CheckinInfo> {
+        return extensions.getExtension(Constants.TFS_EXTENSION_ID).exports.getCheckinInfo();
+    }
+
+    /**
+     * Commit all staged (at the moment of a post-commit) files with new content.
+     * Should user changes them since build config run, it works incorrect.
+     */
+    public async requestForPostCommit(checkinInfo : CheckinInfo) {
+        const choices: QuickPickItem[] = [];
+        const TFS_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit your changes?";
+        const NO_LABEL : string = "No, thank you";
+        const YES_LABEL : string = "Yes";
+        choices.push({ label: NO_LABEL, description: undefined });
+        choices.push({ label: YES_LABEL, description: undefined });
+        const options : QuickPickOptions = {
+            ignoreFocusOut: true,
+            matchOnDescription: false,
+            placeHolder: TFS_COMMIT_PUSH_INTRO_MESSAGE
+        };
+        const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
+        if (nextGitOperation !== undefined && nextGitOperation.label === YES_LABEL) {
+            const api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
+            await api.checkinFromExternalSystem(checkinInfo);
         }
     }
 }

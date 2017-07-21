@@ -17,12 +17,12 @@ export function activate(context: vscode.ExtensionContext) {
     const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
 
     _extensionManager.Initialize(configExplorer);
-    // The command has been defined in the package.json file
-    // The commandId parameter must match the command field in package.json
+    // The commands have been defined in the package.json file
+    // The commandId parameters must match the command fields in package.json
     context.subscriptions.push(_extensionManager);
     context.subscriptions.push(vscode.commands.registerCommand(SIGNIN_COMMAND_NAME, () => _extensionManager.commandHolder.signIn()));
     context.subscriptions.push(vscode.commands.registerCommand(SIGNOUT_COMMAND_NAME, () => _extensionManager.commandHolder.signOut()));
-    context.subscriptions.push(vscode.commands.registerCommand(REMOTE_RUN_COMMAND_NAME, () => _extensionManager.commandHolder.remoteRun()));
+    context.subscriptions.push(vscode.commands.registerCommand(REMOTE_RUN_COMMAND_NAME, () => _extensionManager.commandHolder.getSuitableConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => _extensionManager.commandHolder.remoteRunWithChosenConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(CHANGE_CONFIG_STATE, (config : BuildConfig) => _extensionManager.commandHolder.changeConfigState(config)));
     context.subscriptions.push(vscode.window.registerTreeDataProvider("configExplorer", configExplorer));
