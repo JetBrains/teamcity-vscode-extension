@@ -114,6 +114,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return {
                 files: absPaths,
                 comment: commitMessage,
+                serverItems: [],
                 workItemIds: []
             };
     }
@@ -143,11 +144,11 @@ export class GitSupportProvider implements CvsSupportProvider {
         }
         if (nextGitOperation.label === COMMIT_LABEL) {
             const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
-            await api.commitStagedWithMessage(async () => checkinInfo.comment);
+            await api.commitStagedWithMessage(checkinInfo.comment);
         }
         if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
             const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
-            await api.commitStagedWithMessage(async () => checkinInfo.comment);
+            await api.commitStagedWithMessage(checkinInfo.comment);
             await api.push();
         }
     }
@@ -158,13 +159,13 @@ export class TfsSupportProvider implements CvsSupportProvider {
     public async getFormattedFilenames() : Promise<string[]> {
         const formatFilenames : string[] = [];
         const api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
-        const guid : string = api.getCollectionId();
-        const serverUris : string[] = api.getCheckinServerUris();
+        const guid : string = api.getRepositoryInfo().collectionId;
+        const serverUris : string[] = api.getCheckinInfo().serverItems;
         if ( serverUris === undefined ) {
             return [];
         }
         serverUris.forEach((row) => {
-            formatFilenames.push(`tfs://guid://${guid}${row}`);
+            formatFilenames.push(`tfs://guid://${guid}/${row}`);
         });
         return formatFilenames;
     }
@@ -175,8 +176,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     public async generateConfigFileContent() : Promise<string> {
         const api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
-        const guid : any = api.getCollectionId();
-        const projectRootPath : any = api.getProjectRootPath();
+        const repoInfo = api.getRepositoryInfo();
+        const guid : string = repoInfo.collectionId;
+        const projectRootPath : string = repoInfo.projectName + repoInfo.path;
         return `.=tfs://guid://${guid.trim()}/$/${projectRootPath.trim()}`;
     }
 

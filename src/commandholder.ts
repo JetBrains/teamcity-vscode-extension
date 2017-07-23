@@ -95,9 +95,6 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
-        const api = extensions.getExtension("vscode.git").exports;
-        api.commitStaged(async () => "lalalalala");
-        console.log(api);
         this._extManager.cleanUp();
     }
 

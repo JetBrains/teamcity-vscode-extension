@@ -52,7 +52,7 @@ export class VsCodeUtils {
         const tfsExt = extensions.getExtension(Constants.TFS_EXTENSION_ID);
         try {
             const isActive = tfsExt.isActive;
-            if (tfsExt.isActive && tfsExt.exports.getCheckinServerUris().length > 0) {
+            if (tfsExt.isActive && tfsExt.exports.getCheckinInfo().files.length > 0) {
                     return CvsProviderTypes.Tfs;
             }
         }catch (err) {
