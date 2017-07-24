@@ -1,47 +1,47 @@
 "use strict";
 
 import { assert, expect } from "chai";
-import { BuildConfig, BuildConfigTreeDataProvider } from "../../src/remoterun/configexplorer";
+import { ProjectItem, BuildConfigItem, BuildConfigTreeDataProvider } from "../../src/remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
 
 suite("ConfigExplorer", () => {
     test("should verify BuildConfig constructor", function() {
-        const buildConfig : BuildConfig = new BuildConfig("id", "label");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
         assert.equal(buildConfig.id, "id");
         assert.equal(buildConfig.label, "label");
         assert.equal(buildConfig.isIncl, false);
     });
 
     test("should verify BuildConfig incorrect constructor", function() {
-        const buildConfig : BuildConfig = new BuildConfig(undefined, undefined);
+        const buildConfig : BuildConfigItem = new BuildConfigItem(undefined, undefined);
         assert.equal(buildConfig.id, undefined);
         assert.equal(buildConfig.label, undefined);
     });
 
     test("should verify BuildConfig change", function() {
-        const buildConfig : BuildConfig = new BuildConfig("id", "label");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
         buildConfig.changeState();
         assert.equal(buildConfig.isIncl, true);
     });
 
     test("should verify BuildConfigTreeDataProvider setConfigs", function() {
-        const bcArr : BuildConfig[] = [];
+        const bcArr : ProjectItem[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
-        bcArr.push(new BuildConfig("id1", "label1"));
-        bcArr.push(new BuildConfig("id2", "label2"));
-        configExplorer.setConfigs(bcArr);
+        bcArr.push(new ProjectItem("id1", []));
+        bcArr.push(new ProjectItem("id2", []));
+        configExplorer.setProjects(bcArr);
         assert.equal(configExplorer.getChildren(), bcArr);
     });
 
     test("should verify BuildConfigTreeDataProvider getInclBuilds", function() {
-        const bcArr : BuildConfig[] = [];
+        const projectArr : ProjectItem[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
-        bcArr.push(new BuildConfig("id1", "label1"));
-        assert.equal(configExplorer.getInclBuilds.length, 0);
-        const bc : BuildConfig = new BuildConfig("id2", "label2");
-        bc.changeState();
-        bcArr.push(bc);
-        configExplorer.setConfigs(bcArr);
-        assert.equal(configExplorer.getInclBuilds()[0].id, "id2");
+        const bcItem1 : BuildConfigItem = new BuildConfigItem("id1", "name1");
+        const bcItem2 : BuildConfigItem = new BuildConfigItem("id2", "name2");
+        projectArr.push(new ProjectItem("id1", [bcItem1, bcItem2]));
+        configExplorer.setProjects(projectArr);
+        assert.equal(configExplorer.getInclBuilds().length, 0);
+        bcItem1.changeState();
+        assert.equal(configExplorer.getInclBuilds().length, 1);
     });
 });

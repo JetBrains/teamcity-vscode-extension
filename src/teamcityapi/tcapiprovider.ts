@@ -3,13 +3,13 @@ import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Constants } from "../utils/constants";
 import { Strings } from "../utils/strings";
-import { BuildConfig } from "../remoterun/configexplorer";
+import { ProjectItem } from "../remoterun/configexplorer";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
 import XHR = require("xmlhttprequest");
 
 export interface TCApiProvider {
     /* async */ checkCredential( cred : Credential ) : Promise<boolean>;
-    /* async */ getSuitableBuildConfig( tcFormatedFilePaths : string[], cred : Credential ) : Promise<BuildConfig[]>;
+    /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]>;
 }
 
 export class TCRestApiProvider implements TCApiProvider {
@@ -65,7 +65,7 @@ export class TCRestApiProvider implements TCApiProvider {
         });
         return p;
     }
-    public async getSuitableBuildConfig( tcFormatedFilePaths : string[], cred : Credential ) : Promise<BuildConfig[]> {
+    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         throw "UnsupportedMethodException.";
     }
@@ -77,8 +77,8 @@ export class TCXmlRpcApiProvider implements TCApiProvider {
         throw "UnsupportedMethodException.";
     }
 
-    public async getSuitableBuildConfig( tcFormatedFilePaths : string[], cred : Credential ) : Promise<BuildConfig[]> {
+    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
         const configResolver : BuildConfigResolver =  new XmlRpcBuildConfigResolver();
-        return configResolver.getSuitableBuildConfig(tcFormatedFilePaths, cred);
+        return configResolver.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
     }
 }

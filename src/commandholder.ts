@@ -5,12 +5,11 @@ import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
-import { CvsProviderTypes } from "./utils/constants";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
 import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
-import { BuildConfig } from "./remoterun/configexplorer";
+import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
 import { CheckinInfo } from "./utils/interfaces";
 
 import XHR = require("xmlhttprequest");
@@ -54,10 +53,10 @@ export class CommandHolder {
             throw "There is no changes detected.";
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
-        const configs : BuildConfig[] = await apiProvider.getSuitableBuildConfig(tcFormatedFilePaths, cred);
+        const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
         this._checkinInfo = await this._cvsProvider.getRequiredCheckinInfo();
         VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
-        this._extManager.configExplorer.setConfigs(configs);
+        this._extManager.configExplorer.setProjects(projects);
         this._extManager.configExplorer.refresh();
     }
 
@@ -66,12 +65,12 @@ export class CommandHolder {
         if (cred === undefined) {
             return;
         }
-        const inclConfigs : BuildConfig[] = this._extManager.configExplorer.getInclBuilds();
+        const inclConfigs : BuildConfigItem[] = this._extManager.configExplorer.getInclBuilds();
         if (inclConfigs === undefined || inclConfigs.length === 0) {
             VsCodeUtils.displayNoSelectedConfigsMessage();
             return;
         }
-        this._extManager.configExplorer.setConfigs([]);
+        this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new TccPatchSender();
         await patchSender.remoteRun(cred, inclConfigs, this._checkinInfo.files, this._checkinInfo.comment);
@@ -89,9 +88,13 @@ export class CommandHolder {
         return "teamcity";
     }
 
-    public changeConfigState(config : BuildConfig) {
+    public changeConfigState(config : BuildConfigItem) {
         config.changeState();
         this._extManager.configExplorer.refresh();
+    }
+
+    public changeCollapsibleState(project : ProjectItem) {
+        project.changeCollapsibleState();
     }
 
     public async signOut() : Promise<void> {

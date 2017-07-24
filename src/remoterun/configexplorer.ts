@@ -1,21 +1,32 @@
-import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Event, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
+import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Command, Event, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
 import * as path from "path";
 
-export class BuildConfig {
+export class BuildConfigItem extends TreeItem {
     private readonly _id : string;
-    private readonly _label : string;
     private _isIncl : boolean = false;
     constructor(id: string, label: string) {
+        super(label, TreeItemCollapsibleState.None);
         this._id = id;
-        this._label = label;
+    }
+
+    public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
+        const iconName : string = "config - " + (this.isIncl ? "incl" : "excl") + ".png";
+        return {
+            light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
+            dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
+        };
+    }
+
+    public get command() : Command {
+        return {
+            command: "changeConfigState",
+            arguments: [this],
+            title: "Change build config group"
+        };
     }
 
     public get id() : string {
         return this._id;
-    }
-
-    public get label() : string {
-        return this._label;
     }
 
     public get isIncl() : boolean {
@@ -27,12 +38,45 @@ export class BuildConfig {
     }
 }
 
-export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig> {
+export class ProjectItem extends TreeItem {
+    public configs : BuildConfigItem[];
+
+    constructor(label: string, configs: BuildConfigItem[]) {
+        super(label, TreeItemCollapsibleState.Collapsed);
+        this.configs = configs;
+    }
+
+    public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
+        const iconName : string = "project.png";
+        return {
+            light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
+            dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
+        };
+    }
+
+    public get command() : Command {
+        return {
+            command: "changeCollapsibleState",
+            arguments: [this],
+            title: "Change Collapsible State"
+        };
+    }
+
+    public changeCollapsibleState() : void {
+        if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
+            this.collapsibleState = TreeItemCollapsibleState.Expanded;
+        }else {
+            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
+        }
+    }
+}
+
+export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
-    private _configs : BuildConfig[] = [];
+    private _projects : ProjectItem[] = [];
 
-    public refresh(config?: BuildConfig): void {
+    public refresh(config?: BuildConfigItem): void {
         if (!config) {
             this._onDidChangeTreeData.fire();
             return;
@@ -40,35 +84,24 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig
         this._onDidChangeTreeData.fire();
     }
 
-    public setConfigs(configs: BuildConfig[]) {
-        this._configs = configs;
+    public setProjects(projects: ProjectItem[]) {
+        this._projects = projects;
     }
 
-    public getTreeItem(config: BuildConfig): TreeItem {
-        const iconName : string = "config - " + (config.isIncl ? "incl" : "excl") + ".png";
-        return {
-            label: config.label,
-            collapsibleState: TreeItemCollapsibleState.None,
-            command: {
-                command: "changeConfigState",
-                arguments: [config],
-                title: "Change build config group"
-            },
-            iconPath: {
-                 light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
-                 dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
-             }
-        };
+    public getTreeItem(treeItem: TreeItem): TreeItem {
+        return treeItem;
     }
 
     /**
-	 * In current implementation this method fires only one time - during the initialization of configexplorer.
-	 * It detemines which objects will shown inside the TeamCity Build Config section.
+	 * This method detemines which objects will shown inside the TeamCity Build Config section.
+     * It fires every time there is a click on any element on the configExlorer.
 	 */
-    public getChildren(element?: BuildConfig): BuildConfig[] | Thenable<BuildConfig[]> {
+    public getChildren(element?: TreeItem): TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
-            /* values for root container */
-            return this._configs;
+            return this._projects;
+        }else if (element instanceof ProjectItem) {
+            const project : ProjectItem = element;
+            return element.configs;
         }
         return [];
     }
@@ -76,13 +109,15 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<BuildConfig
     /**
 	 * @return - all included build configs for remote run.
 	 */
-    public getInclBuilds(): BuildConfig[] {
-        const result : BuildConfig[] = [];
-        for (let i = 0; i < this._configs.length; i++) {
-            if (this._configs[i].isIncl) {
-                result.push(this._configs[i]);
-            }
-        }
+    public getInclBuilds(): BuildConfigItem[] {
+        const result : BuildConfigItem[] = [];
+        this._projects.forEach((project) => {
+            project.configs.forEach((config) => {
+                if (config.isIncl) {
+                    result.push(config);
+                }
+            });
+        });
         return result;
     }
 }

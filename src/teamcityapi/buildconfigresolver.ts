@@ -2,14 +2,14 @@
 import { Credential } from "../credentialstore/credential";
 import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
-import { BuildConfig } from "../remoterun/configexplorer";
+import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
 import forge = require("node-forge");
 import xml2js = require("xml2js");
 const BigInteger = forge.jsbn.BigInteger;
 
 export interface BuildConfigResolver {
-    /* async */ getSuitableBuildConfig( tcFormatedFilePaths : string[], cred : Credential) : Promise<BuildConfig[]>;
+    /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential) : Promise<ProjectItem[]>;
 }
 
 export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
@@ -21,9 +21,9 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
      *
      * @param tcFormatedFilePaths - Сhanged file paths in particular format. The information is required to create request for suitableBuildConfigIds.
      * @param cred - credential of TeamCity user who try to connect to TeamCity.
-     * @return - A promise for an array of BuildConfig objects, that are releted to changed files.
+     * @return - A promise for an array of ProjectItem objects, that are releted to changed files.
      */
-    public async getSuitableBuildConfig(tcFormatedFilePaths : string[], cred : Credential) : Promise<BuildConfig[]> {
+    public async getSuitableBuildConfigs(tcFormatedFilePaths : string[], cred : Credential) : Promise<ProjectItem[]> {
         if (!cred) {
             throw "Credential should not be undefined.";
         }
@@ -38,17 +38,10 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
         }catch (err) {
             throw Strings.GET_SUITABLE_CONFIG_EXCEPTION;
         }
-        const configsInfo : string[] = await this.getRelatedConfigs(configIds);
+        const projectContainer : ProjectItem[] = await this.getRelatedProjects(configIds);
+        await this.filterConfigs(projectContainer, configIds);
 
-        const buildConfigs : BuildConfig[] = [];
-        for (let i = 0; i < configIds.length; i++) {
-            if (!configsInfo[configIds[i]]) {
-                continue;
-            }
-            buildConfigs.push(new BuildConfig(configIds[i], configsInfo[configIds[i]]));
-        }
-
-        return buildConfigs;
+        return projectContainer;
     }
 
     /**
@@ -141,21 +134,21 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
      *
      * @param confIds - Array of configuration build ids. Extension requests all related projects to collect full information
      * about build configurations (including projectNames and buildConfigurationName). The information is required to create label for BuildConfig.
-     * @return - map of pairs [buildConfigId] - buildConfigLabel. buildConfigLabel is in format ${[projectName] internalBuildConfigName}
+     * @return - list of ProjectItems that contain related buildConfigs.
      */
-    private async getRelatedConfigs(confIds : string[]) : Promise<string[]> {
+    private async getRelatedProjects(confIds : string[]) : Promise<ProjectItem[]> {
         if (this._xmlRpcClient.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
             throw "You are not authorized";
         }
         try {
-            return new Promise<string[]>((resolve, reject) => {
+            return new Promise<ProjectItem[]>((resolve, reject) => {
                 this._xmlRpcClient.methodCall("RemoteBuildServer2.getRelatedProjects", [ confIds ], (err, buildsXml) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || buildsXml === undefined ) {
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
-                    resolve(this.collectConfigs(buildsXml));
+                    resolve(this.parseXml(buildsXml));
                 });
             });
         }catch (err) {
@@ -166,35 +159,34 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
     /**
     *
     * @param buildsXml - xml that contains all info about releted projects.
-    * @return - map of pairs [buildConfigId] - buildConfigLabel that exist under the project.
-    * BuildConfigLabel is in format ${[projectName] internalBuildConfigName}
+    * @return - list of ProjectItems that contain related buildConfigs.
     */
-    private collectConfigs(buildsXml : string[]) : string[] {
+    private parseXml(buildsXml : string[]) : ProjectItem[] {
         if (buildsXml === undefined) {
             return [];
         }
-        const configs : string[] = [];
+        const projects : ProjectItem[] = [];
         for (let i : number = 0; i < buildsXml.length; i++ ) {
             const buildXml = buildsXml[i];
             xml2js.parseString(buildXml, (err, project) => {
-                this.collectConfigsFromProject(project, configs);
+                this.collectProject(project, projects);
             });
         }
-        return configs;
+        return projects;
     }
 
     /**
-    *
-    * @param buildsXml - an object that contains all info about a project.
-    * @return - map of pairs [buildConfigId] - buildConfigLabel that exist under the project.
-    * BuildConfigLabel is in format ${[projectName] internalBuildConfigName}
-    */
-    private collectConfigsFromProject(project : any, configs : string[]) {
+     * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
+     * @param project - project as a TeamCity project entity with lots of useless fields.
+     * @param projectContainer - the result of the call of the method will be pushed to this object.
+     */
+    private collectProject(project : any, projectContainer : ProjectItem[]) {
         if (!project || !project.Project || !project.Project.configs ||
             !project.Project.configs[0] || !project.Project.configs[0].Configuration) {
             return;
         }
         const xmlConfigs : any = project.Project.configs[0].Configuration;
+        const buildConfigs : BuildConfigItem[] = [];
         for (let i = 0; i < xmlConfigs.length; i++) {
             const xmlConfig = xmlConfigs[i];
             if (!xmlConfig.id || !xmlConfig.id[0] ||
@@ -202,8 +194,30 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
                 !xmlConfig.projectName || !xmlConfig.projectName[0]) {
                     continue;
                 }
-            configs[xmlConfig.id[0]] = `[${xmlConfig.projectName[0]}] ${xmlConfig.name}`;
+            buildConfigs.push(new BuildConfigItem(xmlConfig.id[0], xmlConfig.name[0]));
         }
+        if (buildConfigs.length > 0) {
+            projectContainer.push(new ProjectItem(project.Project.name[0], buildConfigs));
+        }
+    }
+
+    /**
+     *
+     * @param projects - array of ProjectItems that contain all project's buildConfigs.
+     * @param configIds - array of ids of suitable build configs.
+     * @return - contains at the first arg, not at @return clause. List of projects with only suitable build configs.
+     */
+    private async filterConfigs(projects : ProjectItem[], configIds : string[]) {
+        projects.forEach((project) => {
+            const filteredConfigs : BuildConfigItem[] = [];
+            project.configs.forEach((config) => {
+                if (configIds.indexOf(config.id) !== -1) {
+                    filteredConfigs.push(config);
+                }
+            });
+            project.configs = filteredConfigs;
+        });
+        return;
     }
 
     /**
@@ -230,8 +244,9 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
         testObject._xmlRpcClient = this._xmlRpcClient;
         testObject.extractKeys = this.extractKeys;
         testObject.getRSAPublicKey = this.getRSAPublicKey;
-        testObject.collectConfigs = this.collectConfigs;
-        testObject.collectConfigsFromProject = this.collectConfigsFromProject;
+        testObject.parseXml = this.parseXml;
+        testObject.collectProject = this.collectProject;
+        testObject.filterConfigs = this.filterConfigs;
         return testObject;
     }
 }

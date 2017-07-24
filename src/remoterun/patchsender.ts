@@ -6,13 +6,13 @@ import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { extensions } from "vscode";
-import { BuildConfig } from "./configexplorer";
+import { BuildConfigItem } from "./configexplorer";
 import { CvsSupportProvider } from "./cvsprovider";
 import { CvsSupportProviderFactory } from "./cvsproviderfactory";
 import { workspace, SourceControlResourceState } from "vscode";
 
 export interface PatchSender {
-    /* async */ remoteRun(cred : Credential, configs : BuildConfig[], changedFiles : string[], commitMessage? : string);
+    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], changedFiles : string[], commitMessage? : string);
 }
 
 /**
@@ -20,7 +20,7 @@ export interface PatchSender {
  */
 export class TccPatchSender implements PatchSender {
 
-    public async remoteRun(cred : Credential, configs : BuildConfig[], changedFiles : string[], commitMessage? : string) {
+    public async remoteRun(cred : Credential, configs : BuildConfigItem[], changedFiles : string[], commitMessage? : string) {
         const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`;
         if (!FileController.exists(tccPath)) {
             VsCodeUtils.displayNoTccUtilMessage();
@@ -73,7 +73,7 @@ export class TccPatchSender implements PatchSender {
     /**
      * @return - line in the format ${"buildconfig1,buildConfig2,...,buildconfigN"}
      */
-    private configArray2String(configsArr : BuildConfig[]) : string {
+    private configArray2String(configsArr : BuildConfigItem[]) : string {
         if (!configsArr) {
             return `""`;
         }
