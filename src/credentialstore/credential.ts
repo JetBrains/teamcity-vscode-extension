@@ -4,6 +4,7 @@ export class Credential {
     private _serverURL : string;
     private _user : string;
     private _pass : string;
+    public userId : string;
 
     public constructor(_serverURL, _user, _pass) {
         this._serverURL = _serverURL;

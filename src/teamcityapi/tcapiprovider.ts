@@ -5,11 +5,13 @@ import { Constants } from "../utils/constants";
 import { Strings } from "../utils/strings";
 import { ProjectItem } from "../remoterun/configexplorer";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
+import { NotificationProvider } from "./notificationprovider";
 import XHR = require("xmlhttprequest");
 
 export interface TCApiProvider {
     /* async */ checkCredential( cred : Credential ) : Promise<boolean>;
     /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]>;
+    /* async */ getTotalNumberOfEvents( cred : Credential ) : Promise<number>;
 }
 
 export class TCRestApiProvider implements TCApiProvider {
@@ -65,7 +67,13 @@ export class TCRestApiProvider implements TCApiProvider {
         });
         return p;
     }
+
     public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
+        //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
+        throw "UnsupportedMethodException.";
+    }
+
+    public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         throw "UnsupportedMethodException.";
     }
@@ -78,7 +86,18 @@ export class TCXmlRpcApiProvider implements TCApiProvider {
     }
 
     public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
-        const configResolver : BuildConfigResolver =  new XmlRpcBuildConfigResolver();
+        const configResolver : BuildConfigResolver =  new XmlRpcBuildConfigResolver(cred.serverURL);
         return configResolver.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
+    }
+
+    /**
+     * @return - number of event for existing subscriptions.
+     * Subs are created at ModificationCounterSubscription.fromTeamServerSummaryData during NotificationProvider#init
+     */
+    public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
+        const notificationProvider : NotificationProvider = new NotificationProvider(cred.serverURL);
+        await notificationProvider.init(cred);
+
+        return await notificationProvider.getTotalNumberOfEvents();
     }
 }

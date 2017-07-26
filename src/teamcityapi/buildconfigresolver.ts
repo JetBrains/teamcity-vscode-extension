@@ -3,18 +3,21 @@ import { Credential } from "../credentialstore/credential";
 import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
 import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
+import { XmlRpcProvider } from "../utils/xmlrpcprovider";
+import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
+import { SummaryDataProxy } from "../notifications/summarydata";
 import xmlrpc = require("xmlrpc");
-import forge = require("node-forge");
 import xml2js = require("xml2js");
-const BigInteger = forge.jsbn.BigInteger;
 
 export interface BuildConfigResolver {
     /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential) : Promise<ProjectItem[]>;
 }
 
-export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
-    private _xmlRpcClient;
-    private _cred : Credential;
+export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildConfigResolver {
+
+    constructor(serverURL : string) {
+        super(serverURL);
+    }
 
     //TODO: simplify it! Think of try/catch
     /**
@@ -27,11 +30,8 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
         if (!cred) {
             throw "Credential should not be undefined.";
         }
-        this._xmlRpcClient = xmlrpc.createClient( { url: cred.serverURL + "/RPC2", cookies: true } );
-        this._cred = cred;
 
-        const rsaPublicKey = await this.getRSAPublicKey();
-        await this.xmlRpcAuthentication(rsaPublicKey);
+        await this.authenticateIfRequired(cred);
         let configIds : string[] = [];
         try {
             configIds = await this.requestConfigIds(tcFormatedFilePaths);
@@ -40,67 +40,9 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
         }
         const projectContainer : ProjectItem[] = await this.getRelatedProjects(configIds);
         await this.filterConfigs(projectContainer, configIds);
-
+        // await this.getSummeryData();
+        // await this.getNotifications();
         return projectContainer;
-    }
-
-    /**
-     * @return - Promise for RSAPublicKey object from node-forge module.
-     */
-    private async getRSAPublicKey() : Promise<any> {
-        try {
-            return new Promise((resolve, reject) => {
-                this._xmlRpcClient.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
-                    /* tslint:disable:no-null-keyword */
-                    if (err !== null || data === undefined) {
-                        return reject(err);
-                    }
-                    /* tslint:enable:no-null-keyword */
-                    const pki = forge.pki;
-                    const rsa = forge.pki.rsa;
-                    const keys = this.extractKeys(data);
-
-                    if (keys.length !== 2) {
-                        return reject(err);
-                    }
-                    const rsaPublicKey = pki.setRsaPublicKey(
-                        new BigInteger(keys[0]/* n */, 16),
-                        new BigInteger(keys[1]/* e */, 16));
-                    resolve(rsaPublicKey);
-                });
-            });
-        } catch (err) {
-            throw Strings.RCA_PUBLIC_KEY_EXCEPTION + " /n caused by: " + err;
-        }
-    }
-
-    /**
-     *
-     * @param rsaPublicKey - RSAPublicKey from node-forge module
-     * @return - Promise<any>. In case of success the local XmlRpcClient object should be filled by received sessionIdKey.
-     */
-    private async xmlRpcAuthentication(rsaPublicKey) {
-        if (!rsaPublicKey) {
-            throw Strings.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
-        }
-        try {
-            const pass = this._cred.pass;
-            const encPass = rsaPublicKey.encrypt(pass);
-            const hexEncPass = forge.util.createBuffer(encPass).toHex();
-            return new Promise((resolve, reject) => {
-                this._xmlRpcClient.methodCall("RemoteAuthenticationServer.authenticate", [this._cred.user, hexEncPass], (err, sessId) => {
-                    /* tslint:disable:no-null-keyword */
-                    if (err !== null || sessId === undefined || sessId.length === 0) {
-                        return reject(err);
-                    }
-                    /* tslint:enable:no-null-keyword */
-                    this._xmlRpcClient.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessId);
-                    resolve();
-                });
-            });
-        } catch (err) {
-            throw Strings.XMLRPC_AUTH_EXCEPTION + " /n caused by: " + err;
-        }
     }
 
     /**
@@ -109,7 +51,7 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
      * @return - Array of all suitable Build Config Ids.
      */
     private async requestConfigIds(serverPaths : string[]) : Promise<string[]> {
-        if (this._xmlRpcClient.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
+        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
             throw "You are not authorized";
         }
         //Sometimes Server Path contains incorrect backslash simbols.
@@ -118,7 +60,7 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
             changedFiles.push(row.replace(/\\/g, "/"));
         });
         const prom : Promise<string[]> = new Promise((resolve, reject) => {
-            this._xmlRpcClient.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
+            this.client.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || confIds === undefined) {
                     return reject(err);
@@ -137,12 +79,12 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
      * @return - list of ProjectItems that contain related buildConfigs.
      */
     private async getRelatedProjects(confIds : string[]) : Promise<ProjectItem[]> {
-        if (this._xmlRpcClient.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
+        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
             throw "You are not authorized";
         }
         try {
             return new Promise<ProjectItem[]>((resolve, reject) => {
-                this._xmlRpcClient.methodCall("RemoteBuildServer2.getRelatedProjects", [ confIds ], (err, buildsXml) => {
+                this.client.methodCall("RemoteBuildServer2.getRelatedProjects", [ confIds ], (err, buildsXml) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || buildsXml === undefined ) {
                         return reject(err);
@@ -221,29 +163,12 @@ export class XmlRpcBuildConfigResolver implements BuildConfigResolver {
     }
 
     /**
-     *
-     * @param key - public key in the format ${n:e}
-     * @return - public key as array in the format ${[n, e]}
-     */
-    private extractKeys(key : string) : string[] {
-        const KEY_SEPARATOR : string = ":";
-        if (key === undefined || !key.indexOf(KEY_SEPARATOR)) {
-            return undefined;
-        }
-        const keys = key.split(KEY_SEPARATOR);
-        return keys.length !== 2 ? undefined : keys;
-    }
-
-    /**
      * The object that provids api for private fields and methods of class.
      * Use for test purposes only!
      */
     public getTestObject() : any {
         const testObject : any = {};
-        testObject._cred = this._cred;
-        testObject._xmlRpcClient = this._xmlRpcClient;
-        testObject.extractKeys = this.extractKeys;
-        testObject.getRSAPublicKey = this.getRSAPublicKey;
+        testObject._xmlRpcClient = this.client;
         testObject.parseXml = this.parseXml;
         testObject.collectProject = this.collectProject;
         testObject.filterConfigs = this.filterConfigs;
