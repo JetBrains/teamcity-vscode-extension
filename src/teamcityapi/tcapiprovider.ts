@@ -95,9 +95,7 @@ export class TCXmlRpcApiProvider implements TCApiProvider {
      * Subs are created at ModificationCounterSubscription.fromTeamServerSummaryData during NotificationProvider#init
      */
     public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
-        const notificationProvider : NotificationProvider = new NotificationProvider(cred.serverURL);
-        await notificationProvider.init(cred);
-
-        return await notificationProvider.getTotalNumberOfEvents();
+        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(cred);
+        return notificationProvider.getTotalNumberOfEvents();
     }
 }

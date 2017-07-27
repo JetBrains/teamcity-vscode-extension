@@ -40,8 +40,6 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
         }
         const projectContainer : ProjectItem[] = await this.getRelatedProjects(configIds);
         await this.filterConfigs(projectContainer, configIds);
-        // await this.getSummeryData();
-        // await this.getNotifications();
         return projectContainer;
     }
 

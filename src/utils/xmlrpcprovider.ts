@@ -84,7 +84,7 @@ export class XmlRpcProvider {
 
     /**
      * Call an authentication method in case of sessionKey or userId absence
-     * @param creds - user credential
+     * @param cred - user credential
      */
     protected async authenticateIfRequired(cred : Credential) : Promise<void> {
         if (!this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) || cred.userId === undefined) {

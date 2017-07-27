@@ -7,13 +7,27 @@ import { VsCodeUtils } from "../utils/vscodeutils";
 import { Credential } from "../credentialstore/credential";
 import { Constants } from "../utils/constants";
 import { SummaryDataProxy } from "../notifications/summarydata";
+import { FileController } from "../utils/filecontroller";
 import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
 
 export class NotificationProvider extends XmlRpcProvider {
     private _subs : ModificationCounterSubscriptionInfo;
     private _eventCounter : number;
+    private static INSTANCE : NotificationProvider;
+    private static usedCredentials : Credential;
+
     constructor(serverURL: string) {
         super(serverURL);
+    }
+
+    public static async getInstance(cred: Credential) : Promise<NotificationProvider> {
+        if (!NotificationProvider.INSTANCE || cred !== this.usedCredentials) {
+            const instance : NotificationProvider = new NotificationProvider(cred.serverURL);
+            await instance.init(cred);
+            NotificationProvider.INSTANCE = instance;
+            this.usedCredentials = cred;
+        }
+        return NotificationProvider.INSTANCE;
     }
 
     //TODO: think of try/catch for getSummeryData and getTotalNumberOfEvents
@@ -48,7 +62,7 @@ export class NotificationProvider extends XmlRpcProvider {
      * @param cred - user Crededential
      * @return SummeryDataProxy object
      */
-    private async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
+    public async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
         await this.authenticateIfRequired(cred);
         const prom : Promise<SummaryDataProxy> = new Promise((resolve, reject) => {
             this.client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [cred.userId], (err, data) => {
@@ -64,6 +78,7 @@ export class NotificationProvider extends XmlRpcProvider {
                             reject(err);
                         }
                         const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+                        console.log(obj.Summary.personalChanges[0].ChangeInfo[0]);
                         resolve(summeryData);
                     });
                 } catch (err) {

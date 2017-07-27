@@ -3,6 +3,7 @@
 import { window, extensions, Extension } from "vscode";
 import { Strings } from "../utils/strings";
 import { CvsProviderTypes, Constants } from "../utils/constants";
+const pako = require("pako");
 
 export class VsCodeUtils {
 
@@ -76,7 +77,6 @@ export class VsCodeUtils {
     }
 
     public static gzip2Str(gzip : Uint8Array[]) : string {
-        const pako = require("pako");
         const buffer : string[] = [];
         // Pako magic
         const inflatedGzip : Uint16Array = pako.inflate(gzip);
