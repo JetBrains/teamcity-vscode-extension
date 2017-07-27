@@ -18,6 +18,9 @@ export interface PatchSender {
 /**
  * Implementation of PatchSender that is required tcc.jar util.
  */
+
+//TODO: Think of situation, when two builds starts parallely.
+//Maybe we should implement creating unique config file name.
 export class TccPatchSender implements PatchSender {
 
     public async remoteRun(cred : Credential, configs : BuildConfigItem[], changedFiles : string[], commitMessage? : string) {
@@ -37,12 +40,12 @@ export class TccPatchSender implements PatchSender {
         }
 
         /* Step 2. Creating a config file for the tcc.jar util. */
-        const configFileName : string = path.join(workspace.rootPath, ".teamcity-mappings.properties");
+        const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", ".teamcity-mappings.properties");
         let cvsProvider : CvsSupportProvider;
         try {
             cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
             const configFileContent : string = await cvsProvider.generateConfigFileContent();
-            await FileController.createFileAsync(configFileName, configFileContent);
+            await FileController.createFileAsync(configFileAbsPath, configFileContent);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util: " + err);
             return;
@@ -51,7 +54,7 @@ export class TccPatchSender implements PatchSender {
         try {
             const configListAsString : string = this.configArray2String(configs);
             const filePathsAsString : string = this.filePaths2String(changedFiles);
-            const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${commitMessage}" -c ${configListAsString} ${filePathsAsString}`;
+            const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${commitMessage}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
             const prom = await cp.exec(runBuildCommand);
             if (prom.errout) {
                 console.log(prom.errout);
@@ -63,7 +66,7 @@ export class TccPatchSender implements PatchSender {
         }
         /* Step 4. Removing the config file for the tcc.jar util.*/
         try {
-            await FileController.removeFileAsync(configFileName);
+            await FileController.removeFileAsync(configFileAbsPath);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during removing the config file for the tcc.jar util: " + err);
             return;

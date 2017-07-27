@@ -81,7 +81,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (remoteUrl === undefined || remoteUrl.length === 0) {
             throw "Remote url wasn't determined.";
         }
-        return `.=jetbrains.git://|${remoteUrl.trim()}|`;
+        return `${workspace.rootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
     }
 
     /**
@@ -179,7 +179,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const repoInfo = api.getRepositoryInfo();
         const guid : string = repoInfo.collectionId;
         const projectRootPath : string = repoInfo.projectName + repoInfo.path;
-        return `.=tfs://guid://${guid.trim()}/$/${projectRootPath.trim()}`;
+        return `${workspace.rootPath}=tfs://guid://${guid.trim()}/$/${projectRootPath.trim()}`;
     }
 
     /**

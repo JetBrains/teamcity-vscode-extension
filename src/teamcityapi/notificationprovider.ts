@@ -62,7 +62,7 @@ export class NotificationProvider extends XmlRpcProvider {
      * @param cred - user Crededential
      * @return SummeryDataProxy object
      */
-    public async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
+    private async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
         await this.authenticateIfRequired(cred);
         const prom : Promise<SummaryDataProxy> = new Promise((resolve, reject) => {
             this.client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [cred.userId], (err, data) => {
