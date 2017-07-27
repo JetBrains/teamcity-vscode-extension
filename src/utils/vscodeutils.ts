@@ -3,6 +3,8 @@
 import { window, extensions, Extension } from "vscode";
 import { Strings } from "../utils/strings";
 import { CvsProviderTypes, Constants } from "../utils/constants";
+import { CvsSupportProviderFactory } from "../remoterun/cvsproviderfactory";
+import { CvsSupportProvider } from "../remoterun/cvsprovider";
 const pako = require("pako");
 
 export class VsCodeUtils {
@@ -40,26 +42,15 @@ export class VsCodeUtils {
      * @return - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs}
      */
     public static async getActiveScm() : Promise<CvsProviderTypes> {
-        const gitExt : Extension<any> = extensions.getExtension(Constants.GIT_EXTENSION_ID);
-        try {
-            if (gitExt.isActive && gitExt.exports.getResources().length > 0) {
-                return CvsProviderTypes.Git;
-            }
-        }catch (err) {
-            console.log(err);
-            //An exception means that Git extension isn't active at the moment
+        const gitProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Git);
+        if (await gitProvider.isActive()) {
+            return CvsProviderTypes.Git;
+        }
+        const tfsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Tfs);
+        if (await tfsProvider.isActive()) {
+            return CvsProviderTypes.Tfs;
         }
 
-        const tfsExt = extensions.getExtension(Constants.TFS_EXTENSION_ID);
-        try {
-            const isActive = tfsExt.isActive;
-            if (tfsExt.isActive && tfsExt.exports.getCheckinInfo().files.length > 0) {
-                    return CvsProviderTypes.Tfs;
-            }
-        }catch (err) {
-            console.log(err);
-            //An exception means that Tfs extension isn't active at the moment
-        }
         return CvsProviderTypes.UndefinedCvs;
     }
 

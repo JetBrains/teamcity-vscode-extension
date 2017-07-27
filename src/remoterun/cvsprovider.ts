@@ -4,12 +4,14 @@ import { workspace, SourceControlResourceState, extensions, scm, QuickPickItem, 
 import { Constants } from "../utils/constants";
 import { CheckinInfo } from "../utils/interfaces";
 import * as cp from "child-process-promise";
+import * as path from "path";
 
 export interface CvsSupportProvider {
     getFormattedFilenames() : Promise<string[]>;
     generateConfigFileContent() : Promise<string>;
     getRequiredCheckinInfo() : Promise<CheckinInfo>;
     requestForPostCommit(checkinInfo : CheckinInfo);
+    isActive() : Promise<boolean>;
 }
 
 /**
@@ -49,7 +51,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (remoteBranch === undefined || remoteBranch.length === 0) {
             throw "Remote branch wasn't determined.";
         }
-        return remoteBranch.replace(/'/g, "");
+        return remoteBranch.replace(/'/g, "").trim();
     }
 
     private async getLastRevision(remoteBranch ) {
@@ -76,8 +78,8 @@ export class GitSupportProvider implements CvsSupportProvider {
     /* Currently @username part of content was removed by me. TODO: understand what is it and for which purpose is it used. */
     public async generateConfigFileContent() : Promise<string> {
         const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
-        const prom = await cp.exec(getRemoteUrlCommand);
-        const remoteUrl : string = prom.stdout;
+        const commandResult = await cp.exec(getRemoteUrlCommand);
+        const remoteUrl : string = commandResult.stdout;
         if (remoteUrl === undefined || remoteUrl.length === 0) {
             throw "Remote url wasn't determined.";
         }
@@ -91,11 +93,21 @@ export class GitSupportProvider implements CvsSupportProvider {
     private async getAbsPaths() : Promise<string[]> {
         try {
             const absPaths : string[] = [];
-            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
-            const changedFiles : SourceControlResourceState[] = api.getResources(); //TODO: change api!
-            changedFiles.forEach((row) => {
-                absPaths.push(row.resourceUri.fsPath);
+            const getStagedFilesCommand : string = `git -C "${this._workspaceRootPath}" diff --name-only --staged`;
+            const commandResult = await cp.exec(getStagedFilesCommand);
+            if (!commandResult.stdout) {
+                return [];
+            }
+            const stagedFilesRelarivePaths : string = commandResult.stdout.trim();
+            stagedFilesRelarivePaths.split("\n").forEach((relativePath) => {
+                absPaths.push(path.join(this._workspaceRootPath, stagedFilesRelarivePaths));
             });
+            /* Wait till Microsoft provides the api for us.*/
+            // const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            // const changedFiles : SourceControlResourceState[] = api.getResources();
+            // changedFiles.forEach((row) => {
+            //     absPaths.push(row.resourceUri.fsPath);
+            // });
             return absPaths;
         }catch (err) {
             return [];
@@ -109,11 +121,11 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
         //Git extension bug: If commit message is empty git won't commit anything
-        const commitMessage: string = scm.inputBox.value === "" ? " " : scm.inputBox.value;
+        const commitMessage: string = scm.inputBox.value === "" ? "-" : scm.inputBox.value;
         const absPaths : string[] = await this.getAbsPaths();
         return {
                 files: absPaths,
-                comment: commitMessage,
+                message: commitMessage,
                 serverItems: [],
                 workItemIds: []
             };
@@ -128,11 +140,14 @@ export class GitSupportProvider implements CvsSupportProvider {
         const choices: QuickPickItem[] = [];
         const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit/push your changes?";
         const NO_LABEL : string = "No, thank you";
-        const COMMIT_LABEL : string = "Commit";
+        const COMMIT_LABEL : string = "Commit (without Push)";
         const COMMIT_AND_PUSH_LABEL : string = "Commit and Push";
         choices.push({ label: NO_LABEL, description: undefined });
         choices.push({ label: COMMIT_LABEL, description: undefined });
-        choices.push({ label: COMMIT_AND_PUSH_LABEL, description: undefined });
+        /*
+            I can't understand how to take correct corresponding remote branch, so TODO: implement it!
+            choices.push({ label: COMMIT_AND_PUSH_LABEL, description: undefined });
+        */
         const options : QuickPickOptions = {
             ignoreFocusOut: true,
             matchOnDescription: false,
@@ -143,14 +158,36 @@ export class GitSupportProvider implements CvsSupportProvider {
             return;
         }
         if (nextGitOperation.label === COMMIT_LABEL) {
-            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
-            await api.commitStagedWithMessage(checkinInfo.comment);
+            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${checkinInfo.message}"`;
+            const commandResult = await cp.exec(commitCommand);
+            /* Wait till Microsoft provides the api for us. */
+            // const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            // await api.commitStagedWithMessage(checkinInfo.message);
         }
         if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
-            await api.commitStagedWithMessage(checkinInfo.comment);
-            await api.push();
+            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${checkinInfo.message}"`;
+            try {
+                await cp.exec(commitCommand);
+            } catch (err) {
+                console.error(err);
+            }
+            const remoteBranch : string = await this.getRemoteBrunch();
+            try {
+                const pushCommand : string = `git -C "${this._workspaceRootPath}" push ${remoteBranch} HEAD"`;
+                await cp.exec(pushCommand);
+            } catch (err) {
+                console.error(err);
+            }
+            /* Wait till Microsoft provides the api for us. */
+            // const api = extensions.getExtension(Constants.GIT_EXTENSION_ID).exports;
+            // await api.commitStagedWithMessage(checkinInfo.message);
+            // await api.push();
         }
+    }
+
+    public async isActive() : Promise<boolean> {
+        const changedFiles : string[] = await this.getAbsPaths();
+        return changedFiles.length > 0;
     }
 }
 
@@ -211,5 +248,19 @@ export class TfsSupportProvider implements CvsSupportProvider {
             const api : any = extensions.getExtension(Constants.TFS_EXTENSION_ID).exports;
             await api.checkinFromExternalSystem(checkinInfo);
         }
+    }
+
+    public async isActive() : Promise<boolean> {
+        const tfsExt = extensions.getExtension(Constants.TFS_EXTENSION_ID);
+        try {
+            const isActive = tfsExt.isActive;
+            if (tfsExt.isActive && tfsExt.exports.getCheckinInfo().files.length > 0) {
+                    return true;
+            }
+        }catch (err) {
+            console.log(err);
+            //An exception means that Tfs extension isn't active at the moment
+        }
+        return false;
     }
 }

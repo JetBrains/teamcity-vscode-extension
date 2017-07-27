@@ -73,7 +73,7 @@ export class CommandHolder {
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new TccPatchSender();
-        await patchSender.remoteRun(cred, inclConfigs, this._checkinInfo.files, this._checkinInfo.comment);
+        await patchSender.remoteRun(cred, inclConfigs, this._checkinInfo.files, this._checkinInfo.message);
 
         const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
         VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);

@@ -1,7 +1,7 @@
 "use strict";
 
 export interface CheckinInfo {
-    comment: string;
+    message: string;
     files: string[];
     serverItems: string[];
     workItemIds: number[];
