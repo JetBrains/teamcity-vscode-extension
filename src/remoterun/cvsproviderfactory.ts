@@ -1,6 +1,8 @@
 "use strict";
 
-import { CvsSupportProvider, GitSupportProvider, TfsSupportProvider } from "./cvsprovider";
+import { CvsSupportProvider } from "./cvsprovider";
+import { GitSupportProvider } from "./gitprovider";
+import { TfsSupportProvider } from "./tfsprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { CvsProviderTypes } from "../utils/constants";
 

@@ -1,6 +1,6 @@
 "use strict";
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { VsCodeUtils } from "../../src/utils/vscodeutils";
 
 suite("VSCodeUtils", () => {

@@ -1,6 +1,6 @@
 "use strict";
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { SourceControlResourceState, Uri } from "vscode";
 import { BuildConfigItem } from "../../src/remoterun/configexplorer";
 import { PatchSender, TccPatchSender} from "../../src/remoterun/patchsender";

@@ -5,7 +5,6 @@ import * as cp from "child-process-promise";
 import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
 import { VsCodeUtils } from "../utils/vscodeutils";
-import { extensions } from "vscode";
 import { BuildConfigItem } from "./configexplorer";
 import { CvsSupportProvider } from "./cvsprovider";
 import { CvsSupportProviderFactory } from "./cvsproviderfactory";

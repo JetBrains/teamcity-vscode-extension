@@ -1,7 +1,6 @@
 "use strict";
 
-import { assert, expect } from "chai";
-import { VsCodeUtils } from "../../src/utils/vscodeutils";
+import { assert } from "chai";
 import { XmlRpcProvider } from "../../src/utils/xmlrpcprovider";
 
 suite("XmlRpcProvider", () => {

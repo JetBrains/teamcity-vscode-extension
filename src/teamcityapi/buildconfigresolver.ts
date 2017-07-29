@@ -4,8 +4,6 @@ import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
 import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
 import { XmlRpcProvider } from "../utils/xmlrpcprovider";
-import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
-import { SummaryDataProxy } from "../notifications/summarydata";
 import xmlrpc = require("xmlrpc");
 import xml2js = require("xml2js");
 

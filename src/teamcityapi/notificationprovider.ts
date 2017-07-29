@@ -2,12 +2,9 @@
 import xml2js = require("xml2js");
 
 import { XmlRpcProvider } from "../utils/xmlrpcprovider";
-import { Strings } from "../utils/strings";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Credential } from "../credentialstore/credential";
-import { Constants } from "../utils/constants";
 import { SummaryDataProxy } from "../notifications/summarydata";
-import { FileController } from "../utils/filecontroller";
 import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
 
 export class NotificationProvider extends XmlRpcProvider {

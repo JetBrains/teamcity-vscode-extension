@@ -1,7 +1,6 @@
 "use strict";
 
-import { assert, expect } from "chai";
-import { Credential } from "../../src/credentialstore/credential";
+import { assert } from "chai";
 import { XmlRpcBuildConfigResolver } from "../../src/teamcityapi/buildconfigresolver";
 import { ProjectItem, BuildConfigItem } from "../../src/remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");

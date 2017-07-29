@@ -1,6 +1,6 @@
 "use strict";
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { ProjectItem, BuildConfigItem, BuildConfigTreeDataProvider } from "../../src/remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
 

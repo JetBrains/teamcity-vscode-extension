@@ -6,3 +6,10 @@ export interface CheckinInfo {
     serverItems: string[];
     workItemIds: number[];
 }
+
+export interface TfsInfo {
+    repositoryUrl : string;
+    collectionName : string;
+    projectLocalPath : string;
+    projectRemotePath : string;
+}

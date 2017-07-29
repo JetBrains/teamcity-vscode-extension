@@ -1,11 +1,13 @@
 "use strict";
 
-import { window, extensions, Extension } from "vscode";
+import { window } from "vscode";
 import { Strings } from "../utils/strings";
-import { CvsProviderTypes, Constants } from "../utils/constants";
+import { CvsProviderTypes } from "../utils/constants";
+import { Credential } from "../credentialstore/credential";
 import { CvsSupportProviderFactory } from "../remoterun/cvsproviderfactory";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
-const pako = require("pako");
+import XHR = require("xmlhttprequest");
+import pako = require("pako");
 
 export class VsCodeUtils {
 
@@ -80,5 +82,39 @@ export class VsCodeUtils {
             /* tslint:enable:no-null-keyword */
         }
         return buffer.join("");
+    }
+
+        /**
+     * @param method - type of request (GET, POST, ...)
+     * @param url - url of request
+     * @param cred? - Credential for basic authorization
+     * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
+     */
+    public static makeRequest(method, url : string, cred? : Credential) {
+        const XMLHttpRequest = XHR.XMLHttpRequest;
+        return new Promise(function (resolve, reject) {
+            const request : XHR.XMLHttpRequest = new XMLHttpRequest();
+            request.open(method, url, true);
+            if (cred) {
+                request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
+            }
+            request.onload = function () {
+                if (this.status >= 200 && this.status < 300) {
+                    resolve(request.response);
+                } else {
+                    reject({
+                        status: this.status,
+                        statusText: request.statusText
+                    });
+                }
+            };
+            request.onerror = function () {
+                reject({
+                    status: this.status,
+                    statusText: request.statusText
+                });
+            };
+            request.send();
+        });
     }
 }
