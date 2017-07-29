@@ -14,9 +14,16 @@ export class TfsSupportProvider implements CvsSupportProvider {
         this._workspaceRootPath = workspace.rootPath;
     }
 
+    /**
+     * There are two allowed tfs file path formats:
+     * * File path format : http[s]://<server-path>:<server-port>/$foo/bar
+     * * File path format : guid://guid/$foo/bar
+     * We use first, because we can get user collection guid without his credential.
+     * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
+     */
     public async getFormattedFilenames() : Promise<string[]> {
         const formatFilenames : string[] = [];
-        const tfsInfo : TfsInfo = await this.getWorkfoldInfo();
+        const tfsInfo : TfsInfo = await this.getTfsInfo();
         const serverUris : string[] = await this.getServerItems();
         serverUris.forEach((row) => {
             formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
@@ -25,24 +32,36 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method uses tfs extension api to checkin info. It is required to execute post-commit.
+     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
+     * @return content of the ".teamcity-mappings.properties" file
+     */
+    public async generateConfigFileContent() : Promise<string> {
+        const tfsInfo : TfsInfo = await this.getTfsInfo();
+        return `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
+    }
+
+    /**
+     * This method provides required info for provisioning remote run and post-commit execution.
+     * (Obly for git) In case of git there are no workItemIds
      * @return CheckinInfo object
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
         const commitMessage: string = scm.inputBox.value;
+        const workItemIds: number[] = this.getWorkItemIdsFromMessage(commitMessage);
         const absPaths : string[] = await this.getAbsPaths();
         const serverItems : string[] = await this.getServerItems();
         return {
                 files: absPaths,
                 message: commitMessage,
                 serverItems: serverItems,
-                workItemIds: []
+                workItemIds: workItemIds
             };
     }
 
     /**
-     * Commit all staged (at the moment of a post-commit) files with new content.
+     * Commit all staged/changed (at the moment of a post-commit) files with new content.
      * Should user changes them since build config run, it works incorrect.
+     * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
     public async requestForPostCommit(checkinInfo : CheckinInfo) {
         const choices: QuickPickItem[] = [];
@@ -72,8 +91,11 @@ export class TfsSupportProvider implements CvsSupportProvider {
         }
     }
 
+    /**
+     * This method indicates whether the extension is active or not.
+     */
     public async isActive() : Promise<boolean> {
-        const tfsInfo : TfsInfo = await this.getWorkfoldInfo();
+        const tfsInfo : TfsInfo = await this.getTfsInfo();
         const serverItems = await this.getServerItems();
         if (serverItems && serverItems.length > 0) {
             return true;
@@ -82,8 +104,11 @@ export class TfsSupportProvider implements CvsSupportProvider {
         }
     }
 
+    /**
+     * This method requiests absPaths of changed files and replaces localProjectPath by $/projectName
+     */
     private async getServerItems() : Promise<string[]> {
-        const tfsInfo : TfsInfo = await this.getWorkfoldInfo();
+        const tfsInfo : TfsInfo = await this.getTfsInfo();
         const absPaths : string[] = await this.getAbsPaths();
         const serverItems : string[] = [];
         absPaths.forEach((absPath) => {
@@ -93,9 +118,12 @@ export class TfsSupportProvider implements CvsSupportProvider {
         return serverItems;
     }
 
+    /**
+     * We are using "tf diff" command, to get required info about changed files.
+     */
     private async getAbsPaths() : Promise<string[]> {
-        const tfsInfo : TfsInfo = await this.getWorkfoldInfo();
-        const parseBriefDiffRegexp : RegExp = /^(edit|delete|add):\s(.*)$/mg;
+        const tfsInfo : TfsInfo = await this.getTfsInfo();
+        const parseBriefDiffRegexp : RegExp = /^(add|branch|delete|edit|lock|merge|rename|source rename|undelete):\s(.*)$/mg;
         const absPaths : string[] = [];
         const briefDiffCommand : string = `tf diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
         try {
@@ -113,15 +141,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
-     * @return content of the ".teamcity-mappings.properties" file
+     * This method returns some information about tfs repo by executing "tf workfold" command.
      */
-    public async generateConfigFileContent() : Promise<string> {
-        const tfsInfo : TfsInfo = await this.getWorkfoldInfo();
-        return `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
-    }
-
-    private async getWorkfoldInfo() : Promise<TfsInfo> {
+    private async getTfsInfo() : Promise<TfsInfo> {
         const parseWorkfoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
         const getLocalRepoInfoCommand : string = `tf workfold "${this._workspaceRootPath}"`;
         try {
@@ -144,6 +166,29 @@ export class TfsSupportProvider implements CvsSupportProvider {
         } catch (err) {
             return undefined;
         }
+    }
+
+    /**
+     *  Find all the work item mentions in the string.
+     *  This returns an array like: ["#1", "#12", "#33"]
+    */
+    private getWorkItemIdsFromMessage(message: string) : number[] {
+        const ids: number[] = [];
+        try {
+            const matches: string[] = message ? message.match(/#(\d+)/gm) : [];
+            if (!matches) {
+                return [];
+            }
+            for (let i: number = 0; i < matches.length; i++) {
+                const id: number = parseInt(matches[i].slice(1));
+                if (!isNaN(id)) {
+                    ids.push(id);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to get all workitems from message: " + message);
+        }
+        return ids;
     }
 
 }

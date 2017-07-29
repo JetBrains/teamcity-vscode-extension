@@ -10,7 +10,8 @@ export class CvsSupportProviderFactory {
 
     /**
      * This method detects an active cvs provider and
-     * @return an appropriate CvsSupportProvider implementation
+     * @return an appropriate CvsSupportProvider implementation.
+     * When particularProvider != undefined, this method returns requested CvsProvide.
      */
     public static async getCvsSupportProvider(particularProvider? : CvsProviderTypes) : Promise<CvsSupportProvider> {
         const activeCvs : CvsProviderTypes = particularProvider !== undefined ? particularProvider : await VsCodeUtils.getActiveScm();

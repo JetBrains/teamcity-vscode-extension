@@ -33,7 +33,11 @@ export class GitSupportProvider implements CvsSupportProvider {
         return formatedChangedFiles;
     }
 
-    /* Currently @username part of content was removed. TODO: understand what is it and for which purpose is it used. */
+    /**
+     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
+     * @return content of the ".teamcity-mappings.properties" file
+     * (for git only) Currently @username part of content was removed. TODO: understand what is it and for which purpose is it used.
+     */
     public async generateConfigFileContent() : Promise<string> {
         const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
         const commandResult = await cp.exec(getRemoteUrlCommand);
@@ -45,8 +49,8 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method uses git extension api to checkin info. It is required to execute post-commit.
-     * In case of git there are no workItemIds
+     * This method provides required info for provisioning remote run and post-commit execution.
+     * (Obly for git) In case of git there are no workItemIds
      * @return CheckinInfo object
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
@@ -62,7 +66,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * Commit all staged (at the moment of a post-commit) files with new content.
+     * Commit all staged/changed (at the moment of a post-commit) files with new content.
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
@@ -98,6 +102,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         }
     }
 
+    /**
+     * This method indicates whether the extension is active or not.
+     */
     public async isActive() : Promise<boolean> {
         const changedFiles : string[] = await this.getAbsPaths();
         return changedFiles.length > 0;
@@ -125,6 +132,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         }
     }
 
+    /**
+     * This method uses the "git branch -vv" command
+     */
     private async getRemoteBrunch() : Promise<string> {
         const getRemoteBranchCommand : string = `git -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
         const prom = await cp.exec(getRemoteBranchCommand);
@@ -135,6 +145,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         return remoteBranch.replace(/'/g, "").trim();
     }
 
+    /**
+     * IT IS NOT THE LATEST REVISION IN THE LOCAL REPO. This method returns the last compatible revision by the "git merge-base" command.
+     */
     private async getLastRevision(remoteBranch) : Promise<string> {
         const getLastRevCommand : string = `git -C "${this._workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
         const prom = await cp.exec(getLastRevCommand);
@@ -145,6 +158,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         return lastRevHash.trim();
     }
 
+    /**
+     * This method uses the "git rev-list" command.
+     */
     private async getFirstMonthRev() : Promise<string> {
         const date : Date = new Date();
         const getFirstMonthRevCommand : string = `git -C "${this._workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
