@@ -11,22 +11,26 @@ import * as path from "path";
  */
 export class GitSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
-
+    private _checkinInfo : CheckinInfo;
     public constructor() {
         this._workspaceRootPath = workspace.rootPath;
+    }
+
+    public async init() {
+        this._checkinInfo = await this.getRequiredCheckinInfo();
     }
 
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
     public async getFormattedFilenames() : Promise<string[]> {
-        const getAbsPaths : string[] = await this.getAbsPaths();
+        const absPaths : string[] = this._checkinInfo.fileAbsPaths;
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
         const lastRevHash = await this.getLastRevision(remoteBranch);
         const formatedChangedFiles = [];
-        getAbsPaths.forEach((absolutePath) => {
+        absPaths.forEach((absolutePath) => {
             const relativePath : string = absolutePath.replace(this._workspaceRootPath, "");
             formatedChangedFiles.push(`jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`);
         });
@@ -54,11 +58,15 @@ export class GitSupportProvider implements CvsSupportProvider {
      * @return CheckinInfo object
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
+        if (this._checkinInfo) {
+            return this._checkinInfo;
+        }
+
         //Git extension bug: If commit message is empty git won't commit anything
         const commitMessage: string = scm.inputBox.value === "" ? "-" : scm.inputBox.value;
         const absPaths : string[] = await this.getAbsPaths();
         return {
-            files: absPaths,
+            fileAbsPaths: absPaths,
             message: commitMessage,
             serverItems: [],
             workItemIds: []
@@ -70,7 +78,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    public async requestForPostCommit(checkinInfo : CheckinInfo) : Promise<void> {
+    public async requestForPostCommit() : Promise<void> {
         const choices: QuickPickItem[] = [];
         const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit/push your changes?";
         const NO_LABEL : string = "No, thank you";
@@ -91,10 +99,10 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (nextGitOperation === undefined) {
             //Do nothing!
         } else if (nextGitOperation.label === COMMIT_LABEL) {
-            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${checkinInfo.message}"`;
+            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${checkinInfo.message}"`;
+            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
             const remoteBranch : string = await this.getRemoteBrunch();
             const pushCommand : string = `git -C "${this._workspaceRootPath}" push ${remoteBranch} HEAD"`;

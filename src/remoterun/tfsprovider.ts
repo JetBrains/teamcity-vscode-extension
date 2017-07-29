@@ -9,9 +9,16 @@ import * as url from "url";
 
 export class TfsSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
+    private _checkinInfo : CheckinInfo;
+    private _tfsInfo : TfsInfo;
 
     public constructor() {
         this._workspaceRootPath = workspace.rootPath;
+    }
+
+    public async init() {
+        this._tfsInfo = await this.getTfsInfo();
+        this._checkinInfo = await this.getRequiredCheckinInfo();
     }
 
     /**
@@ -23,8 +30,8 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     public async getFormattedFilenames() : Promise<string[]> {
         const formatFilenames : string[] = [];
-        const tfsInfo : TfsInfo = await this.getTfsInfo();
-        const serverUris : string[] = await this.getServerItems();
+        const tfsInfo : TfsInfo = this._tfsInfo;
+        const serverUris : string[] = this._checkinInfo.serverItems;
         serverUris.forEach((row) => {
             formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
         });
@@ -36,7 +43,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * @return content of the ".teamcity-mappings.properties" file
      */
     public async generateConfigFileContent() : Promise<string> {
-        const tfsInfo : TfsInfo = await this.getTfsInfo();
+        const tfsInfo : TfsInfo = this._tfsInfo;
         return `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
     }
 
@@ -46,12 +53,15 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * @return CheckinInfo object
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
+        if (this._checkinInfo) {
+            return this._checkinInfo;
+        }
         const commitMessage: string = scm.inputBox.value;
         const workItemIds: number[] = this.getWorkItemIdsFromMessage(commitMessage);
         const absPaths : string[] = await this.getAbsPaths();
-        const serverItems : string[] = await this.getServerItems();
+        const serverItems : string[] = await this.getServerItems(absPaths);
         return {
-                files: absPaths,
+                fileAbsPaths: absPaths,
                 message: commitMessage,
                 serverItems: serverItems,
                 workItemIds: workItemIds
@@ -63,7 +73,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    public async requestForPostCommit(checkinInfo : CheckinInfo) {
+    public async requestForPostCommit() {
         const choices: QuickPickItem[] = [];
         const TFS_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit your changes?";
         const NO_LABEL : string = "No, thank you";
@@ -77,10 +87,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
         };
         const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
         if (nextGitOperation !== undefined && nextGitOperation.label === YES_LABEL) {
-            const checkInCommandPrefix = `tf checkin /comment:"${checkinInfo.message}" /noprompt `;
+            const checkInCommandPrefix = `tf checkin /comment:"${this._checkinInfo.message}" /noprompt `;
             const checkInCommandSB : string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);
-            checkinInfo.files.forEach((filePath) => {
+            this._checkinInfo.fileAbsPaths.forEach((filePath) => {
                 checkInCommandSB.push(`"${filePath}" `);
             });
             try {
@@ -95,8 +105,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * This method indicates whether the extension is active or not.
      */
     public async isActive() : Promise<boolean> {
-        const tfsInfo : TfsInfo = await this.getTfsInfo();
-        const serverItems = await this.getServerItems();
+        const serverItems = await this.getAbsPaths();
         if (serverItems && serverItems.length > 0) {
             return true;
         } else {
@@ -107,9 +116,8 @@ export class TfsSupportProvider implements CvsSupportProvider {
     /**
      * This method requiests absPaths of changed files and replaces localProjectPath by $/projectName
      */
-    private async getServerItems() : Promise<string[]> {
-        const tfsInfo : TfsInfo = await this.getTfsInfo();
-        const absPaths : string[] = await this.getAbsPaths();
+    private async getServerItems(absPaths : string[]) : Promise<string[]> {
+        const tfsInfo : TfsInfo = this._tfsInfo;
         const serverItems : string[] = [];
         absPaths.forEach((absPath) => {
             const relativePath = path.relative(tfsInfo.projectLocalPath, absPath);
@@ -122,7 +130,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * We are using "tf diff" command, to get required info about changed files.
      */
     private async getAbsPaths() : Promise<string[]> {
-        const tfsInfo : TfsInfo = await this.getTfsInfo();
+        const tfsInfo : TfsInfo = this._tfsInfo;
         const parseBriefDiffRegexp : RegExp = /^(add|branch|delete|edit|lock|merge|rename|source rename|undelete):\s(.*)$/mg;
         const absPaths : string[] = [];
         const briefDiffCommand : string = `tf diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;

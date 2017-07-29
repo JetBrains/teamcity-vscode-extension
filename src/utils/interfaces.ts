@@ -2,7 +2,7 @@
 
 export interface CheckinInfo {
     message: string;
-    files: string[];
+    fileAbsPaths: string[];
     serverItems: string[];
     workItemIds: number[];
 }

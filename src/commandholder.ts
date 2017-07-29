@@ -1,6 +1,6 @@
 "use strict";
 
-import { window, SourceControlInputBox, scm, QuickDiffProvider, WorkspaceEdit, workspace, extensions, SourceControlResourceState} from "vscode";
+import { window, SourceControlInputBox, Disposable, OutputChannel, scm, QuickDiffProvider, WorkspaceEdit, workspace, extensions, SourceControlResourceState} from "vscode";
 import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
@@ -19,7 +19,6 @@ import forge = require("node-forge");
 
 export class CommandHolder {
     private _extManager : ExtensionManager;
-    private _checkinInfo : CheckinInfo;
     private _cvsProvider : CvsSupportProvider;
     public constructor(extManager : ExtensionManager) {
         this._extManager = extManager;
@@ -54,7 +53,6 @@ export class CommandHolder {
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
-        this._checkinInfo = await this._cvsProvider.getRequiredCheckinInfo();
         VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         this._extManager.configExplorer.setProjects(projects);
         this._extManager.configExplorer.refresh();
@@ -62,7 +60,8 @@ export class CommandHolder {
 
     public async remoteRunWithChosenConfigs() {
         const cred : Credential = await this.tryGetCredentials();
-        if (cred === undefined) {
+        if (!cred || !this._cvsProvider) {
+            //TODO: think about the message in this case
             return;
         }
         const inclConfigs : BuildConfigItem[] = this._extManager.configExplorer.getInclBuilds();
@@ -73,11 +72,11 @@ export class CommandHolder {
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new TccPatchSender();
-        await patchSender.remoteRun(cred, inclConfigs, this._checkinInfo.files, this._checkinInfo.message);
+        await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
 
         const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
         VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);
-        this._cvsProvider.requestForPostCommit(this._checkinInfo);
+        this._cvsProvider.requestForPostCommit();
     }
 
     private getDefaultURL() : string {

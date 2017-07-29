@@ -4,6 +4,7 @@ import * as path from "path";
 import * as cp from "child-process-promise";
 import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
+import { CheckinInfo } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { BuildConfigItem } from "./configexplorer";
 import { CvsSupportProvider } from "./cvsprovider";
@@ -11,7 +12,7 @@ import { CvsSupportProviderFactory } from "./cvsproviderfactory";
 import { workspace, SourceControlResourceState } from "vscode";
 
 export interface PatchSender {
-    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], changedFiles : string[], commitMessage? : string);
+    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider);
 }
 
 /**
@@ -22,7 +23,7 @@ export interface PatchSender {
 //Maybe we should implement creating unique config file name.
 export class TccPatchSender implements PatchSender {
 
-    public async remoteRun(cred : Credential, configs : BuildConfigItem[], changedFiles : string[], commitMessage? : string) {
+    public async remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) {
         const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`;
         if (!FileController.exists(tccPath)) {
             VsCodeUtils.displayNoTccUtilMessage();
@@ -40,9 +41,7 @@ export class TccPatchSender implements PatchSender {
 
         /* Step 2. Creating a config file for the tcc.jar util. */
         const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", ".teamcity-mappings.properties");
-        let cvsProvider : CvsSupportProvider;
         try {
-            cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
             const configFileContent : string = await cvsProvider.generateConfigFileContent();
             await FileController.createFileAsync(configFileAbsPath, configFileContent);
         }catch (err) {
@@ -52,8 +51,9 @@ export class TccPatchSender implements PatchSender {
         /* Step 3. Preparing arguments and executing the tcc.jat util. */
         try {
             const configListAsString : string = this.configArray2String(configs);
-            const filePathsAsString : string = this.filePaths2String(changedFiles);
-            const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${commitMessage}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
+            const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
+            const filePathsAsString : string = this.filePaths2String(checkInInfo.fileAbsPaths);
+            const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${checkInInfo.message}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
             const prom = await cp.exec(runBuildCommand);
             if (prom.errout) {
                 console.log(prom.errout);
