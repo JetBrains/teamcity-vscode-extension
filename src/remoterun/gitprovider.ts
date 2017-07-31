@@ -114,8 +114,16 @@ export class GitSupportProvider implements CvsSupportProvider {
      * This method indicates whether the extension is active or not.
      */
     public async isActive() : Promise<boolean> {
-        const changedFiles : string[] = await this.getAbsPaths();
-        return changedFiles.length > 0;
+        const getStagedFilesCommand : string = `git -C "${this._workspaceRootPath}" diff --name-only --staged`;
+        try {
+            const commandResult = await cp.exec(getStagedFilesCommand);
+            if (!commandResult.stdout) {
+                return false;
+            }
+            return true;
+        } catch (err) {
+            return false;
+        }
     }
 
     /**

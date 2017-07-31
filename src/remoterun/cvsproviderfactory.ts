@@ -17,11 +17,15 @@ export class CvsSupportProviderFactory {
         const activeCvs : CvsProviderTypes = particularProvider !== undefined ? particularProvider : await VsCodeUtils.getActiveScm();
         if (activeCvs === CvsProviderTypes.Git) {
             const getProvider = new GitSupportProvider();
-            await getProvider.init();
+            if (!particularProvider) {
+                await getProvider.init();
+            }
             return getProvider;
         }else if (activeCvs === CvsProviderTypes.Tfs) {
             const tfsProvider = new TfsSupportProvider();
-            await tfsProvider.init();
+            if (!particularProvider) {
+                await tfsProvider.init();
+            }
             return tfsProvider;
         }else {
             //TODO: think of behaviour in this case
