@@ -6,6 +6,7 @@ import { CvsProviderTypes } from "../utils/constants";
 import { Credential } from "../credentialstore/credential";
 import { CvsSupportProviderFactory } from "../remoterun/cvsproviderfactory";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
+import { ChangeItemProxy, BuildItemProxy } from "../notifications/summarydata";
 import XHR = require("xmlhttprequest");
 import pako = require("pako");
 
@@ -116,5 +117,25 @@ export class VsCodeUtils {
             };
             request.send();
         });
+    }
+
+    /**
+     * This method prepares message to display from change items and user credential.
+     * @param change - changeItemProxy
+     * @param cred - user credential. Required to get serverUrl.
+     */
+    public static formMessage(change : ChangeItemProxy, cred : Credential) : string {
+        const changePrefix = change.isPersonal ? "Personal change" : "Change";
+        const messageSB : string[] = [];
+        messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
+        const builds : BuildItemProxy[] = change.builds;
+        if (builds) {
+            builds.forEach((build) => {
+                const buildPrefix = build.isPersonal ? "Personal build" : "Build";
+                const buildChangeUrl = `${cred.serverURL}/viewLog.html?buildId=${build.buildId}`;
+                messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More detales: ${buildChangeUrl}`);
+            });
+        }
+        return messageSB.join("\n");
     }
 }

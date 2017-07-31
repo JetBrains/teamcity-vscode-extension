@@ -1,6 +1,6 @@
 "use strict";
 
-import { Disposable} from "vscode";
+import { Disposable, window, OutputChannel } from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
 import { CommandHolder } from "./commandholder";
 import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
@@ -11,13 +11,14 @@ export class ExtensionManager implements Disposable {
     private _commandHolder : CommandHolder;
     private _configExplorer : BuildConfigTreeDataProvider;
     private _notificationWatcher : NotificationWatcher;
+    private _outputChannal : OutputChannel;
 
     public async Initialize(configExplorer: BuildConfigTreeDataProvider) : Promise<void> {
         this._configExplorer = configExplorer;
         this._credentialStore = new CredentialStore();
         this._commandHolder = new CommandHolder(this);
-        this._notificationWatcher = new NotificationWatcher(this._credentialStore);
-        this._notificationWatcher.start();
+        this._outputChannal = window.createOutputChannel("TeamCity");
+        this._notificationWatcher = new NotificationWatcher(this._credentialStore, this._outputChannal);
     }
 
     public runCommand(funcToTry: (args) => void, ...args: string[]): void {
@@ -26,6 +27,7 @@ export class ExtensionManager implements Disposable {
 
     public cleanUp() : void {
         //TODO: clean up extention data
+        this._notificationWatcher.resetData();
         this._credentialStore.removeCredential();
     }
 
@@ -43,5 +45,9 @@ export class ExtensionManager implements Disposable {
 
     public get configExplorer() : BuildConfigTreeDataProvider {
         return this._configExplorer;
+    }
+
+    public get notificationWatcher() : NotificationWatcher {
+        return this._notificationWatcher;
     }
 }

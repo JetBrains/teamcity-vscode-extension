@@ -132,7 +132,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             }
             const stagedFilesRelarivePaths : string = commandResult.stdout.trim();
             stagedFilesRelarivePaths.split("\n").forEach((relativePath) => {
-                absPaths.push(path.join(this._workspaceRootPath, stagedFilesRelarivePaths));
+                absPaths.push(path.join(this._workspaceRootPath, relativePath));
             });
             return absPaths;
         }catch (err) {

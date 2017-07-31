@@ -59,7 +59,7 @@ export class NotificationProvider extends XmlRpcProvider {
      * @param cred - user Crededential
      * @return SummeryDataProxy object
      */
-    private async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
+    public async getSummeryData(cred : Credential) : Promise<SummaryDataProxy> {
         await this.authenticateIfRequired(cred);
         const prom : Promise<SummaryDataProxy> = new Promise((resolve, reject) => {
             this.client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [cred.userId], (err, data) => {
@@ -75,7 +75,6 @@ export class NotificationProvider extends XmlRpcProvider {
                             reject(err);
                         }
                         const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
-                        console.log(obj.Summary.personalChanges[0].ChangeInfo[0]);
                         resolve(summeryData);
                     });
                 } catch (err) {

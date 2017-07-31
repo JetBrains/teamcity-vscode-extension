@@ -6,11 +6,13 @@ import { Strings } from "../utils/strings";
 import { ProjectItem } from "../remoterun/configexplorer";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
 import { NotificationProvider } from "./notificationprovider";
+import { SummaryDataProxy } from "../notifications/summarydata";
 
 export interface TCApiProvider {
     /* async */ checkCredential( cred : Credential ) : Promise<boolean>;
     /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]>;
     /* async */ getTotalNumberOfEvents( cred : Credential ) : Promise<number>;
+    /* async */ getSummary( cred : Credential ) : Promise<SummaryDataProxy>;
 }
 
 export class TCRestApiProvider implements TCApiProvider {
@@ -45,6 +47,11 @@ export class TCRestApiProvider implements TCApiProvider {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         throw "UnsupportedMethodException.";
     }
+
+    public async getSummary( cred : Credential ) : Promise<SummaryDataProxy> {
+        //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
+        throw "UnsupportedMethodException.";
+    }
 }
 
 export class TCXmlRpcApiProvider implements TCApiProvider {
@@ -65,5 +72,10 @@ export class TCXmlRpcApiProvider implements TCApiProvider {
     public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
         const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(cred);
         return notificationProvider.getTotalNumberOfEvents();
+    }
+
+    public async getSummary( cred : Credential ) : Promise<SummaryDataProxy> {
+        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(cred);
+        return notificationProvider.getSummeryData(cred);
     }
 }

@@ -28,4 +28,5 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(CHANGE_CONFIG_STATE, (config : BuildConfigItem) => _extensionManager.commandHolder.changeConfigState(config)));
     context.subscriptions.push(vscode.commands.registerCommand(CHANGE_COLLAPSIBLE_STATE, (config : ProjectItem) => _extensionManager.commandHolder.changeCollapsibleState(config)));
     context.subscriptions.push(vscode.window.registerTreeDataProvider("configExplorer", configExplorer));
+    context.subscriptions.push(_extensionManager);
 }

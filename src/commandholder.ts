@@ -10,7 +10,6 @@ import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
-import { CheckinInfo } from "./utils/interfaces";
 
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
@@ -38,7 +37,10 @@ export class CommandHolder {
         }
         const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + ")", placeHolder: "", password: true } );
         const creds : Credential = new Credential(url, user, pass);
-        await this._extManager.credentialStore.setCredential(creds);
+        const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
+        if (signedIn) {
+            this._extManager.notificationWatcher.activate();
+        }
     }
 
     public async getSuitableConfigs() {
@@ -72,11 +74,12 @@ export class CommandHolder {
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new TccPatchSender();
-        await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
-
-        const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
-        VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);
-        this._cvsProvider.requestForPostCommit();
+        const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
+        if (remoteRunResult) {
+            const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
+            VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);
+            this._cvsProvider.requestForPostCommit();
+        }
     }
 
     private getDefaultURL() : string {

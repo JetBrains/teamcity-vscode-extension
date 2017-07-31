@@ -8,26 +8,30 @@ import { CheckinInfo } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { BuildConfigItem } from "./configexplorer";
 import { CvsSupportProvider } from "./cvsprovider";
-import { CvsSupportProviderFactory } from "./cvsproviderfactory";
 import { workspace, SourceControlResourceState } from "vscode";
 
 export interface PatchSender {
-    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider);
+    /**
+     * @returns true in case of success, otherwise false.
+     */
+    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) : Promise<boolean>;
 }
 
 /**
  * Implementation of PatchSender that is required tcc.jar util.
  */
-
 //TODO: Think of situation, when two builds starts parallely.
 //Maybe we should implement creating unique config file name.
 export class TccPatchSender implements PatchSender {
 
-    public async remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) {
-        const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`;
+    /**
+     * @returns true in case of success, otherwise false.
+     */
+    public async remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) : Promise<boolean> {
+        const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`.trim();
         if (!FileController.exists(tccPath)) {
             VsCodeUtils.displayNoTccUtilMessage();
-            return;
+            return false;
         }
 
         /* Step 1. Sending login request by the tcc.jar util. */
@@ -36,7 +40,7 @@ export class TccPatchSender implements PatchSender {
             await cp.exec(tccLoginCommand);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during sending login request by the tcc.jar util: " + err);
-            return;
+            return false;
         }
 
         /* Step 2. Creating a config file for the tcc.jar util. */
@@ -46,7 +50,7 @@ export class TccPatchSender implements PatchSender {
             await FileController.createFileAsync(configFileAbsPath, configFileContent);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util: " + err);
-            return;
+            return false;
         }
         /* Step 3. Preparing arguments and executing the tcc.jat util. */
         try {
@@ -61,15 +65,16 @@ export class TccPatchSender implements PatchSender {
             console.log(prom.stdout);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
-            return;
+            return false;
         }
         /* Step 4. Removing the config file for the tcc.jar util.*/
         try {
             await FileController.removeFileAsync(configFileAbsPath);
         }catch (err) {
             VsCodeUtils.showErrorMessage("Unexpected error during removing the config file for the tcc.jar util: " + err);
-            return;
+            return false;
         }
+        return true;
     }
 
     /**
