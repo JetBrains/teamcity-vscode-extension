@@ -5,7 +5,7 @@ export class Strings {
     static readonly PROVIDE_PASSWORD : string = "Provide the password for username.";
     static readonly PROVIDE_URL : string = "Provide the URL for TeamCity server.";
     static readonly NO_CREDENTIALS_RUN_SIGNIN : string = "You are not connected to a TeamCity server. Please run the 'teamcity Signin' command.";
-    static readonly NO_CONFIGS_RUN_REMOTERUN : string = "No selected build configs. Please run the 'Remote run' command.";
+    static readonly NO_CONFIGS_RUN_REMOTERUN : string = "No selected build configs. Please execute the 'Remote run' command.";
     static readonly NO_TCC_UTIL : string = "Not found tcc.jar. Please reinstall teamcity extension.";
     static readonly SUCCESSFULLY_SIGNEDIN : string = "You are successfully signed in to the TeamCity server.";
     static readonly STATUS_CODE_401 : string = "Unauthorized. Check your authentication credentials and try again.";

@@ -59,12 +59,17 @@ export class TccPatchSender implements PatchSender {
             const filePathsAsString : string = this.filePaths2String(checkInInfo.fileAbsPaths);
             const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${checkInInfo.message}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
             const prom = await cp.exec(runBuildCommand);
-            if (prom.errout) {
-                console.log(prom.errout);
+            if (prom.stdout) {
+                const lines : string[] = prom.stdout.trim().split("\n");
+                VsCodeUtils.showInfoMessage(`[TeamCity] ${lines[lines.length - 1]}`);
             }
-            console.log(prom.stdout);
         }catch (err) {
-            VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
+            if (err.stderr) {
+                const lines : string[] = err.stderr.trim().split("\n");
+                VsCodeUtils.showWarningMessage(`[TeamCity] ${lines[lines.length - 1]}`);
+            } else {
+                VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
+            }
             return false;
         }
         /* Step 4. Removing the config file for the tcc.jar util.*/

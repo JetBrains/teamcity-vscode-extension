@@ -133,7 +133,9 @@ export class VsCodeUtils {
             builds.forEach((build) => {
                 const buildPrefix = build.isPersonal ? "Personal build" : "Build";
                 const buildChangeUrl = `${cred.serverURL}/viewLog.html?buildId=${build.buildId}`;
-                messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More detales: ${buildChangeUrl}`);
+                if (build.buildId !== -1) {
+                    messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More detales: ${buildChangeUrl}`);
+                }
             });
         }
         return messageSB.join("\n");
