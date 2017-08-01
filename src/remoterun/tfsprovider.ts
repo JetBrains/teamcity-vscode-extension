@@ -3,6 +3,7 @@
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CheckinInfo, TfsInfo } from "../utils/interfaces";
 import { CvsSupportProvider } from "./cvsprovider";
+import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import * as path from "path";
 import * as url from "url";
@@ -19,6 +20,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
     public async init() {
         this._tfsInfo = await this.getTfsInfo();
         this._checkinInfo = await this.getRequiredCheckinInfo();
+        Logger.logDebug(`TfsSupportProvider#init: TfsSupportProvider was initialized`);
     }
 
     /**
@@ -35,6 +37,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         serverUris.forEach((row) => {
             formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
         });
+        Logger.logDebug(`TfsSupportProvider#getFormattedFilenames: formatFilenames: ${formatFilenames.join(" ")}`);
         return formatFilenames;
     }
 
@@ -44,7 +47,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     public async generateConfigFileContent() : Promise<string> {
         const tfsInfo : TfsInfo = this._tfsInfo;
-        return `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
+        const configFileContent : string = `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
+        Logger.logInfo(`TfsSupportProvider#generateConfigFileContent: configFileContent: ${configFileContent}`);
+        return configFileContent;
     }
 
     /**
@@ -54,8 +59,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
         if (this._checkinInfo) {
+            Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: checkin info already exists`);
             return this._checkinInfo;
         }
+        Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkin info`);
         const commitMessage: string = scm.inputBox.value;
         const workItemIds: number[] = this.getWorkItemIdsFromMessage(commitMessage);
         const absPaths : string[] = await this.getAbsPaths();
@@ -86,6 +93,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             placeHolder: TFS_COMMIT_PUSH_INTRO_MESSAGE
         };
         const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
+        Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextGitOperation ? nextGitOperation.label : "nothing"}`);
         if (nextGitOperation !== undefined && nextGitOperation.label === YES_LABEL) {
             const checkInCommandPrefix = `tf checkin /comment:"${this._checkinInfo.message}" /noprompt `;
             const checkInCommandSB : string[] = [];
@@ -96,7 +104,8 @@ export class TfsSupportProvider implements CvsSupportProvider {
             try {
                 await cp.exec(checkInCommandSB.join(""));
             } catch (err) {
-                console.log(err);
+                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${err}}`);
+                throw new Error("Caught an exception during attempt to commit");
             }
         }
     }
@@ -105,10 +114,17 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * This method indicates whether the extension is active or not.
      */
     public async isActive() : Promise<boolean> {
-        const serverItems = await this.getAbsPaths();
-        if (serverItems && serverItems.length > 0) {
-            return true;
-        } else {
+        try {
+            const serverItems = await this.getAbsPaths();
+            if (serverItems && serverItems.length > 0) {
+                Logger.logDebug(`TfsSupportProvider#isActive: is active`);
+                return true;
+            } else {
+                Logger.logDebug(`TfsSupportProvider#isActive: is not active`);
+                return false;
+            }
+        } catch (err) {
+            Logger.logWarning(`TfsSupportProvider#isActive: caught an exception during attempt to getAbsPaths`);
             return false;
         }
     }
@@ -144,6 +160,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             }
             return absPaths;
         } catch (err) {
+            Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${err}`);
             return [];
         }
     }
@@ -162,16 +179,20 @@ export class TfsSupportProvider implements CvsSupportProvider {
             const purl: url.Url = url.parse(repositoryUrl);
             if (purl) {
                 const collectionName = purl.host.split(".")[0];
-                return {
+                const tfsInfo : TfsInfo = {
                     repositoryUrl: repositoryUrl,
                     collectionName: collectionName,
                     projectRemotePath: match[2],
                     projectLocalPath: match[3]
                 };
+                Logger.LogObject(tfsInfo);
+                return tfsInfo;
             }else {
+                Logger.logError(`TfsSupportProvider#getTfsInfo: TfsInfo cannot be parsed.`);
                 return undefined;
             }
         } catch (err) {
+            Logger.logError(`TfsSupportProvider#getTfsInfo: caught an exception during tf workfold command: ${err}`);
             return undefined;
         }
     }
@@ -185,6 +206,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         try {
             const matches: string[] = message ? message.match(/#(\d+)/gm) : [];
             if (!matches) {
+                Logger.logDebug("TfsSupportProvider#getWorkItemIdsFromMessage: no one work item was found");
                 return [];
             }
             for (let i: number = 0; i < matches.length; i++) {
@@ -193,8 +215,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
                     ids.push(id);
                 }
             }
+            Logger.logDebug(`TfsSupportProvider#getWorkItemIdsFromMessage:found next workItems ${ids.join(",")}`);
         } catch (err) {
-            console.error("Failed to get all workitems from message: " + message);
+            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message}`);
         }
         return ids;
     }

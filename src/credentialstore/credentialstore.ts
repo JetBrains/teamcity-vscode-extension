@@ -2,6 +2,7 @@
 
 import { Credential } from "./credential";
 import { TCApiProvider, TCRestApiProvider } from "../teamcityapi/tcapiprovider";
+import { Logger } from "../utils/logger";
 
 export class CredentialStore {
     private _creds : Credential;
@@ -16,8 +17,10 @@ export class CredentialStore {
         const checkResult = await tcapiprovider.checkCredential(creds);
         if (checkResult) {
             this._creds = creds;
+            Logger.logInfo(`User ${creds.user} was passed the credential check`);
             return true;
         }
+        Logger.logWarning(`User ${creds.user} was failed the credential check`);
         return false;
     }
 
@@ -26,6 +29,7 @@ export class CredentialStore {
     }
 
     public async removeCredential() : Promise<void> {
+        Logger.logInfo(`The credentials for ${this._creds.user} will be deleted from the credentialstore`);
         this._creds = undefined;
     }
 }

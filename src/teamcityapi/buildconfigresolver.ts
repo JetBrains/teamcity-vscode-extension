@@ -2,6 +2,7 @@
 import { Credential } from "../credentialstore/credential";
 import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
+import { Logger } from "../utils/logger";
 import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
 import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import xmlrpc = require("xmlrpc");
@@ -26,7 +27,8 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
      */
     public async getSuitableBuildConfigs(tcFormatedFilePaths : string[], cred : Credential) : Promise<ProjectItem[]> {
         if (!cred) {
-            throw "Credential should not be undefined.";
+            Logger.logError(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: credential should not be undefined. Try to sign in again.`);
+            throw new Error(`Credential should not be undefined. Try to sign in again!`);
         }
 
         await this.authenticateIfRequired(cred);
@@ -34,10 +36,15 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
         try {
             configIds = await this.requestConfigIds(tcFormatedFilePaths);
         }catch (err) {
-            throw Strings.GET_SUITABLE_CONFIG_EXCEPTION;
+            Logger.logError(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: unexpected exception during getting suitable configurations: ${err}`);
+            throw new Error(Strings.GET_SUITABLE_CONFIG_EXCEPTION);
         }
         const projectContainer : ProjectItem[] = await this.getRelatedProjects(configIds);
+        Logger.logDebug(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: projects before filtering: `);
+        Logger.LogObject(projectContainer);
         await this.filterConfigs(projectContainer, configIds);
+        Logger.logDebug(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: projects after filtering: `);
+        Logger.LogObject(projectContainer);
         return projectContainer;
     }
 
@@ -48,20 +55,24 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
      */
     private async requestConfigIds(serverPaths : string[]) : Promise<string[]> {
         if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-            throw "You are not authorized";
+            Logger.logError("XmlRpcBuildConfigResolver#requestConfigIds: user is not authorized. Session key is empty.");
+            throw new Error("Something went wrong. Try to signin again.");
         }
         //Sometimes Server Path contains incorrect backslash simbols.
         const changedFiles : string[] = [];
         serverPaths.forEach((row) => {
             changedFiles.push(row.replace(/\\/g, "/"));
         });
+        Logger.logDebug(`XmlRpcBuildConfigResolver#requestConfigIds: changedFiles: ${changedFiles.join(";")}`);
         const prom : Promise<string[]> = new Promise((resolve, reject) => {
             this.client.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || confIds === undefined) {
+                    Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + err);
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
+                Logger.logDebug("XmlRpcBuildConfigResolver#requestConfigIds: extension recieved config Ids");
                 resolve(confIds);
             });
         });
@@ -76,21 +87,25 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
      */
     private async getRelatedProjects(confIds : string[]) : Promise<ProjectItem[]> {
         if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-            throw "You are not authorized";
+            Logger.logError("XmlRpcBuildConfigResolver#requestConfigIds: user is not authorized. Session key is empty.");
+            throw new Error("Something went wrong. Try to signin again.");
         }
         try {
             return new Promise<ProjectItem[]>((resolve, reject) => {
                 this.client.methodCall("RemoteBuildServer2.getRelatedProjects", [ confIds ], (err, buildsXml) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || buildsXml === undefined ) {
+                        Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + err);
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
+                    Logger.logDebug("XmlRpcBuildConfigResolver#getRelatedProjects: extension recieved builds");
                     resolve(this.parseXml(buildsXml));
                 });
             });
         }catch (err) {
-            throw Strings.GET_BUILDS_EXCEPTION + " /n caused by: " + err;
+            Logger.logError("XmlRpcBuildConfigResolver#getRelatedProjects: " + Strings.GET_BUILDS_EXCEPTION + " /n caused by: " + err);
+            throw new Error(Strings.GET_BUILDS_EXCEPTION);
         }
     }
 
@@ -101,15 +116,19 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
     */
     private parseXml(buildsXml : string[]) : ProjectItem[] {
         if (buildsXml === undefined) {
+            Logger.logWarning("XmlRpcBuildConfigResolver#parseXml: buildsXml is empty");
             return [];
         }
         const projects : ProjectItem[] = [];
+        Logger.logDebug("XmlRpcBuildConfigResolver#parseXml: start collect projects");
         for (let i : number = 0; i < buildsXml.length; i++ ) {
             const buildXml = buildsXml[i];
             xml2js.parseString(buildXml, (err, project) => {
                 this.collectProject(project, projects);
             });
         }
+        Logger.logDebug("XmlRpcBuildConfigResolver#parseXml: collected projects:");
+        Logger.LogObject(projects);
         return projects;
     }
 
@@ -155,7 +174,6 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
             });
             project.configs = filteredConfigs;
         });
-        return;
     }
 
     /**

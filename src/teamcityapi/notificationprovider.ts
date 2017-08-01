@@ -3,6 +3,7 @@ import xml2js = require("xml2js");
 
 import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import { Logger } from "../utils/logger";
 import { Credential } from "../credentialstore/credential";
 import { SummaryDataProxy } from "../notifications/summarydata";
 import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
@@ -23,6 +24,7 @@ export class NotificationProvider extends XmlRpcProvider {
             await instance.init(cred);
             NotificationProvider.INSTANCE = instance;
             this.usedCredentials = cred;
+            Logger.logInfo("NotificationProvider#getInstance: instance was initialized");
         }
         return NotificationProvider.INSTANCE;
     }
@@ -44,9 +46,11 @@ export class NotificationProvider extends XmlRpcProvider {
             this.client.methodCall("UserSummaryRemoteManager2.getTotalNumberOfEvents", [this._subs.serialize()], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === null) {
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + err);
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
+                Logger.logDebug("NotificationProvider#getTotalNumberOfEvents: total number of events is " + data);
                 resolve(data);
             });
         });
@@ -65,6 +69,7 @@ export class NotificationProvider extends XmlRpcProvider {
             this.client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [cred.userId], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === undefined) {
+                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + err);
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
@@ -72,12 +77,15 @@ export class NotificationProvider extends XmlRpcProvider {
                     const summeryXmlObj : string = VsCodeUtils.gzip2Str(data);
                     xml2js.parseString(summeryXmlObj, (err, obj) => {
                         if (err) {
+                            Logger.logError("NotificationProvider#getSummeryData: caught an error during parsing summary data: " + err);
                             reject(err);
                         }
                         const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+                        Logger.logDebug("NotificationProvider#getSummeryData: summary data was successfully parsed");
                         resolve(summeryData);
                     });
                 } catch (err) {
+                    Logger.logError("NotificationProvider#getSummeryData: caught an error during unzipping and parsing summary data: " + err);
                     reject(err);
                 }
             });

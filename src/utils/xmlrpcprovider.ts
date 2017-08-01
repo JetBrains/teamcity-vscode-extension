@@ -5,6 +5,7 @@ import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "./vscodeutils";
 import { Constants } from "./constants";
 import { Strings } from "./strings";
+import { Logger } from "./logger";
 const BigInteger = forge.jsbn.BigInteger;
 
 export class XmlRpcProvider {
@@ -36,7 +37,7 @@ export class XmlRpcProvider {
                     const pki = forge.pki;
                     const keys : string[] = VsCodeUtils.parseValueColonValue(data);
 
-                    if (keys.length !== 2) {
+                    if (!keys || keys.length !== 2) {
                         return reject(err);
                     }
                     const rsaPublicKey = pki.setRsaPublicKey(
@@ -46,7 +47,8 @@ export class XmlRpcProvider {
                 });
             });
         } catch (err) {
-            throw Strings.RCA_PUBLIC_KEY_EXCEPTION + " /n caused by: " + err;
+            Logger.logError(`XmlRpcProvider#getRSAPublicKey: caught an error during gettign RSAPublicKEy: ${err}`);
+            throw new Error(Strings.RCA_PUBLIC_KEY_EXCEPTION);
         }
     }
 
@@ -68,17 +70,23 @@ export class XmlRpcProvider {
                 this._client.methodCall("RemoteAuthenticationServer.authenticate", [cred.user, hexEncPass], (err, data) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || data === undefined || data.length === 0) {
+                        Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + err);
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
                     const sessIduserId = VsCodeUtils.parseValueColonValue(data);
+                    if (!sessIduserId || sessIduserId.length !== 2) {
+                        return reject(err);
+                    }
                     cred.userId = sessIduserId[1];
                     this._client.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessIduserId[0]);
+                    Logger.logDebug(`XmlRpcProvider#authenticate: user id is ${sessIduserId[1]}, session id is ${sessIduserId[0]}`);
                     resolve();
                 });
             });
         } catch (err) {
-            throw Strings.XMLRPC_AUTH_EXCEPTION + " /n caused by: " + err;
+            Logger.logError(`XmlRpcProvider#authenticate: caught an error during xmlrpc authentication: ${err}`);
+            throw new Error(Strings.XMLRPC_AUTH_EXCEPTION);
         }
     }
 
@@ -88,11 +96,13 @@ export class XmlRpcProvider {
      */
     protected async authenticateIfRequired(cred : Credential) : Promise<void> {
         if (!this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) || cred.userId === undefined) {
+            Logger.logDebug("XmlRpcProvider#authenticateIfRequired: authentication is required");
             await this.authenticate(cred);
         }
 
         if (!this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) || cred.userId === undefined) {
-            throw "Cannot connect via XmlRpc!";
+            Logger.logDebug("XmlRpcProvider#authenticateIfRequired: authentication via XmlRpc failed. Try to sign in again");
+            throw new Error("Cannot connect via XmlRpc. Try to sign in again.");
         }
     }
 

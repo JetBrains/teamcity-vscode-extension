@@ -3,6 +3,7 @@ import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Constants } from "../utils/constants";
 import { Strings } from "../utils/strings";
+import { Logger } from "../utils/logger";
 import { ProjectItem } from "../remoterun/configexplorer";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
 import { NotificationProvider } from "./notificationprovider";
@@ -25,13 +26,18 @@ export class TCRestApiProvider implements TCApiProvider {
         const url = cred.serverURL + "/app/rest/";
         const p : Promise<boolean> = new Promise((resolve, reject) => {
             VsCodeUtils.makeRequest("GET", url, cred)
-            .then((response) => { resolve(true); })
+            .then((response) => {
+                Logger.logDebug("TCRestApiProvider#checkCredential: good response from " + url);
+                resolve(true);
+            })
             .catch((err) => {
                 if (err.status === Constants.HTTP_STATUS_UNAUTHORIZED) {
                     VsCodeUtils.showErrorMessage(Strings.STATUS_CODE_401);
                 } else {
                     VsCodeUtils.showErrorMessage(Strings.UNEXPECTED_EXCEPTION);
                 }
+                Logger.logError(`TCRestApiProvider#checkCredential: bad response from ${url}. Error: `);
+                Logger.logError(err);
                 resolve(false);
             });
         });
@@ -40,24 +46,28 @@ export class TCRestApiProvider implements TCApiProvider {
 
     public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
-        throw "UnsupportedMethodException.";
+        Logger.logError(`TCRestApiProvider#getSuitableBuildConfigs: this method is unsopported by rest provider`);
+        throw new Error("UnsupportedMethodException.");
     }
 
     public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
-        throw "UnsupportedMethodException.";
+        Logger.logError(`TCRestApiProvider#getTotalNumberOfEvents: this method is unsopported by rest provider`);
+        throw new Error("UnsupportedMethodException.");
     }
 
     public async getSummary( cred : Credential ) : Promise<SummaryDataProxy> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
-        throw "UnsupportedMethodException.";
+        Logger.logError(`TCRestApiProvider#getSummary: this method is unsopported by rest provider`);
+        throw new Error("UnsupportedMethodException.");
     }
 }
 
 export class TCXmlRpcApiProvider implements TCApiProvider {
 
     public async checkCredential(cred : Credential) : Promise<boolean> {
-        throw "UnsupportedMethodException.";
+        Logger.logError(`TCXmlRpcApiProvider#checkCredential: this method is unsopported by xmlrpc provider`);
+        throw new Error("UnsupportedMethodException.");
     }
 
     public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {

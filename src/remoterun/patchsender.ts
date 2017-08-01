@@ -6,6 +6,7 @@ import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
 import { CheckinInfo } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import { Logger } from "../utils/logger";
 import { BuildConfigItem } from "./configexplorer";
 import { CvsSupportProvider } from "./cvsprovider";
 import { workspace, SourceControlResourceState } from "vscode";
@@ -30,6 +31,7 @@ export class TccPatchSender implements PatchSender {
     public async remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) : Promise<boolean> {
         const tccPath : string = `${path.join(__dirname, "..", "..", "..", "resources", "tcc.jar")}`.trim();
         if (!FileController.exists(tccPath)) {
+            Logger.logError("TccPatchSender#remoteRun: the tcc util is not found");
             VsCodeUtils.displayNoTccUtilMessage();
             return false;
         }
@@ -39,19 +41,22 @@ export class TccPatchSender implements PatchSender {
             const tccLoginCommand : string = `java -jar "${tccPath}" login --host ${cred.serverURL} --user ${cred.user} --password ${cred.pass}`;
             await cp.exec(tccLoginCommand);
         }catch (err) {
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during sending login request by the tcc.jar util: " + err);
             VsCodeUtils.showErrorMessage("Unexpected error during sending login request by the tcc.jar util: " + err);
             return false;
         }
-
+        Logger.logDebug("TccPatchSender#remoteRun: step 1 was passed");
         /* Step 2. Creating a config file for the tcc.jar util. */
         const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", ".teamcity-mappings.properties");
         try {
             const configFileContent : string = await cvsProvider.generateConfigFileContent();
             await FileController.createFileAsync(configFileAbsPath, configFileContent);
         }catch (err) {
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during creating a config file for the tcc.jar util: " + err);
             VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util: " + err);
             return false;
         }
+        Logger.logDebug("TccPatchSender#remoteRun: step 2 was passed");
         /* Step 3. Preparing arguments and executing the tcc.jat util. */
         try {
             const configListAsString : string = this.configArray2String(configs);
@@ -68,17 +73,21 @@ export class TccPatchSender implements PatchSender {
                 const lines : string[] = err.stderr.trim().split("\n");
                 VsCodeUtils.showWarningMessage(`[TeamCity] ${lines[lines.length - 1]}`);
             } else {
+                Logger.logError("TccPatchSender#remoteRun: unexpected error during preparing arguments and executing the tcc.jar util: " + err);
                 VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
             }
             return false;
         }
+        Logger.logDebug("TccPatchSender#remoteRun: step 3 was passed");
         /* Step 4. Removing the config file for the tcc.jar util.*/
         try {
             await FileController.removeFileAsync(configFileAbsPath);
         }catch (err) {
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during removing the config file for the tcc.jar util: " + err);
             VsCodeUtils.showErrorMessage("Unexpected error during removing the config file for the tcc.jar util: " + err);
             return false;
         }
+        Logger.logDebug("TccPatchSender#remoteRun: step 4 was passed");
         return true;
     }
 
@@ -93,7 +102,9 @@ export class TccPatchSender implements PatchSender {
         for (let i = 0; i < configsArr.length; i++) {
             configSB.push(configsArr[i].id);
         }
-        return `"${configSB.join(",")}"`;
+        const configStr : string  = `"${configSB.join(",")}"`;
+        Logger.logDebug(`TccPatchSender#configArray2String: configStr is ${configStr}`);
+        return configStr;
     }
 
     /**
@@ -104,7 +115,9 @@ export class TccPatchSender implements PatchSender {
         for (let i = 0; i < changedFiles.length; i++) {
             changedFilesSB.push(`"${changedFiles[i]}"`);
         }
-        return changedFilesSB.join(" ");
+        const changedFilesPaths : string = changedFilesSB.join(" ");
+        Logger.logDebug(`TccPatchSender#filePaths2String: changedFilesPaths is ${changedFilesPaths}`);
+        return changedFilesPaths;
     }
 
     /**

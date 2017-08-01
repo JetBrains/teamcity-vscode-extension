@@ -3,6 +3,7 @@
 import { window } from "vscode";
 import { Strings } from "../utils/strings";
 import { CvsProviderTypes } from "../utils/constants";
+import { Logger } from "../utils/logger";
 import { Credential } from "../credentialstore/credential";
 import { CvsSupportProviderFactory } from "../remoterun/cvsproviderfactory";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
@@ -47,30 +48,34 @@ export class VsCodeUtils {
     public static async getActiveScm() : Promise<CvsProviderTypes> {
         const gitProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Git);
         if (await gitProvider.isActive()) {
+            Logger.logInfo("VsCodeUtils#getActiveScm: Git is active");
             return CvsProviderTypes.Git;
         }
         const tfsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Tfs);
         if (await tfsProvider.isActive()) {
+            Logger.logInfo("VsCodeUtils#getActiveScm: Tfvc is active");
             return CvsProviderTypes.Tfs;
         }
-
+        Logger.logWarning("VsCodeUtils#getActiveScm: active scm wasn't found");
         return CvsProviderTypes.UndefinedCvs;
     }
 
     /**
-     * @param arg - any string in the format ${value1:value2}
+     * @param value - any string in the format ${value1:value2}
      * @return - an array in the format ${[value1, value2]}
      */
-    public static parseValueColonValue(arg : string) : string[] {
+    public static parseValueColonValue(value : string) : string[] {
         const KEY_SEPARATOR : string = ":";
-        if (arg === undefined || !arg.indexOf(KEY_SEPARATOR)) {
+        if (value === undefined || !value.indexOf(KEY_SEPARATOR)) {
+            Logger.logWarning(`VsCodeUtils#parseValueColonValue: value ${value} wasn't parsed`);
             return undefined;
         }
-        const keys = arg.split(KEY_SEPARATOR);
+        const keys = value.split(KEY_SEPARATOR);
         return keys.length !== 2 ? undefined : keys;
     }
 
     public static gzip2Str(gzip : Uint8Array[]) : string {
+        Logger.logDebug(`VsCodeUtils#gzip2Str: starts unziping gzip`);
         const buffer : string[] = [];
         // Pako magic
         const inflatedGzip : Uint16Array = pako.inflate(gzip);
@@ -82,6 +87,7 @@ export class VsCodeUtils {
             buffer.push(String.fromCharCode.apply(null, new Uint16Array(inflatedGzip.slice(i, topIndex))));
             /* tslint:enable:no-null-keyword */
         }
+        Logger.logDebug(`VsCodeUtils#gzip2Str: finishes unziping gzip`);
         return buffer.join("");
     }
 
@@ -92,11 +98,14 @@ export class VsCodeUtils {
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
     public static makeRequest(method, url : string, cred? : Credential) {
+        Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
         const XMLHttpRequest = XHR.XMLHttpRequest;
         return new Promise(function (resolve, reject) {
             const request : XHR.XMLHttpRequest = new XMLHttpRequest();
             request.open(method, url, true);
             if (cred) {
+                Logger.logDebug(`VsCodeUtils#makeRequest: creds:`);
+                Logger.LogObject(cred);
                 request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
             }
             request.onload = function () {

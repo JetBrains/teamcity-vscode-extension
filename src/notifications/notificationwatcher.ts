@@ -5,10 +5,11 @@ import { CredentialStore } from "../credentialstore/credentialstore";
 import { SummaryDataProxy, ChangeItemProxy } from "../notifications/summarydata";
 import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import { Logger } from "../utils/logger";
 
 export class NotificationWatcher {
     private readonly _credentialStore : CredentialStore;
-    private readonly CHECK_FREQUENCY_MS : number = 4000;
+    private readonly CHECK_FREQUENCY_MS : number = 10000;
     private readonly outdatedChangeIds : string[] = [];
     private readonly outdatedPersonalChangeIds : string[] = [];
     private readonly _outputChannal : OutputChannel;
@@ -17,6 +18,7 @@ export class NotificationWatcher {
     constructor (credentialStore : CredentialStore, outputChannal : OutputChannel) {
         this._credentialStore = credentialStore;
         this._outputChannal = outputChannal;
+        Logger.logDebug("Credential Store was initialized");
     }
 
     /**
@@ -27,9 +29,13 @@ export class NotificationWatcher {
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
         this.isActive = true;
         const cred : Credential = this._credentialStore.getCredential();
-        if (!cred) { return; }
+        if (!cred) {
+            Logger.logWarning("NotificationWatcher#activate: User Credentials absent");
+            return;
+        }
         let prevEventCounter : number = await apiProvider.getTotalNumberOfEvents(cred);
         const summary : SummaryDataProxy = await apiProvider.getSummary(cred);
+        //filling outdatedChangeIds and outdatedPersonalChangeIds arrays
         this.collectNewChanges(summary.changes);
         this.collectNewChanges(summary.personalChanges);
         while (this.isActive && cred) {
@@ -38,7 +44,7 @@ export class NotificationWatcher {
                 await this.sleep(this.CHECK_FREQUENCY_MS);
                 continue;
             }
-
+            Logger.logInfo("Notification Logger was changed. We should process new notifications.");
             const summary : SummaryDataProxy = await apiProvider.getSummary(cred);
             let changes : ChangeItemProxy[] = this.collectNewChanges(summary.changes);
             changes = changes.concat(this.collectNewChanges(summary.personalChanges));
@@ -55,6 +61,7 @@ export class NotificationWatcher {
         this.isActive = false;
         this.outdatedChangeIds.length = 0;
         this.outdatedPersonalChangeIds.length = 0;
+        Logger.logDebug("Notification Watcher data was reseted");
     }
 
     /**
@@ -83,6 +90,7 @@ export class NotificationWatcher {
     private async displayChanges(changes : ChangeItemProxy[]) {
         const cred : Credential = this._credentialStore.getCredential();
         if (!changes || !cred) {
+            Logger.logWarning(`NotificationWatcher#displayChanges: changes or user credentials absent`);
             return;
         }
         changes.forEach((change) => {

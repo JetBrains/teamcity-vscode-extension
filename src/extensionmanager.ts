@@ -1,10 +1,11 @@
 "use strict";
 
-import { Disposable, window, OutputChannel } from "vscode";
+import { Disposable, window, OutputChannel, workspace } from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
 import { CommandHolder } from "./commandholder";
 import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
 import { NotificationWatcher } from "./notifications/notificationwatcher";
+import { Logger } from "./utils/logger";
 
 export class ExtensionManager implements Disposable {
     private _credentialStore : CredentialStore;
@@ -19,6 +20,7 @@ export class ExtensionManager implements Disposable {
         this._commandHolder = new CommandHolder(this);
         this._outputChannal = window.createOutputChannel("TeamCity");
         this._notificationWatcher = new NotificationWatcher(this._credentialStore, this._outputChannal);
+        this.initLogger("info", workspace.rootPath);
     }
 
     public runCommand(funcToTry: (args) => void, ...args: string[]): void {
@@ -49,5 +51,18 @@ export class ExtensionManager implements Disposable {
 
     public get notificationWatcher() : NotificationWatcher {
         return this._notificationWatcher;
+    }
+
+    private initLogger(loggingLevel: string, rootPath: string): void {
+        if (loggingLevel === undefined) {
+            return;
+        }
+        Logger.SetLoggingLevel(loggingLevel);
+        if (rootPath !== undefined) {
+            Logger.LogPath = rootPath;
+            Logger.logInfo(`Logger path: ${rootPath}`);
+        } else {
+            Logger.logInfo(`!!! Folder not opened !!!`);
+        }
     }
 }

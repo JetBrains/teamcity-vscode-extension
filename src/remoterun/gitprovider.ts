@@ -3,6 +3,7 @@
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CvsSupportProvider } from "./cvsprovider";
 import { CheckinInfo } from "../utils/interfaces";
+import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import * as path from "path";
 
@@ -32,7 +33,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         const formatedChangedFiles = [];
         absPaths.forEach((absolutePath) => {
             const relativePath : string = absolutePath.replace(this._workspaceRootPath, "");
-            formatedChangedFiles.push(`jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`);
+            const formatedFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
+            formatedChangedFiles.push(formatedFilePath);
+            Logger.logDebug(`GitSupportProvider#getFormattedFilenames: formatedFilePath: ${formatedFilePath}`);
         });
         return formatedChangedFiles;
     }
@@ -44,12 +47,16 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     public async generateConfigFileContent() : Promise<string> {
         const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
+        Logger.logDebug(`GitSupportProvider#generateConfigFileContent: getRemoteUrlCommand: ${getRemoteUrlCommand}`);
         const commandResult = await cp.exec(getRemoteUrlCommand);
         const remoteUrl : string = commandResult.stdout;
         if (remoteUrl === undefined || remoteUrl.length === 0) {
-            throw "Remote url wasn't determined.";
+            Logger.logError(`GitSupportProvider#generateConfigFileContent: Remote url wasn't determined`);
+            throw new Error("Remote url wasn't determined");
         }
-        return `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
+        const configFileContent : string = `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
+        Logger.logDebug(`GitSupportProvider#generateConfigFileContent: configFileContent: ${configFileContent}`);
+        return configFileContent;
     }
 
     /**
@@ -59,12 +66,14 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     public async getRequiredCheckinInfo() : Promise<CheckinInfo> {
         if (this._checkinInfo) {
+            Logger.logInfo(`GitSupportProvider#getRequiredCheckinInfo: checkin info already exists`);
             return this._checkinInfo;
         }
-
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkin info`);
         //Git extension bug: If commit message is empty git won't commit anything
         const commitMessage: string = scm.inputBox.value === "" ? "-" : scm.inputBox.value;
         const absPaths : string[] = await this.getAbsPaths();
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${absPaths ? " not" : ""}empty`);
         return {
             fileAbsPaths: absPaths,
             message: commitMessage,
@@ -96,8 +105,9 @@ export class GitSupportProvider implements CvsSupportProvider {
             placeHolder: GIT_COMMIT_PUSH_INTRO_MESSAGE
         };
         const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
+        Logger.logDebug(`GitSupportProvider#requestForPostCommit: nextGitOperation is ${nextGitOperation ? nextGitOperation.label : "undefined"}}`);
         if (nextGitOperation === undefined) {
-            //Do nothing!
+            //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
             const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
@@ -118,10 +128,12 @@ export class GitSupportProvider implements CvsSupportProvider {
         try {
             const commandResult = await cp.exec(getStagedFilesCommand);
             if (!commandResult.stdout) {
+                Logger.logDebug(`GitSupportProvider#isActive: git diff didn't find staged files`);
                 return false;
             }
             return true;
         } catch (err) {
+            Logger.logWarning(`GitSupportProvider#isActive: git diff leads to error: ${err}`);
             return false;
         }
     }
@@ -136,6 +148,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             const getStagedFilesCommand : string = `git -C "${this._workspaceRootPath}" diff --name-only --staged`;
             const commandResult = await cp.exec(getStagedFilesCommand);
             if (!commandResult.stdout) {
+                Logger.logDebug(`GitSupportProvider#getAbsPaths: git diff didn't find staged files`);
                 return [];
             }
             const stagedFilesRelarivePaths : string = commandResult.stdout.trim();
@@ -144,6 +157,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             });
             return absPaths;
         }catch (err) {
+            Logger.logWarning(`GitSupportProvider#getAbsPaths: git diff leads to error: ${err}`);
             return [];
         }
     }
@@ -154,11 +168,14 @@ export class GitSupportProvider implements CvsSupportProvider {
     private async getRemoteBrunch() : Promise<string> {
         const getRemoteBranchCommand : string = `git -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
         const prom = await cp.exec(getRemoteBranchCommand);
-        const remoteBranch : string = prom.stdout;
+        let remoteBranch : string = prom.stdout;
         if (remoteBranch === undefined || remoteBranch.length === 0) {
-            throw "Remote branch wasn't determined.";
+            Logger.logError(`GitSupportProvider#getRemoteBrunch: remote branch wasn't determined`);
+            throw new Error("Remote branch wasn't determined");
         }
-        return remoteBranch.replace(/'/g, "").trim();
+        remoteBranch = remoteBranch.replace(/'/g, "").trim();
+        Logger.logDebug(`GitSupportProvider#getRemoteBrunch: remote branch is ${remoteBranch}`);
+        return remoteBranch;
     }
 
     /**
@@ -169,8 +186,10 @@ export class GitSupportProvider implements CvsSupportProvider {
         const prom = await cp.exec(getLastRevCommand);
         const lastRevHash : string = prom.stdout;
         if (lastRevHash === undefined || lastRevHash.length === 0) {
-            throw "Revision of last commit wasn't determined.";
+            Logger.logError(`GitSupportProvider#getLastRevision: revision of last commit wasn't determined`);
+            throw new Error("Revision of last commit wasn't determined.");
         }
+        Logger.logDebug(`GitSupportProvider#getLastRevision: last merge-based revision is ${lastRevHash}`);
         return lastRevHash.trim();
     }
 
@@ -183,8 +202,11 @@ export class GitSupportProvider implements CvsSupportProvider {
         const prom = await cp.exec(getFirstMonthRevCommand);
         let firstRevHash : string = prom.stdout;
         if (firstRevHash === undefined) {
-            firstRevHash = "";
+            Logger.logWarning(`GitSupportProvider#firstRevHash: first month revision wasn't determinedm but it's still ok`);
+            return "";
         }
-        return firstRevHash.split("\n")[0];
+        firstRevHash = firstRevHash.split("\n")[0];
+        Logger.logDebug(`GitSupportProvider#firstRevHash: first month revision is ${firstRevHash}`);
+        return firstRevHash;
     }
 }

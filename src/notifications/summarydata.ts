@@ -1,5 +1,6 @@
 "use strict";
 
+import { Logger } from "../utils/logger";
 /**
  * Summary Obj contains some number of changes. Some changes Obj contains some number of builds.
  */
@@ -14,6 +15,7 @@ export class SummaryDataProxy {
             !this._summaryObj.myVisibleProjects ||
             !this._summaryObj.myVisibleProjects[0] ||
             !this._summaryObj.myVisibleProjects[0].string) {
+                Logger.logDebug(`SummaryDataProxy#getVisibleProjectIds: visibleProjectIds are not reachable`);
                 return [];
             }
         return this._summaryObj.myVisibleProjects[0].string;
@@ -26,6 +28,7 @@ export class SummaryDataProxy {
             || !this._summaryObj.personalChanges[0]
             || !this._summaryObj.personalChanges[0].ChangeInfo
             || this._summaryObj.personalChanges[0].ChangeInfo.length <= 0 ) {
+            Logger.logDebug(`SummaryDataProxy#personalChanges: personalChanges are not reachable`);
             return [];
         }
         this._summaryObj.personalChanges[0].ChangeInfo.forEach((change) => {
@@ -41,6 +44,7 @@ export class SummaryDataProxy {
             || !this._summaryObj.changes[0]
             || !this._summaryObj.changes[0].ChangeInfo
             || this._summaryObj.changes[0].ChangeInfo.length <= 0 ) {
+            Logger.logDebug(`SummaryDataProxy#personalChanges: changes are not reachable`);
             return [];
         }
         const changes : any[] = this._summaryObj.changes[0].ChangeInfo;
@@ -63,6 +67,7 @@ export class ChangeItemProxy {
             !this._changeObj.mod[0] ||
             this._changeObj.mod[0].personal === undefined ||
             this._changeObj.mod[0].personal[0] === undefined) {
+                Logger.logDebug(`ChangeItemProxy#isPersonal: isPersonal is not reachable. default: false`);
                 return false;
             }
         return (this._changeObj.mod[0].personal[0] === "true");
@@ -74,6 +79,7 @@ export class ChangeItemProxy {
             !this._changeObj.mod[0] ||
             this._changeObj.mod[0].id === undefined ||
             this._changeObj.mod[0].id[0] === undefined) {
+                Logger.logDebug(`ChangeItemProxy#changeId: changeId is not reachable. default: -1`);
                 return -1;
             }
         return this._changeObj.mod[0].id[0];
@@ -83,6 +89,7 @@ export class ChangeItemProxy {
         if (!this._changeObj ||
             !this._changeObj.myStatus ||
             !this._changeObj.myStatus[0]) {
+                Logger.logDebug(`ChangeItemProxy#status: status is not reachable. default: UNKNOWN`);
                 return "UNKNOWN";
             }
         return this._changeObj.myStatus[0];
@@ -97,6 +104,7 @@ export class ChangeItemProxy {
             !this._changeObj.myTypeToInstanceMap[0].entry[0].Build ||
             !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0] ||
             !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0].id ) {
+                Logger.logDebug(`ChangeItemProxy#builds: builds is not reachable`);
                 return [];
             }
         const builds : BuildItemProxy[] = [];
@@ -119,6 +127,7 @@ export class BuildItemProxy {
         if (!this._buildObj ||
             this._buildObj.personal === undefined ||
             this._buildObj.personal[0] === undefined) {
+            Logger.logDebug(`BuildItemProxy#isPersonal: isPersonal is not reachable. default: false`);
             return false;
         }
         return (this._buildObj.personal[0] === "true");
@@ -128,6 +137,7 @@ export class BuildItemProxy {
         if (!this._buildObj ||
             this._buildObj.id === undefined ||
             this._buildObj.id[0] === undefined) {
+            Logger.logDebug(`BuildItemProxy#changeId: changeId is not reachable. default: -1`);
             return -1;
         }
         return this._buildObj.id[0];
@@ -139,6 +149,7 @@ export class BuildItemProxy {
             !this._buildObj.statusDescriptor[0] ||
             this._buildObj.statusDescriptor[0].myText === undefined ||
             this._buildObj.statusDescriptor[0].myText[0] === undefined) {
+            Logger.logDebug(`BuildItemProxy#status: status is not reachable. default: UNKNOWN`);
             return "UNKNOWN";
         }
         return this._buildObj.statusDescriptor[0].myText[0];

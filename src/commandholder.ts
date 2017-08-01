@@ -8,9 +8,9 @@ import { VsCodeUtils } from "./utils/vscodeutils";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
 import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
+import { Logger } from "./utils/logger";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
-
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
@@ -24,6 +24,7 @@ export class CommandHolder {
     }
 
     public async signIn() {
+        Logger.logInfo("CommandHolder#signIn: starts");
         const defaultURL : string = this.getDefaultURL();
         const defaultUsername : string = this.getDefaultUsername();
         let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
@@ -39,11 +40,15 @@ export class CommandHolder {
         const creds : Credential = new Credential(url, user, pass);
         const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
         if (signedIn) {
+            Logger.logInfo("CommandHolder#signIn: success");
             this._extManager.notificationWatcher.activate();
+        } else {
+            Logger.logWarning("CommandHolder#signIn: failed");
         }
     }
 
     public async getSuitableConfigs() {
+        Logger.logInfo("CommandHolder#getSuitableConfigs: starts");
         const cred : Credential = await this.tryGetCredentials();
         if (cred === undefined) {
             return;
@@ -51,24 +56,28 @@ export class CommandHolder {
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
         this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
         if ( this._cvsProvider === undefined ) {
-            throw "There is no changes detected.";
+            throw new Error("There is no changes detected.");
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
         VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         this._extManager.configExplorer.setProjects(projects);
         this._extManager.configExplorer.refresh();
+        Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
     }
 
     public async remoteRunWithChosenConfigs() {
+        Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: starts");
         const cred : Credential = await this.tryGetCredentials();
         if (!cred || !this._cvsProvider) {
             //TODO: think about the message in this case
+            Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: credentials or cvsProvider absents. Try to sign in again");
             return;
         }
         const inclConfigs : BuildConfigItem[] = this._extManager.configExplorer.getInclBuilds();
         if (inclConfigs === undefined || inclConfigs.length === 0) {
             VsCodeUtils.displayNoSelectedConfigsMessage();
+            Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'Remote run' command");
             return;
         }
         this._extManager.configExplorer.setProjects([]);
@@ -76,10 +85,12 @@ export class CommandHolder {
         const patchSender : PatchSender = new TccPatchSender();
         const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
         if (remoteRunResult) {
-            const BUILD_RUN_SUCCESSFULLY : string = "[TeamCity] Build for your changes run successfully";
-            VsCodeUtils.showInfoMessage(BUILD_RUN_SUCCESSFULLY);
+            Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
             this._cvsProvider.requestForPostCommit();
+        } else {
+            Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: something went wrong during remote run");
         }
+        Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: finishes");
     }
 
     private getDefaultURL() : string {
@@ -100,19 +111,24 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
+        Logger.logInfo("CommandHolder#signOut: starts");
         this._extManager.cleanUp();
+        Logger.logInfo("CommandHolder#signOut: finished");
     }
 
     public async tryGetCredentials() : Promise<Credential> {
         let cred : Credential = this._extManager.credentialStore.getCredential();
         if (!cred) {
+            Logger.logInfo("CommandHolder#tryGetCredentials: credentials is undefined. An attempt to get them");
             await this.signIn();
             cred = this._extManager.credentialStore.getCredential();
             if (!cred) {
                 VsCodeUtils.displayNoCredentialsMessage();
+                Logger.logWarning("CommandHolder#tryGetCredentials: An attempt to get credentials failed");
                 return undefined;
             }
         }
+        Logger.logInfo("CommandHolder#tryGetCredentials: success");
         return cred;
     }
 }

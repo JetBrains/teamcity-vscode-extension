@@ -2,6 +2,7 @@
 import { ISubscriptionEvent, ProjectEvent, UserEvent } from "./subscriptionevent";
 import { SummaryDataProxy } from "./summarydata";
 import { TrackerEventType } from "../utils/constants";
+import { Logger } from "../utils/logger";
 
 export interface ModificationCounterSubscriptionInfo {
     serialize() : string;
@@ -15,7 +16,9 @@ export class ModificationCounterSubscription implements ModificationCounterSubsc
       this.myEvents.forEach((event) => {
           sb.push(event.serialize() + ",");
       });
-      return sb.join("");
+      const serializedString : string = sb.join("");
+      Logger.logDebug(`Serialized string: ${serializedString}`);
+      return serializedString;
     }
 
     private addEvent(evt : ISubscriptionEvent) : void {
