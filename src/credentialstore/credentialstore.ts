@@ -29,7 +29,9 @@ export class CredentialStore {
     }
 
     public async removeCredential() : Promise<void> {
-        Logger.logInfo(`The credentials for ${this._creds.user} will be deleted from the credentialstore`);
-        this._creds = undefined;
+        if (this._creds) {
+            Logger.logInfo(`The credentials for ${this._creds.user} will be deleted from the credentialstore`);
+            this._creds = undefined;
+        }
     }
 }

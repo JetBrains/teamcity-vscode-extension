@@ -56,6 +56,21 @@
           "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "TeamCity extension options",
+      "properties": {
+        "teamcity.logging.level": {
+          "type": "string",
+          "description": "Set the logging level for the extension (error, warn, info, debug)."
+        },
+        "teamcity.show.welcome": {
+          "type": "boolean",
+          "default": true,
+          "description": "Sets whether the extension should show welcome message after the login operation or not."
+        }
+      }
     }
   },
   "scripts": {

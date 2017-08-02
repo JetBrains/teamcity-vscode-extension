@@ -1,11 +1,15 @@
 "use strict";
 
 export class Constants {
+    public static readonly EXTENSION_NAME : string = "teamcity";
+    public static readonly EXTENSION_NAME_PREFIX : string = `${Constants.EXTENSION_NAME}.`;
     public static readonly XMLRPC_SESSIONID_KEY : string = "xmlrpcsessionId";
     public static readonly HTTP_STATUS_OK = 200;
     public static readonly HTTP_STATUS_UNAUTHORIZED = 401;
     public static readonly GIT_EXTENSION_ID = "vscode.git";
     public static readonly TFS_EXTENSION_ID = "ms-vsts.team";
+    public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
+    public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
 }
 export enum CvsProviderTypes { Git, Tfs, UndefinedCvs }
 /**

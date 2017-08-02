@@ -1,13 +1,15 @@
 "use strict";
 
-import { Disposable, window, OutputChannel, workspace } from "vscode";
+import { Disposable, window, OutputChannel, workspace, ExtensionContext } from "vscode";
 import { CredentialStore } from "./credentialstore/credentialstore";
 import { CommandHolder } from "./commandholder";
+import { Settings, SettingsImpl } from "./utils/settings";
 import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
 import { NotificationWatcher } from "./notifications/notificationwatcher";
 import { Logger } from "./utils/logger";
 
 export class ExtensionManager implements Disposable {
+    private _settings : Settings;
     private _credentialStore : CredentialStore;
     private _commandHolder : CommandHolder;
     private _configExplorer : BuildConfigTreeDataProvider;
@@ -15,12 +17,14 @@ export class ExtensionManager implements Disposable {
     private _outputChannal : OutputChannel;
 
     public async Initialize(configExplorer: BuildConfigTreeDataProvider) : Promise<void> {
+        this._settings = new SettingsImpl();
         this._configExplorer = configExplorer;
         this._credentialStore = new CredentialStore();
         this._commandHolder = new CommandHolder(this);
         this._outputChannal = window.createOutputChannel("TeamCity");
         this._notificationWatcher = new NotificationWatcher(this._credentialStore, this._outputChannal);
-        this.initLogger("info", workspace.rootPath);
+        const loggingLevel : string = this._settings.loggingLevel;
+        this.initLogger(loggingLevel, workspace.rootPath);
     }
 
     public runCommand(funcToTry: (args) => void, ...args: string[]): void {
@@ -53,6 +57,10 @@ export class ExtensionManager implements Disposable {
         return this._notificationWatcher;
     }
 
+    public get settings() : Settings {
+        return this._settings;
+    }
+
     private initLogger(loggingLevel: string, rootPath: string): void {
         if (loggingLevel === undefined) {
             return;
@@ -61,8 +69,10 @@ export class ExtensionManager implements Disposable {
         if (rootPath !== undefined) {
             Logger.LogPath = rootPath;
             Logger.logInfo(`Logger path: ${rootPath}`);
+            Logger.logInfo(`Logging level: ${this._settings.loggingLevel}`);
+            Logger.logInfo(`Should show signin welcome message: ${this._settings.showSignInWelcome}`);
         } else {
-            Logger.logInfo(`!!! Folder not opened !!!`);
+            Logger.logWarning(`Folder not opened!`);
         }
     }
 }

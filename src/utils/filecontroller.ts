@@ -10,7 +10,7 @@ export class FileController {
         const prom : Promise<boolean> = new Promise((resolve, reject) => {
             const exists : boolean = fs.existsSync(fileName);
             Logger.logDebug(`FileController#exists: file ${fileName} ${exists ? "exists" : "doesn't exist"}`);
-            resolve();
+            resolve(exists);
         });
         return prom;
     }
@@ -47,7 +47,7 @@ export class FileController {
                     Logger.logError(`FileController#createFileAsync: ${fileAbsPath} wasn't created. Error: ${err}`);
                     reject(err);
                 }
-                Logger.logError(`FileController#createFileAsync: ${fileAbsPath} was created.`);
+                Logger.logInfo(`FileController#createFileAsync: ${fileAbsPath} was created.`);
                 resolve();
             });
         });

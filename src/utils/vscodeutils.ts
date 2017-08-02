@@ -1,6 +1,6 @@
 "use strict";
 
-import { window } from "vscode";
+import { window, MessageItem } from "vscode";
 import { Strings } from "../utils/strings";
 import { CvsProviderTypes } from "../utils/constants";
 import { Logger } from "../utils/logger";
@@ -13,16 +13,16 @@ import pako = require("pako");
 
 export class VsCodeUtils {
 
-    public static async showErrorMessage(messageToDisplay: string) : Promise<void> {
-        await window.showErrorMessage(messageToDisplay);
+    public static async showErrorMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+        return await window.showErrorMessage(messageToDisplay, ...messageItems);
     }
 
-    public static async showInfoMessage(messageToDisplay: string): Promise<void> {
-        await window.showInformationMessage(messageToDisplay);
+    public static async showInfoMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+        return await window.showInformationMessage(messageToDisplay, ...messageItems);
     }
 
-    public static async showWarningMessage(messageToDisplay: string): Promise<void> {
-        await this.showErrorMessage(messageToDisplay);
+    public static async showWarningMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+        return await this.showErrorMessage(messageToDisplay, ...messageItems);
     }
 
     public static async displayNoCredentialsMessage(): Promise<void> {

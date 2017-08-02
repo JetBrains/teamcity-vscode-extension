@@ -1,6 +1,7 @@
 "use strict";
 
-import { window, SourceControlInputBox, Disposable, OutputChannel, scm, QuickDiffProvider, WorkspaceEdit, workspace, extensions, SourceControlResourceState} from "vscode";
+import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider, } from "vscode";
+import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable} from "vscode";
 import { ExtensionManager } from "./extensionmanager";
 import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
@@ -41,6 +42,9 @@ export class CommandHolder {
         const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
         if (signedIn) {
             Logger.logInfo("CommandHolder#signIn: success");
+            if (this._extManager.settings.showSignInWelcome) {
+                this.showWelcomeMessage();
+            }
             this._extManager.notificationWatcher.activate();
         } else {
             Logger.logWarning("CommandHolder#signIn: failed");
@@ -130,5 +134,16 @@ export class CommandHolder {
         }
         Logger.logInfo("CommandHolder#tryGetCredentials: success");
         return cred;
+    }
+
+    private async showWelcomeMessage() {
+        const DO_NOT_SHOW_AGAIN = "Don't show again";
+        const WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
+        const messageItems: MessageItem[] = [];
+        messageItems.push({ title : DO_NOT_SHOW_AGAIN });
+        const chosenItem: MessageItem = await VsCodeUtils.showInfoMessage(WELCOME_MESSAGE,  ...messageItems);
+        if (chosenItem && chosenItem.title === DO_NOT_SHOW_AGAIN) {
+            this._extManager.settings.setShowSignInWelcome(false);
+        }
     }
 }
