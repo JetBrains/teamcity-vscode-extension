@@ -2,6 +2,7 @@
 
 import * as fs from "fs";
 import { Logger } from "./logger";
+import { VsCodeUtils } from "./vscodeutils";
 
 export class FileController {
 
@@ -25,7 +26,7 @@ export class FileController {
         return new Promise((resolve, reject) => {
             fs.unlink(fileName, (err) => {
                 if (err) {
-                    Logger.logError(`FileController#removeFileAsync: ${fileName} wasn't deleted. Error: ${err}`);
+                    Logger.logError(`FileController#removeFileAsync: ${fileName} wasn't deleted. Error: ${VsCodeUtils.formatErrorMessage(err)}`);
                     reject(err);
                 }
                 Logger.logDebug(`FileController#removeFileAsync: ${fileName} was deleted`);
@@ -44,7 +45,7 @@ export class FileController {
         return new Promise<void>((resolve, reject) => {
             fs.appendFile(fileAbsPath, fileContent, (err) => {
                 if (err) {
-                    Logger.logError(`FileController#createFileAsync: ${fileAbsPath} wasn't created. Error: ${err}`);
+                    Logger.logError(`FileController#createFileAsync: ${fileAbsPath} wasn't created. Error: ${VsCodeUtils.formatErrorMessage(err)}`);
                     reject(err);
                 }
                 Logger.logInfo(`FileController#createFileAsync: ${fileAbsPath} was created.`);

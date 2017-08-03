@@ -41,8 +41,8 @@ export class TccPatchSender implements PatchSender {
             const tccLoginCommand : string = `java -jar "${tccPath}" login --host ${cred.serverURL} --user ${cred.user} --password ${cred.pass}`;
             await cp.exec(tccLoginCommand);
         }catch (err) {
-            Logger.logError("TccPatchSender#remoteRun: unexpected error during sending login request by the tcc.jar util: " + err);
-            VsCodeUtils.showErrorMessage("Unexpected error during sending login request by the tcc.jar util: " + err);
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during sending login request by the tcc.jar util: " + VsCodeUtils.formatErrorMessage(err));
+            VsCodeUtils.showErrorMessage("Unexpected error during sending login request by the tcc.jar util");
             return false;
         }
         Logger.logDebug("TccPatchSender#remoteRun: step 1 was passed");
@@ -52,8 +52,8 @@ export class TccPatchSender implements PatchSender {
             const configFileContent : string = await cvsProvider.generateConfigFileContent();
             await FileController.createFileAsync(configFileAbsPath, configFileContent);
         }catch (err) {
-            Logger.logError("TccPatchSender#remoteRun: unexpected error during creating a config file for the tcc.jar util: " + err);
-            VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util: " + err);
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during creating a config file for the tcc.jar util: " + VsCodeUtils.formatErrorMessage(err));
+            VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util");
             return false;
         }
         Logger.logDebug("TccPatchSender#remoteRun: step 2 was passed");
@@ -73,8 +73,8 @@ export class TccPatchSender implements PatchSender {
                 const lines : string[] = err.stderr.trim().split("\n");
                 VsCodeUtils.showWarningMessage(`[TeamCity] ${lines[lines.length - 1]}`);
             } else {
-                Logger.logError("TccPatchSender#remoteRun: unexpected error during preparing arguments and executing the tcc.jar util: " + err);
-                VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util: " + err);
+                Logger.logError("TccPatchSender#remoteRun: unexpected error during preparing arguments and executing the tcc.jar util: " + VsCodeUtils.formatErrorMessage(err));
+                VsCodeUtils.showErrorMessage("Unexpected error during preparing arguments and executing the tcc.jar util");
             }
             return false;
         }
@@ -83,8 +83,8 @@ export class TccPatchSender implements PatchSender {
         try {
             await FileController.removeFileAsync(configFileAbsPath);
         }catch (err) {
-            Logger.logError("TccPatchSender#remoteRun: unexpected error during removing the config file for the tcc.jar util: " + err);
-            VsCodeUtils.showErrorMessage("Unexpected error during removing the config file for the tcc.jar util: " + err);
+            Logger.logError("TccPatchSender#remoteRun: unexpected error during removing the config file for the tcc.jar util: " + VsCodeUtils.formatErrorMessage(err));
+            VsCodeUtils.showErrorMessage("Unexpected error during removing the config file for the tcc.jar util");
             return false;
         }
         Logger.logDebug("TccPatchSender#remoteRun: step 4 was passed");

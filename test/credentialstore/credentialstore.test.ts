@@ -27,8 +27,8 @@ suite("CredentialStore", function() {
     });
 
     test("should verify set/getCredential - rewriting", function(done) {
-        const creds: Credential = new Credential("http://localhost:7239/", "user", "password");
-        const creds2: Credential = new Credential("http://localhost:4239/", "user2", "password2");
+        const creds: Credential = new Credential("http://localhost:7239", "user", "password");
+        const creds2: Credential = new Credential("http://localhost:4239", "user2", "password2");
         const cs : CredentialStore = new CredentialStore();
         const serv = http.createServer(function (req, res) {
             serv.close();
@@ -49,7 +49,7 @@ suite("CredentialStore", function() {
     });
 
     test("should verify removeCredential", function() {
-        const creds: Credential = new Credential("http://localhost/", "user", "password");
+        const creds: Credential = new Credential("http://localhost", "user", "password");
         const cs : CredentialStore = new CredentialStore();
         cs.setCredential(creds);
         cs.removeCredential();

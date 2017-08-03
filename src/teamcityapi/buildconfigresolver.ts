@@ -3,6 +3,7 @@ import { Credential } from "../credentialstore/credential";
 import { Strings } from "../utils/strings";
 import { Constants } from "../utils/constants";
 import { Logger } from "../utils/logger";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
 import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import xmlrpc = require("xmlrpc");
@@ -36,7 +37,7 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
         try {
             configIds = await this.requestConfigIds(tcFormatedFilePaths);
         }catch (err) {
-            Logger.logError(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: unexpected exception during getting suitable configurations: ${err}`);
+            Logger.logError(`XmlRpcBuildConfigResolver#getSuitableBuildConfigs: unexpected exception during getting suitable configurations: ${VsCodeUtils.formatErrorMessage(err)}`);
             throw new Error(Strings.GET_SUITABLE_CONFIG_EXCEPTION);
         }
         const projectContainer : ProjectItem[] = await this.getRelatedProjects(configIds);
@@ -68,7 +69,7 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
             this.client.methodCall("VersionControlServer.getSuitableConfigurations", [ changedFiles ], function (err, confIds) {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || confIds === undefined) {
-                    Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + err);
+                    Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + VsCodeUtils.formatErrorMessage(err));
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
@@ -95,7 +96,7 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
                 this.client.methodCall("RemoteBuildServer2.getRelatedProjects", [ confIds ], (err, buildsXml) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || buildsXml === undefined ) {
-                        Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + err);
+                        Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + VsCodeUtils.formatErrorMessage(err));
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
@@ -104,7 +105,7 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
                 });
             });
         }catch (err) {
-            Logger.logError("XmlRpcBuildConfigResolver#getRelatedProjects: " + Strings.GET_BUILDS_EXCEPTION + " /n caused by: " + err);
+            Logger.logError("XmlRpcBuildConfigResolver#getRelatedProjects: " + Strings.GET_BUILDS_EXCEPTION + " /n caused by: " + VsCodeUtils.formatErrorMessage(err));
             throw new Error(Strings.GET_BUILDS_EXCEPTION);
         }
     }

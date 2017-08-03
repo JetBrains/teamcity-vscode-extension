@@ -149,4 +149,19 @@ export class VsCodeUtils {
         }
         return messageSB.join("\n");
     }
+
+    /**
+     * Prepares an error for writting into log
+     * @param err - an error
+     */
+    public static formatErrorMessage(err) : string {
+        if (!err || !err.message) {
+            return "";
+        }
+        let formattedMsg : string = err.message;
+        if (err.stderr) {
+            formattedMsg = `${formattedMsg} ${err.stderr}`;
+        }
+        return formattedMsg;
+    }
 }

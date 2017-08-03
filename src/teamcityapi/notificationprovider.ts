@@ -46,7 +46,7 @@ export class NotificationProvider extends XmlRpcProvider {
             this.client.methodCall("UserSummaryRemoteManager2.getTotalNumberOfEvents", [this._subs.serialize()], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === null) {
-                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + err);
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + VsCodeUtils.formatErrorMessage(err));
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
@@ -69,7 +69,7 @@ export class NotificationProvider extends XmlRpcProvider {
             this.client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [cred.userId], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === undefined) {
-                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + err);
+                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + VsCodeUtils.formatErrorMessage(err));
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
@@ -77,7 +77,7 @@ export class NotificationProvider extends XmlRpcProvider {
                     const summeryXmlObj : string = VsCodeUtils.gzip2Str(data);
                     xml2js.parseString(summeryXmlObj, (err, obj) => {
                         if (err) {
-                            Logger.logError("NotificationProvider#getSummeryData: caught an error during parsing summary data: " + err);
+                            Logger.logError("NotificationProvider#getSummeryData: caught an error during parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
                             reject(err);
                         }
                         const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
@@ -85,7 +85,7 @@ export class NotificationProvider extends XmlRpcProvider {
                         resolve(summeryData);
                     });
                 } catch (err) {
-                    Logger.logError("NotificationProvider#getSummeryData: caught an error during unzipping and parsing summary data: " + err);
+                    Logger.logError("NotificationProvider#getSummeryData: caught an error during unzipping and parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
                     reject(err);
                 }
             });

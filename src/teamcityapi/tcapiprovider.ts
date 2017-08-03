@@ -36,8 +36,7 @@ export class TCRestApiProvider implements TCApiProvider {
                 } else {
                     VsCodeUtils.showErrorMessage(Strings.UNEXPECTED_EXCEPTION);
                 }
-                Logger.logError(`TCRestApiProvider#checkCredential: bad response from ${url}. Error: `);
-                Logger.logError(err);
+                Logger.logError(`TCRestApiProvider#checkCredential: bad response from ${url}: ${VsCodeUtils.formatErrorMessage(err)}`);
                 resolve(false);
             });
         });

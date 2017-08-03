@@ -4,6 +4,7 @@ import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode"
 import { CheckinInfo, TfsInfo } from "../utils/interfaces";
 import { CvsSupportProvider } from "./cvsprovider";
 import { Logger } from "../utils/logger";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import * as cp from "child-process-promise";
 import * as path from "path";
 import * as url from "url";
@@ -104,7 +105,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             try {
                 await cp.exec(checkInCommandSB.join(""));
             } catch (err) {
-                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${err}}`);
+                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
                 throw new Error("Caught an exception during attempt to commit");
             }
         }
@@ -160,7 +161,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             }
             return absPaths;
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${err}`);
+            Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
         }
     }
@@ -192,7 +193,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 return undefined;
             }
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getTfsInfo: caught an exception during tf workfold command: ${err}`);
+            Logger.logError(`TfsSupportProvider#getTfsInfo: caught an exception during tf workfold command: ${VsCodeUtils.formatErrorMessage(err)}`);
             return undefined;
         }
     }
@@ -217,7 +218,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             }
             Logger.logDebug(`TfsSupportProvider#getWorkItemIdsFromMessage:found next workItems ${ids.join(",")}`);
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message}`);
+            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message} with error: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
         return ids;
     }

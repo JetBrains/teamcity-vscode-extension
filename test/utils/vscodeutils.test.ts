@@ -42,4 +42,23 @@ suite("VSCodeUtils", () => {
             done();
         });
     });
+
+    test("should verify formatErrorMessage", function() {
+        const errMsg : string = "An error message";
+        const err : Error = new Error(errMsg);
+        assert.equal(VsCodeUtils.formatErrorMessage(err), errMsg);
+    });
+
+    test("should verify formatErrorMessage with stderr", function() {
+        const errMsg : string = "An error message";
+        const stderr : string = "An stderr message";
+        const err : any = new Error(errMsg);
+        err.stderr = stderr;
+        assert.equal(VsCodeUtils.formatErrorMessage(err), errMsg + " " + stderr);
+    });
+
+    test("should verify formatErrorMessage with incorrect arg", function() {
+        const errMsg : string = "I am not an error";
+        assert.equal(VsCodeUtils.formatErrorMessage(errMsg), "");
+    });
 });

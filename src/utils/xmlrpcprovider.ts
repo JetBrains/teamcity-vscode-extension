@@ -47,7 +47,7 @@ export class XmlRpcProvider {
                 });
             });
         } catch (err) {
-            Logger.logError(`XmlRpcProvider#getRSAPublicKey: caught an error during gettign RSAPublicKEy: ${err}`);
+            Logger.logError(`XmlRpcProvider#getRSAPublicKey: caught an error during gettign RSAPublicKEy: ${VsCodeUtils.formatErrorMessage(err)}`);
             throw new Error(Strings.RCA_PUBLIC_KEY_EXCEPTION);
         }
     }
@@ -70,7 +70,7 @@ export class XmlRpcProvider {
                 this._client.methodCall("RemoteAuthenticationServer.authenticate", [cred.user, hexEncPass], (err, data) => {
                     /* tslint:disable:no-null-keyword */
                     if (err !== null || data === undefined || data.length === 0) {
-                        Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + err);
+                        Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + VsCodeUtils.formatErrorMessage(err));
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
@@ -85,7 +85,7 @@ export class XmlRpcProvider {
                 });
             });
         } catch (err) {
-            Logger.logError(`XmlRpcProvider#authenticate: caught an error during xmlrpc authentication: ${err}`);
+            Logger.logError(`XmlRpcProvider#authenticate: caught an error during xmlrpc authentication: ${VsCodeUtils.formatErrorMessage(err)}`);
             throw new Error(Strings.XMLRPC_AUTH_EXCEPTION);
         }
     }
