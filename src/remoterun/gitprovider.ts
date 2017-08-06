@@ -13,8 +13,11 @@ import * as path from "path";
 export class GitSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
     private _checkinInfo : CheckinInfo;
-    public constructor() {
+    private _gitPath : string;
+
+    public constructor(gitPath : string) {
         this._workspaceRootPath = workspace.rootPath;
+        this._gitPath = gitPath;
     }
 
     public async init() {
@@ -46,7 +49,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * (for git only) Currently @username part of content was removed. TODO: understand what is it and for which purpose is it used.
      */
     public async generateConfigFileContent() : Promise<string> {
-        const getRemoteUrlCommand : string = `git -C "${this._workspaceRootPath}" ls-remote --get-url`;
+        const getRemoteUrlCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" ls-remote --get-url`;
         Logger.logDebug(`GitSupportProvider#generateConfigFileContent: getRemoteUrlCommand: ${getRemoteUrlCommand}`);
         const commandResult = await cp.exec(getRemoteUrlCommand);
         const remoteUrl : string = commandResult.stdout;
@@ -109,32 +112,14 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (nextGitOperation === undefined) {
             //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
-            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
+            const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            const commitCommand : string = `git -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
+            const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
             const remoteBranch : string = await this.getRemoteBrunch();
-            const pushCommand : string = `git -C "${this._workspaceRootPath}" push ${remoteBranch} HEAD"`;
+            const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push ${remoteBranch} HEAD"`;
             await cp.exec(pushCommand);
-        }
-    }
-
-    /**
-     * This method indicates whether the extension is active or not.
-     */
-    public async isActive() : Promise<boolean> {
-        const getStagedFilesCommand : string = `git -C "${this._workspaceRootPath}" diff --name-only --staged`;
-        try {
-            const commandResult = await cp.exec(getStagedFilesCommand);
-            if (!commandResult.stdout) {
-                Logger.logDebug(`GitSupportProvider#isActive: git diff didn't find staged files`);
-                return false;
-            }
-            return true;
-        } catch (err) {
-            Logger.logWarning(`GitSupportProvider#isActive: git diff leads to error: ${err}`);
-            return false;
         }
     }
 
@@ -145,13 +130,13 @@ export class GitSupportProvider implements CvsSupportProvider {
     private async getAbsPaths() : Promise<string[]> {
         try {
             const absPaths : string[] = [];
-            const getStagedFilesCommand : string = `git -C "${this._workspaceRootPath}" diff --name-only --staged`;
+            const getStagedFilesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" diff --name-only --staged`;
             const commandResult = await cp.exec(getStagedFilesCommand);
             if (!commandResult.stdout) {
                 Logger.logDebug(`GitSupportProvider#getAbsPaths: git diff didn't find staged files`);
                 return [];
             }
-            const stagedFilesRelarivePaths : string = commandResult.stdout.trim();
+            const stagedFilesRelarivePaths : string = commandResult.stdout.toString("utf8").trim();
             stagedFilesRelarivePaths.split("\n").forEach((relativePath) => {
                 absPaths.push(path.join(this._workspaceRootPath, relativePath));
             });
@@ -166,7 +151,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * This method uses the "git branch -vv" command
      */
     private async getRemoteBrunch() : Promise<string> {
-        const getRemoteBranchCommand : string = `git -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
+        const getRemoteBranchCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
         const prom = await cp.exec(getRemoteBranchCommand);
         let remoteBranch : string = prom.stdout;
         if (remoteBranch === undefined || remoteBranch.length === 0) {
@@ -182,7 +167,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * IT IS NOT THE LATEST REVISION IN THE LOCAL REPO. This method returns the last compatible revision by the "git merge-base" command.
      */
     private async getLastRevision(remoteBranch) : Promise<string> {
-        const getLastRevCommand : string = `git -C "${this._workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
+        const getLastRevCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
         const prom = await cp.exec(getLastRevCommand);
         const lastRevHash : string = prom.stdout;
         if (lastRevHash === undefined || lastRevHash.length === 0) {
@@ -198,7 +183,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     private async getFirstMonthRev() : Promise<string> {
         const date : Date = new Date();
-        const getFirstMonthRevCommand : string = `git -C "${this._workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
+        const getFirstMonthRevCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
         const prom = await cp.exec(getFirstMonthRevCommand);
         let firstRevHash : string = prom.stdout;
         if (firstRevHash === undefined) {

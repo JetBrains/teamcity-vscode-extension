@@ -65,7 +65,7 @@ export class TccPatchSender implements PatchSender {
             const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${checkInInfo.message}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
             const prom = await cp.exec(runBuildCommand);
             if (prom.stdout) {
-                const lines : string[] = prom.stdout.trim().split("\n");
+                const lines : string[] = prom.stdout.toString("utf8").trim().split("\n");
                 VsCodeUtils.showInfoMessage(`[TeamCity] ${lines[lines.length - 1]}`);
             }
         }catch (err) {

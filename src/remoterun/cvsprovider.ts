@@ -27,9 +27,4 @@ export interface CvsSupportProvider {
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
     requestForPostCommit();
-
-    /**
-     * This method indicates whether the extension is active or not.
-     */
-    isActive() : Promise<boolean>;
 }

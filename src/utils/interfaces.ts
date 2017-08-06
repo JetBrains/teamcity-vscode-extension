@@ -1,4 +1,5 @@
 "use strict";
+import { CvsProviderTypes } from "../utils/constants";
 
 export interface CheckinInfo {
     message: string;
@@ -12,4 +13,11 @@ export interface TfsInfo {
     collectionName : string;
     projectLocalPath : string;
     projectRemotePath : string;
+}
+
+export interface CvsInfo {
+    cvsType : CvsProviderTypes;
+    path: string;
+    versionErrorMsg: string;
+    isChanged: boolean;
 }

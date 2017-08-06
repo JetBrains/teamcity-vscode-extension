@@ -11,7 +11,11 @@ export class Constants {
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
 }
-export enum CvsProviderTypes { Git, Tfs, UndefinedCvs }
+export enum CvsProviderTypes {
+     Git = <any>"Git",
+     Tfs = <any>"Tfs",
+     UndefinedCvs = <any>"UndefinedCvs"
+}
 /**
  * Without <any> in front of TrackerEventType prefix ts won't compile the code.
  */

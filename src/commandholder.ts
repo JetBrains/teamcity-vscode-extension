@@ -60,7 +60,7 @@ export class CommandHolder {
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
         this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
         if ( this._cvsProvider === undefined ) {
-            throw new Error("There is no changes detected.");
+            return;
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);

@@ -2,11 +2,8 @@
 
 import { window, MessageItem } from "vscode";
 import { Strings } from "../utils/strings";
-import { CvsProviderTypes } from "../utils/constants";
 import { Logger } from "../utils/logger";
 import { Credential } from "../credentialstore/credential";
-import { CvsSupportProviderFactory } from "../remoterun/cvsproviderfactory";
-import { CvsSupportProvider } from "../remoterun/cvsprovider";
 import { ChangeItemProxy, BuildItemProxy } from "../notifications/summarydata";
 import XHR = require("xmlhttprequest");
 import pako = require("pako");
@@ -22,7 +19,7 @@ export class VsCodeUtils {
     }
 
     public static async showWarningMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
-        return await this.showErrorMessage(messageToDisplay, ...messageItems);
+        return await window.showWarningMessage(messageToDisplay, ...messageItems);
     }
 
     public static async displayNoCredentialsMessage(): Promise<void> {
@@ -38,26 +35,6 @@ export class VsCodeUtils {
     public static async displayNoTccUtilMessage(): Promise<void> {
         const displayError: string = Strings.NO_TCC_UTIL;
         VsCodeUtils.showErrorMessage(displayError);
-    }
-
-    /**
-     * Currently there is no a public vscode api to detect an active scm provider.
-     * TeamCity Extension tries to get staged resources from external extensions to detect an scm provider.
-     * @return - Promise for value of enum CvsProvider: {Git, Tfs, UndefinedCvs}
-     */
-    public static async getActiveScm() : Promise<CvsProviderTypes> {
-        const gitProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Git);
-        if (await gitProvider.isActive()) {
-            Logger.logInfo("VsCodeUtils#getActiveScm: Git is active");
-            return CvsProviderTypes.Git;
-        }
-        const tfsProvider : CvsSupportProvider = await CvsSupportProviderFactory.getCvsSupportProvider(CvsProviderTypes.Tfs);
-        if (await tfsProvider.isActive()) {
-            Logger.logInfo("VsCodeUtils#getActiveScm: Tfvc is active");
-            return CvsProviderTypes.Tfs;
-        }
-        Logger.logWarning("VsCodeUtils#getActiveScm: active scm wasn't found");
-        return CvsProviderTypes.UndefinedCvs;
     }
 
     /**

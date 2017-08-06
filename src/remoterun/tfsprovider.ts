@@ -13,9 +13,11 @@ export class TfsSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
     private _checkinInfo : CheckinInfo;
     private _tfsInfo : TfsInfo;
+    private _tfPath : string;
 
-    public constructor() {
+    public constructor(tfPath: string) {
         this._workspaceRootPath = workspace.rootPath;
+        this._tfPath = tfPath;
     }
 
     public async init() {
@@ -96,7 +98,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
         Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextGitOperation ? nextGitOperation.label : "nothing"}`);
         if (nextGitOperation !== undefined && nextGitOperation.label === YES_LABEL) {
-            const checkInCommandPrefix = `tf checkin /comment:"${this._checkinInfo.message}" /noprompt `;
+            const checkInCommandPrefix = `"${this._tfPath}" checkin /comment:"${this._checkinInfo.message}" /noprompt `;
             const checkInCommandSB : string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);
             this._checkinInfo.fileAbsPaths.forEach((filePath) => {
@@ -108,25 +110,6 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
                 throw new Error("Caught an exception during attempt to commit");
             }
-        }
-    }
-
-    /**
-     * This method indicates whether the extension is active or not.
-     */
-    public async isActive() : Promise<boolean> {
-        try {
-            const serverItems = await this.getAbsPaths();
-            if (serverItems && serverItems.length > 0) {
-                Logger.logDebug(`TfsSupportProvider#isActive: is active`);
-                return true;
-            } else {
-                Logger.logDebug(`TfsSupportProvider#isActive: is not active`);
-                return false;
-            }
-        } catch (err) {
-            Logger.logWarning(`TfsSupportProvider#isActive: caught an exception during attempt to getAbsPaths`);
-            return false;
         }
     }
 
@@ -150,10 +133,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const tfsInfo : TfsInfo = this._tfsInfo;
         const parseBriefDiffRegexp : RegExp = /^(add|branch|delete|edit|lock|merge|rename|source rename|undelete):\s(.*)$/mg;
         const absPaths : string[] = [];
-        const briefDiffCommand : string = `tf diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
+        const briefDiffCommand : string = `"${this._tfPath}" diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
         try {
             const outBriefDiff = await cp.exec(briefDiffCommand);
-            const tfsWorkfoldResult : string = outBriefDiff.stdout.trim();
+            const tfsWorkfoldResult : string = outBriefDiff.stdout.toString("utf8").trim();
             let match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
             while (match) {
                 absPaths.push(path.join(match[2], "."));
@@ -171,10 +154,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     private async getTfsInfo() : Promise<TfsInfo> {
         const parseWorkfoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
-        const getLocalRepoInfoCommand : string = `tf workfold "${this._workspaceRootPath}"`;
+        const getLocalRepoInfoCommand : string = `"${this._tfPath}" workfold "${this._workspaceRootPath}"`;
         try {
             const out = await cp.exec(getLocalRepoInfoCommand);
-            const tfsWorkfoldResult : string = out.stdout.trim();
+            const tfsWorkfoldResult : string = out.stdout.toString("utf8").trim();
             const match = parseWorkfoldRegexp.exec(tfsWorkfoldResult);
             const repositoryUrl : string = match[1];
             const purl: url.Url = url.parse(repositoryUrl);
