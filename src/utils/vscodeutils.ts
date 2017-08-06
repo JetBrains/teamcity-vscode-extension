@@ -141,4 +141,27 @@ export class VsCodeUtils {
         }
         return formattedMsg;
     }
+
+    /**
+     * This method filters an array and returns elements which has only uniq keys
+     * @param arr - an array which should be filtered
+     * @param fn - a filter function which should return the uniq key
+     */
+    public static uniqBy<T>(arr: T[], fn: (el: T) => string): T[] {
+        if (!arr) {
+            return [];
+        }
+        // tslint:disable-next-line:no-null-keyword
+        const seen = Object.create(null);
+        // tslint:enable-next-line:no-null-keyword
+        return arr.filter((el) => {
+            const key = fn(el);
+            if (seen[key]) {
+                return false;
+            }
+
+            seen[key] = true;
+            return true;
+        });
+    }
 }

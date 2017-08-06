@@ -21,3 +21,8 @@ export interface CvsInfo {
     versionErrorMsg: string;
     isChanged: boolean;
 }
+
+export interface Remote {
+    name: string;
+    url: string;
+}
