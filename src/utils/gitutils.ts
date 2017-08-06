@@ -8,6 +8,15 @@ import { Logger } from "../utils/logger";
 import { workspace } from "vscode";
 
 export class GitUtils {
+
+    /**
+     * This method allows to detect git path and collect info about problems releted to the git cvs.
+     * @return CvsInfo object
+     * #cvsType: git;
+     * #path: detected git path, path is undefined when git path was not found;
+     * #versionErrorMsg: is undefined if version is compativle, else a message witch contains about current and required versions;
+     * #isChanged: is true if there are some changes / is false if there are no changes / is undefined if it's not a git repo
+     */
     public static async collectInfo() : Promise<CvsInfo> {
         const cvsInfo : CvsInfo = {
             cvsType : CvsProviderTypes.Git,

@@ -8,6 +8,15 @@ import * as cp from "child_process";
 import * as cpprom from "child-process-promise";
 
 export class TfsUtils {
+
+    /**
+     * This method allows to detect tf path and collect info about problems releted to the tfs cvs.
+     * @return CvsInfo object
+     * #cvsType: tfs;
+     * #path: detected tfs path, path is undefined when tf path was not found;
+     * #versionErrorMsg: is undefined if version is compativle, else a message witch contains about current and required versions;
+     * #isChanged: is true if there are some changes / is false if there are no changes / is undefined if it's not a tfs workspace
+     */
     public static async collectInfo() : Promise<CvsInfo> {
         const cvsInfo : CvsInfo = {
             cvsType: CvsProviderTypes.Tfs,
