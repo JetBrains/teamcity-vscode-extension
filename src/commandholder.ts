@@ -115,6 +115,9 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
+        const keytar = require("keytar");
+        keytar.setPassword("teamcity", "rugpanov", "password90");
+        const key = await keytar.getPassword("teamcity", "rugpanov");
         Logger.logInfo("CommandHolder#signOut: starts");
         this._extManager.cleanUp();
         Logger.logInfo("CommandHolder#signOut: finished");
