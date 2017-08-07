@@ -92,12 +92,14 @@
     "@types/node": "^6.0.40",
     "@types/xml2js": "^0.0.32",
     "chai": "^3.4.1",
+    "electron-rebuild": "^1.6.0",
     "typescript": "^2.0.3",
     "vscode": "^1.0.0",
     "winston": "^2.3.1"
   },
   "dependencies": {
     "child-process-promise": "^2.2.1",
+    "keytar": "^4.0.4",
     "node-forge": "^0.7.1",
     "node-gyp": "^3.6.2",
     "pako": "^1.0.5",

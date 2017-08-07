@@ -26,41 +26,33 @@ export class CommandHolder {
 
     public async signIn() {
         Logger.logInfo("CommandHolder#signIn: starts");
-        const defaultURL : string = this.getDefaultURL();
-        const defaultUsername : string = this.getDefaultUsername();
-
-        let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
-        if (!url) {
-            //It means that user clicked "Esc": abort the operation
-            Logger.logDebug("CommandHolder#signIn: abort after url inputbox");
-            return;
-        } else {
-            //to prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
-            url = url.replace(/\/$/, "");
+        let signedIn : boolean = false;
+        let creds : Credential;
+        //try getting credentials from keytar 
+        try {
+            const keytar = require("keytar");
+            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`)
+            const url = await keytar.getPassword("teamcity", "serverurl");
+            const user = await keytar.getPassword("teamcity", "username");
+            const pass = await keytar.getPassword("teamcity", "password");
+            creds = new Credential(url, user, pass);
+            signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
+            Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`)
+        } catch (err) {
+            Logger.logError(`CommandHolder#signIn: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
 
-        const user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + " )", placeHolder: "", password: false });
-        if (!user) {
-            Logger.logDebug("CommandHolder#signIn: abort after username inputbox");
-            //It means that user clicked "Esc": abort the operation
-            return;
+        if (!signedIn) {
+            creds = await this.requestTypingCredentials();
+            signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
         }
 
-        const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + " )", placeHolder: "", password: true } );
-        if (!pass) {
-            //It means that user clicked "Esc": abort the operation
-            Logger.logDebug("CommandHolder#signIn: abort after password inputbox");
-            return;
-        }
-        const creds : Credential = new Credential(url, user, pass);
-
-        const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
         if (signedIn) {
             Logger.logInfo("CommandHolder#signIn: success");
             if (this._extManager.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
-            this.storeLastUserCreds(creds.serverURL, creds.user);
+            this.storeLastUserCreds(creds);
             this._extManager.notificationWatcher.activate();
         } else {
             Logger.logWarning("CommandHolder#signIn: failed");
@@ -163,11 +155,51 @@ export class CommandHolder {
         }
     }
 
-    private async storeLastUserCreds(url : string, username : string) : Promise<void> {
-        if (!url || !username) {
+    private async requestTypingCredentials() : Promise<Credential> {
+        const defaultURL : string = this.getDefaultURL();
+        const defaultUsername : string = this.getDefaultUsername();
+
+        let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
+        if (!url) {
+            //It means that user clicked "Esc": abort the operation
+            Logger.logDebug("CommandHolder#signIn: abort after url inputbox");
+            return;
+        } else {
+            //to prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
+            url = url.replace(/\/$/, "");
+        }
+
+        const user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + " )", placeHolder: "", password: false });
+        if (!user) {
+            Logger.logDebug("CommandHolder#signIn: abort after username inputbox");
+            //It means that user clicked "Esc": abort the operation
             return;
         }
-        await this._extManager.settings.setLastUrl(url);
-        await this._extManager.settings.setLastUsername(username);
+
+        const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + " )", placeHolder: "", password: true } );
+        if (!pass) {
+            //It means that user clicked "Esc": abort the operation
+            Logger.logDebug("CommandHolder#signIn: abort after password inputbox");
+            return;
+        }
+        const creds : Credential = new Credential(url, user, pass);
+        return creds;
+    }
+
+    private async storeLastUserCreds(creds : Credential) : Promise<void> {
+        if (!creds) {
+            return;
+        }
+        await this._extManager.settings.setLastUrl(creds.serverURL);
+        await this._extManager.settings.setLastUsername(creds.user);
+        try {
+            const keytar = require("keytar");
+            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`)
+            keytar.setPassword("teamcity", "serverurl", creds.serverURL);
+            keytar.setPassword("teamcity", "username", creds.user);
+            keytar.setPassword("teamcity", "password", creds.pass);
+        } catch (err) {
+            Logger.logError(`CommandHolder#storeLastUserCreds: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
+        }
     }
 }
