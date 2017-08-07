@@ -28,16 +28,27 @@ export class CommandHolder {
         Logger.logInfo("CommandHolder#signIn: starts");
         const defaultURL : string = this.getDefaultURL();
         const defaultUsername : string = this.getDefaultUsername();
+
         let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
-        //we should prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
-        if (url !== undefined && url.length !== 0) {
+        if (!url) {
+            //It means that user clicked "Esc": abort the operation
+            return;
+        } else {
+            //to prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
             url = url.replace(/\/$/, "");
         }
-        let user: string = await window.showInputBox( { value: this.getDefaultUsername() || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
-        if (user === undefined || user.length <= 0) {
-            user = defaultUsername;
+
+        const user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
+        if (!user) {
+            //It means that user clicked "Esc": abort the operation
+            return;
         }
+
         const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + ")", placeHolder: "", password: true } );
+        if (!pass) {
+            //It means that user clicked "Esc": abort the operation
+            return;
+        }
         const creds : Credential = new Credential(url, user, pass);
         const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
         if (signedIn) {
