@@ -10,6 +10,8 @@ export class Constants {
     public static readonly TFS_EXTENSION_ID = "ms-vsts.team";
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
+    public static readonly DEFAULT_USER_URL = `${Constants.EXTENSION_NAME_PREFIX}creds.url`;
+    public static readonly DEFAULT_USER_NAME = `${Constants.EXTENSION_NAME_PREFIX}creds.username`;
 }
 export enum CvsProviderTypes {
      Git = <any>"Git",

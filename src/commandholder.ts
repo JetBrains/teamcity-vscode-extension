@@ -32,30 +32,35 @@ export class CommandHolder {
         let url: string = await window.showInputBox( { value: defaultURL || "", prompt: Strings.PROVIDE_URL, placeHolder: "", password: false } );
         if (!url) {
             //It means that user clicked "Esc": abort the operation
+            Logger.logDebug("CommandHolder#signIn: abort after url inputbox");
             return;
         } else {
             //to prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
             url = url.replace(/\/$/, "");
         }
 
-        const user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + ")", placeHolder: "", password: false });
+        const user: string = await window.showInputBox( { value: defaultUsername || "", prompt: Strings.PROVIDE_USERNAME + " ( URL: " + url + " )", placeHolder: "", password: false });
         if (!user) {
+            Logger.logDebug("CommandHolder#signIn: abort after username inputbox");
             //It means that user clicked "Esc": abort the operation
             return;
         }
 
-        const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + ")", placeHolder: "", password: true } );
+        const pass = await window.showInputBox( { prompt: Strings.PROVIDE_PASSWORD + " ( username: " + user + " )", placeHolder: "", password: true } );
         if (!pass) {
             //It means that user clicked "Esc": abort the operation
+            Logger.logDebug("CommandHolder#signIn: abort after password inputbox");
             return;
         }
         const creds : Credential = new Credential(url, user, pass);
+
         const signedIn : boolean = await this._extManager.credentialStore.setCredential(creds);
         if (signedIn) {
             Logger.logInfo("CommandHolder#signIn: success");
             if (this._extManager.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
+            this.storeLastUserCreds(creds.serverURL, creds.user);
             this._extManager.notificationWatcher.activate();
         } else {
             Logger.logWarning("CommandHolder#signIn: failed");
@@ -109,11 +114,11 @@ export class CommandHolder {
     }
 
     private getDefaultURL() : string {
-        return "http://localhost";
+        return this._extManager.settings.getLastUrl();
     }
 
     private getDefaultUsername() : string {
-        return "teamcity";
+        return this._extManager.settings.getLastUsername();
     }
 
     public changeConfigState(config : BuildConfigItem) {
@@ -156,5 +161,13 @@ export class CommandHolder {
         if (chosenItem && chosenItem.title === DO_NOT_SHOW_AGAIN) {
             this._extManager.settings.setShowSignInWelcome(false);
         }
+    }
+
+    private async storeLastUserCreds(url : string, username : string) : Promise<void> {
+        if (!url || !username) {
+            return;
+        }
+        await this._extManager.settings.setLastUrl(url);
+        await this._extManager.settings.setLastUsername(username);
     }
 }
