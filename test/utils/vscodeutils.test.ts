@@ -96,6 +96,13 @@ suite("VSCodeUtils", () => {
         const arr : TestObject[] = [obj1, obj2, obj3];
         assert.equal(VsCodeUtils.uniqBy<TestObject>(arr, (element) => element.a).length, 3);
     });
+
+    test("should verify uuidv4 method", function() {
+        const uuidRegExpMask = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+        assert.isTrue(uuidRegExpMask.test(VsCodeUtils.uuidv4()));
+        assert.isTrue(uuidRegExpMask.test(VsCodeUtils.uuidv4()));
+        assert.isTrue(uuidRegExpMask.test(VsCodeUtils.uuidv4()));
+    });
 });
 
 interface TestObject {

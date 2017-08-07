@@ -153,7 +153,6 @@ export class VsCodeUtils {
         }
         // tslint:disable-next-line:no-null-keyword
         const seen = Object.create(null);
-        // tslint:enable-next-line:no-null-keyword
         return arr.filter((el) => {
             const key = fn(el);
             if (seen[key]) {
@@ -162,6 +161,19 @@ export class VsCodeUtils {
 
             seen[key] = true;
             return true;
+        });
+    }
+
+    /**
+     * This method generates uniq UUID in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".
+     */
+    public static uuidv4() : string {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+            // tslint:disable-next-line:no-bitwise
+            const r = Math.random() * 16 | 0;
+            // tslint:disable-next-line:no-bitwise
+            const v = c === "x" ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
         });
     }
 }

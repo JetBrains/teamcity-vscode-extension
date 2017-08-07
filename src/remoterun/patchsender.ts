@@ -47,7 +47,7 @@ export class TccPatchSender implements PatchSender {
         }
         Logger.logDebug("TccPatchSender#remoteRun: step 1 was passed");
         /* Step 2. Creating a config file for the tcc.jar util. */
-        const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", ".teamcity-mappings.properties");
+        const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", `.teamcity-mappings.${VsCodeUtils.uuidv4()}.properties`);
         try {
             const configFileContent : string = await cvsProvider.generateConfigFileContent();
             await FileController.createFileAsync(configFileAbsPath, configFileContent);
