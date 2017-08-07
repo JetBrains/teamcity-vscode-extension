@@ -51,6 +51,52 @@ suite("Settings", () => {
             settings.setShowSignInWelcome(temp);
             done();
         });
-
     });
+
+    test("should verify setting lastUrl property", function(done) {
+        const settings : Settings = new SettingsImpl();
+        const testUrl : string = "http://testUrl:8080/rpc";
+        const temp = settings.getLastUrl();
+        settings.setLastUrl(testUrl).then(() => {
+            const settings : Settings = new SettingsImpl();
+            assert.equal(settings.getLastUrl(), testUrl);
+            settings.setLastUrl(temp);
+            done();
+        });
+    });
+
+    test("should verify default lastUrl property", function(done) {
+        const settings : Settings = new SettingsImpl();
+        const temp = settings.getLastUrl();
+        settings.setLastUrl(undefined).then(() => {
+            const settings : Settings = new SettingsImpl();
+            assert.equal(settings.getLastUrl(), "");
+            settings.setLastUrl(temp);
+            done();
+        });
+    });
+
+    test("should verify setting lastUsername property", function(done) {
+        const settings : Settings = new SettingsImpl();
+        const testUser : string = "testtestUsername";
+        const temp = settings.getLastUsername();
+        settings.setLastUsername(testUser).then(() => {
+            const settings : Settings = new SettingsImpl();
+            assert.equal(settings.getLastUsername(), testUser);
+            settings.setLastUsername(temp);
+            done();
+        });
+    });
+
+    test("should verify default lastUsername property", function(done) {
+        const settings : Settings = new SettingsImpl();
+        const temp = settings.getLastUsername();
+        settings.setLastUsername(undefined).then(() => {
+            const settings : Settings = new SettingsImpl();
+            assert.equal(settings.getLastUsername(), "");
+            settings.setLastUsername(temp);
+            done();
+        });
+    });
+
 });

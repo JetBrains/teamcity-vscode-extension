@@ -69,6 +69,14 @@
           "type": "boolean",
           "default": true,
           "description": "Sets whether the extension should show welcome message after the login operation or not."
+        },
+        "teamcity.creds.url": {
+          "type": "string",
+          "description": "Sets default url for the Signin operation."
+        },
+        "teamcity.creds.username": {
+          "type": "string",
+          "description": "Sets default username for the Signin operation."
         }
       }
     }

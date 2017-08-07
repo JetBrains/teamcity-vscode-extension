@@ -3,6 +3,7 @@ import * as path from "path";
 import * as cp from "child_process";
 import * as cp_promise from "child-process-promise";
 import { CvsProviderTypes } from "../utils/constants";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import { CvsInfo } from "../utils/interfaces";
 import { Logger } from "../utils/logger";
 import { workspace } from "vscode";
@@ -50,7 +51,9 @@ export class GitUtils {
 
             const gitDiffOutput = await cp_promise.exec(gitDiffCommand);
             const diffResults : string = gitDiffOutput.stdout.toString("utf8").trim();
-            cvsInfo.isChanged = diffResults && true;
+            cvsInfo.isChanged = diffResults ? true : false;
+        } catch (err) {
+            Logger.logWarning(`GitUtils#collectInfo:  ${VsCodeUtils.formatErrorMessage(err)}`);
         } finally {
             Logger.logDebug(`GitUtils#collectInfo: path: ${cvsInfo.path},
                 versionErrMsg: ${cvsInfo.versionErrorMsg},

@@ -50,7 +50,6 @@ export class NotificationProvider extends XmlRpcProvider {
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
-                Logger.logDebug("NotificationProvider#getTotalNumberOfEvents: total number of events is " + data);
                 resolve(data);
             });
         });

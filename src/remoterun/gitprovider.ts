@@ -2,7 +2,8 @@
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CvsSupportProvider } from "./cvsprovider";
-import { CheckinInfo } from "../utils/interfaces";
+import { CheckinInfo, Remote } from "../utils/interfaces";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import * as path from "path";
@@ -98,10 +99,12 @@ export class GitSupportProvider implements CvsSupportProvider {
         const COMMIT_AND_PUSH_LABEL : string = "Commit and Push";
         choices.push({ label: NO_LABEL, description: undefined });
         choices.push({ label: COMMIT_LABEL, description: undefined });
-        /*
-            I can't understand how to take correct corresponding remote branch, so TODO: implement it!
+        const remotes : Remote[] = await this.getRemotes();
+        //Ask to push only when it's possible
+        if (remotes && remotes.length > 0) {
             choices.push({ label: COMMIT_AND_PUSH_LABEL, description: undefined });
-        */
+        }
+
         const options : QuickPickOptions = {
             ignoreFocusOut: true,
             matchOnDescription: false,
@@ -117,8 +120,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
             const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
             await cp.exec(commitCommand);
-            const remoteBranch : string = await this.getRemoteBrunch();
-            const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push ${remoteBranch} HEAD"`;
+            const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
             await cp.exec(pushCommand);
         }
     }
@@ -193,5 +195,18 @@ export class GitSupportProvider implements CvsSupportProvider {
         firstRevHash = firstRevHash.split("\n")[0];
         Logger.logDebug(`GitSupportProvider#firstRevHash: first month revision is ${firstRevHash}`);
         return firstRevHash;
+    }
+
+    private async getRemotes() : Promise<Remote[]> {
+        const getRemotesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" remote --verbose`;
+        const getRemotesOutput = await cp.exec(getRemotesCommand);
+        const regex = /^([^\s]+)\s+([^\s]+)\s/;
+        const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
+            .filter((b) => !!b)
+            .map((line) => regex.exec(line))
+            .filter((g) => !!g)
+            .map((groups: RegExpExecArray) => ({ name: groups[1], url: groups[2] }));
+
+        return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 }

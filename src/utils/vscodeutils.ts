@@ -141,4 +141,39 @@ export class VsCodeUtils {
         }
         return formattedMsg;
     }
+
+    /**
+     * This method filters an array and returns elements which has only uniq keys
+     * @param arr - an array which should be filtered
+     * @param fn - a filter function which should return the uniq key
+     */
+    public static uniqBy<T>(arr: T[], fn: (el: T) => string): T[] {
+        if (!arr) {
+            return [];
+        }
+        // tslint:disable-next-line:no-null-keyword
+        const seen = Object.create(null);
+        return arr.filter((el) => {
+            const key = fn(el);
+            if (seen[key]) {
+                return false;
+            }
+
+            seen[key] = true;
+            return true;
+        });
+    }
+
+    /**
+     * This method generates uniq UUID in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".
+     */
+    public static uuidv4() : string {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+            // tslint:disable-next-line:no-bitwise
+            const r = Math.random() * 16 | 0;
+            // tslint:disable-next-line:no-bitwise
+            const v = c === "x" ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 }

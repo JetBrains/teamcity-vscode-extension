@@ -17,7 +17,6 @@ export class ModificationCounterSubscription implements ModificationCounterSubsc
           sb.push(event.serialize() + ",");
       });
       const serializedString : string = sb.join("");
-      Logger.logDebug(`Serialized string: ${serializedString}`);
       return serializedString;
     }
 
