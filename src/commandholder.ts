@@ -12,6 +12,7 @@ import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { Logger } from "./utils/logger";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
+import { XmlRpcProvider2 } from "./utils/xmlrpcprovider";
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
@@ -28,16 +29,16 @@ export class CommandHolder {
         Logger.logInfo("CommandHolder#signIn: starts");
         let signedIn : boolean = false;
         let creds : Credential;
-        //try getting credentials from keytar 
+        //try getting credentials from keytar
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`)
+            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`);
             const url = await keytar.getPassword("teamcity", "serverurl");
             const user = await keytar.getPassword("teamcity", "username");
             const pass = await keytar.getPassword("teamcity", "password");
             creds = new Credential(url, user, pass);
             signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
-            Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`)
+            Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`);
         } catch (err) {
             Logger.logError(`CommandHolder#signIn: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
@@ -123,9 +124,15 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
-        const keytar = require("keytar");
-        keytar.setPassword("teamcity", "rugpanov", "password90");
-        const key = await keytar.getPassword("teamcity", "rugpanov");
+        try {
+            //const sss = await VsCodeUtils.triggerChanges(207);
+            const ss : string = await VsCodeUtils.tryMakeChangesRequest();
+            const provider : XmlRpcProvider2 = new XmlRpcProvider2("http://localhost");
+            await provider.doSmt(ss);
+            console.log(ss);
+        } catch (err) {
+            console.log(VsCodeUtils.formatErrorMessage(err));
+        }
         Logger.logInfo("CommandHolder#signOut: starts");
         this._extManager.cleanUp();
         Logger.logInfo("CommandHolder#signOut: finished");
@@ -197,7 +204,7 @@ export class CommandHolder {
         await this._extManager.settings.setLastUsername(creds.user);
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`)
+            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`);
             keytar.setPassword("teamcity", "serverurl", creds.serverURL);
             keytar.setPassword("teamcity", "username", creds.user);
             keytar.setPassword("teamcity", "password", creds.pass);
