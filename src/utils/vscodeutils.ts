@@ -75,14 +75,14 @@ export class VsCodeUtils {
      * @param cred? - Credential for basic authorization
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
-    public static makeRequest(  method : string, 
-                                url : string, 
-                                cred? : Credential, 
+    public static makeRequest(  method : string,
+                                url : string,
+                                cred? : Credential,
                                 data? : Buffer | String,
                                 additionalArgs? : string[]) : Promise<string> {
         Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
         //Add additional args to url
-        if (!additionalArgs) {
+        if (additionalArgs) {
             const urlBulder : string[] = [];
             urlBulder.push(url);
             urlBulder.push("?");

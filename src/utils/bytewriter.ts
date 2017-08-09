@@ -4,7 +4,6 @@ import { VsCodeUtils } from "../utils/vscodeutils";
 
 export class ByteWriter {
 
-    
     public static writeUTF(str : string) : Buffer {
         const strlen : number = str.length;
         let utflen : number = 0;
@@ -19,11 +18,9 @@ export class ByteWriter {
                 utflen += 2;
             }
         }
-
         if (utflen > 65535) {
             throw new Error("UTF encoding: encoded string too long: " + utflen + " bytes");
         }
-
         const bytearr = new Buffer(utflen + 2);
         // tslint:disable:no-bitwise
         bytearr[count++] = ((utflen >> 8) & 0xFF);

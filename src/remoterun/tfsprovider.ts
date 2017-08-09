@@ -54,7 +54,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             localRootPath: this._workspaceRootPath,
             tcProjectRootPath: `tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`,
             fullContent: `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`
-        }
+        };
         Logger.logInfo(`TfsSupportProvider#generateConfigFileContent: configFileContent: ${mappingFileContent.fullContent}`);
         return mappingFileContent;
     }

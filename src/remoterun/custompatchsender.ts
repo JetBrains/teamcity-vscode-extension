@@ -1,18 +1,18 @@
 "use strict";
 import { PatchSender } from "../remoterun/patchsender";
-import { XmlRpcProvider } from "../utils/xmlrpcprovider"
-import { FileController } from "../utils/filecontroller"
-import { ByteWriter } from "../utils/bytewriter"
-import { VsCodeUtils } from "../utils/vscodeutils"
-import { Constants } from "../utils/constants"
-import { Credential } from "../credentialstore/credential"
+import { XmlRpcProvider } from "../utils/xmlrpcprovider";
+import { FileController } from "../utils/filecontroller";
+import { ByteWriter } from "../utils/bytewriter";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { Constants } from "../utils/constants";
+import { Credential } from "../credentialstore/credential";
 import { BuildConfigItem } from "../remoterun/configexplorer";
-import { CvsSupportProvider } from "../remoterun/cvsprovider"
-import { CheckinInfo, MappingFileContent } from "../utils/interfaces"
+import { CvsSupportProvider } from "../remoterun/cvsprovider";
+import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
 import * as path from "path";
 
 export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
-    
+
     /**
      * @returns true in case of success, otherwise false.
      */
@@ -21,7 +21,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
         if (!creds.userId) {
             await this.authenticateIfRequired(creds);
         }
-        
+
         const patch : Buffer = await this.preparePatch(cvsProvider);
         const additionalArgs : string[] = [];
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
@@ -29,23 +29,28 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
         additionalArgs.push(`description="${checkInInfo.message}"`);
         additionalArgs.push(`commitType=0`); // commitType is remote run
         const patchDestinationUrl : string = `${creds.serverURL}/uploadChanges.html`;
-        
-        const changeListId : string = await VsCodeUtils.makeRequest(Constants.POST_METHOD, 
-                                                                    patchDestinationUrl, 
-                                                                    creds, 
-                                                                    patch, 
-                                                                    additionalArgs);
-        const errors : string = await this.triggerChangeList(changeListId, configs, creds);
+        try {
+            const changeListId : string = await VsCodeUtils.makeRequest(Constants.POST_METHOD,
+                                                                        patchDestinationUrl,
+                                                                        creds,
+                                                                        patch,
+                                                                        additionalArgs);
+            const errors : string = await this.triggerChangeList(changeListId, configs, creds);
+        } catch (err) {
+            console.log(VsCodeUtils.formatErrorMessage(err));
+            return false;
+        }
         return true;
     }
 
     /**
      * This method uses PatchBuilder to write all required info into the patch file
-     * @param cvsProvider - CvsProvider object.
-     * @return Promise<Buffer> of patch content 
+     * @param cvsProvider - CvsProvider object
+     * @return Promise<Buffer> of patch content
      */
     public async preparePatch(cvsProvider : CvsSupportProvider) : Promise<Buffer> {
-        const changedFilesNames : string[] = await cvsProvider.getFormattedFilenames();
+        const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
+        const changedFilesNames : string[] = checkInInfo.fileAbsPaths;
         if (!changedFilesNames) {
             return;
         }
@@ -53,11 +58,12 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
         const patchBuilder : PatchBuilder = new PatchBuilder();
 
         //We can't use forEach loop with await calls
-        for(let i : number = 0; i < changedFilesNames.length; i++) {
-            const fileName : string = changedFilesNames[i];
-            const absPath : string = path.join(configFileContent.localRootPath, fileName);
+        for (let i : number = 0; i < changedFilesNames.length; i++) {
+            //const fileName : string = changedFilesNames[i];
+            const absPath : string = changedFilesNames[i];
+            const relPath : string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
             const fileExist : boolean = await FileController.exists(absPath);
-            const teamcityFileName : string = `${configFileContent.tcProjectRootPath}${fileName}`;
+            const teamcityFileName : string = `${configFileContent.tcProjectRootPath}/${relPath}`;
             if (fileExist) {
                 patchBuilder.addReplacedFile(teamcityFileName, absPath);
             } else {
@@ -73,8 +79,8 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
      * @param buildConfigs - all build configs, which should be triggered
      * @param creds - user credentials
      */
-    public async triggerChangeList( changeListId : string, 
-                                    buildConfigs : BuildConfigItem[], 
+    public async triggerChangeList( changeListId : string,
+                                    buildConfigs : BuildConfigItem[],
                                     creds : Credential) : Promise<string> {
         if (!buildConfigs) {
             return;
@@ -93,7 +99,6 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                 <myCleanSources>false</myCleanSources>
                 </AddToQueueRequest>`);
         });
-        
 
         const triggedBy = `##userId='${creds.userId}' IDEPlugin='VsCode Plagin'`;
         const prom : Promise<string> = new Promise((resolve, reject) => {
@@ -123,7 +128,7 @@ class PatchBuilder {
     }
 
     /**
-     * This method adds to the patch any not deleted file 
+     * This method adds to the patch any not deleted file
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
@@ -142,7 +147,7 @@ class PatchBuilder {
     }
 
     /**
-     * This method adds to the patch a deleted file 
+     * This method adds to the patch a deleted file
      * @param tcFileName - fileName at the TeamCity format
      */
     public addDeletedFile(tcFileName: string) {
@@ -162,7 +167,9 @@ class PatchBuilder {
      */
     public getPatch() : Buffer {
         const byteEOPMark : Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
+        const byteEmptyLine : Buffer = ByteWriter.writeUTF("");
         this._bufferArray.push(byteEOPMark);
+        this._bufferArray.push(byteEmptyLine);
         return Buffer.concat(this._bufferArray);
     }
 

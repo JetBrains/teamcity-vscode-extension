@@ -9,10 +9,10 @@ import { VsCodeUtils } from "./utils/vscodeutils";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
 import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
+import { CustomPatchSender } from "./remoterun/custompatchsender";
 import { Logger } from "./utils/logger";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
-import { XmlRpcProvider2 } from "./utils/xmlrpcprovider";
 import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
@@ -95,7 +95,8 @@ export class CommandHolder {
         }
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
-        const patchSender : PatchSender = new TccPatchSender();
+        const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
+        //const patchSender : PatchSender = new TccPatchSender();
         const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
@@ -124,15 +125,6 @@ export class CommandHolder {
     }
 
     public async signOut() : Promise<void> {
-        try {
-            //const sss = await VsCodeUtils.triggerChanges(207);
-            const ss : string = await VsCodeUtils.tryMakeChangesRequest();
-            const provider : XmlRpcProvider2 = new XmlRpcProvider2("http://localhost");
-            await provider.doSmt(ss);
-            console.log(ss);
-        } catch (err) {
-            console.log(VsCodeUtils.formatErrorMessage(err));
-        }
         Logger.logInfo("CommandHolder#signOut: starts");
         this._extManager.cleanUp();
         Logger.logInfo("CommandHolder#signOut: finished");
