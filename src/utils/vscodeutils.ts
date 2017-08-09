@@ -75,8 +75,24 @@ export class VsCodeUtils {
      * @param cred? - Credential for basic authorization
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
-    public static makeRequest(method, url : string, cred? : Credential) {
+    public static makeRequest(  method : string, 
+                                url : string, 
+                                cred? : Credential, 
+                                data? : Buffer | String,
+                                additionalArgs? : string[]) : Promise<string> {
         Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
+        //Add additional args to url
+        if (!additionalArgs) {
+            const urlBulder : string[] = [];
+            urlBulder.push(url);
+            urlBulder.push("?");
+            additionalArgs.forEach((arg) => {
+                urlBulder.push(arg);
+                urlBulder.push("&");
+            });
+            url = urlBulder.join("");
+        }
+
         const XMLHttpRequest = XHR.XMLHttpRequest;
         return new Promise(function (resolve, reject) {
             const request : XHR.XMLHttpRequest = new XMLHttpRequest();
@@ -88,7 +104,13 @@ export class VsCodeUtils {
             }
             request.onload = function () {
                 if (this.status >= 200 && this.status < 300) {
-                    resolve(request.response);
+                    if (request.response) {
+                        resolve(request.response);
+                    } else if (this.responseText) {
+                        resolve(this.responseText);
+                    } else {
+                        resolve("");
+                    }
                 } else {
                     reject({
                         status: this.status,
@@ -102,44 +124,8 @@ export class VsCodeUtils {
                     statusText: request.statusText
                 });
             };
-            request.send();
+            request.send(data);
         });
-    }
-
-    public static async tryMakeChangesRequest() : Promise<string> {//%3a == : %2f ==// %7c ==|
-        const str : string = `jetbrains.git://|https://github.com/rugpanov/JavaHelloWorld|/README.md`;
-        const buffer1 : Buffer = WriteByte(25);
-        const buffer2 : Buffer = WriteUTF(str);
-        const buffer25 : Buffer = await WriteFile("C:/Users/user/Documents/Projects/examples/JavaHelloWorld/README.md");
-        const buffer3 : Buffer = WriteByte(10);
-        const newBuffer = Buffer.concat([buffer1, buffer2, buffer3, WriteUTF("")]);
-        const XMLHttpRequest = XHR.XMLHttpRequest;
-        const prom : Promise<string> = new Promise(function (resolve, reject) {
-            const request : XHR.XMLHttpRequest = new XMLHttpRequest();
-            request.open("POST", "http://localhost/uploadChanges.html?userId=1&description=\"asdsadasdsadasd\"&commitType=0", true);
-            const cred = new Credential("http://localhost", "rugpanov", "");
-            if (cred) {
-                request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
-            }
-            request.onload = function () {
-                if (this.status >= 200 && this.status < 300) {
-                    resolve(this.responseText);
-                } else {
-                    reject({
-                        status: this.status,
-                        statusText: request.statusText
-                    });
-                }
-            };
-            request.onerror = function () {
-                reject({
-                    status: this.status,
-                    statusText: request.statusText
-                });
-            };
-            request.send(newBuffer);
-        });
-        return prom;
     }
 
     public static triggerChanges(id : number) {//JavaHelloWorld_JavaHelloWorldBuild
@@ -249,103 +235,5 @@ export class VsCodeUtils {
             const v = c === "x" ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
-    }
-}
-
-function WriteUTF(str : string) : Buffer {
-    const strlen : number = str.length;
-    let utflen : number = 0;
-    let count : number = 0;
-    for (let i = 0; i < strlen; i++) {
-        const c : number = str.charCodeAt(i);
-        if ((c >= 0x0001) && (c <= 0x007F)) {
-            utflen++;
-        } else if (c > 0x07FF) {
-            utflen += 3;
-        } else {
-            utflen += 2;
-        }
-    }
-
-    if (utflen > 65535) {
-        throw new Error("UTF encoding: encoded string too long: " + utflen + " bytes");
-    }
-
-    const bytearr = new Buffer(utflen + 2);
-    // tslint:disable:no-bitwise
-    bytearr[count++] = ((utflen >> 8) & 0xFF);
-    bytearr[count++] = ((utflen >> 0) & 0xFF);
-    let i : number;
-    for (i = 0; i < strlen; i++) {
-        const c : number = str.charCodeAt(i);
-        if (!((c >= 0x0001) && (c <= 0x007F))) {
-            break;
-        }
-        bytearr[count++] = c;
-    }
-
-    for (; i < strlen; i++) {
-        const c : number = str.charCodeAt(i);
-        if ((c >= 0x0001) && (c <= 0x007F)) {
-            bytearr[count++] = c;
-        } else if (c > 0x07FF) {
-            bytearr[count++] = (0xE0 | ((c >> 12) & 0x0F));
-            bytearr[count++] = (0x80 | ((c >> 6) & 0x3F));
-            bytearr[count++] = (0x80 | ((c >> 0) & 0x3F));
-        } else {
-            bytearr[count++] = (0xC0 | ((c >> 6) & 0x1F));
-            bytearr[count++] = (0x80 | ((c >> 0) & 0x3F));
-        }
-    }
-    return bytearr;
-    //myStream.Write(bytearr, 0, utflen + 2);
-}
-
-function WriteByte(code : number) : Buffer {
-    const bu : Buffer = new Buffer(1);
-    bu[0] = code & 0xff, code / 256 >>> 0;
-    return bu;
-}
-
-function longToByteArray (long : number) {
-    // we want to represent the input as a 8-bytes array
-    const byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
-    for ( let index = 0; index < byteArray.length; index ++ ) {
-        const byte = long & 0xff;
-        byteArray [ index ] = byte;
-        long = (long - byte) / 256 ;
-    }
-    return byteArray;
-}
-
-function WriteLong(a : number) : Buffer {
-    const buffer : Buffer = new Buffer(8);
-    buffer[0] = (a >> 56);
-    buffer[1] = (a >> 48);
-    buffer[2] = (a >> 40);
-    buffer[3] = (a >> 32);
-    buffer[4] = (a >> 24);
-    buffer[5] = (a >> 16);
-    buffer[6] = (a >> 8);
-    buffer[7] = (a >> 0);
-    return buffer;
-}
-
-async function WriteFile(name : string) : Promise<Buffer> {
-    try {
-        const fs = require("fs");
-        const prom : Promise<Buffer> = new Promise((resolve, reject) => {
-            fs.readFile(name, (err, data) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve(data);
-            });
-        });
-        const fileContentBuffer : Buffer = await prom;
-        const bufferLength : Buffer = WriteLong(fileContentBuffer.length);
-        return Buffer.concat([bufferLength, fileContentBuffer]);
-    } catch (err) {
-        throw new Error("Failed to read file '" + name + "'. " + VsCodeUtils.formatErrorMessage(err));
     }
 }

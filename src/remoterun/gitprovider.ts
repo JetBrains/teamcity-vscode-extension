@@ -2,7 +2,7 @@
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CvsSupportProvider } from "./cvsprovider";
-import { CheckinInfo, Remote } from "../utils/interfaces";
+import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
@@ -49,7 +49,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * @return content of the ".teamcity-mappings.properties" file
      * (for git only) Currently @username part of content was removed. TODO: understand what is it and for which purpose is it used.
      */
-    public async generateConfigFileContent() : Promise<string> {
+    public async generateMappingFileContent() : Promise<MappingFileContent> {
         const getRemoteUrlCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" ls-remote --get-url`;
         Logger.logDebug(`GitSupportProvider#generateConfigFileContent: getRemoteUrlCommand: ${getRemoteUrlCommand}`);
         const commandResult = await cp.exec(getRemoteUrlCommand);
@@ -58,8 +58,13 @@ export class GitSupportProvider implements CvsSupportProvider {
             Logger.logError(`GitSupportProvider#generateConfigFileContent: Remote url wasn't determined`);
             throw new Error("Remote url wasn't determined");
         }
-        const configFileContent : string = `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
-        Logger.logDebug(`GitSupportProvider#generateConfigFileContent: configFileContent: ${configFileContent}`);
+        //const configFileContent : string = `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
+        const configFileContent : MappingFileContent =  {
+            localRootPath: this._workspaceRootPath,
+            tcProjectRootPath: `jetbrains.git://|${remoteUrl.trim()}|`,
+            fullContent: `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`
+        };
+        Logger.logDebug(`GitSupportProvider#generateConfigFileContent: configFileContent: ${configFileContent.fullContent}`);
         return configFileContent;
     }
 

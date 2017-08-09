@@ -116,34 +116,3 @@ export class XmlRpcProvider {
         return testObject;
     }
 }
-
-export class XmlRpcProvider2 extends XmlRpcProvider {
-    public async doSmt(ss : string) {
-        const cred : Credential = new Credential("http://localhost", "rugpanov", "");
-        await this.authenticateIfRequired(cred);
-        await this.doSmts(ss);
-
-    }
-
-    private async doSmts(ss : string) : Promise<string[]> {
-        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-           throw new Error("Something went wrong. Try to signin again.");
-        }
-        //Sometimes Server Path contains incorrect backslash simbols.
-        const addToQueueRequests = [];
-        addToQueueRequests.push(`<AddToQueueRequest><changeListId>${ss}</changeListId><buildTypeId>bt3</buildTypeId><myPutBuildOnTheQueueTop>false</myPutBuildOnTheQueueTop><myRebuildDependencies>false</myRebuildDependencies><myCleanSources>false</myCleanSources></AddToQueueRequest>`);
-
-        const triggedBy = "##userId='1' IDEPlugin='VsCode Plagin'";
-        const prom : Promise<string[]> = new Promise((resolve, reject) => {
-            this.client.methodCall("RemoteBuildServer2.addToQueue", [ addToQueueRequests, triggedBy ], function (err, confIds) {
-                /* tslint:disable:no-null-keyword */
-                if (err !== null || confIds === undefined) {
-                   return reject(err);
-                }
-                /* tslint:enable:no-null-keyword */
-                resolve(confIds);
-            });
-        });
-        return prom;
-    }
-}
