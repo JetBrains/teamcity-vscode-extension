@@ -128,6 +128,43 @@ export class VsCodeUtils {
         });
     }
 
+    public static triggerChanges(id : number) {//JavaHelloWorld_JavaHelloWorldBuild
+        const str = `<?xml version="1.0" encoding="UTF-8"?>
+<build>
+  <triggeringOptions cleanSources="true" rebuildAllDependencies="true" queueAtTop="true"/>
+  <buildType id="JavaHelloWorld_JavaHelloWorldBuild"/>
+  <lastChanges>
+    <change id="207"/>
+  </lastChanges>
+</build>`;
+        const XMLHttpRequest = XHR.XMLHttpRequest;
+        return new Promise(function (resolve, reject) {
+            const request : XHR.XMLHttpRequest = new XMLHttpRequest();
+            request.open("POST", "http://localhost/app/rest/buildQueue", true);
+            const cred = new Credential("http://localhost", "rugpanov", "");
+            if (cred) {
+                request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
+                request.setRequestHeader("Content-Type", "application/xml");
+            }
+            request.onload = function () {
+                if (this.status >= 200 && this.status < 300) {
+                    resolve(request.response);
+                } else {
+                    reject({
+                        status: this.status,
+                        statusText: request.statusText
+                    });
+                }
+            };
+            request.onerror = function () {
+                reject({
+                    status: this.status,
+                    statusText: request.statusText
+                });
+            };
+            request.send(str);
+        });
+    }
     /**
      * This method prepares message to display from change items and user credential.
      * @param change - changeItemProxy
