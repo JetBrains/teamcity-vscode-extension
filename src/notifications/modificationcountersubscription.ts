@@ -2,7 +2,6 @@
 import { ISubscriptionEvent, ProjectEvent, UserEvent } from "./subscriptionevent";
 import { SummaryDataProxy } from "./summarydata";
 import { TrackerEventType } from "../utils/constants";
-import { Logger } from "../utils/logger";
 
 export interface ModificationCounterSubscriptionInfo {
     serialize() : string;

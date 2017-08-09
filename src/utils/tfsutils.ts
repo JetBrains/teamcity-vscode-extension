@@ -4,7 +4,6 @@ import { CvsInfo } from "../utils/interfaces";
 import { CvsProviderTypes } from "../utils/constants";
 import { Logger } from "../utils/logger";
 import { workspace } from "vscode";
-import * as cp from "child_process";
 import * as cpprom from "child-process-promise";
 
 export class TfsUtils {

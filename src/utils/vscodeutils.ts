@@ -1,12 +1,13 @@
 "use strict";
 
-import { window, MessageItem } from "vscode";
+import { window, MessageItem, workspace } from "vscode";
 import { Strings } from "../utils/strings";
 import { Logger } from "../utils/logger";
 import { Credential } from "../credentialstore/credential";
 import { ChangeItemProxy, BuildItemProxy } from "../notifications/summarydata";
 import XHR = require("xmlhttprequest");
 import pako = require("pako");
+import fs = require("fs");
 
 export class VsCodeUtils {
 
@@ -74,8 +75,24 @@ export class VsCodeUtils {
      * @param cred? - Credential for basic authorization
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
-    public static makeRequest(method, url : string, cred? : Credential) {
+    public static makeRequest(  method : string,
+                                url : string,
+                                cred? : Credential,
+                                data? : Buffer | String,
+                                additionalArgs? : string[]) : Promise<string> {
         Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
+        //Add additional args to url
+        if (additionalArgs) {
+            const urlBulder : string[] = [];
+            urlBulder.push(url);
+            urlBulder.push("?");
+            additionalArgs.forEach((arg) => {
+                urlBulder.push(arg);
+                urlBulder.push("&");
+            });
+            url = urlBulder.join("");
+        }
+
         const XMLHttpRequest = XHR.XMLHttpRequest;
         return new Promise(function (resolve, reject) {
             const request : XHR.XMLHttpRequest = new XMLHttpRequest();
@@ -87,7 +104,13 @@ export class VsCodeUtils {
             }
             request.onload = function () {
                 if (this.status >= 200 && this.status < 300) {
-                    resolve(request.response);
+                    if (request.response) {
+                        resolve(request.response);
+                    } else if (this.responseText) {
+                        resolve(this.responseText);
+                    } else {
+                        resolve("");
+                    }
                 } else {
                     reject({
                         status: this.status,
@@ -101,7 +124,7 @@ export class VsCodeUtils {
                     statusText: request.statusText
                 });
             };
-            request.send();
+            request.send(data);
         });
     }
 

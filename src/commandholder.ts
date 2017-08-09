@@ -7,8 +7,9 @@ import { Strings } from "./utils/strings";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
-import { PatchSender, TccPatchSender } from "./remoterun/patchsender";
+import { PatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
+import { CustomPatchSender } from "./remoterun/custompatchsender";
 import { Logger } from "./utils/logger";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
@@ -28,16 +29,16 @@ export class CommandHolder {
         Logger.logInfo("CommandHolder#signIn: starts");
         let signedIn : boolean = false;
         let creds : Credential;
-        //try getting credentials from keytar 
+        //try getting credentials from keytar
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`)
+            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`);
             const url = await keytar.getPassword("teamcity", "serverurl");
             const user = await keytar.getPassword("teamcity", "username");
             const pass = await keytar.getPassword("teamcity", "password");
             creds = new Credential(url, user, pass);
             signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
-            Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`)
+            Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`);
         } catch (err) {
             Logger.logError(`CommandHolder#signIn: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
@@ -94,7 +95,8 @@ export class CommandHolder {
         }
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
-        const patchSender : PatchSender = new TccPatchSender();
+        const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
+        //const patchSender : PatchSender = new TccPatchSender();
         const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
@@ -194,7 +196,7 @@ export class CommandHolder {
         await this._extManager.settings.setLastUsername(creds.user);
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`)
+            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`);
             keytar.setPassword("teamcity", "serverurl", creds.serverURL);
             keytar.setPassword("teamcity", "username", creds.user);
             keytar.setPassword("teamcity", "password", creds.pass);
