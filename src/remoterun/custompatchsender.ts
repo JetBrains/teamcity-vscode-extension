@@ -65,7 +65,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
             const fileExist : boolean = await FileController.exists(absPath);
             const teamcityFileName : string = `${configFileContent.tcProjectRootPath}/${relPath}`;
             if (fileExist) {
-                patchBuilder.addReplacedFile(teamcityFileName, absPath);
+               await patchBuilder.addReplacedFile(teamcityFileName, absPath);
             } else {
                 patchBuilder.addDeletedFile(teamcityFileName);
             }
@@ -99,10 +99,9 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                 <myCleanSources>false</myCleanSources>
                 </AddToQueueRequest>`);
         });
-
         const triggedBy = `##userId='${creds.userId}' IDEPlugin='VsCode Plagin'`;
         const prom : Promise<string> = new Promise((resolve, reject) => {
-            this.client.methodCall("RemoteBuildServer2.addToQueue", [ addToQueueRequests, triggedBy ], function (err, result) {
+            this.client.methodCall("RemoteBuildServer2.addToQueue", [ addToQueueRequests, triggedBy ],  (err, result) => {
                 /* tslint:disable-next-line:no-null-keyword */
                 if (err !== null) {
                    return reject(err);
@@ -132,7 +131,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
-    public async addReplacedFile(tcFileName: string, absLocalPath : string) {
+    public async addReplacedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
         try {
             const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.REPLACE_PREFIX);
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
@@ -142,6 +141,7 @@ class PatchBuilder {
             this._bufferArray.push(byteFileName);
             this._bufferArray.push(byteFileContent);
         } catch (err) {
+            console.log(VsCodeUtils.formatErrorMessage(err));
             //TODO: WRITE TO THE LOG SMT SCARY
         }
     }

@@ -56,17 +56,18 @@ export class ByteWriter {
         return bu;
     }
 
-    public static longToByteArray (long : number) {
+    public static longToByteArray(long : number) : Buffer {
         // we want to represent the input as a 8-bytes array
-        const byteArray = [0, 0, 0, 0, 0, 0, 0, 0];
-        for ( let index = 0; index < byteArray.length; index ++ ) {
+        const buffer : Buffer = new Buffer(8);
+        for ( let index = 0; index < buffer.length; index ++ ) {
             const byte = long & 0xff;
-            byteArray [ index ] = byte;
+            buffer[buffer.length - index - 1] = byte;
             long = (long - byte) / 256 ;
         }
-        return byteArray;
+        return buffer;
     }
 
+    //Not sure it works fine
     public static writeLong(a : number) : Buffer {
         const buffer : Buffer = new Buffer(8);
         buffer[0] = (a >> 56);
@@ -92,7 +93,7 @@ export class ByteWriter {
                 });
             });
             const fileContentBuffer : Buffer = await prom;
-            const bufferLength : Buffer = ByteWriter.writeLong(fileContentBuffer.length);
+            const bufferLength : Buffer = ByteWriter.longToByteArray(fileContentBuffer.byteLength);
             return Buffer.concat([bufferLength, fileContentBuffer]);
         } catch (err) {
             throw new Error("Failed to read file '" + name + "'. " + VsCodeUtils.formatErrorMessage(err));

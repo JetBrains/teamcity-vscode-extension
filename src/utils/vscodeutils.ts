@@ -134,7 +134,7 @@ export class VsCodeUtils {
      * @param cred - user credential. Required to get serverUrl.
      */
     public static formMessage(change : ChangeItemProxy, cred : Credential) : string {
-        const changePrefix = change.isPersonal ? "Personal change" : "Change";
+        const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
         const messageSB : string[] = [];
         messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
         const builds : BuildItemProxy[] = change.builds;
