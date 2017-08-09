@@ -26,3 +26,9 @@ export interface Remote {
     name: string;
     url: string;
 }
+
+export interface MappingFileContent {
+    localRootPath: string;
+    tcProjectRootPath: string;
+    fullContent : string;
+}

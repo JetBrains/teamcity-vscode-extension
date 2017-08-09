@@ -12,6 +12,9 @@ export class Constants {
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
     public static readonly DEFAULT_USER_URL = `${Constants.EXTENSION_NAME_PREFIX}creds.url`;
     public static readonly DEFAULT_USER_NAME = `${Constants.EXTENSION_NAME_PREFIX}creds.username`;
+
+    public static readonly POST_METHOD = "POST";
+    public static readonly GET_METHOD = "GET";
 }
 export enum CvsProviderTypes {
      Git = <any>"Git",

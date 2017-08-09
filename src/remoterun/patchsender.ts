@@ -4,7 +4,7 @@ import * as path from "path";
 import * as cp from "child-process-promise";
 import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
-import { CheckinInfo } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
 import { BuildConfigItem } from "./configexplorer";
@@ -49,8 +49,8 @@ export class TccPatchSender implements PatchSender {
         /* Step 2. Creating a config file for the tcc.jar util. */
         const configFileAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", `.teamcity-mappings.${VsCodeUtils.uuidv4()}.properties`);
         try {
-            const configFileContent : string = await cvsProvider.generateConfigFileContent();
-            await FileController.createFileAsync(configFileAbsPath, configFileContent);
+            const mappingFileContent : MappingFileContent = await cvsProvider.generateMappingFileContent();
+            await FileController.createFileAsync(configFileAbsPath, mappingFileContent.fullContent);
         }catch (err) {
             Logger.logError("TccPatchSender#remoteRun: unexpected error during creating a config file for the tcc.jar util: " + VsCodeUtils.formatErrorMessage(err));
             VsCodeUtils.showErrorMessage("Unexpected error during creating a config file for the tcc.jar util");

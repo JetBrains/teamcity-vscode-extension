@@ -1,7 +1,5 @@
 "use strict";
 
-import { Constants } from "./constants";
-
 import * as winston from "winston";
 import * as path from "path";
 

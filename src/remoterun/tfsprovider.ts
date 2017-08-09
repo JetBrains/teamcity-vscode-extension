@@ -1,7 +1,7 @@
 "use strict";
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
-import { CheckinInfo, TfsInfo } from "../utils/interfaces";
+import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
 import { CvsSupportProvider } from "./cvsprovider";
 import { Logger } from "../utils/logger";
 import { VsCodeUtils } from "../utils/vscodeutils";
@@ -48,11 +48,15 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
      * @return content of the ".teamcity-mappings.properties" file
      */
-    public async generateConfigFileContent() : Promise<string> {
+    public async generateMappingFileContent() : Promise<MappingFileContent> {
         const tfsInfo : TfsInfo = this._tfsInfo;
-        const configFileContent : string = `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`;
-        Logger.logInfo(`TfsSupportProvider#generateConfigFileContent: configFileContent: ${configFileContent}`);
-        return configFileContent;
+        const mappingFileContent : MappingFileContent = {
+            localRootPath: this._workspaceRootPath,
+            tcProjectRootPath: `tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`,
+            fullContent: `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`
+        };
+        Logger.logInfo(`TfsSupportProvider#generateConfigFileContent: configFileContent: ${mappingFileContent.fullContent}`);
+        return mappingFileContent;
     }
 
     /**

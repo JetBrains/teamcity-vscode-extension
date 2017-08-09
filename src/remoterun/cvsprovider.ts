@@ -1,5 +1,5 @@
 "use strict";
-import { CheckinInfo } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
 
 export interface CvsSupportProvider {
 
@@ -12,7 +12,7 @@ export interface CvsSupportProvider {
      * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
      * @return content of the ".teamcity-mappings.properties" file
      */
-    generateConfigFileContent() : Promise<string>;
+    generateMappingFileContent() : Promise<MappingFileContent>;
 
     /**
      * This method provides required info for provisioning remote run and post-commit execution.
