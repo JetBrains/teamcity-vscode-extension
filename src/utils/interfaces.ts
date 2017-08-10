@@ -32,3 +32,17 @@ export interface MappingFileContent {
     tcProjectRootPath: string;
     fullContent : string;
 }
+
+export interface RestHeader {
+    header : string;
+    value : string;
+}
+
+export interface QueuedBuild {
+    id : string;
+    buildTypeId : string;
+    state : string;
+    personal : boolean;
+    href: string;
+    webUrl: string;
+}

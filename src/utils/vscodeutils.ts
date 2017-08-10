@@ -3,6 +3,7 @@
 import { window, MessageItem, workspace } from "vscode";
 import { Strings } from "../utils/strings";
 import { Logger } from "../utils/logger";
+import { RestHeader } from "../utils/interfaces";
 import { Credential } from "../credentialstore/credential";
 import { ChangeItemProxy, BuildItemProxy } from "../notifications/summarydata";
 import XHR = require("xmlhttprequest");
@@ -79,7 +80,8 @@ export class VsCodeUtils {
                                 url : string,
                                 cred? : Credential,
                                 data? : Buffer | String,
-                                additionalArgs? : string[]) : Promise<string> {
+                                additionalArgs? : string[],
+                                additionalHeaders? : RestHeader[]) : Promise<string> {
         Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
         //Add additional args to url
         if (additionalArgs) {
@@ -102,6 +104,13 @@ export class VsCodeUtils {
                 Logger.LogObject(cred);
                 request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
             }
+
+            if (additionalHeaders) {
+                additionalHeaders.forEach((header) => {
+                    request.setRequestHeader(header.header, header.value);
+                });
+            }
+
             request.onload = function () {
                 if (this.status >= 200 && this.status < 300) {
                     if (request.response) {
@@ -198,5 +207,9 @@ export class VsCodeUtils {
             const v = c === "x" ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
+    }
+
+    public static sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

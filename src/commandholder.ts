@@ -96,7 +96,6 @@ export class CommandHolder {
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
-        //const patchSender : PatchSender = new TccPatchSender();
         const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");

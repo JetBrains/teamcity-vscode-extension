@@ -6,20 +6,22 @@ import xmlrpc = require("xmlrpc");
 
 suite("ConfigExplorer", () => {
     test("should verify BuildConfig constructor", function() {
-        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "externalId", "label");
         assert.equal(buildConfig.id, "id");
+        assert.equal(buildConfig.externalId, "externalId");
         assert.equal(buildConfig.label, "label");
         assert.equal(buildConfig.isIncl, false);
     });
 
     test("should verify BuildConfig incorrect constructor", function() {
-        const buildConfig : BuildConfigItem = new BuildConfigItem(undefined, undefined);
+        const buildConfig : BuildConfigItem = new BuildConfigItem(undefined, undefined, undefined);
         assert.equal(buildConfig.id, undefined);
+        assert.equal(buildConfig.externalId, undefined);
         assert.equal(buildConfig.label, undefined);
     });
 
     test("should verify BuildConfig change", function() {
-        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "externalId", "label");
         buildConfig.changeState();
         assert.equal(buildConfig.isIncl, true);
     });
@@ -36,8 +38,8 @@ suite("ConfigExplorer", () => {
     test("should verify BuildConfigTreeDataProvider getInclBuilds", function() {
         const projectArr : ProjectItem[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
-        const bcItem1 : BuildConfigItem = new BuildConfigItem("id1", "name1");
-        const bcItem2 : BuildConfigItem = new BuildConfigItem("id2", "name2");
+        const bcItem1 : BuildConfigItem = new BuildConfigItem("id1", "externalId1", "name1");
+        const bcItem2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "name2");
         projectArr.push(new ProjectItem("id1", [bcItem1, bcItem2]));
         configExplorer.setProjects(projectArr);
         assert.equal(configExplorer.getInclBuilds().length, 0);

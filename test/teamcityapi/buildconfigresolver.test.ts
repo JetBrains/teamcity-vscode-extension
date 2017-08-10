@@ -29,10 +29,10 @@ suite("BuildConfigResolver", () => {
         const fakeXmlResponse : string[] = [];
         fakeXmlResponse.push(``);
         const confResolver : XmlRpcBuildConfigResolver = new XmlRpcBuildConfigResolver("http://localhost");
-        const bc1 : BuildConfigItem = new BuildConfigItem("id1", "name1");
-        const bc2 : BuildConfigItem = new BuildConfigItem("id2", "name2");
-        const bc3 : BuildConfigItem = new BuildConfigItem("id3", "name3");
-        const bc4 : BuildConfigItem = new BuildConfigItem("id4", "name4");
+        const bc1 : BuildConfigItem = new BuildConfigItem("id1", "externalId1", "name1");
+        const bc2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "name2");
+        const bc3 : BuildConfigItem = new BuildConfigItem("id3", "externalId3", "name3");
+        const bc4 : BuildConfigItem = new BuildConfigItem("id4", "externalId4", "name4");
         const p1 : ProjectItem = new ProjectItem("p1", [bc1, bc2]);
         const p2 : ProjectItem = new ProjectItem("p2", [bc3, bc4]);
         const projectContainer : ProjectItem[] = [p1, p2];

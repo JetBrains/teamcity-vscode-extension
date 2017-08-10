@@ -4,15 +4,16 @@ import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import { FileController } from "../utils/filecontroller";
 import { ByteWriter } from "../utils/bytewriter";
 import { VsCodeUtils } from "../utils/vscodeutils";
-import { Constants } from "../utils/constants";
+import { Constants, ChangeListStatus } from "../utils/constants";
 import { Credential } from "../credentialstore/credential";
 import { BuildConfigItem } from "../remoterun/configexplorer";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
-import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild } from "../utils/interfaces";
+import { NotificationWatcher } from "../notifications/notificationwatcher";
 import * as path from "path";
-
+import * as xml2js from "xml2js";
 export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
-
+    private readonly CHECK_FREQUENCY_MS : number = 10000;
     /**
      * @returns true in case of success, otherwise false.
      */
@@ -35,12 +36,19 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                                                                         creds,
                                                                         patch,
                                                                         additionalArgs);
-            const errors : string = await this.triggerChangeList(changeListId, configs, creds);
+            const queuedBuilds : QueuedBuild[] = await this.triggerChangeList(changeListId, configs, creds);
+            const changeListStatus : ChangeListStatus = await this.getChangeListStatus(creds, queuedBuilds);
+            if (changeListStatus === ChangeListStatus.CHECKED) {
+                VsCodeUtils.showInfoMessage(`Personal build for change #${changeListId} has "SUCCESS" status.`);
+                return true;
+            } else {
+                VsCodeUtils.showWarningMessage(`Personal build for change #${changeListId} has "FAILED" status.`);
+                return false;
+            }
         } catch (err) {
             console.log(VsCodeUtils.formatErrorMessage(err));
             return false;
         }
-        return true;
     }
 
     /**
@@ -48,7 +56,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
      * @param cvsProvider - CvsProvider object
      * @return Promise<Buffer> of patch content
      */
-    public async preparePatch(cvsProvider : CvsSupportProvider) : Promise<Buffer> {
+    private async preparePatch(cvsProvider : CvsSupportProvider) : Promise<Buffer> {
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
         const changedFilesNames : string[] = checkInInfo.fileAbsPaths;
         if (!changedFilesNames) {
@@ -59,7 +67,6 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
 
         //We can't use forEach loop with await calls
         for (let i : number = 0; i < changedFilesNames.length; i++) {
-            //const fileName : string = changedFilesNames[i];
             const absPath : string = changedFilesNames[i];
             const relPath : string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
             const fileExist : boolean = await FileController.exists(absPath);
@@ -81,37 +88,77 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
      */
     public async triggerChangeList( changeListId : string,
                                     buildConfigs : BuildConfigItem[],
-                                    creds : Credential) : Promise<string> {
+                                    creds : Credential) : Promise<QueuedBuild[]> {
         if (!buildConfigs) {
-            return;
+            return [];
         }
-        await this.authenticateIfRequired(creds);
-        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-           throw new Error("Something went wrong. Try to signin again.");
-        }
-        const addToQueueRequests = [];
-        buildConfigs.forEach((build) => {
-            addToQueueRequests.push(`<AddToQueueRequest>
-                <changeListId>${changeListId}</changeListId>
-                <buildTypeId>${build.id}</buildTypeId>
-                <myPutBuildOnTheQueueTop>false</myPutBuildOnTheQueueTop>
-                <myRebuildDependencies>false</myRebuildDependencies>
-                <myCleanSources>false</myCleanSources>
-                </AddToQueueRequest>`);
-        });
-        const triggedBy = `##userId='${creds.userId}' IDEPlugin='VsCode Plagin'`;
-        const prom : Promise<string> = new Promise((resolve, reject) => {
-            this.client.methodCall("RemoteBuildServer2.addToQueue", [ addToQueueRequests, triggedBy ],  (err, result) => {
-                /* tslint:disable-next-line:no-null-keyword */
-                if (err !== null) {
-                   return reject(err);
-                }
-                resolve(result);
+        const queuedBuilds : QueuedBuild[] = [];
+        for (let i = 0; i < buildConfigs.length; i++) {
+            const build : BuildConfigItem = buildConfigs[i];
+            const url : string = `${creds.serverURL}/app/rest/buildQueue`;
+            const data = `
+                <build personal="true">
+                    <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="false"/>
+                    <buildType id="${build.externalId}"/>
+                    <lastChanges>
+                        <change id="${changeListId}" personal="true"/>
+                    </lastChanges>
+                </build>`;
+            const additionalArgs : string[] = undefined;
+            const additionalHeaders : RestHeader[] = [];
+            additionalHeaders.push({
+                header: "Content-Type",
+                value: "application/xml"
             });
-        });
-        return prom;
+            const queuedBuildInfoXml : string = await VsCodeUtils.makeRequest(Constants.POST_METHOD, url, creds, data, additionalArgs, additionalHeaders);
+            xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
+                queuedBuilds.push(queuedBuildInfo.build.$);
+            });
+        }
+        return queuedBuilds;
     }
 
+    private async getChangeListStatus(creds: Credential, queuedBuilds: QueuedBuild[]): Promise<ChangeListStatus> {
+        if (!queuedBuilds) {
+            return ChangeListStatus.CHECKED;
+        }
+        const buildStatuses : string[] = [];
+        let i : number = 0;
+        while (i < queuedBuilds.length) {
+            const build : QueuedBuild = queuedBuilds[i];
+            const url = `${creds.serverURL}/app/rest/buildQueue/${build.id}`;
+            const buildInfoXml : string = await VsCodeUtils.makeRequest(Constants.GET_METHOD, url, creds);
+            const prom : Promise<string> = new Promise((resolve, reject) => {
+                xml2js.parseString(buildInfoXml, (err, buildInfo) => {
+                    if (err
+                        || !buildInfo
+                        || !buildInfo.build
+                        || !buildInfo.build.$
+                        || !buildInfo.build.$.state
+                        || !buildInfo.build.$.status
+                        || buildInfo.build.$.state !== "finished") {
+                        resolve(undefined);
+                    }
+                    resolve(buildInfo.build.$.status);
+                });
+            });
+            const buildStatus : string = await prom;
+            if (!buildStatus) {
+                VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
+            } else {
+                buildStatuses.push(buildStatus);
+                i++;
+            }
+        }
+
+        for (let i : number = 0; i < buildStatuses.length; i++) {
+            const status : string = buildStatuses[i];
+            if (status !== "SUCCESS") {
+                return ChangeListStatus.FAILED;
+            }
+        }
+        return ChangeListStatus.CHECKED;
+    }
 }
 
 /**
@@ -172,5 +219,4 @@ class PatchBuilder {
         this._bufferArray.push(byteEmptyLine);
         return Buffer.concat(this._bufferArray);
     }
-
 }

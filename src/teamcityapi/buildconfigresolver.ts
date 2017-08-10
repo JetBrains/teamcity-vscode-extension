@@ -152,7 +152,7 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
                 !xmlConfig.projectName || !xmlConfig.projectName[0]) {
                     continue;
                 }
-            buildConfigs.push(new BuildConfigItem(xmlConfig.id[0], xmlConfig.name[0]));
+            buildConfigs.push(new BuildConfigItem(xmlConfig.id[0], xmlConfig.myExternalId[0], xmlConfig.name[0]));
         }
         if (buildConfigs.length > 0) {
             projectContainer.push(new ProjectItem(project.Project.name[0], buildConfigs));

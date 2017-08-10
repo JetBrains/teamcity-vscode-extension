@@ -14,15 +14,15 @@ suite("PatchSender", () => {
     });
 
     test("should verify TccPatchSender configArray2String with one buildConfig", function() {
-        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "exteranalId", "label");
         const bcArr : BuildConfigItem[] = [buildConfig];
         const patchSender : TccPatchSender = new TccPatchSender();
         assert.equal(patchSender.getTestObject().configArray2String(bcArr), `"id"`);
     });
 
     test("should verify TccPatchSender configArray2String two buildConfigs", function() {
-        const buildConfig : BuildConfigItem = new BuildConfigItem("id", "label");
-        const buildConfig2 : BuildConfigItem = new BuildConfigItem("id2", "label2");
+        const buildConfig : BuildConfigItem = new BuildConfigItem("id1", "externalId1", "label1");
+        const buildConfig2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "label2");
         const bcArr : BuildConfigItem[] = [buildConfig, buildConfig2];
         const patchSender : TccPatchSender = new TccPatchSender();
         assert.equal(patchSender.getTestObject().configArray2String(bcArr), `"id,id2"`);

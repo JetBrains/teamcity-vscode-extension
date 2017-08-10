@@ -41,7 +41,7 @@ export class NotificationWatcher {
         while (this.isActive && cred) {
             const eventCounter : number = await apiProvider.getTotalNumberOfEvents(cred);
             if (eventCounter === prevEventCounter) {
-                await this.sleep(this.CHECK_FREQUENCY_MS);
+                await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
                 continue;
             }
             Logger.logInfo("Notification Logger was changed. We should process new notifications.");
@@ -50,7 +50,7 @@ export class NotificationWatcher {
             changes = changes.concat(this.collectNewChanges(summary.personalChanges));
             await this.displayChanges(changes);
             prevEventCounter = eventCounter;
-            await this.sleep(this.CHECK_FREQUENCY_MS);
+            await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
         }
     }
 
@@ -97,9 +97,5 @@ export class NotificationWatcher {
             const message : string = VsCodeUtils.formMessage(change, cred);
             this._outputChannal.appendLine(message + "\n");
         });
-    }
-
-    private sleep(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

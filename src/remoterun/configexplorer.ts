@@ -3,10 +3,12 @@ import * as path from "path";
 
 export class BuildConfigItem extends TreeItem {
     private readonly _id : string;
+    private readonly _externalId : string;
     private _isIncl : boolean = false;
-    constructor(id: string, label: string) {
+    constructor(id: string, externalId : string, label: string) {
         super(label, TreeItemCollapsibleState.None);
         this._id = id;
+        this._externalId = externalId;
     }
 
     public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
@@ -27,6 +29,10 @@ export class BuildConfigItem extends TreeItem {
 
     public get id() : string {
         return this._id;
+    }
+
+    public get externalId() : string {
+        return this._externalId;
     }
 
     public get isIncl() : boolean {

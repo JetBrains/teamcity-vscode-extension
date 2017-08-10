@@ -62,3 +62,8 @@ export enum TrackerEventType {
     TEST_RESPONSIBILITY_CHANGED = <any>"I",
     TEST_MUTE_UPDATED = <any>"K"
 }
+
+export enum ChangeListStatus {
+     CHECKED = <any>"CHECKED",
+     FAILED = <any>"FAILED"
+}
