@@ -7,15 +7,15 @@ import { ByteWriter } from "../utils/bytewriter";
 import { FileController } from "../utils/filecontroller";
 
 export class AsyncWriteStream implements Disposable {
-    private readonly _ws: fs.WriteStream;
+    private readonly _writeSteam: fs.WriteStream;
 
     constructor(fileAbsPath : string) {
-        this._ws = fs.createWriteStream(fileAbsPath);
+        this._writeSteam = fs.createWriteStream(fileAbsPath);
     }
 
     public async write(buffer : Buffer) : Promise<{}> {
         return new Promise((resolve, reject) => {
-            this._ws.write(buffer, (err) => {
+            this._writeSteam.write(buffer, (err) => {
                 if (err) {
                     reject(VsCodeUtils.formatErrorMessage(err));
                 }
@@ -29,16 +29,24 @@ export class AsyncWriteStream implements Disposable {
         const fileSizeInBytes : number = stats.size;
         const fileSizeBuffer : Buffer = ByteWriter.longToByteArray(fileSizeInBytes);
         await this.write(fileSizeBuffer);
-        const stream : fs.ReadStream = fs.createReadStream(fileAbsPath);
-        stream.pipe(this._ws, {end: false});
+        const readstream : fs.ReadStream = fs.createReadStream(fileAbsPath);
+        readstream.pipe(this._writeSteam, {end: false});
         return new Promise((resolve, reject) => {
-            stream.on("end", function() {
+            readstream.on("end", function() {
                 resolve();
+            });
+
+            readstream.on("error", function() {
+                reject("An error occurs during piping from source file to the writeStream");
+            });
+
+            this._writeSteam.on("error", function() {
+                reject("An error occurs during piping from source file to the writeStream");
             });
         });
     }
 
     public dispose() {
-       // this._ws.end();
+        this._writeSteam.end();
     }
 }
