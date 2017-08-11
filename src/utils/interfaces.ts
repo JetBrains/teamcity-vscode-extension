@@ -1,9 +1,9 @@
 "use strict";
-import { CvsProviderTypes } from "../utils/constants";
+import { CvsProviderTypes, CvsFileStatusCode } from "../utils/constants";
 
 export interface CheckinInfo {
     message: string;
-    fileAbsPaths: string[];
+    cvsLocalResources: CvsLocalResource[];
     serverItems: string[];
     workItemIds: number[];
 }
@@ -45,4 +45,9 @@ export interface QueuedBuild {
     personal : boolean;
     href: string;
     webUrl: string;
+}
+
+export interface CvsLocalResource {
+    status : CvsFileStatusCode;
+    fileAbsPath : string;
 }

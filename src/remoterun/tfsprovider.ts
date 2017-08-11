@@ -1,7 +1,8 @@
 "use strict";
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
-import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, TfsInfo, MappingFileContent, CvsLocalResource } from "../utils/interfaces";
+import { CvsFileStatusCode } from "../utils/constants";
 import { CvsSupportProvider } from "./cvsprovider";
 import { Logger } from "../utils/logger";
 import { VsCodeUtils } from "../utils/vscodeutils";
@@ -72,10 +73,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkin info`);
         const commitMessage: string = scm.inputBox.value;
         const workItemIds: number[] = this.getWorkItemIdsFromMessage(commitMessage);
-        const absPaths : string[] = await this.getAbsPaths();
-        const serverItems : string[] = await this.getServerItems(absPaths);
+        const cvsLocalResources : CvsLocalResource[] = await this.getLocalResources();
+        const serverItems : string[] = await this.getServerItems(cvsLocalResources);
         return {
-                fileAbsPaths: absPaths,
+                cvsLocalResources: cvsLocalResources,
                 message: commitMessage,
                 serverItems: serverItems,
                 workItemIds: workItemIds
@@ -105,7 +106,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             const checkInCommandPrefix = `"${this._tfPath}" checkin /comment:"${this._checkinInfo.message}" /noprompt `;
             const checkInCommandSB : string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);
-            this._checkinInfo.fileAbsPaths.forEach((filePath) => {
+            this._checkinInfo.cvsLocalResources.forEach((filePath) => {
                 checkInCommandSB.push(`"${filePath}" `);
             });
             try {
@@ -120,11 +121,11 @@ export class TfsSupportProvider implements CvsSupportProvider {
     /**
      * This method requiests absPaths of changed files and replaces localProjectPath by $/projectName
      */
-    private async getServerItems(absPaths : string[]) : Promise<string[]> {
+    private async getServerItems(cvsLocalResources : CvsLocalResource[]) : Promise<string[]> {
         const tfsInfo : TfsInfo = this._tfsInfo;
         const serverItems : string[] = [];
-        absPaths.forEach((absPath) => {
-            const relativePath = path.relative(tfsInfo.projectLocalPath, absPath);
+        cvsLocalResources.forEach((localResource) => {
+            const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
             serverItems.push(path.join(tfsInfo.projectRemotePath, relativePath));
         });
         return serverItems;
@@ -133,20 +134,53 @@ export class TfsSupportProvider implements CvsSupportProvider {
     /**
      * We are using "tf diff" command, to get required info about changed files.
      */
-    private async getAbsPaths() : Promise<string[]> {
+    private async getLocalResources() : Promise<CvsLocalResource[]> {
         const tfsInfo : TfsInfo = this._tfsInfo;
-        const parseBriefDiffRegexp : RegExp = /^(add|branch|delete|edit|lock|merge|rename|source rename|undelete):\s(.*)$/mg;
-        const absPaths : string[] = [];
+        /*
+            List of all possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
+        */
+        const parseBriefDiffRegexp : RegExp = /^(add|delete|edit|rename):\s(.*)$/mg;
+        const localResources : CvsLocalResource[] = [];
         const briefDiffCommand : string = `"${this._tfPath}" diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
         try {
             const outBriefDiff = await cp.exec(briefDiffCommand);
             const tfsWorkfoldResult : string = outBriefDiff.stdout.toString("utf8").trim();
             let match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
             while (match) {
-                absPaths.push(path.join(match[2], "."));
+                if (match.length !== 3) {
+                    match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
+                    continue;
+                }
+
+                let status : CvsFileStatusCode;
+                switch (match[1].trim()) {
+                    case "add" : {
+                        status = CvsFileStatusCode.ADDED;
+                        break;
+                    }
+                    case "edit" : {
+                        status = CvsFileStatusCode.MODIFIED;
+                        break;
+                    }
+                    case "delete" : {
+                        status = CvsFileStatusCode.DELETED;
+                        break;
+                    }
+                    case "rename" : {
+                        //TF diff doesn't show source path of the file for replace
+                        //DOTO: Think of how to determine it.
+                        status = CvsFileStatusCode.ADDED;
+                        break;
+                    }
+                    default : {
+                        status = CvsFileStatusCode.UNRECOGNIZED;
+                        break;
+                    }
+                }
+                localResources.push({ status : status, fileAbsPath: path.join(match[2].trim(), ".") });
                 match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
             }
-            return absPaths;
+            return localResources;
         } catch (err) {
             Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];

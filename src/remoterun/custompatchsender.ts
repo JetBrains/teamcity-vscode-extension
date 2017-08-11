@@ -4,11 +4,11 @@ import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import { FileController } from "../utils/filecontroller";
 import { ByteWriter } from "../utils/bytewriter";
 import { VsCodeUtils } from "../utils/vscodeutils";
-import { Constants, ChangeListStatus } from "../utils/constants";
+import { Constants, ChangeListStatus, CvsFileStatusCode } from "../utils/constants";
 import { Credential } from "../credentialstore/credential";
 import { BuildConfigItem } from "../remoterun/configexplorer";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
-import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild, CvsLocalResource } from "../utils/interfaces";
 import { NotificationWatcher } from "../notifications/notificationwatcher";
 import { AsyncWriteStream } from "../utils/writestream";
 import * as path from "path";
@@ -64,26 +64,48 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
      */
     private async preparePatch(cvsProvider : CvsSupportProvider) : Promise<string> {
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
-        const changedFilesNames : string[] = checkInInfo.fileAbsPaths;
+        const changedFilesNames : CvsLocalResource[] = checkInInfo.cvsLocalResources;
         if (!changedFilesNames) {
             return;
         }
         const configFileContent : MappingFileContent = await cvsProvider.generateMappingFileContent();
         const patchBuilder : PatchBuilder = new PatchBuilder();
 
-        //We can't use forEach loop with await calls
+        //It's impossible to use forEach loop with await calls
         for (let i : number = 0; i < changedFilesNames.length; i++) {
-            const absPath : string = changedFilesNames[i];
+            const absPath : string = changedFilesNames[i].fileAbsPath;
+            const status : CvsFileStatusCode = changedFilesNames[i].status;
             const relPath : string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
             const fileExist : boolean = await FileController.exists(absPath);
             const teamcityFileName : string = `${configFileContent.tcProjectRootPath}/${relPath}`;
-            if (fileExist) {
-               await patchBuilder.addReplacedFile(teamcityFileName, absPath);
-            } else {
-                patchBuilder.addDeletedFile(teamcityFileName);
+            switch (status) {
+                //TODO: Implement replaced status code
+                case CvsFileStatusCode.ADDED : {
+                    if (fileExist) {
+                        await patchBuilder.addAddedFile(teamcityFileName, absPath);
+                    } //TODO: add logs if not
+                    break;
+                }
+                case CvsFileStatusCode.DELETED : {
+                    await patchBuilder.addDeletedFile(teamcityFileName);
+                    break;
+                }
+                case CvsFileStatusCode.MODIFIED : {
+                    if (fileExist) {
+                        await patchBuilder.addReplacedFile(teamcityFileName, absPath);
+                    } //TODO: add logs if not
+                    break;
+                }
+                default : {
+                    if (fileExist) {
+                        await patchBuilder.addReplacedFile(teamcityFileName, absPath);
+                    } else {
+                        await patchBuilder.addDeletedFile(teamcityFileName);
+                    }
+                    break;
+                }
             }
         }
-
         return patchBuilder.getPatchName();
     }
 
@@ -173,8 +195,10 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
 class PatchBuilder {
     private readonly _bufferArray : Buffer[];
     private static readonly DELETE_PREFIX : number = 3;
-    private static readonly REPLACE_PREFIX : number = 25;
     private static readonly END_OF_PATCH_MARK : number = 10;
+    private static readonly RENAME_PREFIX : number = 19;
+    private static readonly REPLACE_PREFIX : number = 25;
+    private static readonly CREATE_PREFIX : number = 26;
     private readonly _writeSteam : AsyncWriteStream;
     private readonly _patchAbsPath : string;
 
@@ -185,14 +209,33 @@ class PatchBuilder {
         this._writeSteam = new AsyncWriteStream(patchAbsPath);
     }
 
+        /**
+     * This method adds to the patch a new file
+     * @param tcFileName - fileName at the TeamCity format
+     * @param absLocalPath - absolute path to the file in the system
+     */
+    public async addAddedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
+        return this.addFile(tcFileName, absLocalPath, PatchBuilder.CREATE_PREFIX);
+    }
+
     /**
-     * This method adds to the patch any not deleted file
+     * This method adds to the patch an edited file
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
     public async addReplacedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
+        return this.addFile(tcFileName, absLocalPath, PatchBuilder.REPLACE_PREFIX);
+    }
+
+    /**
+     * This method adds to the patch any not deleted file
+     * @param tcFileName - fileName at the TeamCity format
+     * @param absLocalPath - absolute path to the file in the system
+     * @param prefix - prefix which specifies the operation, eg. CREATE/REPLACE
+     */
+    private async addFile(tcFileName: string, absLocalPath : string, prefix : number) : Promise<void> {
         try {
-            const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.REPLACE_PREFIX);
+            const bytePrefix : Buffer = ByteWriter.writeByte(prefix);
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
             await this._writeSteam.writeFile(absLocalPath);

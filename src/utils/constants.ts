@@ -67,3 +67,11 @@ export enum ChangeListStatus {
      CHECKED = <any>"CHECKED",
      FAILED = <any>"FAILED"
 }
+
+//TODO: Implement replaced status code
+export enum CvsFileStatusCode {
+    MODIFIED = <any>"M",
+    ADDED = <any>"A",
+    DELETED = <any>"D",
+    UNRECOGNIZED = <any>"???"
+}

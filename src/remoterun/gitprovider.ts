@@ -2,7 +2,8 @@
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CvsSupportProvider } from "./cvsprovider";
-import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, Remote, MappingFileContent, CvsLocalResource } from "../utils/interfaces";
+import { CvsFileStatusCode } from "../utils/constants";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
@@ -29,14 +30,14 @@ export class GitSupportProvider implements CvsSupportProvider {
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
     public async getFormattedFilenames() : Promise<string[]> {
-        const absPaths : string[] = this._checkinInfo.fileAbsPaths;
+        const cvsLocalResources : CvsLocalResource[] = this._checkinInfo.cvsLocalResources;
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
         const lastRevHash = await this.getLastRevision(remoteBranch);
         const formatedChangedFiles = [];
-        absPaths.forEach((absolutePath) => {
-            const relativePath : string = absolutePath.replace(this._workspaceRootPath, "");
+        cvsLocalResources.forEach((localResource) => {
+            const relativePath : string = localResource.fileAbsPath.replace(this._workspaceRootPath, "");
             const formatedFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
             formatedChangedFiles.push(formatedFilePath);
             Logger.logDebug(`GitSupportProvider#getFormattedFilenames: formatedFilePath: ${formatedFilePath}`);
@@ -81,10 +82,10 @@ export class GitSupportProvider implements CvsSupportProvider {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkin info`);
         //Git extension bug: If commit message is empty git won't commit anything
         const commitMessage: string = scm.inputBox.value === "" ? "-" : scm.inputBox.value;
-        const absPaths : string[] = await this.getAbsPaths();
-        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${absPaths ? " not" : ""}empty`);
+        const cvsLocalResource : CvsLocalResource[] = await this.getLocalResources();
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         return {
-            fileAbsPaths: absPaths,
+            cvsLocalResources: cvsLocalResource,
             message: commitMessage,
             serverItems: [],
             workItemIds: []
@@ -134,20 +135,62 @@ export class GitSupportProvider implements CvsSupportProvider {
      * This method uses git extension api to get absolute paths of staged files.
      * @return absolute paths of staged files or [] if requiest was failed.
      */
-    private async getAbsPaths() : Promise<string[]> {
+    private async getLocalResources() : Promise<CvsLocalResource[]> {
         try {
-            const absPaths : string[] = [];
-            const getStagedFilesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" diff --name-only --staged`;
-            const commandResult = await cp.exec(getStagedFilesCommand);
+            const localResources : CvsLocalResource[] = [];
+           // const getStagedFilesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" diff --name-only --staged`;
+            const getPorcelainStatusCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" status --porcelain`;
+            const commandResult = await cp.exec(getPorcelainStatusCommand);
             if (!commandResult.stdout) {
-                Logger.logDebug(`GitSupportProvider#getAbsPaths: git diff didn't find staged files`);
+                Logger.logDebug(`GitSupportProvider#getAbsPaths: git status didn't find staged files`);
                 return [];
             }
-            const stagedFilesRelarivePaths : string = commandResult.stdout.toString("utf8").trim();
-            stagedFilesRelarivePaths.split("\n").forEach((relativePath) => {
-                absPaths.push(path.join(this._workspaceRootPath, relativePath));
+            const porcelainStatusRows : string = commandResult.stdout.toString("utf8").trim();
+            const porcelainGitRegExp : RegExp = /^([MADRC])(.*)$/;
+            const renamedGitRegExp : RegExp = /^(.*)->(.*)$/;
+            porcelainStatusRows.split("\n").forEach((relativePath) => {
+                const parsedPorcelain : string[] = porcelainGitRegExp.exec(relativePath);
+                if (!parsedPorcelain && parsedPorcelain.length !== 3) {
+                    return;
+                }
+                const fileStat = parsedPorcelain[1].trim();
+                switch (fileStat) {
+                    case "M":{
+                        const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                        localResources.push( { status: CvsFileStatusCode.MODIFIED, fileAbsPath: absFilePath});
+                        break;
+                    }
+                    case "A":{
+                        const fileAbsPath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: fileAbsPath });
+                        break;
+                    }
+                    case "D":{
+                        const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                        localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: absFilePath });
+                        break;
+                    }
+                    case "R":{
+                        const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                        if (parsedRenamed && parsedRenamed.length === 3) {
+                            const depAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
+                            const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
+                            localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: depAbsFilePath });
+                            localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                        }
+                        break;
+                    }
+                    case "C":{
+                        const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                        if (parsedRenamed && parsedRenamed.length === 3) {
+                            const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
+                            localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                        }
+                        break;
+                    }
+                }
             });
-            return absPaths;
+            return localResources;
         }catch (err) {
             Logger.logWarning(`GitSupportProvider#getAbsPaths: git diff leads to error: ${err}`);
             return [];

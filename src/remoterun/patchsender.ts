@@ -4,7 +4,7 @@ import * as path from "path";
 import * as cp from "child-process-promise";
 import { Credential } from "../credentialstore/credential";
 import { FileController } from "../utils/filecontroller";
-import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, CvsLocalResource } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
 import { BuildConfigItem } from "./configexplorer";
@@ -61,7 +61,7 @@ export class TccPatchSender implements PatchSender {
         try {
             const configListAsString : string = this.configArray2String(configs);
             const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
-            const filePathsAsString : string = this.filePaths2String(checkInInfo.fileAbsPaths);
+            const filePathsAsString : string = this.filePaths2String(checkInInfo.cvsLocalResources);
             const runBuildCommand : string = `java -jar "${tccPath}" run --host ${cred.serverURL} -m "${checkInInfo.message}" -c ${configListAsString} ${filePathsAsString} --config-file "${configFileAbsPath}"`;
             const prom = await cp.exec(runBuildCommand);
             if (prom.stdout) {
@@ -110,7 +110,7 @@ export class TccPatchSender implements PatchSender {
     /**
      * @return - line in the format ${"absFilePath1 absFilePath2 ... absFilePathN"}
      */
-    private filePaths2String(changedFiles : string[]) : string {
+    private filePaths2String(changedFiles : CvsLocalResource[]) : string {
         const changedFilesSB = [];
         for (let i = 0; i < changedFiles.length; i++) {
             changedFilesSB.push(`"${changedFiles[i]}"`);
