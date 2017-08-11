@@ -1,6 +1,7 @@
 "use strict";
 
 import { VsCodeUtils } from "../utils/vscodeutils";
+import * as fs from "fs";
 
 export class ByteWriter {
 
@@ -83,7 +84,6 @@ export class ByteWriter {
 
     public static async writeFile(name : string) : Promise<Buffer> {
         try {
-            const fs = require("fs");
             const prom : Promise<Buffer> = new Promise((resolve, reject) => {
                 fs.readFile(name, (err, data) => {
                     if (err) {

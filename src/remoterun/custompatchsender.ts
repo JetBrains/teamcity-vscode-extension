@@ -10,8 +10,12 @@ import { BuildConfigItem } from "../remoterun/configexplorer";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
 import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild } from "../utils/interfaces";
 import { NotificationWatcher } from "../notifications/notificationwatcher";
+import { AsyncWriteStream } from "../utils/writestream";
 import * as path from "path";
+import * as fs from "fs";
 import * as xml2js from "xml2js";
+import * as request from "request";
+
 export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
     private readonly CHECK_FREQUENCY_MS : number = 10000;
     /**
@@ -22,24 +26,26 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
         if (!creds.userId) {
             await this.authenticateIfRequired(creds);
         }
+        const patchAbsPath : string = await this.preparePatch(cvsProvider);
 
-        const patch : Buffer = await this.preparePatch(cvsProvider);
-        const additionalArgs : string[] = [];
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
-        additionalArgs.push(`userId=${creds.userId}`);
-        additionalArgs.push(`description="${checkInInfo.message}"`);
-        additionalArgs.push(`commitType=0`); // commitType is remote run
-        const patchDestinationUrl : string = `${creds.serverURL}/uploadChanges.html`;
+        const patchDestinationUrl : string = `${creds.serverURL}/uploadChanges.html?userId=${creds.userId}&description="${checkInInfo.message}"&commitType=0`;
         try {
-            const changeListId : string = await VsCodeUtils.makeRequest(Constants.POST_METHOD,
-                                                                        patchDestinationUrl,
-                                                                        creds,
-                                                                        patch,
-                                                                        additionalArgs);
+            const prom : Promise<string> = new Promise((resolve, reject) => {
+                fs.createReadStream(patchAbsPath).pipe(request.post(patchDestinationUrl, (err, httpResponse, body) => {
+                    if (err) {
+                        reject(err);
+                    }
+                    resolve(body);
+                }).auth(creds.user, creds.pass, false));
+            });
+            const changeListId = await prom;
+            //We should remove patchFile
+            FileController.removeFileAsync(patchAbsPath);
             const queuedBuilds : QueuedBuild[] = await this.triggerChangeList(changeListId, configs, creds);
             const changeListStatus : ChangeListStatus = await this.getChangeListStatus(creds, queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
-                VsCodeUtils.showInfoMessage(`Personal build for change #${changeListId} has "SUCCESS" status.`);
+                VsCodeUtils.showInfoMessage(`Personal build for change #${changeListId} has "CHECKED" status.`);
                 return true;
             } else {
                 VsCodeUtils.showWarningMessage(`Personal build for change #${changeListId} has "FAILED" status.`);
@@ -54,9 +60,9 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
     /**
      * This method uses PatchBuilder to write all required info into the patch file
      * @param cvsProvider - CvsProvider object
-     * @return Promise<Buffer> of patch content
+     * @return Promise<string> - absPath of the patch
      */
-    private async preparePatch(cvsProvider : CvsSupportProvider) : Promise<Buffer> {
+    private async preparePatch(cvsProvider : CvsSupportProvider) : Promise<string> {
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
         const changedFilesNames : string[] = checkInInfo.fileAbsPaths;
         if (!changedFilesNames) {
@@ -78,7 +84,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
             }
         }
 
-        return patchBuilder.getPatch();
+        return patchBuilder.getPatchName();
     }
 
     /**
@@ -169,8 +175,14 @@ class PatchBuilder {
     private static readonly DELETE_PREFIX : number = 3;
     private static readonly REPLACE_PREFIX : number = 25;
     private static readonly END_OF_PATCH_MARK : number = 10;
+    private readonly _writeSteam : AsyncWriteStream;
+    private readonly _patchAbsPath : string;
+
     constructor() {
         this._bufferArray = [];
+        const patchAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", `.${VsCodeUtils.uuidv4()}.patch`);
+        this._patchAbsPath = patchAbsPath;
+        this._writeSteam = new AsyncWriteStream(patchAbsPath);
     }
 
     /**
@@ -182,13 +194,9 @@ class PatchBuilder {
         try {
             const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.REPLACE_PREFIX);
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
-            const byteFileContent : Buffer = await ByteWriter.writeFile(absLocalPath);
-
-            this._bufferArray.push(bytePrefix);
-            this._bufferArray.push(byteFileName);
-            this._bufferArray.push(byteFileContent);
+            await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
+            await this._writeSteam.writeFile(absLocalPath);
         } catch (err) {
-            console.log(VsCodeUtils.formatErrorMessage(err));
             //TODO: WRITE TO THE LOG SMT SCARY
         }
     }
@@ -197,13 +205,11 @@ class PatchBuilder {
      * This method adds to the patch a deleted file
      * @param tcFileName - fileName at the TeamCity format
      */
-    public addDeletedFile(tcFileName: string) {
+    public async addDeletedFile(tcFileName: string) {
         try {
             const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.DELETE_PREFIX);
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
-
-            this._bufferArray.push(bytePrefix);
-            this._bufferArray.push(byteFileName);
+            await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
         } catch (err) {
             //TODO: WRITE TO THE LOG SMT SCARY
         }
@@ -212,11 +218,11 @@ class PatchBuilder {
     /**
      * The final stage of a patch building - add eof mark and return all the patch content as Buffer object
      */
-    public getPatch() : Buffer {
+    public async getPatchName() : Promise<string> {
         const byteEOPMark : Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
         const byteEmptyLine : Buffer = ByteWriter.writeUTF("");
-        this._bufferArray.push(byteEOPMark);
-        this._bufferArray.push(byteEmptyLine);
-        return Buffer.concat(this._bufferArray);
+        await this._writeSteam.write(Buffer.concat([byteEOPMark, byteEmptyLine]));
+        this._writeSteam.dispose();
+        return this._patchAbsPath;
     }
 }
