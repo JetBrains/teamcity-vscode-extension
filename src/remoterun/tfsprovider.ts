@@ -138,52 +138,90 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const tfsInfo : TfsInfo = this._tfsInfo;
         /*
             List of all possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
+            const parseBriefDiffRegexp : RegExp = /^(add|delete|edit|rename):\s(.*)$/mg;
         */
-        const parseBriefDiffRegexp : RegExp = /^(add|delete|edit|rename):\s(.*)$/mg;
+        const parseBriefDiffRegExp : RegExp = /^(.*)?:\s(.*)$/mg;
         const localResources : CvsLocalResource[] = [];
         const briefDiffCommand : string = `"${this._tfPath}" diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
+        let tfsDiffResult : string; 
         try {
-            const outBriefDiff = await cp.exec(briefDiffCommand);
-            const tfsWorkfoldResult : string = outBriefDiff.stdout.toString("utf8").trim();
-            let match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
-            while (match) {
-                if (match.length !== 3) {
-                    match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
-                    continue;
-                }
-
-                let status : CvsFileStatusCode;
-                switch (match[1].trim()) {
-                    case "add" : {
-                        status = CvsFileStatusCode.ADDED;
-                        break;
-                    }
-                    case "edit" : {
-                        status = CvsFileStatusCode.MODIFIED;
-                        break;
-                    }
-                    case "delete" : {
-                        status = CvsFileStatusCode.DELETED;
-                        break;
-                    }
-                    case "rename" : {
-                        //TF diff doesn't show source path of the file for replace
-                        //DOTO: Think of how to determine it.
-                        status = CvsFileStatusCode.ADDED;
-                        break;
-                    }
-                    default : {
-                        status = CvsFileStatusCode.UNRECOGNIZED;
-                        break;
-                    }
-                }
-                localResources.push({ status : status, fileAbsPath: path.join(match[2].trim(), ".") });
-                match = parseBriefDiffRegexp.exec(tfsWorkfoldResult);
-            }
-            return localResources;
+            const briefDiffCommandOutput = await cp.exec(briefDiffCommand);
+            tfsDiffResult = briefDiffCommandOutput.stdout.toString("utf8").trim();
         } catch (err) {
             Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
+        }
+        let match = parseBriefDiffRegExp.exec(tfsDiffResult);
+        while (match) {
+            /*
+                It looks for lines at the format: /^(changeType): (fileAbsPath)$/
+                !!! There are incompatible lines at the format: /^(fileAbsPath): files differ$/
+            */
+            if (match.length !== 3 || match[2] === "files differ") {
+                match = parseBriefDiffRegExp.exec(tfsDiffResult);
+                continue;
+            }
+
+            let status : CvsFileStatusCode;
+            const changeType : string = match[1].trim();
+            const fileAbsPath : string = path.join(match[2].trim(), ".");
+            if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
+                status = CvsFileStatusCode.DELETED;
+            } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
+                || changeType.indexOf(TfsChangeType.BRANCH) !== -1
+                || changeType.indexOf(TfsChangeType.UNDELETE) !== -1) {
+                //undelete means restore items that were previously deleted
+                status = CvsFileStatusCode.ADDED;
+            } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
+                const prevFileAbsPath : string = await this.getPrevFileNameIfExist(fileAbsPath);
+                if (prevFileAbsPath === fileAbsPath
+                    && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
+                    status = CvsFileStatusCode.MODIFIED;
+                } else {
+                    status = CvsFileStatusCode.ADDED;
+                    localResources.push({ status : CvsFileStatusCode.DELETED, fileAbsPath: prevFileAbsPath});
+                }
+            } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
+                status = CvsFileStatusCode.MODIFIED;
+            }
+
+            if (status) {
+                localResources.push({ status : status, fileAbsPath: fileAbsPath});
+            }
+            
+            match = parseBriefDiffRegExp.exec(tfsDiffResult);
+        }
+        return localResources;
+    }
+
+    /**
+     * This method uses command "history" to determine previous absPath of the file if it was renamed
+     * @param fileAbsPath - current absPath of the file
+     * @return previous absPath when it was successfully determined otherwise undefined
+     */
+    private async getPrevFileNameIfExist(fileAbsPath : string) : Promise<string> {
+        try {
+            const tfsInfo : TfsInfo = this._tfsInfo;
+            const parseHistoryRegExp : RegExp = /(\$.*)$/;
+            const historyCommand : string = `"${this._tfPath}" history 
+                                        /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
+            const historyCommandOut = await cp.exec(historyCommand);
+            const tfsHistoryResultArray : string[] = historyCommandOut.stdout.toString("utf8").trim().split("/n");
+            /*
+                The last row of the history command output should be at the format: 
+                /^ (previous operation with file)\s+(previous remoteFileName started with $)$/
+            */
+            const lastHistoryRow = tfsHistoryResultArray.pop[tfsHistoryResultArray.length - 1];
+            const parsedLastHistoryRow : string[] = parseHistoryRegExp.exec(lastHistoryRow);
+            if (parsedLastHistoryRow && parsedLastHistoryRow.length === 2) {
+                const prevRelativePath : string = parsedLastHistoryRow[1].replace(tfsInfo.projectRemotePath, "");
+                const prevFileAbsPath = path.join(tfsInfo.projectLocalPath, prevRelativePath);
+                return prevFileAbsPath;
+            }
+            return undefined;
+        } catch (err) {
+            //TODO: add logs
+            return undefined;
         }
     }
 
@@ -243,5 +281,13 @@ export class TfsSupportProvider implements CvsSupportProvider {
         }
         return ids;
     }
+}
 
+class TfsChangeType {
+    public static readonly ADD = "add";
+    public static readonly BRANCH = "branch";
+    public static readonly DELETE = "delete";
+    public static readonly EDIT = "edit";
+    public static readonly UNDELETE = "undelete";
+    public static readonly RENAME = "rename";
 }
