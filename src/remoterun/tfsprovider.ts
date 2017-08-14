@@ -204,15 +204,14 @@ export class TfsSupportProvider implements CvsSupportProvider {
         try {
             const tfsInfo : TfsInfo = this._tfsInfo;
             const parseHistoryRegExp : RegExp = /(\$.*)$/;
-            const historyCommand : string = `"${this._tfPath}" history
-                                        /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
+            const historyCommand : string = `"${this._tfPath}" history /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
             const historyCommandOut = await cp.exec(historyCommand);
-            const tfsHistoryResultArray : string[] = historyCommandOut.stdout.toString("utf8").trim().split("/n");
+            const tfsHistoryResultArray : string[] = historyCommandOut.stdout.toString("utf8").trim().split("\n");
             /*
                 The last row of the history command output should be at the format:
                 /^ (previous operation with file)\s+(previous remoteFileName started with $)$/
             */
-            const lastHistoryRow = tfsHistoryResultArray.pop[tfsHistoryResultArray.length - 1];
+            const lastHistoryRow = tfsHistoryResultArray[tfsHistoryResultArray.length - 1];
             const parsedLastHistoryRow : string[] = parseHistoryRegExp.exec(lastHistoryRow);
             if (parsedLastHistoryRow && parsedLastHistoryRow.length === 2) {
                 const prevRelativePath : string = parsedLastHistoryRow[1].replace(tfsInfo.projectRemotePath, "");
