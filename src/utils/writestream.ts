@@ -17,7 +17,7 @@ export class AsyncWriteStream implements Disposable {
         return new Promise((resolve, reject) => {
             this._writeSteam.write(buffer, (err) => {
                 if (err) {
-                    Logger.logError(`AsyncWriteStream#write: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`)
+                    Logger.logError(`AsyncWriteStream#write: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
                     reject(VsCodeUtils.formatErrorMessage(err));
                 }
                 resolve();

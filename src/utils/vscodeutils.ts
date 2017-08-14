@@ -210,7 +210,7 @@ export class VsCodeUtils {
     }
 
     /**
-     * @param ms - 
+     * @param ms - Time of sleep in milliseconds
      */
     public static sleep(ms : number) {
         return new Promise((resolve) => setTimeout(resolve, ms));

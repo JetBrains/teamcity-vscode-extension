@@ -15,6 +15,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as xml2js from "xml2js";
 import * as request from "request";
+const temp = require("temp").track();
 
 export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
     private readonly CHECK_FREQUENCY_MS : number = 10000;
@@ -40,8 +41,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                 }).auth(creds.user, creds.pass, false));
             });
             const changeListId = await prom;
-            //We should remove patchFile
-            FileController.removeFileAsync(patchAbsPath);
+            //We should not remove patchFile because it will be deleted as file inside a temp folder
             const queuedBuilds : QueuedBuild[] = await this.triggerChangeList(changeListId, configs, creds);
             const changeListStatus : ChangeListStatus = await this.getChangeListStatus(creds, queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
@@ -70,7 +70,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
         }
         const configFileContent : MappingFileContent = await cvsProvider.generateMappingFileContent();
         const patchBuilder : PatchBuilder = new PatchBuilder();
-
+        await patchBuilder.init();
         //It's impossible to use forEach loop with await calls
         for (let i : number = 0; i < changedFilesNames.length; i++) {
             const absPath : string = changedFilesNames[i].fileAbsPath;
@@ -199,16 +199,31 @@ class PatchBuilder {
     private static readonly RENAME_PREFIX : number = 19;
     private static readonly REPLACE_PREFIX : number = 25;
     private static readonly CREATE_PREFIX : number = 26;
-    private readonly _writeSteam : AsyncWriteStream;
-    private readonly _patchAbsPath : string;
+    private _writeSteam : AsyncWriteStream;
+    private _patchAbsPath : string;
 
     constructor() {
         Logger.logDebug(`PatchBuilder#constructor: start constract patch`);
         this._bufferArray = [];
-        const patchAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", `.${VsCodeUtils.uuidv4()}.patch`);
-        this._patchAbsPath = patchAbsPath;
-        Logger.logDebug(`PatchBuilder#constructor: patchAbsPath is ${patchAbsPath}`);
-        this._writeSteam = new AsyncWriteStream(patchAbsPath);
+    }
+
+    public init() : Promise<void> {
+        Logger.logDebug(`PatchBuilder#init: start constract patch`);
+        const prom : Promise<void> = new Promise((resolve, reject) => {
+            temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
+                if (err) {
+                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir:
+                                    ${VsCodeUtils.formatErrorMessage(err)}`);
+                    reject(err);
+                }
+                const inputPath = path.join(dirPath, `.${VsCodeUtils.uuidv4()}.patch`);
+                this._patchAbsPath = inputPath;
+                this._writeSteam = new AsyncWriteStream(inputPath);
+                Logger.logDebug(`PatchBuilder#init: patchAbsPath is ${inputPath}`);
+                resolve();
+            });
+        });
+        return prom;
     }
 
         /**
