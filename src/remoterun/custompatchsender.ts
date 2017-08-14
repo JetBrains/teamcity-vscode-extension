@@ -4,12 +4,12 @@ import { XmlRpcProvider } from "../utils/xmlrpcprovider";
 import { FileController } from "../utils/filecontroller";
 import { ByteWriter } from "../utils/bytewriter";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import { Logger } from "../utils/logger";
 import { Constants, ChangeListStatus, CvsFileStatusCode } from "../utils/constants";
 import { Credential } from "../credentialstore/credential";
 import { BuildConfigItem } from "../remoterun/configexplorer";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
 import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild, CvsLocalResource } from "../utils/interfaces";
-import { NotificationWatcher } from "../notifications/notificationwatcher";
 import { AsyncWriteStream } from "../utils/writestream";
 import * as path from "path";
 import * as fs from "fs";
@@ -106,7 +106,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                 }
             }
         }
-        return patchBuilder.getPatchName();
+        return patchBuilder.finishPatching();
     }
 
     /**
@@ -203,9 +203,11 @@ class PatchBuilder {
     private readonly _patchAbsPath : string;
 
     constructor() {
+        Logger.logDebug(`PatchBuilder#constructor: start constract patch`);
         this._bufferArray = [];
         const patchAbsPath : string = path.join(__dirname, "..", "..", "..", "resources", `.${VsCodeUtils.uuidv4()}.patch`);
         this._patchAbsPath = patchAbsPath;
+        Logger.logDebug(`PatchBuilder#constructor: patchAbsPath is ${patchAbsPath}`);
         this._writeSteam = new AsyncWriteStream(patchAbsPath);
     }
 
@@ -240,7 +242,7 @@ class PatchBuilder {
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
             await this._writeSteam.writeFile(absLocalPath);
         } catch (err) {
-            //TODO: WRITE TO THE LOG SMT SCARY
+            Logger.logError(`CustomPatchSender#addFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
         }
     }
 
@@ -254,18 +256,27 @@ class PatchBuilder {
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
         } catch (err) {
-            //TODO: WRITE TO THE LOG SMT SCARY
+            Logger.logError(`CustomPatchSender#addDeletedFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
         }
     }
 
     /**
-     * The final stage of a patch building - add eof mark and return all the patch content as Buffer object
+     * The final stage of a patch building:
+     * - add eof mark
+     * - dispose writeStream
+     * @return absPath of the patch
      */
-    public async getPatchName() : Promise<string> {
-        const byteEOPMark : Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
-        const byteEmptyLine : Buffer = ByteWriter.writeUTF("");
-        await this._writeSteam.write(Buffer.concat([byteEOPMark, byteEmptyLine]));
-        this._writeSteam.dispose();
+    public async finishPatching() : Promise<string> {
+        try {
+            const byteEOPMark : Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
+            const byteEmptyLine : Buffer = ByteWriter.writeUTF("");
+            await this._writeSteam.write(Buffer.concat([byteEOPMark, byteEmptyLine]));
+            this._writeSteam.dispose();
+        } catch (err) {
+            Logger.logError(`CustomPatchSender#finishPatching: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+        }
+
+        Logger.logInfo(`CustomPatchSender#finishPatching: patch absPath is ${this._patchAbsPath}`);
         return this._patchAbsPath;
     }
 }

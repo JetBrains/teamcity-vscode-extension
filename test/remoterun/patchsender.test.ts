@@ -25,7 +25,7 @@ suite("PatchSender", () => {
         const buildConfig2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "label2");
         const bcArr : BuildConfigItem[] = [buildConfig, buildConfig2];
         const patchSender : TccPatchSender = new TccPatchSender();
-        assert.equal(patchSender.getTestObject().configArray2String(bcArr), `"id,id2"`);
+        assert.equal(patchSender.getTestObject().configArray2String(bcArr), `"id1,id2"`);
     });
 
     test("should verify TccPatchSender filePaths2String", function() {

@@ -2,7 +2,6 @@
 
 import { assert } from "chai";
 import { SettingsImpl, Settings } from "../../src/utils/settings";
-import * as http from "http";
 
 suite("Settings", () => {
 

@@ -132,69 +132,72 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method uses git extension api to get absolute paths of staged files.
-     * @return absolute paths of staged files or [] if requiest was failed.
+     * This method uses git "diff" command to get absolute paths of staged files and theirs changeTypes.
+     * @return absolute paths of staged files and theirs changeTypes or [] if requiest was failed.
      */
     private async getLocalResources() : Promise<CvsLocalResource[]> {
+        const localResources : CvsLocalResource[] = [];
+        let porcelainStatusResult : any;
+
         try {
-            const localResources : CvsLocalResource[] = [];
-           // const getStagedFilesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" diff --name-only --staged`;
             const getPorcelainStatusCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" status --porcelain`;
-            const commandResult = await cp.exec(getPorcelainStatusCommand);
-            if (!commandResult.stdout) {
-                Logger.logDebug(`GitSupportProvider#getAbsPaths: git status didn't find staged files`);
-                return [];
-            }
-            const porcelainStatusRows : string = commandResult.stdout.toString("utf8").trim();
-            const porcelainGitRegExp : RegExp = /^([MADRC])(.*)$/;
-            const renamedGitRegExp : RegExp = /^(.*)->(.*)$/;
-            porcelainStatusRows.split("\n").forEach((relativePath) => {
-                const parsedPorcelain : string[] = porcelainGitRegExp.exec(relativePath);
-                if (!parsedPorcelain && parsedPorcelain.length !== 3) {
-                    return;
-                }
-                const fileStat = parsedPorcelain[1].trim();
-                switch (fileStat) {
-                    case "M":{
-                        const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                        localResources.push( { status: CvsFileStatusCode.MODIFIED, fileAbsPath: absFilePath});
-                        break;
-                    }
-                    case "A":{
-                        const fileAbsPath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: fileAbsPath });
-                        break;
-                    }
-                    case "D":{
-                        const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                        localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: absFilePath });
-                        break;
-                    }
-                    case "R":{
-                        const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
-                        if (parsedRenamed && parsedRenamed.length === 3) {
-                            const depAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
-                            const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
-                            localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: depAbsFilePath });
-                            localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
-                        }
-                        break;
-                    }
-                    case "C":{
-                        const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
-                        if (parsedRenamed && parsedRenamed.length === 3) {
-                            const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
-                            localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
-                        }
-                        break;
-                    }
-                }
-            });
-            return localResources;
+            porcelainStatusResult = await cp.exec(getPorcelainStatusCommand);
         }catch (err) {
-            Logger.logWarning(`GitSupportProvider#getAbsPaths: git diff leads to error: ${err}`);
+            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
         }
+
+        if (!porcelainStatusResult || !porcelainStatusResult.stdout) {
+            Logger.logDebug(`GitSupportProvider#getLocalResources: git status didn't find staged files`);
+            return [];
+        }
+        const porcelainStatusRows : string = porcelainStatusResult.stdout.toString("utf8").trim();
+        const porcelainGitRegExp : RegExp = /^([MADRC])(.*)$/;
+        const renamedGitRegExp : RegExp = /^(.*)->(.*)$/;
+        porcelainStatusRows.split("\n").forEach((relativePath) => {
+            const parsedPorcelain : string[] = porcelainGitRegExp.exec(relativePath);
+            if (!parsedPorcelain && parsedPorcelain.length !== 3) {
+                return;
+            }
+            const fileStat = parsedPorcelain[1].trim();
+            switch (fileStat) {
+                case "M":{
+                    const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                    localResources.push( { status: CvsFileStatusCode.MODIFIED, fileAbsPath: absFilePath});
+                    break;
+                }
+                case "A":{
+                    const fileAbsPath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                    localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: fileAbsPath });
+                    break;
+                }
+                case "D":{
+                    const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+                    localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: absFilePath });
+                    break;
+                }
+                case "R":{
+                    const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                    if (parsedRenamed && parsedRenamed.length === 3) {
+                        const depAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
+                        const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
+                        localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: depAbsFilePath });
+                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                    }
+                    break;
+                }
+                case "C":{
+                    const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                    if (parsedRenamed && parsedRenamed.length === 3) {
+                        const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
+                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                    }
+                    break;
+                }
+            }
+        });
+        Logger.logDebug(`GitSupportProvider#getLocalResources: ${localResources.length} changed resources was detected`);
+        return localResources;
     }
 
     /**

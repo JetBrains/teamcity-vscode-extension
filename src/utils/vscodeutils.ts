@@ -209,7 +209,10 @@ export class VsCodeUtils {
         });
     }
 
-    public static sleep(ms) {
+    /**
+     * @param ms - 
+     */
+    public static sleep(ms : number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

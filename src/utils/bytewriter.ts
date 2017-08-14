@@ -1,11 +1,11 @@
 "use strict";
 
-import { VsCodeUtils } from "../utils/vscodeutils";
-import * as fs from "fs";
+import { Logger } from "../utils/logger";
 
 export class ByteWriter {
 
     public static writeUTF(str : string) : Buffer {
+        Logger.logDebug(`ByteWriter#writeUTF: writing str ${str}`);
         const strlen : number = str.length;
         let utflen : number = 0;
         let count : number = 0;
@@ -20,8 +20,10 @@ export class ByteWriter {
             }
         }
         if (utflen > 65535) {
-            throw new Error("UTF encoding: encoded string too long: " + utflen + " bytes");
+            Logger.logError(`ByteWriter#writeUTF: UTF encoding: encoded string too long: ${utflen} bytes`);
+            throw new Error(`UTF encoding: encoded string too long: ${utflen} bytes`);
         }
+        Logger.logDebug(`ByteWriter#writeUTF: UTF length is ${utflen}`);
         const bytearr = new Buffer(utflen + 2);
         // tslint:disable:no-bitwise
         bytearr[count++] = ((utflen >> 8) & 0xFF);
@@ -52,51 +54,23 @@ export class ByteWriter {
     }
 
     public static writeByte(code : number) : Buffer {
-        const bu : Buffer = new Buffer(1);
-        bu[0] = code & 0xff, code / 256 >>> 0;
-        return bu;
+        const buffer : Buffer = new Buffer(1);
+        buffer[0] = code & 0xff, code / 256 >>> 0;
+        return buffer;
     }
 
-    public static longToByteArray(long : number) : Buffer {
-        // we want to represent the input as a 8-bytes array
+    /**
+     * This method represents the input as a 8-bytes array
+     * @param longInput the input
+     * @return 8-bytes array as Buffer
+     */
+    public static longToByteArray(longInput : number) : Buffer {
         const buffer : Buffer = new Buffer(8);
         for ( let index = 0; index < buffer.length; index ++ ) {
-            const byte = long & 0xff;
+            const byte = longInput & 0xff;
             buffer[buffer.length - index - 1] = byte;
-            long = (long - byte) / 256 ;
+            longInput = (longInput - byte) / 256 ;
         }
         return buffer;
-    }
-
-    //Not sure it works fine
-    public static writeLong(a : number) : Buffer {
-        const buffer : Buffer = new Buffer(8);
-        buffer[0] = (a >> 56);
-        buffer[1] = (a >> 48);
-        buffer[2] = (a >> 40);
-        buffer[3] = (a >> 32);
-        buffer[4] = (a >> 24);
-        buffer[5] = (a >> 16);
-        buffer[6] = (a >> 8);
-        buffer[7] = (a >> 0);
-        return buffer;
-    }
-
-    public static async writeFile(name : string) : Promise<Buffer> {
-        try {
-            const prom : Promise<Buffer> = new Promise((resolve, reject) => {
-                fs.readFile(name, (err, data) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    resolve(data);
-                });
-            });
-            const fileContentBuffer : Buffer = await prom;
-            const bufferLength : Buffer = ByteWriter.longToByteArray(fileContentBuffer.byteLength);
-            return Buffer.concat([bufferLength, fileContentBuffer]);
-        } catch (err) {
-            throw new Error("Failed to read file '" + name + "'. " + VsCodeUtils.formatErrorMessage(err));
-        }
     }
 }

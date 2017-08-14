@@ -132,7 +132,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * We are using "tf diff" command, to get required info about changed files.
+     * It's using "tf diff" command, to get required info about changed files.
      */
     private async getLocalResources() : Promise<CvsLocalResource[]> {
         const tfsInfo : TfsInfo = this._tfsInfo;
@@ -143,7 +143,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const parseBriefDiffRegExp : RegExp = /^(.*)?:\s(.*)$/mg;
         const localResources : CvsLocalResource[] = [];
         const briefDiffCommand : string = `"${this._tfPath}" diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
-        let tfsDiffResult : string; 
+        let tfsDiffResult : string;
         try {
             const briefDiffCommandOutput = await cp.exec(briefDiffCommand);
             tfsDiffResult = briefDiffCommandOutput.stdout.toString("utf8").trim();
@@ -177,7 +177,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 if (prevFileAbsPath === fileAbsPath
                     && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
                     status = CvsFileStatusCode.MODIFIED;
-                } else {
+                } else if (prevFileAbsPath) {
                     status = CvsFileStatusCode.ADDED;
                     localResources.push({ status : CvsFileStatusCode.DELETED, fileAbsPath: prevFileAbsPath});
                 }
@@ -188,9 +188,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
             if (status) {
                 localResources.push({ status : status, fileAbsPath: fileAbsPath});
             }
-            
+
             match = parseBriefDiffRegExp.exec(tfsDiffResult);
         }
+        Logger.logDebug(`TfsSupportProvider#getAbsPaths: ${localResources.length} changed resources was detected`);
         return localResources;
     }
 
@@ -203,12 +204,12 @@ export class TfsSupportProvider implements CvsSupportProvider {
         try {
             const tfsInfo : TfsInfo = this._tfsInfo;
             const parseHistoryRegExp : RegExp = /(\$.*)$/;
-            const historyCommand : string = `"${this._tfPath}" history 
+            const historyCommand : string = `"${this._tfPath}" history
                                         /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
             const historyCommandOut = await cp.exec(historyCommand);
             const tfsHistoryResultArray : string[] = historyCommandOut.stdout.toString("utf8").trim().split("/n");
             /*
-                The last row of the history command output should be at the format: 
+                The last row of the history command output should be at the format:
                 /^ (previous operation with file)\s+(previous remoteFileName started with $)$/
             */
             const lastHistoryRow = tfsHistoryResultArray.pop[tfsHistoryResultArray.length - 1];
@@ -218,9 +219,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 const prevFileAbsPath = path.join(tfsInfo.projectLocalPath, prevRelativePath);
                 return prevFileAbsPath;
             }
+            Logger.logWarning(`TfsSupportProvider#getPrevFileNameIfExist: can't parse last history command row`);
             return undefined;
         } catch (err) {
-            //TODO: add logs
+            Logger.logError(`TfsSupportProvider#getPrevFileNameIfExist: an error occurs during history command processing: ${VsCodeUtils.formatErrorMessage(err)}`);
             return undefined;
         }
     }

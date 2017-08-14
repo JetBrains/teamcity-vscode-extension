@@ -7,32 +7,52 @@ import { VsCodeUtils } from "./vscodeutils";
 export class FileController {
 
     /* Abs path should not contains symbols like " */
-    public static async exists(fileName : string) : Promise<boolean> {
+    public static async exists(fileAbsPath : string) : Promise<boolean> {
         const prom : Promise<boolean> = new Promise((resolve, reject) => {
-            const exists : boolean = fs.existsSync(fileName);
-            Logger.logDebug(`FileController#exists: file ${fileName} ${exists ? "exists" : "doesn't exist"}`);
+            const exists : boolean = fs.existsSync(fileAbsPath);
+            Logger.logDebug(`FileController#exists: file ${fileAbsPath} ${exists ? "exists" : "doesn't exist"}`);
             resolve(exists);
         });
         return prom;
     }
 
-    public static async removeFileAsync(fileName : string) {
-        Logger.logDebug(`FileController#removeFileAsync: should delete the ${fileName}`);
-        const exist : boolean = await this.exists(fileName);
+    public static async removeFileAsync(fileAbsPath : string) {
+        Logger.logDebug(`FileController#removeFileAsync: should delete the ${fileAbsPath}`);
+        const exist : boolean = await this.exists(fileAbsPath);
         if (!exist) {
             return;
         }
 
         return new Promise((resolve, reject) => {
-            fs.unlink(fileName, (err) => {
+            fs.unlink(fileAbsPath, (err) => {
                 if (err) {
-                    Logger.logError(`FileController#removeFileAsync: ${fileName} wasn't deleted. Error: ${VsCodeUtils.formatErrorMessage(err)}`);
+                    Logger.logError(`FileController#removeFileAsync: ${fileAbsPath} wasn't deleted. Error: ${VsCodeUtils.formatErrorMessage(err)}`);
                     reject(err);
                 }
-                Logger.logDebug(`FileController#removeFileAsync: ${fileName} was deleted`);
+                Logger.logDebug(`FileController#removeFileAsync: ${fileAbsPath} was deleted`);
                 resolve();
             });
         });
+    }
+
+    public static async writeFileAsync(fileAbsPath : string) : Promise<Buffer> {
+        Logger.logDebug(`FileController#writeFileAsync: should write the ${fileAbsPath}`);
+        const exist : boolean = await this.exists(fileAbsPath);
+        if (!exist) {
+            return;
+        }
+
+        const prom : Promise<Buffer> = new Promise((resolve, reject) => {
+            fs.readFile(fileAbsPath, function(err : NodeJS.ErrnoException, data : Buffer) {
+                if (err) {
+                    Logger.logError(`FileController#writeFileAsync: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+                    reject(err);
+                }
+                resolve(data);
+            });
+        });
+
+        return prom;
     }
 
     /* If file with this name exists, it will be rewritten */
