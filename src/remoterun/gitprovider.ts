@@ -150,7 +150,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         try {
             const getPorcelainStatusCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" status --porcelain`;
             porcelainStatusResult = await cp.exec(getPorcelainStatusCommand);
-        }catch (err) {
+        } catch (err) {
             Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
         }
@@ -159,12 +159,13 @@ export class GitSupportProvider implements CvsSupportProvider {
             Logger.logDebug(`GitSupportProvider#getLocalResources: git status didn't find staged files`);
             return [];
         }
-        const porcelainStatusRows : string = porcelainStatusResult.stdout.toString("utf8").trim();
+        //We should trim only end of the line, first space chars are meaningful
+        const porcelainStatusRows : string = porcelainStatusResult.stdout.toString("utf8").replace(/\s*$/, "");
         const porcelainGitRegExp : RegExp = /^([MADRC])(.*)$/;
         const renamedGitRegExp : RegExp = /^(.*)->(.*)$/;
         porcelainStatusRows.split("\n").forEach((relativePath) => {
             const parsedPorcelain : string[] = porcelainGitRegExp.exec(relativePath);
-            if (!parsedPorcelain && parsedPorcelain.length !== 3) {
+            if (!parsedPorcelain || parsedPorcelain.length !== 3) {
                 return;
             }
             const fileStat : string  = parsedPorcelain[1].trim();
