@@ -27,13 +27,19 @@
         "category": "TeamCity"
       },
       {
-        "command": "teamcity.remoteRun",
-        "title": "Remote Run",
-        "category": "TeamCity"
+        "command": "teamcity.findSuitableBConfigs",
+        "title": "Remote Run. Find Suitable Build Configurations",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/findsuitable.png",
+          "dark": "resources/icons/light/findsuitable.png"
+        }
       },
       {
-        "command": "teamcity.configexplorer.remoterun",
-        "title": "Remote Run With Chosen Build Configurations",
+        "command": "teamcity.remoteRun",
+        "title": "Remote Run. Run With Chosen Build Configurations",
+        "category": "TeamCity",
+        "when": " && config.teamcity.remoterun.enabled",
         "icon": {
           "light": "resources/icons/light/remoterun.png",
           "dark": "resources/icons/light/remoterun.png"
@@ -51,9 +57,34 @@
     "menus": {
       "view/title": [
         {
-          "command": "teamcity.configexplorer.remoterun",
+          "command": "teamcity.findSuitableBConfigs",
           "when": "view == configExplorer",
-          "group": "navigation"
+          "group": "navigation@1"
+        },
+        {
+          "command": "teamcity.remoteRun",
+          "when": "view == configExplorer && config.teamcity.remoterun.enabled",
+          "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.signIn",
+          "when": "view == configExplorer",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.findSuitableBConfigs",
+          "when": "view == configExplorer",
+           "group": "@2"
+        },
+        {
+          "command": "teamcity.remoteRun",
+          "when": "view == configExplorer && config.teamcity.remoterun.enabled",
+           "group": "@2"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == configExplorer",
+           "group": "@3"
         }
       ]
     },
@@ -77,6 +108,11 @@
         "teamcity.creds.username": {
           "type": "string",
           "description": "Sets default username for the Signin operation."
+        },
+        "teamcity.remoterun.enabled": {
+          "type": "boolean",
+          "default" : false,
+          "description": "Sets whether the TC build configuration explorer contents RemoteRun button."
         }
       }
     }

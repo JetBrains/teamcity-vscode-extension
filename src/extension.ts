@@ -8,10 +8,10 @@ import { BuildConfigTreeDataProvider, ProjectItem, BuildConfigItem } from "./rem
 let _extensionManager: ExtensionManager;
 const SIGNIN_COMMAND_NAME = "teamcity.signIn";
 const SIGNOUT_COMMAND_NAME = "teamcity.signOut";
-const REMOTE_RUN_COMMAND_NAME = "teamcity.remoteRun";
+const REMOTE_RUN_COMMAND_NAME = "teamcity.findSuitableBConfigs";
 const CHANGE_CONFIG_STATE = "changeConfigState";
 const CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
-const REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.configexplorer.remoterun";
+const REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
     _extensionManager = new ExtensionManager();

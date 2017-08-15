@@ -16,6 +16,7 @@ export interface Settings {
     setLastUrl(url : string) : Promise<void>;
     setLastUsername(username : string): Promise<void>;
     setShowSignInWelcome(newValue: boolean): Promise<void>;
+    setEnableRemoteRun(newValue: boolean): Promise<void>;
 }
 
 export abstract class BaseSettings {
@@ -46,6 +47,7 @@ export class SettingsImpl extends BaseSettings implements Settings {
 
     constructor() {
         super();
+        this.setEnableRemoteRun(undefined);
         this._loggingLevel = this.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = this.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._lastUrl = this.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
@@ -87,6 +89,11 @@ export class SettingsImpl extends BaseSettings implements Settings {
         await this.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
         this._lastUsername = username;
     }
+
+    public async setEnableRemoteRun(enableRemoteRun : boolean) : Promise<void> {
+        await this.setSettingsProperty(Constants.REMOTERUN_ENABLED, enableRemoteRun, false /* global */);
+    }
+
     /**
      * The object that provids api for private fields and methods of class.
      * Use for test purposes only!

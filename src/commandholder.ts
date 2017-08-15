@@ -73,9 +73,12 @@ export class CommandHolder {
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
-        VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
+        if (projects && projects.length > 0) {
+            await this._extManager.settings.setEnableRemoteRun(true);
+        }
         this._extManager.configExplorer.setProjects(projects);
         this._extManager.configExplorer.refresh();
+        VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
     }
 
@@ -93,6 +96,8 @@ export class CommandHolder {
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'Remote run' command");
             return;
         }
+
+        await this._extManager.settings.setEnableRemoteRun(false);
         this._extManager.configExplorer.setProjects([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
