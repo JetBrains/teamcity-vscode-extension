@@ -165,6 +165,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             let status : CvsFileStatusCode;
             const changeType : string = match[1].trim();
             const fileAbsPath : string = path.join(match[2].trim(), ".");
+            let prevFileAbsPath : string = undefined;
             if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
                 status = CvsFileStatusCode.DELETED;
             } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
@@ -173,20 +174,19 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 //undelete means restore items that were previously deleted
                 status = CvsFileStatusCode.ADDED;
             } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
-                const prevFileAbsPath : string = await this.getPrevFileNameIfExist(fileAbsPath);
+                prevFileAbsPath = await this.getPrevFileNameIfExist(fileAbsPath);
                 if (prevFileAbsPath === fileAbsPath
                     && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
                     status = CvsFileStatusCode.MODIFIED;
                 } else if (prevFileAbsPath) {
-                    status = CvsFileStatusCode.ADDED;
-                    localResources.push({ status : CvsFileStatusCode.DELETED, fileAbsPath: prevFileAbsPath});
+                    status = CvsFileStatusCode.RENAMED;
                 }
             } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
                 status = CvsFileStatusCode.MODIFIED;
             }
 
             if (status) {
-                localResources.push({ status : status, fileAbsPath: fileAbsPath});
+                localResources.push({ status : status, fileAbsPath: fileAbsPath, prevFileAbsPath: prevFileAbsPath});
             }
 
             match = parseBriefDiffRegExp.exec(tfsDiffResult);

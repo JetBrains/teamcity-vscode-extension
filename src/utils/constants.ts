@@ -73,5 +73,6 @@ export enum CvsFileStatusCode {
     MODIFIED = <any>"M",
     ADDED = <any>"A",
     DELETED = <any>"D",
+    RENAMED = <any>"R",
     UNRECOGNIZED = <any>"???"
 }

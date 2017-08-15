@@ -50,4 +50,5 @@ export interface QueuedBuild {
 export interface CvsLocalResource {
     status : CvsFileStatusCode;
     fileAbsPath : string;
+    prevFileAbsPath? : string;
 }

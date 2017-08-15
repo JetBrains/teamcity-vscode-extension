@@ -181,8 +181,10 @@ export class GitSupportProvider implements CvsSupportProvider {
                     if (parsedRenamed && parsedRenamed.length === 3) {
                         const depAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
                         const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
-                        localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: depAbsFilePath });
-                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                        localResources.push({   status: CvsFileStatusCode.RENAMED,
+                                                fileAbsPath: destAbsFilePath,
+                                                prevFileAbsPath: depAbsFilePath
+                                            });
                     }
                     break;
                 }

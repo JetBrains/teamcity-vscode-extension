@@ -52,7 +52,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                 return false;
             }
         } catch (err) {
-            console.log(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(VsCodeUtils.formatErrorMessage(err));
             return false;
         }
     }
@@ -94,6 +94,16 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                     if (fileExist) {
                         await patchBuilder.addReplacedFile(teamcityFileName, absPath);
                     } //TODO: add logs if not
+                    break;
+                }
+                case CvsFileStatusCode.RENAMED : {
+                    const prevAbsPath : string = changedFilesNames[i].prevFileAbsPath;
+                    const prevRelPath : string = path.relative(configFileContent.localRootPath, prevAbsPath).replace(/\\/g, "/");
+                    const prevTcFileName : string = `${configFileContent.tcProjectRootPath}/${prevRelPath}`;
+                    await patchBuilder.addDeletedFile(prevTcFileName);
+                    if (fileExist) {
+                        await patchBuilder.addAddedFile(teamcityFileName, absPath);
+                    }
                     break;
                 }
                 default : {
@@ -258,6 +268,21 @@ class PatchBuilder {
             await this._writeSteam.writeFile(absLocalPath);
         } catch (err) {
             Logger.logError(`CustomPatchSender#addFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+        }
+    }
+
+     /**
+     * This method adds to the patch a renamed file
+     * @param tcFileName - fileName at the TeamCity format
+     */
+    public async addRenamedFile(tcFileName: string, prevTcFileName: string) {
+        try {
+            const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.RENAME_PREFIX);
+            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
+            const bytePrevFileName : Buffer = ByteWriter.writeUTF(prevTcFileName);
+            await this._writeSteam.write(Buffer.concat([bytePrefix, bytePrevFileName, byteFileName]));
+        } catch (err) {
+            Logger.logError(`CustomPatchSender#addDeletedFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
         }
     }
 
