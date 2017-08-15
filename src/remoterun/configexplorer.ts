@@ -1,12 +1,35 @@
 import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Command, Event, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
+import { CvsLocalResource } from "../entities/cvsresource";
 import * as path from "path";
 
-export class BuildConfigItem extends TreeItem {
+export abstract class LeaveSelectableItem extends TreeItem {
+    private _isIncl : boolean;
+    constructor(label: string, isIncl: boolean = false) {
+        super(label, TreeItemCollapsibleState.None);
+        this._isIncl = isIncl;
+    }
+    public get command() : Command {
+        return {
+            command: "changeConfigState",
+            arguments: [this],
+            title: "Change build config group"
+        };
+    }
+
+    public get isIncl() : boolean {
+        return this._isIncl;
+    }
+
+    public changeState() : void {
+        this._isIncl = !this._isIncl;
+    }
+}
+
+export class BuildConfigItem extends LeaveSelectableItem {
     private readonly _id : string;
     private readonly _externalId : string;
-    private _isIncl : boolean = false;
     constructor(id: string, externalId : string, label: string) {
-        super(label, TreeItemCollapsibleState.None);
+        super(label, false);
         this._id = id;
         this._externalId = externalId;
     }
@@ -19,28 +42,12 @@ export class BuildConfigItem extends TreeItem {
         };
     }
 
-    public get command() : Command {
-        return {
-            command: "changeConfigState",
-            arguments: [this],
-            title: "Change build config group"
-        };
-    }
-
     public get id() : string {
         return this._id;
     }
 
     public get externalId() : string {
         return this._externalId;
-    }
-
-    public get isIncl() : boolean {
-        return this._isIncl;
-    }
-
-    public changeState() : void {
-        this._isIncl = !this._isIncl;
     }
 }
 
@@ -81,6 +88,7 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
     private _projects : ProjectItem[] = [];
+    private _resources : CvsLocalResource[] = [];
 
     public refresh(config?: BuildConfigItem): void {
         if (!config) {
@@ -90,7 +98,26 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
         this._onDidChangeTreeData.fire();
     }
 
-    public setProjects(projects: ProjectItem[]) {
+    public setExplorerContent(content: CvsLocalResource[] | ProjectItem[]) {
+        if (!content || content.length ===  0) {
+            this.setProjects([]);
+            this.setResources([]);
+            return;
+        }
+        if (content[0] instanceof ProjectItem) {
+            this.setResources([]);
+            this.setProjects(<ProjectItem[]>content);
+        } else {
+            this.setProjects([]);
+            this.setResources(<CvsLocalResource[]>content);
+        }
+    }
+
+    private setResources(resources: CvsLocalResource[]) {
+        this._resources = resources;
+    }
+
+    private setProjects(projects: ProjectItem[]) {
         this._projects = projects;
     }
 
@@ -103,9 +130,11 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
      * It fires every time there is a click on any element on the configExlorer.
 	 */
     public getChildren(element?: TreeItem): TreeItem[] | Thenable<TreeItem[]> {
-        if (!element) {
+        if (!element && (!this._projects || this._projects.length === 0) ) {
+            return this._resources;
+        } else if (!element) {
             return this._projects;
-        }else if (element instanceof ProjectItem) {
+        } else if (element instanceof ProjectItem) {
             const project : ProjectItem = element;
             return element.configs;
         }
@@ -123,6 +152,19 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
                     result.push(config);
                 }
             });
+        });
+        return result;
+    }
+
+    /**
+	 * @return - all included resources for remote run.
+	 */
+    public getInclResources(): CvsLocalResource[] {
+        const result : CvsLocalResource[] = [];
+        this._resources.forEach((resource) => {
+            if (resource.isIncl) {
+                result.push(resource);
+            }
         });
         return result;
     }

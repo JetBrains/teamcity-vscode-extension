@@ -1,7 +1,8 @@
 "use strict";
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
-import { CheckinInfo, TfsInfo, MappingFileContent, CvsLocalResource } from "../utils/interfaces";
+import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
+import { CvsLocalResource } from "../entities/cvsresource";
 import { CvsFileStatusCode } from "../utils/constants";
 import { CvsSupportProvider } from "./cvsprovider";
 import { Logger } from "../utils/logger";
@@ -34,13 +35,21 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * We use first, because we can get user collection guid without his credential.
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async getFormattedFilenames() : Promise<string[]> {
+    public async getFormattedFilenames(cvsResource? : CvsLocalResource[]) : Promise<string[]> {
         const formatFilenames : string[] = [];
         const tfsInfo : TfsInfo = this._tfsInfo;
-        const serverUris : string[] = this._checkinInfo.serverItems;
-        serverUris.forEach((row) => {
-            formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
-        });
+        if (!cvsResource) {
+            const serverUris : string[] = this._checkinInfo.serverItems;
+            serverUris.forEach((row) => {
+                formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
+            });
+        } else {
+            cvsResource.forEach((resource) => {
+                const relativePath = path.relative(tfsInfo.projectLocalPath, resource.fileAbsPath);
+                const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
+                formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/"));
+            });
+        }
         Logger.logDebug(`TfsSupportProvider#getFormattedFilenames: formatFilenames: ${formatFilenames.join(" ")}`);
         return formatFilenames;
     }
@@ -119,6 +128,13 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
+     * Sets files for remote run, when user wants to provide them manually.
+     */
+    setFilesForRemoteRun(resources : CvsLocalResource[]) {
+        this._checkinInfo.cvsLocalResources = resources;
+    }
+
+    /**
      * This method requiests absPaths of changed files and replaces localProjectPath by $/projectName
      */
     private async getServerItems(cvsLocalResources : CvsLocalResource[]) : Promise<string[]> {
@@ -186,7 +202,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
             }
 
             if (status) {
-                localResources.push({ status : status, fileAbsPath: fileAbsPath, prevFileAbsPath: prevFileAbsPath});
+                localResources.push(new CvsLocalResource(status,
+                                                         fileAbsPath,
+                                                         path.relative(tfsInfo.projectLocalPath, fileAbsPath) /*label*/,
+                                                         prevFileAbsPath));
             }
 
             match = parseBriefDiffRegExp.exec(tfsDiffResult);

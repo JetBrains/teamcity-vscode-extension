@@ -9,7 +9,8 @@ import { Constants, ChangeListStatus, CvsFileStatusCode } from "../utils/constan
 import { Credential } from "../credentialstore/credential";
 import { BuildConfigItem } from "../remoterun/configexplorer";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
-import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild, CvsLocalResource } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, RestHeader, QueuedBuild } from "../utils/interfaces";
+import { CvsLocalResource } from "../entities/cvsresource";
 import { AsyncWriteStream } from "../utils/writestream";
 import * as path from "path";
 import * as fs from "fs";

@@ -2,7 +2,8 @@
 
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 import { CvsSupportProvider } from "./cvsprovider";
-import { CheckinInfo, Remote, MappingFileContent, CvsLocalResource } from "../utils/interfaces";
+import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
+import { CvsLocalResource } from "../entities/cvsresource";
 import { CvsFileStatusCode } from "../utils/constants";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
@@ -29,8 +30,8 @@ export class GitSupportProvider implements CvsSupportProvider {
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async getFormattedFilenames() : Promise<string[]> {
-        const cvsLocalResources : CvsLocalResource[] = this._checkinInfo.cvsLocalResources;
+    public async getFormattedFilenames(cvsResource? : CvsLocalResource[]) : Promise<string[]> {
+        const cvsLocalResources : CvsLocalResource[] = cvsResource || this._checkinInfo.cvsLocalResources;
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
@@ -132,6 +133,13 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
+     * Sets files for remote run, when user wants to provide them manually.
+     */
+    public setFilesForRemoteRun(resources : CvsLocalResource[]) {
+        this._checkinInfo.cvsLocalResources = resources;
+    }
+
+    /**
      * This method uses git "diff" command to get absolute paths of staged files and theirs changeTypes.
      * @return absolute paths of staged files and theirs changeTypes or [] if requiest was failed.
      */
@@ -159,44 +167,46 @@ export class GitSupportProvider implements CvsSupportProvider {
             if (!parsedPorcelain && parsedPorcelain.length !== 3) {
                 return;
             }
-            const fileStat = parsedPorcelain[1].trim();
+            const fileStat : string  = parsedPorcelain[1].trim();
+            const fileRelativePath : string  = parsedPorcelain[2].trim();
+            let fileAbsPath : string  = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
+            let status : CvsFileStatusCode;
+            let prevFileAbsPath : string;
             switch (fileStat) {
                 case "M":{
-                    const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                    localResources.push( { status: CvsFileStatusCode.MODIFIED, fileAbsPath: absFilePath});
+                    status = CvsFileStatusCode.MODIFIED;
                     break;
                 }
                 case "A":{
-                    const fileAbsPath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                    localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: fileAbsPath });
+                    status = CvsFileStatusCode.ADDED;
                     break;
                 }
                 case "D":{
-                    const absFilePath : string = path.join(this._workspaceRootPath, parsedPorcelain[2].trim());
-                    localResources.push( { status: CvsFileStatusCode.DELETED, fileAbsPath: absFilePath });
+                    status = CvsFileStatusCode.DELETED;
                     break;
                 }
                 case "R":{
-                    const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                    const parsedRenamed : string[] | null = renamedGitRegExp.exec(fileAbsPath);
                     if (parsedRenamed && parsedRenamed.length === 3) {
-                        const depAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
-                        const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
-                        localResources.push({   status: CvsFileStatusCode.RENAMED,
-                                                fileAbsPath: destAbsFilePath,
-                                                prevFileAbsPath: depAbsFilePath
-                                            });
+                        prevFileAbsPath = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
+                        fileAbsPath = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
+                        status = CvsFileStatusCode.RENAMED;
                     }
                     break;
                 }
                 case "C":{
-                    const parsedRenamed : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
-                    if (parsedRenamed && parsedRenamed.length === 3) {
-                        const destAbsFilePath : string = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
-                        localResources.push( { status: CvsFileStatusCode.ADDED, fileAbsPath: destAbsFilePath });
+                    const parsedCopied : string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
+                    if (parsedCopied && parsedCopied.length === 3) {
+                        fileAbsPath = path.join(this._workspaceRootPath, parsedCopied[2].trim());
+                        status = CvsFileStatusCode.ADDED;
                     }
                     break;
                 }
             }
+            if (status && fileAbsPath) {
+                localResources.push(new CvsLocalResource(status, fileAbsPath, fileRelativePath /*label*/, prevFileAbsPath));
+            }
+
         });
         Logger.logDebug(`GitSupportProvider#getLocalResources: ${localResources.length} changed resources was detected`);
         return localResources;

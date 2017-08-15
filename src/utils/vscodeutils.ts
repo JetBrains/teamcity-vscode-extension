@@ -1,7 +1,7 @@
 "use strict";
 
 import { window, MessageItem, workspace } from "vscode";
-import { Strings } from "../utils/strings";
+import { Strings } from "../utils/constants";
 import { Logger } from "../utils/logger";
 import { RestHeader } from "../utils/interfaces";
 import { Credential } from "../credentialstore/credential";

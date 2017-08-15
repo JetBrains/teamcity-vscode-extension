@@ -3,7 +3,9 @@
 import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider, } from "vscode";
 import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable} from "vscode";
 import { ExtensionManager } from "./extensionmanager";
-import { Strings } from "./utils/strings";
+import { Strings } from "./utils/constants";
+import { CheckinInfo } from "./utils/interfaces";
+import { CvsLocalResource } from "./entities/cvsresource";
 import { Credential } from "./credentialstore/credential";
 import { VsCodeUtils } from "./utils/vscodeutils";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
@@ -60,23 +62,43 @@ export class CommandHolder {
         }
     }
 
+    public async selectFilesForRemoteRun() {
+        Logger.logInfo("CommandHolder#selectFilesForRemoteRun: starts");
+        this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+        if ( this._cvsProvider === undefined ) {
+            //If there is no provider, log already contains message about the problem
+            return;
+        }
+        const checkInInfo : CheckinInfo = await this._cvsProvider.getRequiredCheckinInfo();
+        this._extManager.configExplorer.setExplorerContent(checkInInfo.cvsLocalResources);
+        this._extManager.configExplorer.refresh();
+    }
+
     public async getSuitableConfigs() {
         Logger.logInfo("CommandHolder#getSuitableConfigs: starts");
         const cred : Credential = await this.tryGetCredentials();
         if (cred === undefined) {
+            //If there are no creds, log already contains message about the problem
             return;
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
-        this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+        const selectedResources : CvsLocalResource[] = this._extManager.configExplorer.getInclResources();
+        if (selectedResources && selectedResources.length > 0) {
+            this._cvsProvider.setFilesForRemoteRun(selectedResources);
+        } else {
+            this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+        }
+
+        const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         if ( this._cvsProvider === undefined ) {
+            //If there is no provider, log already contains message about the problem
             return;
         }
-        const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
         if (projects && projects.length > 0) {
             await this._extManager.settings.setEnableRemoteRun(true);
         }
-        this._extManager.configExplorer.setProjects(projects);
+        this._extManager.configExplorer.setExplorerContent(projects);
         this._extManager.configExplorer.refresh();
         VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
@@ -98,7 +120,7 @@ export class CommandHolder {
         }
 
         await this._extManager.settings.setEnableRemoteRun(false);
-        this._extManager.configExplorer.setProjects([]);
+        this._extManager.configExplorer.setExplorerContent([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
         const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);

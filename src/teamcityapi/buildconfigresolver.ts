@@ -1,6 +1,6 @@
 "use strict";
 import { Credential } from "../credentialstore/credential";
-import { Strings } from "../utils/strings";
+import { Strings } from "../utils/constants";
 import { Constants } from "../utils/constants";
 import { Logger } from "../utils/logger";
 import { VsCodeUtils } from "../utils/vscodeutils";

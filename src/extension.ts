@@ -9,6 +9,7 @@ let _extensionManager: ExtensionManager;
 const SIGNIN_COMMAND_NAME = "teamcity.signIn";
 const SIGNOUT_COMMAND_NAME = "teamcity.signOut";
 const REMOTE_RUN_COMMAND_NAME = "teamcity.findSuitableBConfigs";
+const SELECT_FILES_COMMAND_NAME = "teamcity.selectFilesForRemoteRun";
 const CHANGE_CONFIG_STATE = "changeConfigState";
 const CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
 const REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
@@ -23,8 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(SIGNOUT_COMMAND_NAME, () => _extensionManager.commandHolder.signOut()));
     context.subscriptions.push(vscode.commands.registerCommand(REMOTE_RUN_COMMAND_NAME, () => _extensionManager.commandHolder.getSuitableConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => _extensionManager.commandHolder.remoteRunWithChosenConfigs()));
+    context.subscriptions.push(vscode.commands.registerCommand(SELECT_FILES_COMMAND_NAME, () => _extensionManager.commandHolder.selectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(CHANGE_CONFIG_STATE, (config : BuildConfigItem) => _extensionManager.commandHolder.changeConfigState(config)));
     context.subscriptions.push(vscode.commands.registerCommand(CHANGE_COLLAPSIBLE_STATE, (config : ProjectItem) => _extensionManager.commandHolder.changeCollapsibleState(config)));
-    context.subscriptions.push(vscode.window.registerTreeDataProvider("configExplorer", configExplorer));
+    context.subscriptions.push(vscode.window.registerTreeDataProvider("teamcityExplorer", configExplorer));
     context.subscriptions.push(_extensionManager);
 }

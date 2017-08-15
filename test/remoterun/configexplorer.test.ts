@@ -31,7 +31,7 @@ suite("ConfigExplorer", () => {
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
         bcArr.push(new ProjectItem("id1", []));
         bcArr.push(new ProjectItem("id2", []));
-        configExplorer.setProjects(bcArr);
+        configExplorer.setExplorerContent(bcArr);
         assert.equal(configExplorer.getChildren(), bcArr);
     });
 
@@ -41,7 +41,7 @@ suite("ConfigExplorer", () => {
         const bcItem1 : BuildConfigItem = new BuildConfigItem("id1", "externalId1", "name1");
         const bcItem2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "name2");
         projectArr.push(new ProjectItem("id1", [bcItem1, bcItem2]));
-        configExplorer.setProjects(projectArr);
+        configExplorer.setExplorerContent(projectArr);
         assert.equal(configExplorer.getInclBuilds().length, 0);
         bcItem1.changeState();
         assert.equal(configExplorer.getInclBuilds().length, 1);

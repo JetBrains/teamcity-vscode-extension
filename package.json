@@ -27,6 +27,11 @@
         "category": "TeamCity"
       },
       {
+        "command": "teamcity.selectFilesForRemoteRun",
+        "title": "Remote Run. Select Files For Remote Run",
+        "category": "TeamCity"
+      },
+      {
         "command": "teamcity.findSuitableBConfigs",
         "title": "Remote Run. Find Suitable Build Configurations",
         "category": "TeamCity",
@@ -49,8 +54,8 @@
     "views": {
       "explorer": [
         {
-          "id": "configExplorer",
-          "name": "TeamCity Build Configs"
+          "id": "teamcityExplorer",
+          "name": "TeamCity"
         }
       ]
     },
@@ -58,32 +63,37 @@
       "view/title": [
         {
           "command": "teamcity.findSuitableBConfigs",
-          "when": "view == configExplorer",
+          "when": "view == teamcityExplorer",
           "group": "navigation@1"
         },
         {
           "command": "teamcity.remoteRun",
-          "when": "view == configExplorer && config.teamcity.remoterun.enabled",
+          "when": "view == teamcityExplorer && config.teamcity.remoterun.enabled",
           "group": "navigation@2"
         },
         {
           "command": "teamcity.signIn",
-          "when": "view == configExplorer",
+          "when": "view == teamcityExplorer",
           "group": "@1"
         },
         {
+        "command": "teamcity.selectFilesForRemoteRun",
+        "when": "view == teamcityExplorer",
+        "group": "@2"
+        },
+        {
           "command": "teamcity.findSuitableBConfigs",
-          "when": "view == configExplorer",
-           "group": "@2"
+          "when": "view == teamcityExplorer",
+          "group": "@2"
         },
         {
           "command": "teamcity.remoteRun",
-          "when": "view == configExplorer && config.teamcity.remoterun.enabled",
-           "group": "@2"
+          "when": "view == teamcityExplorer && config.teamcity.remoterun.enabled",
+          "group": "@2"
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == configExplorer",
+          "when": "view == teamcityExplorer",
            "group": "@3"
         }
       ]

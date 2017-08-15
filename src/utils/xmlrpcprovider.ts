@@ -4,7 +4,7 @@ import xmlrpc = require("xmlrpc");
 import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "./vscodeutils";
 import { Constants } from "./constants";
-import { Strings } from "./strings";
+import { Strings } from "./constants";
 import { Logger } from "./logger";
 const BigInteger = forge.jsbn.BigInteger;
 

@@ -2,7 +2,7 @@
 import { Credential } from "../credentialstore/credential";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { Constants } from "../utils/constants";
-import { Strings } from "../utils/strings";
+import { Strings } from "../utils/constants";
 import { Logger } from "../utils/logger";
 import { ProjectItem } from "../remoterun/configexplorer";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
