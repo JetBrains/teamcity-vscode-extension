@@ -1,8 +1,8 @@
 "use strict";
 
+import { Logger } from "../utils/logger";
 import { Credential } from "./credential";
 import { TCApiProvider, TCRestApiProvider } from "../teamcityapi/tcapiprovider";
-import { Logger } from "../utils/logger";
 
 export class CredentialStore {
     private _creds : Credential;

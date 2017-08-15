@@ -1,7 +1,7 @@
 "use strict";
 
-import * as winston from "winston";
 import * as path from "path";
+import * as winston from "winston";
 
 export class Logger {
     private static initialized: boolean = false;

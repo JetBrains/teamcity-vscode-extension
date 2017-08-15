@@ -1,13 +1,14 @@
 "use strict";
+
+import { CvsLocalResource } from "../entities/leaveitems";
 import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
-import { CvsLocalResource } from "../entities/cvsresource";
 
 export interface CvsSupportProvider {
 
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    getFormattedFilenames(cvsResource? : CvsLocalResource[]) : Promise<string[]>;
+    getFormattedFilenames() : Promise<string[]>;
 
     /**
      * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.

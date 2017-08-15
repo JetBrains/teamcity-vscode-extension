@@ -1,9 +1,10 @@
 "use strict";
 
 import { assert } from "chai";
-import { XmlRpcBuildConfigResolver } from "../../src/teamcityapi/buildconfigresolver";
-import { ProjectItem, BuildConfigItem } from "../../src/remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
+import { ProjectItem } from "../../src/entities/projectitem";
+import { BuildConfigItem } from "../../src/entities/leaveitems";
+import { XmlRpcBuildConfigResolver } from "../../src/remoterun/buildconfigresolver";
 
 suite("BuildConfigResolver", () => {
 

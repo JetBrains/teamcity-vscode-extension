@@ -2,8 +2,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 
 import * as vscode from "vscode";
+import { ProjectItem } from "./entities/projectitem";
 import { ExtensionManager } from "./extensionmanager";
-import { BuildConfigTreeDataProvider, ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
+import { BuildConfigItem } from "./entities/leaveitems";
+import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
 
 let _extensionManager: ExtensionManager;
 const SIGNIN_COMMAND_NAME = "teamcity.signIn";

@@ -1,8 +1,8 @@
 "use strict";
 
 import { assert } from "chai";
-import { UserEvent, ProjectEvent } from "../../src/notifications/subscriptionevent";
 import { TrackerEventType } from "../../src/utils/constants";
+import { UserEvent, ProjectEvent } from "../../src/notifications/subscriptionevent";
 
 suite("UserEvent", () => {
     test("should verify constructor", function() {

@@ -1,10 +1,10 @@
 
 import * as os from "os";
-import { CvsInfo } from "../utils/interfaces";
-import { CvsProviderTypes } from "../utils/constants";
-import { Logger } from "../utils/logger";
 import { workspace } from "vscode";
+import { Logger } from "../utils/logger";
+import { CvsInfo } from "../utils/interfaces";
 import * as cpprom from "child-process-promise";
+import { CvsProviderTypes } from "../utils/constants";
 
 export class TfsUtils {
 

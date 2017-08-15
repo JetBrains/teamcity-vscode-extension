@@ -1,8 +1,8 @@
 "use strict";
 
+import * as http from "http";
 import { assert } from "chai";
 import { VsCodeUtils } from "../../src/utils/vscodeutils";
-import * as http from "http";
 
 suite("VSCodeUtils", () => {
 

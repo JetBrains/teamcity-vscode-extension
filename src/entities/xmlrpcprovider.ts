@@ -1,11 +1,12 @@
 "use strict";
-import forge = require("node-forge");
+
 import xmlrpc = require("xmlrpc");
+import forge = require("node-forge");
+import { Logger } from "../utils/logger";
+import { Strings } from "../utils/constants";
+import { Constants } from "../utils/constants";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import { Credential } from "../credentialstore/credential";
-import { VsCodeUtils } from "./vscodeutils";
-import { Constants } from "./constants";
-import { Strings } from "./constants";
-import { Logger } from "./logger";
 const BigInteger = forge.jsbn.BigInteger;
 
 export class XmlRpcProvider {

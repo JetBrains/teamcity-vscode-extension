@@ -1,8 +1,8 @@
 "use strict";
 
 import { assert } from "chai";
-import { SummaryDataProxy, ChangeItemProxy, BuildItemProxy } from "../../src/notifications/summarydata";
 import * as xml2js from "xml2js";
+import { SummaryDataProxy, ChangeItemProxy, BuildItemProxy } from "../../src/entities/summarydata";
 
 suite("SummaryDataProxy", () => {
     test("should verify constructor", function(done) {

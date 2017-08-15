@@ -1,9 +1,9 @@
 "use strict";
 
 import { assert } from "chai";
-import { ModificationCounterSubscription } from "../../src/notifications/modificationcountersubscription";
-import { SummaryDataProxy } from "../../src/notifications/summarydata";
 import * as xml2js from "xml2js";
+import { SummaryDataProxy } from "../../src/entities/summarydata";
+import { ModificationCounterSubscription } from "../../src/notifications/modificationcountersubscription";
 
 suite("ModificationCounterSubscription", () => {
     test("should verify constructor", function() {

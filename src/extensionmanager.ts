@@ -1,12 +1,12 @@
 "use strict";
 
-import { Disposable, window, OutputChannel, workspace, ExtensionContext } from "vscode";
-import { CredentialStore } from "./credentialstore/credentialstore";
+import { Logger } from "./utils/logger";
 import { CommandHolder } from "./commandholder";
-import { Settings, SettingsImpl } from "./utils/settings";
+import { Settings, SettingsImpl } from "./entities/settings";
+import { CredentialStore } from "./credentialstore/credentialstore";
 import { BuildConfigTreeDataProvider } from "./remoterun/configexplorer";
 import { NotificationWatcher } from "./notifications/notificationwatcher";
-import { Logger } from "./utils/logger";
+import { Disposable, window, OutputChannel, workspace, ExtensionContext } from "vscode";
 
 export class ExtensionManager implements Disposable {
     private _settings : Settings;

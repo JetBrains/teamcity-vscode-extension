@@ -1,7 +1,8 @@
 "use strict";
-import { ISubscriptionEvent, ProjectEvent, UserEvent } from "./subscriptionevent";
-import { SummaryDataProxy } from "./summarydata";
+
 import { TrackerEventType } from "../utils/constants";
+import { SummaryDataProxy } from "../entities/summarydata";
+import { ISubscriptionEvent, ProjectEvent, UserEvent } from "./subscriptionevent";
 
 export interface ModificationCounterSubscriptionInfo {
     serialize() : string;

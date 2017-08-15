@@ -1,13 +1,15 @@
 "use strict";
-import { Credential } from "../credentialstore/credential";
-import { Strings } from "../utils/constants";
-import { Constants } from "../utils/constants";
-import { Logger } from "../utils/logger";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { ProjectItem, BuildConfigItem } from "../remoterun/configexplorer";
-import { XmlRpcProvider } from "../utils/xmlrpcprovider";
+
 import xmlrpc = require("xmlrpc");
 import xml2js = require("xml2js");
+import { Logger } from "../utils/logger";
+import { Strings } from "../utils/constants";
+import { Constants } from "../utils/constants";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { ProjectItem } from "../entities/projectitem";
+import { BuildConfigItem } from "../entities/leaveitems";
+import { Credential } from "../credentialstore/credential";
+import { XmlRpcProvider } from "../entities/xmlrpcprovider";
 
 export interface BuildConfigResolver {
     /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential) : Promise<ProjectItem[]>;

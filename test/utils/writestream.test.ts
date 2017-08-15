@@ -1,10 +1,10 @@
 "use strict";
 
+import * as path from "path";
 import { assert } from "chai";
 import { workspace } from "vscode";
-import { AsyncWriteStream } from "../../src/utils/writestream";
 import { FileController } from "../../src/utils/filecontroller";
-import * as path from "path";
+import { AsyncWriteStream } from "../../src/entities/writestream";
 
 suite("WriteStream", () => {
     test("should verify typical usecase for asyncWriteStream", function(done) {

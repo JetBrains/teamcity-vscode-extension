@@ -1,7 +1,7 @@
 "use strict";
 
 import { assert } from "chai";
-import { XmlRpcProvider } from "../../src/utils/xmlrpcprovider";
+import { XmlRpcProvider } from "../../src/entities/xmlrpcprovider";
 
 suite("XmlRpcProvider", () => {
 

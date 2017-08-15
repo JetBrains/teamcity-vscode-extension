@@ -1,88 +1,9 @@
-import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Command, Event, TreeItemCollapsibleState, Uri, commands, workspace, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
-import { CvsLocalResource } from "../entities/cvsresource";
-import * as path from "path";
+"use strict";
 
-export abstract class LeaveSelectableItem extends TreeItem {
-    private _isIncl : boolean;
-    constructor(label: string, isIncl: boolean = false) {
-        super(label, TreeItemCollapsibleState.None);
-        this._isIncl = isIncl;
-    }
-    public get command() : Command {
-        return {
-            command: "changeConfigState",
-            arguments: [this],
-            title: "Change build config group"
-        };
-    }
-
-    public get isIncl() : boolean {
-        return this._isIncl;
-    }
-
-    public changeState() : void {
-        this._isIncl = !this._isIncl;
-    }
-}
-
-export class BuildConfigItem extends LeaveSelectableItem {
-    private readonly _id : string;
-    private readonly _externalId : string;
-    constructor(id: string, externalId : string, label: string) {
-        super(label, false);
-        this._id = id;
-        this._externalId = externalId;
-    }
-
-    public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName : string = "config - " + (this.isIncl ? "incl" : "excl") + ".png";
-        return {
-            light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
-        };
-    }
-
-    public get id() : string {
-        return this._id;
-    }
-
-    public get externalId() : string {
-        return this._externalId;
-    }
-}
-
-export class ProjectItem extends TreeItem {
-    public configs : BuildConfigItem[];
-
-    constructor(label: string, configs: BuildConfigItem[]) {
-        super(label, TreeItemCollapsibleState.Collapsed);
-        this.configs = configs;
-    }
-
-    public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName : string = "project.png";
-        return {
-            light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
-        };
-    }
-
-    public get command() : Command {
-        return {
-            command: "changeCollapsibleState",
-            arguments: [this],
-            title: "Change Collapsible State"
-        };
-    }
-
-    public changeCollapsibleState() : void {
-        if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
-            this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        }else {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
-    }
-}
+import { ProjectItem } from "../entities/projectitem";
+import { CvsLocalResource, BuildConfigItem } from "../entities/leaveitems";
+import { TreeItemCollapsibleState, Uri, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
+import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Command, Event, workspace, commands } from "vscode";
 
 export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();

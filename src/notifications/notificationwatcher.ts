@@ -1,11 +1,12 @@
 "use strict";
+
 import { OutputChannel } from "vscode";
-import { TCApiProvider, TCXmlRpcApiProvider } from "../teamcityapi/tcapiprovider";
-import { CredentialStore } from "../credentialstore/credentialstore";
-import { SummaryDataProxy, ChangeItemProxy } from "../notifications/summarydata";
-import { Credential } from "../credentialstore/credential";
-import { VsCodeUtils } from "../utils/vscodeutils";
 import { Logger } from "../utils/logger";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { Credential } from "../credentialstore/credential";
+import { CredentialStore } from "../credentialstore/credentialstore";
+import { SummaryDataProxy, ChangeItemProxy } from "../entities/summarydata";
+import { TCApiProvider, TCXmlRpcApiProvider } from "../teamcityapi/tcapiprovider";
 
 export class NotificationWatcher {
     private readonly _credentialStore : CredentialStore;

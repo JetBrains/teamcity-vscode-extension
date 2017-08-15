@@ -1,14 +1,14 @@
 "use strict";
 
-import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
-import { CvsSupportProvider } from "./cvsprovider";
-import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
-import { CvsLocalResource } from "../entities/cvsresource";
-import { CvsFileStatusCode } from "../utils/constants";
-import { VsCodeUtils } from "../utils/vscodeutils";
+import * as path from "path";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
-import * as path from "path";
+import { CvsSupportProvider } from "./cvsprovider";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { CvsFileStatusCode } from "../utils/constants";
+import { CvsLocalResource } from "../entities/leaveitems";
+import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
+import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 
 /**
  * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath.
@@ -30,8 +30,8 @@ export class GitSupportProvider implements CvsSupportProvider {
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async getFormattedFilenames(cvsResource? : CvsLocalResource[]) : Promise<string[]> {
-        const cvsLocalResources : CvsLocalResource[] = cvsResource || this._checkinInfo.cvsLocalResources;
+    public async getFormattedFilenames() : Promise<string[]> {
+        const cvsLocalResources : CvsLocalResource[] = this._checkinInfo.cvsLocalResources;
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";

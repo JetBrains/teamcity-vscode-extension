@@ -1,6 +1,7 @@
 "use strict";
+
+import { CvsLocalResource } from "../entities/leaveitems";
 import { CvsProviderTypes, CvsFileStatusCode } from "../utils/constants";
-import { CvsLocalResource } from "../entities/cvsresource";
 
 export interface CheckinInfo {
     message: string;

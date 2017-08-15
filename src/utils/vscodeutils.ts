@@ -1,14 +1,14 @@
 "use strict";
 
-import { window, MessageItem, workspace } from "vscode";
-import { Strings } from "../utils/constants";
-import { Logger } from "../utils/logger";
-import { RestHeader } from "../utils/interfaces";
-import { Credential } from "../credentialstore/credential";
-import { ChangeItemProxy, BuildItemProxy } from "../notifications/summarydata";
-import XHR = require("xmlhttprequest");
-import pako = require("pako");
 import fs = require("fs");
+import pako = require("pako");
+import XHR = require("xmlhttprequest");
+import { Logger } from "../utils/logger";
+import { Strings } from "../utils/constants";
+import { RestHeader } from "../utils/interfaces";
+import { window, MessageItem, workspace } from "vscode";
+import { Credential } from "../credentialstore/credential";
+import { ChangeItemProxy, BuildItemProxy } from "../entities/summarydata";
 
 export class VsCodeUtils {
 

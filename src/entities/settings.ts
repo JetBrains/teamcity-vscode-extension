@@ -1,7 +1,7 @@
 "use strict";
 
+import { Constants } from "../utils/constants";
 import { workspace, ExtensionContext, Memento } from "vscode";
-import { Constants } from "./constants";
 
 export interface Settings {
     loggingLevel: string;

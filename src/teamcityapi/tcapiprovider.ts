@@ -1,13 +1,14 @@
 "use strict";
-import { Credential } from "../credentialstore/credential";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { Constants } from "../utils/constants";
-import { Strings } from "../utils/constants";
+
 import { Logger } from "../utils/logger";
-import { ProjectItem } from "../remoterun/configexplorer";
-import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "./buildconfigresolver";
-import { NotificationProvider } from "./notificationprovider";
-import { SummaryDataProxy } from "../notifications/summarydata";
+import { Strings } from "../utils/constants";
+import { Constants } from "../utils/constants";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { ProjectItem } from "../entities/projectitem";
+import { SummaryDataProxy } from "../entities/summarydata";
+import { Credential } from "../credentialstore/credential";
+import { NotificationProvider } from "../notifications/notificationprovider";
+import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "../remoterun/buildconfigresolver";
 
 export interface TCApiProvider {
     /* async */ checkCredential( cred : Credential ) : Promise<boolean>;

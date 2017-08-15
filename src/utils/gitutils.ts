@@ -1,12 +1,14 @@
+"use strict";
+
 import * as fs from "fs";
 import * as path from "path";
+import { workspace } from "vscode";
 import * as cp from "child_process";
+import { Logger } from "../utils/logger";
+import { CvsInfo } from "../utils/interfaces";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
 import { CvsProviderTypes } from "../utils/constants";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { CvsInfo } from "../utils/interfaces";
-import { Logger } from "../utils/logger";
-import { workspace } from "vscode";
 
 export class GitUtils {
 

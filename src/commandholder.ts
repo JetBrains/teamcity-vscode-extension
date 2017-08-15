@@ -1,24 +1,24 @@
 "use strict";
 
-import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider, } from "vscode";
-import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable} from "vscode";
-import { ExtensionManager } from "./extensionmanager";
-import { Strings } from "./utils/constants";
-import { CheckinInfo } from "./utils/interfaces";
-import { CvsLocalResource } from "./entities/cvsresource";
-import { Credential } from "./credentialstore/credential";
-import { VsCodeUtils } from "./utils/vscodeutils";
-import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
-import { PatchSender } from "./remoterun/patchsender";
-import { CvsSupportProvider } from "./remoterun/cvsprovider";
-import { CustomPatchSender } from "./remoterun/custompatchsender";
-import { Logger } from "./utils/logger";
-import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
-import { ProjectItem, BuildConfigItem } from "./remoterun/configexplorer";
-import XHR = require("xmlhttprequest");
 import XML2JS = require("xml2js");
 import xmlrpc = require("xmlrpc");
 import forge = require("node-forge");
+import XHR = require("xmlhttprequest");
+import { Logger } from "./utils/logger";
+import { Strings } from "./utils/constants";
+import { CheckinInfo } from "./utils/interfaces";
+import { VsCodeUtils } from "./utils/vscodeutils";
+import { ProjectItem } from "./entities/projectitem";
+import { PatchSender } from "./remoterun/patchsender";
+import { ExtensionManager } from "./extensionmanager";
+import { Credential } from "./credentialstore/credential";
+import { CustomPatchSender } from "./remoterun/patchsender";
+import { CvsSupportProvider } from "./remoterun/cvsprovider";
+import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
+import { CvsLocalResource, BuildConfigItem } from "./entities/leaveitems";
+import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
+import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider, } from "vscode";
+import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable} from "vscode";
 
 export class CommandHolder {
     private _extManager : ExtensionManager;

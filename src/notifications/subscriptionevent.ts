@@ -1,4 +1,5 @@
 "use strict";
+
 import { TrackerEventType } from "../utils/constants";
 
 export interface ISubscriptionEvent {

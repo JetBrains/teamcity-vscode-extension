@@ -2,9 +2,9 @@
 
 import * as fs from "fs";
 import { Disposable } from "vscode";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { ByteWriter } from "../utils/bytewriter";
 import { Logger } from "../utils/logger";
+import { ByteWriter } from "../utils/bytewriter";
+import { VsCodeUtils } from "../utils/vscodeutils";
 
 export class AsyncWriteStream implements Disposable {
     private readonly _writeSteam: fs.WriteStream;

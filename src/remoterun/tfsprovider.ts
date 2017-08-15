@@ -1,15 +1,15 @@
 "use strict";
 
-import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
-import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
-import { CvsLocalResource } from "../entities/cvsresource";
-import { CvsFileStatusCode } from "../utils/constants";
-import { CvsSupportProvider } from "./cvsprovider";
-import { Logger } from "../utils/logger";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import * as cp from "child-process-promise";
-import * as path from "path";
 import * as url from "url";
+import * as path from "path";
+import { Logger } from "../utils/logger";
+import * as cp from "child-process-promise";
+import { CvsSupportProvider } from "./cvsprovider";
+import { VsCodeUtils } from "../utils/vscodeutils";
+import { CvsFileStatusCode } from "../utils/constants";
+import { CvsLocalResource } from "../entities/leaveitems";
+import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
+import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
 
 export class TfsSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath : string;
@@ -35,21 +35,15 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * We use first, because we can get user collection guid without his credential.
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async getFormattedFilenames(cvsResource? : CvsLocalResource[]) : Promise<string[]> {
+    public async getFormattedFilenames() : Promise<string[]> {
         const formatFilenames : string[] = [];
         const tfsInfo : TfsInfo = this._tfsInfo;
-        if (!cvsResource) {
-            const serverUris : string[] = this._checkinInfo.serverItems;
-            serverUris.forEach((row) => {
-                formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${row}`.replace(/\\/g, "/"));
-            });
-        } else {
-            cvsResource.forEach((resource) => {
-                const relativePath = path.relative(tfsInfo.projectLocalPath, resource.fileAbsPath);
-                const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
-                formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/"));
-            });
-        }
+        const cvsResources : CvsLocalResource[] = this._checkinInfo.cvsLocalResources;
+        cvsResources.forEach((resource) => {
+            const relativePath = path.relative(tfsInfo.projectLocalPath, resource.fileAbsPath);
+            const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
+            formatFilenames.push(`tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/"));
+        });
         Logger.logDebug(`TfsSupportProvider#getFormattedFilenames: formatFilenames: ${formatFilenames.join(" ")}`);
         return formatFilenames;
     }
@@ -109,9 +103,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
             matchOnDescription: false,
             placeHolder: TFS_COMMIT_PUSH_INTRO_MESSAGE
         };
-        const nextGitOperation : QuickPickItem = await window.showQuickPick(choices, options);
-        Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextGitOperation ? nextGitOperation.label : "nothing"}`);
-        if (nextGitOperation !== undefined && nextGitOperation.label === YES_LABEL) {
+        const nextTfsOperation : QuickPickItem = await window.showQuickPick(choices, options);
+        Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextTfsOperation ? nextTfsOperation.label : "nothing"}`);
+        if (nextTfsOperation !== undefined && nextTfsOperation.label === YES_LABEL) {
             const checkInCommandPrefix = `"${this._tfPath}" checkin /comment:"${this._checkinInfo.message}" /noprompt `;
             const checkInCommandSB : string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);

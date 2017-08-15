@@ -1,11 +1,11 @@
 "use strict";
-import xml2js = require("xml2js");
 
-import { XmlRpcProvider } from "../utils/xmlrpcprovider";
-import { VsCodeUtils } from "../utils/vscodeutils";
+import xml2js = require("xml2js");
 import { Logger } from "../utils/logger";
+import { VsCodeUtils } from "../utils/vscodeutils";
 import { Credential } from "../credentialstore/credential";
-import { SummaryDataProxy } from "../notifications/summarydata";
+import { SummaryDataProxy } from "../entities/summarydata";
+import { XmlRpcProvider } from "../entities/xmlrpcprovider";
 import { ModificationCounterSubscriptionInfo, ModificationCounterSubscription } from "../notifications/modificationcountersubscription";
 
 export class NotificationProvider extends XmlRpcProvider {

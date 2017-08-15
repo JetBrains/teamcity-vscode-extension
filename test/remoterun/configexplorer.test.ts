@@ -1,8 +1,10 @@
 "use strict";
 
 import { assert } from "chai";
-import { ProjectItem, BuildConfigItem, BuildConfigTreeDataProvider } from "../../src/remoterun/configexplorer";
 import xmlrpc = require("xmlrpc");
+import { ProjectItem } from "../../src/entities/projectitem";
+import { BuildConfigItem } from "../../src/entities/leaveitems";
+import { BuildConfigTreeDataProvider } from "../../src/remoterun/configexplorer";
 
 suite("ConfigExplorer", () => {
     test("should verify BuildConfig constructor", function() {

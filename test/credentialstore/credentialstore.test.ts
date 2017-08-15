@@ -1,9 +1,9 @@
 "use strict";
 
+const http = require("http");
 import { assert } from "chai";
 import { Credential } from "../../src/credentialstore/credential";
 import { CredentialStore } from "../../src/credentialstore/credentialstore";
-const http = require("http");
 
 suite("CredentialStore", function() {
 
