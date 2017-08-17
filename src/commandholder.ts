@@ -17,8 +17,8 @@ import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
 import { CvsLocalResource, BuildConfigItem } from "./entities/leaveitems";
 import { TCApiProvider, TCXmlRpcApiProvider } from "./teamcityapi/tcapiprovider";
-import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider, } from "vscode";
-import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable} from "vscode";
+import { window, workspace, extensions, scm, SourceControlInputBox, QuickDiffProvider } from "vscode";
+import { WorkspaceEdit, SourceControlResourceState, OutputChannel, MessageItem, Disposable } from "vscode";
 
 export class CommandHolder {
     private _extManager : ExtensionManager;
@@ -89,11 +89,11 @@ export class CommandHolder {
             this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
         }
 
-        const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         if ( this._cvsProvider === undefined ) {
             //If there is no provider, log already contains message about the problem
             return;
         }
+        const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
         const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
         if (projects && projects.length > 0) {
             await this._extManager.settings.setEnableRemoteRun(true);

@@ -61,7 +61,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             throw new Error("Remote url wasn't determined");
         }
         //const configFileContent : string = `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
-        const configFileContent : MappingFileContent =  {
+        const configFileContent : MappingFileContent = {
             localRootPath: this._workspaceRootPath,
             tcProjectRootPath: `jetbrains.git://|${remoteUrl.trim()}|`,
             fullContent: `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`
@@ -161,7 +161,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         }
         //We should trim only end of the line, first space chars are meaningful
         const porcelainStatusRows : string = porcelainStatusResult.stdout.toString("utf8").replace(/\s*$/, "");
-        const porcelainGitRegExp : RegExp = /^([MADRC])(.*)$/;
+        const porcelainGitRegExp : RegExp = /^([MADRC]).\s(.*)$/;
         const renamedGitRegExp : RegExp = /^(.*)->(.*)$/;
         porcelainStatusRows.split("\n").forEach((relativePath) => {
             const parsedPorcelain : string[] = porcelainGitRegExp.exec(relativePath);
@@ -189,7 +189,7 @@ export class GitSupportProvider implements CvsSupportProvider {
                 case "R":{
                     const parsedRenamed : string[] | null = renamedGitRegExp.exec(fileAbsPath);
                     if (parsedRenamed && parsedRenamed.length === 3) {
-                        prevFileAbsPath = path.join(this._workspaceRootPath, parsedRenamed[1].trim());
+                        prevFileAbsPath = path.join(parsedRenamed[1].trim(), ".");
                         fileAbsPath = path.join(this._workspaceRootPath, parsedRenamed[2].trim());
                         status = CvsFileStatusCode.RENAMED;
                     }
