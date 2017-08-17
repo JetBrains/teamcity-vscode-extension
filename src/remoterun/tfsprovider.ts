@@ -2,6 +2,7 @@
 
 import * as url from "url";
 import * as path from "path";
+import * as stream from "stream";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import { CvsSupportProvider } from "./cvsprovider";
@@ -126,6 +127,15 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     setFilesForRemoteRun(resources : CvsLocalResource[]) {
         this._checkinInfo.cvsLocalResources = resources;
+    }
+
+    /**
+     * For some Cvs staged files and files at the file system aren't the same.
+     * If they are not the same this method @returns ReadStream with content of the specified file.
+     * Otherwise this method @returns undefind and we can use a content of the file from the file system.
+     */
+    public showFile(fileAbsPath : string) : undefined {
+        return undefined;
     }
 
     /**

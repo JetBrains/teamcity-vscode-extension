@@ -1,14 +1,17 @@
 "use strict";
 
+import * as fs from "fs";
 import * as path from "path";
+import * as stream from "stream";
+import * as cp from "child_process";
 import { Logger } from "../utils/logger";
-import * as cp from "child-process-promise";
 import { CvsSupportProvider } from "./cvsprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import * as cp_promise from "child-process-promise";
 import { CvsFileStatusCode } from "../utils/constants";
 import { CvsLocalResource } from "../entities/leaveitems";
-import { CheckinInfo, Remote, MappingFileContent } from "../utils/interfaces";
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
+import { CheckinInfo, Remote, MappingFileContent, ReadableSet } from "../utils/interfaces";
 
 /**
  * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath.
@@ -54,7 +57,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     public async generateMappingFileContent() : Promise<MappingFileContent> {
         const getRemoteUrlCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" ls-remote --get-url`;
         Logger.logDebug(`GitSupportProvider#generateConfigFileContent: getRemoteUrlCommand: ${getRemoteUrlCommand}`);
-        const commandResult = await cp.exec(getRemoteUrlCommand);
+        const commandResult = await cp_promise.exec(getRemoteUrlCommand);
         const remoteUrl : string = commandResult.stdout;
         if (remoteUrl === undefined || remoteUrl.length === 0) {
             Logger.logError(`GitSupportProvider#generateConfigFileContent: Remote url wasn't determined`);
@@ -123,12 +126,12 @@ export class GitSupportProvider implements CvsSupportProvider {
             //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
             const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
-            await cp.exec(commitCommand);
+            await cp_promise.exec(commitCommand);
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
             const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
-            await cp.exec(commitCommand);
+            await cp_promise.exec(commitCommand);
             const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
-            await cp.exec(pushCommand);
+            await cp_promise.exec(pushCommand);
         }
     }
 
@@ -137,6 +140,33 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     public setFilesForRemoteRun(resources : CvsLocalResource[]) {
         this._checkinInfo.cvsLocalResources = resources;
+    }
+
+    /**
+     * For some CVSes staged files and files at the file system aren't the same.
+     * If they are not the same this method @returns ReadStream with content of the specified file.
+     * Otherwise this method @returns undefind and we can use a content of the file from the file system.
+     */
+    public async showFile(fileAbsPath : string) : Promise<ReadableSet> {
+        const relPath = path.relative(this._workspaceRootPath, fileAbsPath).replace(/\\/g, "/");
+        const showFileCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" show :"${relPath}"`;
+        const showFileStream : stream.Readable = cp.exec(showFileCommand).stdout;
+        let streamLength : number = 0;
+        const prom : Promise<ReadableSet> = new Promise((resolve, reject) => {
+            showFileStream.on("end", function () {
+                Logger.logDebug(`GitSupportProvider#showFile: stream for counting bytes of ${fileAbsPath} has ended. Total size is ${streamLength}`);
+                const showFileStream : stream.Readable = cp.exec(showFileCommand).stdout;
+                resolve({stream: showFileStream, length: streamLength});
+            });
+            showFileStream.on("error", function (err) {
+                Logger.logError(`GitSupportProvider#showFile: stream for counting bytes of ${fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
+                reject(err);
+            });
+            showFileStream.on("data", function(chunk) {
+                streamLength += chunk.length;
+            });
+        });
+        return prom;
     }
 
     /**
@@ -149,7 +179,7 @@ export class GitSupportProvider implements CvsSupportProvider {
 
         try {
             const getPorcelainStatusCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" status --porcelain`;
-            porcelainStatusResult = await cp.exec(getPorcelainStatusCommand);
+            porcelainStatusResult = await cp_promise.exec(getPorcelainStatusCommand);
         } catch (err) {
             Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
@@ -218,7 +248,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     private async getRemoteBrunch() : Promise<string> {
         const getRemoteBranchCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
-        const prom = await cp.exec(getRemoteBranchCommand);
+        const prom = await cp_promise.exec(getRemoteBranchCommand);
         let remoteBranch : string = prom.stdout;
         if (remoteBranch === undefined || remoteBranch.length === 0) {
             Logger.logError(`GitSupportProvider#getRemoteBrunch: remote branch wasn't determined`);
@@ -234,7 +264,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     private async getLastRevision(remoteBranch) : Promise<string> {
         const getLastRevCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
-        const prom = await cp.exec(getLastRevCommand);
+        const prom = await cp_promise.exec(getLastRevCommand);
         const lastRevHash : string = prom.stdout;
         if (lastRevHash === undefined || lastRevHash.length === 0) {
             Logger.logError(`GitSupportProvider#getLastRevision: revision of last commit wasn't determined`);
@@ -250,7 +280,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     private async getFirstMonthRev() : Promise<string> {
         const date : Date = new Date();
         const getFirstMonthRevCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
-        const prom = await cp.exec(getFirstMonthRevCommand);
+        const prom = await cp_promise.exec(getFirstMonthRevCommand);
         let firstRevHash : string = prom.stdout;
         if (firstRevHash === undefined) {
             Logger.logWarning(`GitSupportProvider#firstRevHash: first month revision wasn't determinedm but it's still ok`);
@@ -263,7 +293,7 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     private async getRemotes() : Promise<Remote[]> {
         const getRemotesCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" remote --verbose`;
-        const getRemotesOutput = await cp.exec(getRemotesCommand);
+        const getRemotesOutput = await cp_promise.exec(getRemotesCommand);
         const regex = /^([^\s]+)\s+([^\s]+)\s/;
         const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
             .filter((b) => !!b)

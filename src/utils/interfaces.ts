@@ -1,5 +1,6 @@
 "use strict";
 
+import * as stream from "stream";
 import { CvsLocalResource } from "../entities/leaveitems";
 import { CvsProviderTypes, CvsFileStatusCode } from "../utils/constants";
 
@@ -47,4 +48,9 @@ export interface QueuedBuild {
     personal : boolean;
     href: string;
     webUrl: string;
+}
+
+export interface ReadableSet {
+    stream : stream.Readable;
+    length : number;
 }

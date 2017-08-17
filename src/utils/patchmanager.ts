@@ -10,7 +10,7 @@ import { FileController } from "../utils/filecontroller";
 import { CvsLocalResource } from "../entities/leaveitems";
 import { AsyncWriteStream } from "../entities/writestream";
 import { CvsSupportProvider } from "../remoterun/cvsprovider";
-import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, ReadableSet } from "../utils/interfaces";
 const temp = require("temp").track();
 
 export class PatchManager {
@@ -20,7 +20,7 @@ export class PatchManager {
      * @param cvsProvider - CvsProvider object
      * @return Promise<string> - absPath of the patch
      */
-    public static async preparePatch(cvsProvider : CvsSupportProvider, isForStaged : boolean = true) : Promise<string> {
+    public static async preparePatch(cvsProvider : CvsSupportProvider, staged : boolean = true) : Promise<string> {
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
         PatchManager._cvsProvider = cvsProvider;
         const changedFilesNames : CvsLocalResource[] = checkInInfo.cvsLocalResources;
@@ -37,11 +37,21 @@ export class PatchManager {
             const relPath : string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
             const fileExist : boolean = await FileController.exists(absPath);
             const teamcityFileName : string = `${configFileContent.tcProjectRootPath}/${relPath}`;
+            let fileReadStream : ReadableSet | undefined;
+            //When fileReadStream !== undefined we should use the stream.
+            try {
+                fileReadStream = staged ? await cvsProvider.showFile(absPath) : undefined;
+            } catch (err) {
+                //An error message should be already logged at the #showFile
+                Logger.logError("PatchManager#preparePatch: an error occurs during getting showFile stream - use a file content from the file system");
+            }
             switch (status) {
                 //TODO: Implement replaced status code
                 case CvsFileStatusCode.ADDED : {
-                    if (fileExist) {
+                    if (!fileReadStream && fileExist) {
                         await patchBuilder.addAddedFile(teamcityFileName, absPath);
+                    } else if (fileReadStream) {
+                        await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
                     } //TODO: add logs if not
                     break;
                 }
@@ -50,8 +60,10 @@ export class PatchManager {
                     break;
                 }
                 case CvsFileStatusCode.MODIFIED : {
-                    if (fileExist) {
+                    if (!fileReadStream && fileExist) {
                         await patchBuilder.addReplacedFile(teamcityFileName, absPath);
+                    } else if (fileReadStream) {
+                        await patchBuilder.addReplacedStreamedFile(teamcityFileName, fileReadStream);
                     } //TODO: add logs if not
                     break;
                 }
@@ -61,13 +73,19 @@ export class PatchManager {
                     const prevTcFileName : string = `${configFileContent.tcProjectRootPath}/${prevRelPath}`;
                     await patchBuilder.addDeletedFile(prevTcFileName);
                     if (fileExist) {
-                        await patchBuilder.addAddedFile(teamcityFileName, absPath);
+                        if (!fileReadStream && fileExist) {
+                            await patchBuilder.addAddedFile(teamcityFileName, absPath);
+                        } else if (fileReadStream) {
+                            await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
+                        } //TODO: add logs if not
                     }
                     break;
                 }
                 default : {
-                    if (fileExist) {
+                    if (!fileReadStream && fileExist) {
                         await patchBuilder.addReplacedFile(teamcityFileName, absPath);
+                    } else if (fileReadStream) {
+                        await patchBuilder.addReplacedStreamedFile(teamcityFileName, fileReadStream);
                     } else {
                         await patchBuilder.addDeletedFile(teamcityFileName);
                     }
@@ -83,7 +101,6 @@ export class PatchManager {
         if (!patchFileExists) {
             return;
         }
-
         fs.open(patchAbsPath, "r", function(err, fd) {
             if (err) {
                 throw err;
@@ -173,8 +190,7 @@ class PatchBuilder {
         const prom : Promise<void> = new Promise((resolve, reject) => {
             temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
                 if (err) {
-                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir:
-                                    ${VsCodeUtils.formatErrorMessage(err)}`);
+                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ${VsCodeUtils.formatErrorMessage(err)}`);
                     reject(err);
                 }
                 const inputPath = path.join(dirPath, `.${VsCodeUtils.uuidv4()}.patch`);
@@ -187,7 +203,7 @@ class PatchBuilder {
         return prom;
     }
 
-        /**
+    /**
      * This method adds to the patch a new file
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
@@ -197,12 +213,30 @@ class PatchBuilder {
     }
 
     /**
+     * This method adds to the patch a new file as a stream
+     * @param tcFileName - fileName at the TeamCity format
+     * @param readStream - stream with a content of the added file
+     */
+    public async addAddedStreamedFile(tcFileName: string, readStream : ReadableSet) : Promise<void> {
+        return this.addStreamedFile(tcFileName, readStream, PatchBuilder.CREATE_PREFIX);
+    }
+
+    /**
      * This method adds to the patch an edited file
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
     public async addReplacedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
         return this.addFile(tcFileName, absLocalPath, PatchBuilder.REPLACE_PREFIX);
+    }
+
+    /**
+     * This method adds to the patch a new file as a stream
+     * @param tcFileName - fileName at the TeamCity format
+     * @param readStream - stream with a content of the added file
+     */
+    public async addReplacedStreamedFile(tcFileName: string, readStream : ReadableSet) : Promise<void> {
+        return this.addStreamedFile(tcFileName, readStream, PatchBuilder.REPLACE_PREFIX);
     }
 
     /**
@@ -217,6 +251,23 @@ class PatchBuilder {
             const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
             await this._writeSteam.writeFile(absLocalPath);
+        } catch (err) {
+            Logger.logError(`CustomPatchSender#addFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+        }
+    }
+
+    /**
+     * This method adds to the patch any not deleted file
+     * @param tcFileName - fileName at the TeamCity format
+     * @param absLocalPath - absolute path to the file in the system
+     * @param prefix - prefix which specifies the operation, eg. CREATE/REPLACE
+     */
+    private async addStreamedFile(tcFileName: string, readStream : ReadableSet, prefix : number) : Promise<void> {
+        try {
+            const bytePrefix : Buffer = ByteWriter.writeByte(prefix);
+            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
+            await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
+            await this._writeSteam.writeStreamedFile(readStream);
         } catch (err) {
             Logger.logError(`CustomPatchSender#addFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
         }

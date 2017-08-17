@@ -1,9 +1,12 @@
 "use strict";
 
 import * as fs from "fs";
+import * as stream from "stream";
 import { Disposable } from "vscode";
 import { Logger } from "../utils/logger";
+import * as passthrough_counter from "passthrough-counter";
 import { ByteWriter } from "../utils/bytewriter";
+import { ReadableSet } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
 
 export class AsyncWriteStream implements Disposable {
@@ -31,22 +34,30 @@ export class AsyncWriteStream implements Disposable {
         const fileSizeInBytes : number = stats.size;
         Logger.logDebug(`AsyncWriteStream#writeFile: file size in bytes: ${fileSizeInBytes}`);
         const fileSizeBuffer : Buffer = ByteWriter.longToByteArray(fileSizeInBytes);
+        const readstream : stream.Readable = fs.createReadStream(fileAbsPath);
+        return this.writeStreamedFile({stream: readstream, length: fileSizeInBytes});
+    }
+
+    public async writeStreamedFile(readableSet : ReadableSet) : Promise<{}> {
+        const fileSizeInBytes : number = readableSet.length;
+        Logger.logDebug(`AsyncWriteStream#writeStreamedFile: file size in bytes: ${fileSizeInBytes}`);
+        const fileSizeBuffer : Buffer = ByteWriter.longToByteArray(fileSizeInBytes);
         await this.write(fileSizeBuffer);
-        const readstream : fs.ReadStream = fs.createReadStream(fileAbsPath);
-        readstream.pipe(this._writeSteam, {end: false});
+        const readstream : stream.Readable = readableSet.stream;
+        readableSet.stream.pipe(this._writeSteam, {end: false});
         return new Promise((resolve, reject) => {
             readstream.on("end", function() {
-                Logger.logDebug(`AsyncWriteStream#writeFile: file was successfully added to the patch`);
+                Logger.logDebug(`AsyncWriteStream#writeStreamedFile: file was successfully added to the patch`);
                 resolve();
             });
 
             readstream.on("error", function() {
-                Logger.logError(`AsyncWriteStream#writeFile: an error occurs at the readStream`);
+                Logger.logError(`AsyncWriteStream#writeStreamedFile: an error occurs at the readStream`);
                 reject("An error occurs during piping from source file to the writeStream");
             });
 
             this._writeSteam.on("error", function() {
-                Logger.logError(`AsyncWriteStream#writeFile: an error occurs at the writeStream`);
+                Logger.logError(`AsyncWriteStream#writeStreamedFile: an error occurs at the writeStream`);
                 reject("An error occurs during piping from source file to the writeStream");
             });
         });

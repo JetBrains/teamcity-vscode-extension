@@ -1,7 +1,8 @@
 "use strict";
 
+import * as stream from "stream";
 import { CvsLocalResource } from "../entities/leaveitems";
-import { CheckinInfo, MappingFileContent } from "../utils/interfaces";
+import { CheckinInfo, MappingFileContent, ReadableSet } from "../utils/interfaces";
 
 export interface CvsSupportProvider {
 
@@ -34,4 +35,11 @@ export interface CvsSupportProvider {
      * Sets files for remote run, when user wants to provide them manually.
      */
     setFilesForRemoteRun(resources : CvsLocalResource[]);
+
+    /**
+     * For some CVSes staged files and files at the file system aren't the same.
+     * If they are not the same this method @returns ReadStream with content of the specified file.
+     * Otherwise this method @returns undefind and we can use a content of the file from the file system.
+     */
+    showFile(fileAbsPath : string) : Promise<ReadableSet> | undefined;
 }
