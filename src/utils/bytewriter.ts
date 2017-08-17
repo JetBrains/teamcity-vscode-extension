@@ -73,4 +73,16 @@ export class ByteWriter {
         }
         return buffer;
     }
+
+    public static byteArrayToLong(buffer : Buffer) : number {
+        if (!buffer) {
+            return undefined;
+        }
+        let result : number = 0;
+        let mul : number = 0;
+        for ( let index = 0; index < buffer.length; index++ ) {
+            result += buffer[buffer.length - index - 1] * Math.pow(256, mul++);
+        }
+        return result;
+    }
 }

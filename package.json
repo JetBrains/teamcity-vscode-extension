@@ -77,9 +77,9 @@
           "group": "@1"
         },
         {
-        "command": "teamcity.selectFilesForRemoteRun",
-        "when": "view == teamcityExplorer",
-        "group": "@2"
+          "command": "teamcity.selectFilesForRemoteRun",
+          "when": "view == teamcityExplorer",
+          "group": "@2"
         },
         {
           "command": "teamcity.findSuitableBConfigs",
@@ -94,7 +94,7 @@
         {
           "command": "teamcity.signOut",
           "when": "view == teamcityExplorer",
-           "group": "@3"
+          "group": "@3"
         }
       ]
     },
@@ -121,7 +121,7 @@
         },
         "teamcity.remoterun.enabled": {
           "type": "boolean",
-          "default" : false,
+          "default": false,
           "description": "Sets whether the TC build configuration explorer contents RemoteRun button."
         }
       }
