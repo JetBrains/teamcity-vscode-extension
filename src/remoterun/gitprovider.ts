@@ -84,8 +84,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             return this._checkinInfo;
         }
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkin info`);
-        //Git extension bug: If commit message is empty git won't commit anything
-        const commitMessage: string = scm.inputBox.value === "" ? "-" : scm.inputBox.value;
+        const commitMessage: string = scm.inputBox.value;
         const cvsLocalResource : CvsLocalResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         return {
@@ -103,7 +102,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      */
     public async requestForPostCommit() : Promise<void> {
         const choices: QuickPickItem[] = [];
-        const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit/push your changes?";
+        const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Would you like to commit/push your changes?";
         const NO_LABEL : string = "No, thank you";
         const COMMIT_LABEL : string = "Commit (without Push)";
         const COMMIT_AND_PUSH_LABEL : string = "Commit and Push";
@@ -125,11 +124,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (nextGitOperation === undefined) {
             //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
-            const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
-            await cp_promise.exec(commitCommand);
+            await cp_promise.exec(this.buildCommitCommand());
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            const commitCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}"`;
-            await cp_promise.exec(commitCommand);
+            await cp_promise.exec(this.buildCommitCommand());
             const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
             await cp_promise.exec(pushCommand);
         }
@@ -302,5 +299,14 @@ export class GitSupportProvider implements CvsSupportProvider {
             .map((groups: RegExpExecArray) => ({ name: groups[1], url: groups[2] }));
 
         return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
+    }
+
+    private buildCommitCommand() : string {
+        const commitCommandBuilder : string[] = [];
+        commitCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}" --quiet --allow-empty-message`);
+        this._checkinInfo.cvsLocalResources.forEach((cvsLocalResource) => {
+            commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+        });
+        return commitCommandBuilder.join(" ");
     }
 }
