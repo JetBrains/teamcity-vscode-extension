@@ -29,7 +29,7 @@ export interface CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    requestForPostCommit();
+    requestForPostCommit(patchAbsPath : string);
 
     /**
      * Sets files for remote run, when user wants to provide them manually.

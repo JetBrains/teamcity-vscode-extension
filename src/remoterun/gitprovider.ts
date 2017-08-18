@@ -8,6 +8,7 @@ import { Logger } from "../utils/logger";
 import { CvsSupportProvider } from "./cvsprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
+import { PatchManager } from "../utils/patchmanager";
 import { CvsFileStatusCode } from "../utils/constants";
 import { CvsLocalResource } from "../entities/leaveitems";
 import { workspace, scm, QuickPickItem, QuickPickOptions, window } from "vscode";
@@ -63,7 +64,6 @@ export class GitSupportProvider implements CvsSupportProvider {
             Logger.logError(`GitSupportProvider#generateConfigFileContent: Remote url wasn't determined`);
             throw new Error("Remote url wasn't determined");
         }
-        //const configFileContent : string = `${this._workspaceRootPath}=jetbrains.git://|${remoteUrl.trim()}|`;
         const configFileContent : MappingFileContent = {
             localRootPath: this._workspaceRootPath,
             tcProjectRootPath: `jetbrains.git://|${remoteUrl.trim()}|`,
@@ -100,7 +100,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    public async requestForPostCommit() : Promise<void> {
+    public async requestForPostCommit(patchAbsPath : string) : Promise<void> {
         const choices: QuickPickItem[] = [];
         const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Would you like to commit/push your changes?";
         const NO_LABEL : string = "No, thank you";
@@ -124,9 +124,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (nextGitOperation === undefined) {
             //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
-            await cp_promise.exec(this.buildCommitCommand());
+            this.executePostCommit(patchAbsPath);
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            await cp_promise.exec(this.buildCommitCommand());
+            this.executePostCommit(patchAbsPath);
             const pushCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
             await cp_promise.exec(pushCommand);
         }
@@ -301,12 +301,82 @@ export class GitSupportProvider implements CvsSupportProvider {
         return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 
-    private buildCommitCommand() : string {
-        const commitCommandBuilder : string[] = [];
-        commitCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}" --quiet --allow-empty-message`);
-        this._checkinInfo.cvsLocalResources.forEach((cvsLocalResource) => {
-            commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
-        });
-        return commitCommandBuilder.join(" ");
+    /**
+     * Build a commit command for child_process from the particular names of files, which were sent for a remote run.
+     */
+    private async executePostCommit(patchAbsPath : string) {
+        const mappingFileContent : MappingFileContent =  await this.generateMappingFileContent();
+        let currentStagedStatePatchAbsPath : string;
+        let currentStatePatchAbsPath : string;
+        try {
+            /* Store current files contents */
+            currentStagedStatePatchAbsPath = await PatchManager.preparePatch(this, mappingFileContent, true);
+            currentStatePatchAbsPath = await PatchManager.preparePatch(this, mappingFileContent, false);
+        } catch (err) {
+            Logger.logError(`GitSupportProvider#executePostCommit: caught an exception during storing current state: ${VsCodeUtils.formatErrorMessage(err)}`);
+            throw new Error("Caught an exception during storing current state");
+        }
+        try {
+            /* Restore previous files contents */
+            VsCodeUtils.showWarningMessage("Post-commit is processing. Please wait.");
+            const cvsLocalResources : CvsLocalResource[] = await PatchManager.applyPatch(patchAbsPath, mappingFileContent);
+            /* Add all the file to staged */
+            const addCommandBuilder : string[] = [];
+            const rmCommandBuilder : string[] = [];
+            addCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" add -A --ignore-errors --`);
+            rmCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" rm --cached --`);
+            cvsLocalResources.forEach((cvsLocalResource) => {
+                if (cvsLocalResource.status !== CvsFileStatusCode.DELETED) {
+                    addCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+                } else {
+                    rmCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+                }
+            });
+            try {
+                await cp_promise.exec(addCommandBuilder.join(" "));
+                await cp_promise.exec(rmCommandBuilder.join(" "));
+            } catch (err) {
+                Logger.logWarning(`GitSupportProvider#executePostCommit: an error occurs during git add command but it could be ok ${VsCodeUtils.formatErrorMessage(err)}`);
+            }
+            /* Commit all the files */
+            const commitCommandBuilder : string[] = [];
+            commitCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkinInfo.message}" --quiet --allow-empty-message`);
+            cvsLocalResources.forEach((cvsLocalResource) => {
+                commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+            });
+            await cp_promise.exec(commitCommandBuilder.join(" "));
+        } catch (err) {
+            Logger.logError(`GitSupportProvider#executePostCommit: caught an exception during processing post-commit functionality: ${VsCodeUtils.formatErrorMessage(err)}`);
+            throw new Error("Caught an exception during processing post-commit functionality");
+        } finally {
+            try {
+                /* Restore current files contents */
+                const currentCvsLocalResources : CvsLocalResource[] = await PatchManager.applyPatch(currentStagedStatePatchAbsPath, mappingFileContent);
+                /* Add all the file to staged */
+                const addCommandBuilder : string[] = [];
+                const rmCommandBuilder : string[] = [];
+                addCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" add -A --ignore-errors --`);
+                rmCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" rm --cached --`);
+                currentCvsLocalResources.forEach((cvsLocalResource) => {
+                    if (cvsLocalResource.status !== CvsFileStatusCode.DELETED) {
+                        addCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+                    } else {
+                        rmCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+                    }
+                });
+                try {
+                    await cp_promise.exec(addCommandBuilder.join(" "));
+                    await cp_promise.exec(rmCommandBuilder.join(" "));
+                } catch (err) {
+                    Logger.logWarning(`GitSupportProvider#executePostCommit: an error occurs during git add command but it could be ok ${VsCodeUtils.formatErrorMessage(err)}`);
+                }
+                await PatchManager.applyPatch(currentStatePatchAbsPath, mappingFileContent);
+            } catch (err) {
+                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during restoring current state: ${VsCodeUtils.formatErrorMessage(err)}`);
+                throw new Error("Caught an exception during restoring current state");
+            }
+        }
+        VsCodeUtils.showInfoMessage("Post-commit is successfully executed!");
+        Logger.logInfo(`TfsSupportProvider#requestForPostCommit: post commit was executed`);
     }
 }

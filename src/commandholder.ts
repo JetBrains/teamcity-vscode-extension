@@ -123,10 +123,10 @@ export class CommandHolder {
         this._extManager.configExplorer.setExplorerContent([]);
         this._extManager.configExplorer.refresh();
         const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
-        const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
-        if (remoteRunResult) {
+        const patchAbsPath : string = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
+        if (patchAbsPath) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
-            this._cvsProvider.requestForPostCommit();
+            this._cvsProvider.requestForPostCommit(patchAbsPath);
         } else {
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: something went wrong during remote run");
         }

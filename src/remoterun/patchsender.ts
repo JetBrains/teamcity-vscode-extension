@@ -17,22 +17,23 @@ const temp = require("temp").track();
 
 export interface PatchSender {
     /**
-     * @returns true in case of success, otherwise false.
+     * @returns patch abs path in case of success, otherwise undefind.
      */
-    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) : Promise<boolean>;
+    /* async */ remoteRun(cred : Credential, configs : BuildConfigItem[], cvsProvider : CvsSupportProvider) : Promise<string>;
 }
 
 export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
     private readonly CHECK_FREQUENCY_MS : number = 10000;
     /**
-     * @returns true in case of success, otherwise false.
+     * @returns patch abs path in case of success, otherwise undefind.
      */
-    public async remoteRun(creds: Credential, configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean> {
+    public async remoteRun(creds: Credential, configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<string> {
         //We might not have userId at the moment
         if (!creds.userId) {
             await this.authenticateIfRequired(creds);
         }
-        const patchAbsPath : string = await PatchManager.preparePatch(cvsProvider);
+        const mappingFileContent : MappingFileContent = await cvsProvider.generateMappingFileContent();
+        const patchAbsPath : string = await PatchManager.preparePatch(cvsProvider, mappingFileContent);
         const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
         const patchDestinationUrl : string = `${creds.serverURL}/uploadChanges.html?userId=${creds.userId}&description="${checkInInfo.message}"&commitType=0`;
         try {
@@ -50,14 +51,14 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
             const changeListStatus : ChangeListStatus = await this.getChangeListStatus(creds, queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
                 VsCodeUtils.showInfoMessage(`Personal build for change #${changeListId} has "CHECKED" status.`);
-                return true;
+                return patchAbsPath;
             } else {
                 VsCodeUtils.showWarningMessage(`Personal build for change #${changeListId} has "FAILED" status.`);
-                return false;
+                return undefined;
             }
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
-            return false;
+            return undefined;
         }
     }
 

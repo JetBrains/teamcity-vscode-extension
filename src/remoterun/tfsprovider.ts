@@ -7,6 +7,7 @@ import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import { CvsSupportProvider } from "./cvsprovider";
 import { VsCodeUtils } from "../utils/vscodeutils";
+import { PatchManager } from "../utils/patchmanager";
 import { CvsFileStatusCode } from "../utils/constants";
 import { CvsLocalResource } from "../entities/leaveitems";
 import { CheckinInfo, TfsInfo, MappingFileContent } from "../utils/interfaces";
@@ -92,7 +93,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    public async requestForPostCommit() {
+    public async requestForPostCommit(patchAbsPath : string) {
         const choices: QuickPickItem[] = [];
         const TFS_COMMIT_PUSH_INTRO_MESSAGE = "Whould you like to commit your changes?";
         const NO_LABEL : string = "No, thank you";
@@ -107,18 +108,29 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const nextTfsOperation : QuickPickItem = await window.showQuickPick(choices, options);
         Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextTfsOperation ? nextTfsOperation.label : "nothing"}`);
         if (nextTfsOperation !== undefined && nextTfsOperation.label === YES_LABEL) {
-            const checkInCommandPrefix = `"${this._tfPath}" checkin /comment:"${this._checkinInfo.message}" /noprompt `;
-            const checkInCommandSB : string[] = [];
-            checkInCommandSB.push(checkInCommandPrefix);
-            this._checkinInfo.cvsLocalResources.forEach((filePath) => {
-                checkInCommandSB.push(`"${filePath}" `);
-            });
             try {
-                await cp.exec(checkInCommandSB.join(""));
+                /* Store current files contents */
+                const mappingFileContent : MappingFileContent =  await this.generateMappingFileContent();
+                const currentStatePatchAbsPath : string = await PatchManager.preparePatch(this, mappingFileContent, false);
+                /* Restore previous files contents */
+                VsCodeUtils.showWarningMessage("Post-commit is processing. Please wait.");
+                const cvsLocalResources : CvsLocalResource[] = await PatchManager.applyPatch(patchAbsPath, mappingFileContent);
+                /* CheckIn all the files */
+                const checkInCommandPrefix = `"${this._tfPath}" checkin /comment:"${this._checkinInfo.message}" /noprompt`;
+                const checkInCommandSB : string[] = [];
+                checkInCommandSB.push(checkInCommandPrefix);
+                cvsLocalResources.forEach((cvsLocalResource) => {
+                    checkInCommandSB.push(`"${cvsLocalResource.fileAbsPath}"`);
+                });
+                await cp.exec(checkInCommandSB.join(" "));
+                /* Restore current files contents */
+                await PatchManager.applyPatch(currentStatePatchAbsPath, mappingFileContent);
             } catch (err) {
-                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
-                throw new Error("Caught an exception during attempt to commit");
+                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during processing post-commit functionality: ${VsCodeUtils.formatErrorMessage(err)}`);
+                throw new Error("Caught an exception during processing post-commit functionality");
             }
+            VsCodeUtils.showInfoMessage("Post-commit is successfully executed!");
+            Logger.logInfo(`TfsSupportProvider#requestForPostCommit: post commit was executed`);
         }
     }
 
@@ -133,6 +145,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * For some Cvs staged files and files at the file system aren't the same.
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefind and we can use a content of the file from the file system.
+     * It's undefined for tfsprovider
      */
     public showFile(fileAbsPath : string) : undefined {
         return undefined;
