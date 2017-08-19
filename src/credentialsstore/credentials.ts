@@ -1,6 +1,6 @@
 "use strict";
 
-export class Credential {
+export class Credentials {
     private _serverURL : string;
     private _user : string;
     private _pass : string;

@@ -32,7 +32,7 @@ export class ProjectItem extends TreeItem {
     public changeCollapsibleState() : void {
         if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
             this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        }else {
+        } else {
             this.collapsibleState = TreeItemCollapsibleState.Collapsed;
         }
     }

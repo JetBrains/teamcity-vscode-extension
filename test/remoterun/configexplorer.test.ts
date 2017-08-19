@@ -12,7 +12,7 @@ suite("ConfigExplorer", () => {
         assert.equal(buildConfig.id, "id");
         assert.equal(buildConfig.externalId, "externalId");
         assert.equal(buildConfig.label, "label");
-        assert.equal(buildConfig.isIncl, false);
+        assert.equal(buildConfig.isIncluded, false);
     });
 
     test("should verify BuildConfig incorrect constructor", function() {
@@ -25,7 +25,7 @@ suite("ConfigExplorer", () => {
     test("should verify BuildConfig change", function() {
         const buildConfig : BuildConfigItem = new BuildConfigItem("id", "externalId", "label");
         buildConfig.changeState();
-        assert.equal(buildConfig.isIncl, true);
+        assert.equal(buildConfig.isIncluded, true);
     });
 
     test("should verify BuildConfigTreeDataProvider setConfigs", function() {
@@ -37,15 +37,15 @@ suite("ConfigExplorer", () => {
         assert.equal(configExplorer.getChildren(), bcArr);
     });
 
-    test("should verify BuildConfigTreeDataProvider getInclBuilds", function() {
+    test("should verify BuildConfigTreeDataProvider getIncludedBuildConfigs", function() {
         const projectArr : ProjectItem[] = [];
         const configExplorer : BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
         const bcItem1 : BuildConfigItem = new BuildConfigItem("id1", "externalId1", "name1");
         const bcItem2 : BuildConfigItem = new BuildConfigItem("id2", "externalId2", "name2");
         projectArr.push(new ProjectItem("id1", [bcItem1, bcItem2]));
         configExplorer.setExplorerContent(projectArr);
-        assert.equal(configExplorer.getInclBuilds().length, 0);
+        assert.equal(configExplorer.getIncludedBuildConfigs().length, 0);
         bcItem1.changeState();
-        assert.equal(configExplorer.getInclBuilds().length, 1);
+        assert.equal(configExplorer.getIncludedBuildConfigs().length, 1);
     });
 });

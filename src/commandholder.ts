@@ -11,7 +11,7 @@ import { VsCodeUtils } from "./utils/vscodeutils";
 import { ProjectItem } from "./entities/projectitem";
 import { PatchSender } from "./remoterun/patchsender";
 import { ExtensionManager } from "./extensionmanager";
-import { Credential } from "./credentialstore/credential";
+import { Credentials } from "./credentialsstore/credentials";
 import { CustomPatchSender } from "./remoterun/patchsender";
 import { CvsSupportProvider } from "./remoterun/cvsprovider";
 import { CvsSupportProviderFactory } from "./remoterun/cvsproviderfactory";
@@ -30,7 +30,7 @@ export class CommandHolder {
     public async signIn() {
         Logger.logInfo("CommandHolder#signIn: starts");
         let signedIn : boolean = false;
-        let creds : Credential;
+        let credentials : Credentials;
         //try getting credentials from keytar
         try {
             const keytar = require("keytar");
@@ -38,16 +38,16 @@ export class CommandHolder {
             const url = await keytar.getPassword("teamcity", "serverurl");
             const user = await keytar.getPassword("teamcity", "username");
             const pass = await keytar.getPassword("teamcity", "password");
-            creds = new Credential(url, user, pass);
-            signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
+            credentials = new Credentials(url, user, pass);
+            signedIn = credentials ? await this._extManager.credentialStore.setCredential(credentials) : false;
             Logger.logDebug(`CommandHolder#signIn: paswword was${signedIn ? "" : " not"} found at keytar.`);
         } catch (err) {
             Logger.logError(`CommandHolder#signIn: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
 
         if (!signedIn) {
-            creds = await this.requestTypingCredentials();
-            signedIn = creds ? await this._extManager.credentialStore.setCredential(creds) : false;
+            credentials = await this.requestTypingCredentials();
+            signedIn = credentials ? await this._extManager.credentialStore.setCredential(credentials) : false;
         }
 
         if (signedIn) {
@@ -55,7 +55,7 @@ export class CommandHolder {
             if (this._extManager.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
-            this.storeLastUserCreds(creds);
+            this.storeLastUserCredentials(credentials);
             this._extManager.notificationWatcher.activate();
         } else {
             Logger.logWarning("CommandHolder#signIn: failed");
@@ -70,19 +70,19 @@ export class CommandHolder {
             return;
         }
         const checkInInfo : CheckinInfo = await this._cvsProvider.getRequiredCheckinInfo();
-        this._extManager.configExplorer.setExplorerContent(checkInInfo.cvsLocalResources);
-        this._extManager.configExplorer.refresh();
+        this._extManager.configurationExplorer.setExplorerContent(checkInInfo.cvsLocalResources);
+        this._extManager.configurationExplorer.refresh();
     }
 
     public async getSuitableConfigs() {
         Logger.logInfo("CommandHolder#getSuitableConfigs: starts");
-        const cred : Credential = await this.tryGetCredentials();
-        if (cred === undefined) {
-            //If there are no creds, log already contains message about the problem
+        const credentials : Credentials = await this.tryGetCredentials();
+        if (credentials === undefined) {
+            //If there are no credentials, log already contains message about the problem
             return;
         }
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
-        const selectedResources : CvsLocalResource[] = this._extManager.configExplorer.getInclResources();
+        const selectedResources : CvsLocalResource[] = this._extManager.configurationExplorer.getInclResources();
         if (selectedResources && selectedResources.length > 0) {
             this._cvsProvider.setFilesForRemoteRun(selectedResources);
         } else {
@@ -94,36 +94,36 @@ export class CommandHolder {
             return;
         }
         const tcFormatedFilePaths : string[] = await this._cvsProvider.getFormattedFilenames();
-        const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
+        const projects : ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormatedFilePaths, credentials);
         if (projects && projects.length > 0) {
             await this._extManager.settings.setEnableRemoteRun(true);
         }
-        this._extManager.configExplorer.setExplorerContent(projects);
-        this._extManager.configExplorer.refresh();
+        this._extManager.configurationExplorer.setExplorerContent(projects);
+        this._extManager.configurationExplorer.refresh();
         VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
         Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
     }
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: starts");
-        const cred : Credential = await this.tryGetCredentials();
-        if (!cred || !this._cvsProvider) {
+        const credentials : Credentials = await this.tryGetCredentials();
+        if (!credentials || !this._cvsProvider) {
             //TODO: think about the message in this case
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: credentials or cvsProvider absents. Try to sign in again");
             return;
         }
-        const inclConfigs : BuildConfigItem[] = this._extManager.configExplorer.getInclBuilds();
-        if (inclConfigs === undefined || inclConfigs.length === 0) {
+        const includedBuildConfigs : BuildConfigItem[] = this._extManager.configurationExplorer.getIncludedBuildConfigs();
+        if (includedBuildConfigs === undefined || includedBuildConfigs.length === 0) {
             VsCodeUtils.displayNoSelectedConfigsMessage();
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'Remote run' command");
             return;
         }
 
         await this._extManager.settings.setEnableRemoteRun(false);
-        this._extManager.configExplorer.setExplorerContent([]);
-        this._extManager.configExplorer.refresh();
-        const patchSender : PatchSender = new CustomPatchSender(cred.serverURL);
-        const remoteRunResult : boolean = await patchSender.remoteRun(cred, inclConfigs, this._cvsProvider);
+        this._extManager.configurationExplorer.setExplorerContent([]);
+        this._extManager.configurationExplorer.refresh();
+        const patchSender : PatchSender = new CustomPatchSender(credentials.serverURL);
+        const remoteRunResult : boolean = await patchSender.remoteRun(credentials, includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
             this._cvsProvider.requestForPostCommit();
@@ -143,7 +143,7 @@ export class CommandHolder {
 
     public changeConfigState(config : BuildConfigItem) {
         config.changeState();
-        this._extManager.configExplorer.refresh();
+        this._extManager.configurationExplorer.refresh();
     }
 
     public changeCollapsibleState(project : ProjectItem) {
@@ -156,20 +156,20 @@ export class CommandHolder {
         Logger.logInfo("CommandHolder#signOut: finished");
     }
 
-    public async tryGetCredentials() : Promise<Credential> {
-        let cred : Credential = this._extManager.credentialStore.getCredential();
-        if (!cred) {
+    public async tryGetCredentials() : Promise<Credentials> {
+        let credentials : Credentials = this._extManager.credentialStore.getCredential();
+        if (!credentials) {
             Logger.logInfo("CommandHolder#tryGetCredentials: credentials is undefined. An attempt to get them");
             await this.signIn();
-            cred = this._extManager.credentialStore.getCredential();
-            if (!cred) {
+            credentials = this._extManager.credentialStore.getCredential();
+            if (!credentials) {
                 VsCodeUtils.displayNoCredentialsMessage();
                 Logger.logWarning("CommandHolder#tryGetCredentials: An attempt to get credentials failed");
                 return undefined;
             }
         }
         Logger.logInfo("CommandHolder#tryGetCredentials: success");
-        return cred;
+        return credentials;
     }
 
     private async showWelcomeMessage() {
@@ -183,7 +183,7 @@ export class CommandHolder {
         }
     }
 
-    private async requestTypingCredentials() : Promise<Credential> {
+    private async requestTypingCredentials() : Promise<Credentials> {
         const defaultURL : string = this.getDefaultURL();
         const defaultUsername : string = this.getDefaultUsername();
 
@@ -210,24 +210,23 @@ export class CommandHolder {
             Logger.logDebug("CommandHolder#signIn: abort after password inputbox");
             return;
         }
-        const creds : Credential = new Credential(url, user, pass);
-        return creds;
+        return new Credentials(url, user, pass);
     }
 
-    private async storeLastUserCreds(creds : Credential) : Promise<void> {
-        if (!creds) {
+    private async storeLastUserCredentials(credentials : Credentials) : Promise<void> {
+        if (!credentials) {
             return;
         }
-        await this._extManager.settings.setLastUrl(creds.serverURL);
-        await this._extManager.settings.setLastUsername(creds.user);
+        await this._extManager.settings.setLastUrl(credentials.serverURL);
+        await this._extManager.settings.setLastUsername(credentials.user);
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#storeLastUserCreds: keytar is supported. Good job user.`);
-            keytar.setPassword("teamcity", "serverurl", creds.serverURL);
-            keytar.setPassword("teamcity", "username", creds.user);
-            keytar.setPassword("teamcity", "password", creds.pass);
+            Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Good job user.`);
+            keytar.setPassword("teamcity", "serverurl", credentials.serverURL);
+            keytar.setPassword("teamcity", "username", credentials.user);
+            keytar.setPassword("teamcity", "password", credentials.pass);
         } catch (err) {
-            Logger.logError(`CommandHolder#storeLastUserCreds: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`CommandHolder#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
     }
 }

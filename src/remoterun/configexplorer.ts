@@ -56,7 +56,6 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
         } else if (!element) {
             return this._projects;
         } else if (element instanceof ProjectItem) {
-            const project : ProjectItem = element;
             return element.configs;
         }
         return [];
@@ -65,12 +64,12 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     /**
 	 * @return - all included build configs for remote run.
 	 */
-    public getInclBuilds(): BuildConfigItem[] {
+    public getIncludedBuildConfigs(): BuildConfigItem[] {
         const result : BuildConfigItem[] = [];
         this._projects.forEach((project) => {
-            project.configs.forEach((config) => {
-                if (config.isIncl) {
-                    result.push(config);
+            project.configs.forEach((configuration) => {
+                if (configuration.isIncluded) {
+                    result.push(configuration);
                 }
             });
         });
@@ -83,7 +82,7 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     public getInclResources(): CvsLocalResource[] {
         const result : CvsLocalResource[] = [];
         this._resources.forEach((resource) => {
-            if (resource.isIncl) {
+            if (resource.isIncluded) {
                 result.push(resource);
             }
         });

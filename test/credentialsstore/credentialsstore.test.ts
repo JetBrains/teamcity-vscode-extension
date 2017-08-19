@@ -2,34 +2,34 @@
 
 const http = require("http");
 import { assert } from "chai";
-import { Credential } from "../../src/credentialstore/credential";
-import { CredentialStore } from "../../src/credentialstore/credentialstore";
+import { Credentials } from "../../src/credentialsstore/credentials";
+import { CredentialsStore } from "../../src/credentialsstore/credentialsstore";
 
 suite("CredentialStore", function() {
 
     test("should verify constructor", function() {
-        const cs : CredentialStore = new CredentialStore();
+        const cs : CredentialsStore = new CredentialsStore();
         assert.equal(cs.getCredential(), undefined);
     });
 
     test("should verify set/getCredential", function(done) {
-        const creds: Credential = new Credential("http://localhost:8239", "user", "password");
-        const cs : CredentialStore = new CredentialStore();
+        const credentials: Credentials = new Credentials("http://localhost:8239", "user", "password");
+        const cs : CredentialsStore = new CredentialsStore();
         const serv = http.createServer(function (req, res) {
             serv.close();
             res.writeHead(200, {"Content-Type": "text/html"});
             res.end();
         }).listen(8239);
-        cs.setCredential(creds).then(() => {
-            assert.equal(cs.getCredential(), creds);
+        cs.setCredential(credentials).then(() => {
+            assert.equal(cs.getCredential(), credentials);
             done();
         });
     });
 
     test("should verify set/getCredential - rewriting", function(done) {
-        const creds: Credential = new Credential("http://localhost:7239", "user", "password");
-        const creds2: Credential = new Credential("http://localhost:4239", "user2", "password2");
-        const cs : CredentialStore = new CredentialStore();
+        const credentials: Credentials = new Credentials("http://localhost:7239", "user", "password");
+        const credentials2: Credentials = new Credentials("http://localhost:4239", "user2", "password2");
+        const cs : CredentialsStore = new CredentialsStore();
         const serv = http.createServer(function (req, res) {
             serv.close();
             res.writeHead(200, {"Content-Type": "text/html"});
@@ -40,18 +40,18 @@ suite("CredentialStore", function() {
             res.writeHead(200, {"Content-Type": "text/html"});
             res.end();
         }).listen(4239);
-        cs.setCredential(creds).then(() => {
-            cs.setCredential(creds2).then(() => {
-                assert.equal(cs.getCredential(), creds2);
+        cs.setCredential(credentials).then(() => {
+            cs.setCredential(credentials2).then(() => {
+                assert.equal(cs.getCredential(), credentials2);
                 done();
             });
         });
     });
 
     test("should verify removeCredential", function() {
-        const creds: Credential = new Credential("http://localhost", "user", "password");
-        const cs : CredentialStore = new CredentialStore();
-        cs.setCredential(creds);
+        const credentials: Credentials = new Credentials("http://localhost", "user", "password");
+        const cs : CredentialsStore = new CredentialsStore();
+        cs.setCredential(credentials);
         cs.removeCredential();
         assert.equal(cs.getCredential(), undefined);
     });

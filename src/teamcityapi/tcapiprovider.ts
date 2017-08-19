@@ -6,27 +6,27 @@ import { Constants } from "../utils/constants";
 import { VsCodeUtils } from "../utils/vscodeutils";
 import { ProjectItem } from "../entities/projectitem";
 import { SummaryDataProxy } from "../entities/summarydata";
-import { Credential } from "../credentialstore/credential";
+import { Credentials } from "../credentialsstore/credentials";
 import { NotificationProvider } from "../notifications/notificationprovider";
 import { BuildConfigResolver, XmlRpcBuildConfigResolver } from "../remoterun/buildconfigresolver";
 
 export interface TCApiProvider {
-    /* async */ checkCredential( cred : Credential ) : Promise<boolean>;
-    /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]>;
-    /* async */ getTotalNumberOfEvents( cred : Credential ) : Promise<number>;
-    /* async */ getSummary( cred : Credential ) : Promise<SummaryDataProxy>;
+    /* async */ checkCredential( credentials : Credentials ) : Promise<boolean>;
+    /* async */ getSuitableBuildConfigs( tcFormatedFilePaths : string[], credentials : Credentials ) : Promise<ProjectItem[]>;
+    /* async */ getTotalNumberOfEvents( credentials : Credentials ) : Promise<number>;
+    /* async */ getSummary( credentials : Credentials ) : Promise<SummaryDataProxy>;
 }
 
 export class TCRestApiProvider implements TCApiProvider {
 
     /**
-     * @param cred Credential of user
+     * @param credentials Credential of user
      * @return Promise<boolean>: true in case of success, false in case of fail.
      */
-    public async checkCredential( cred : Credential ) : Promise<boolean> {
-        const url = cred.serverURL + "/app/rest/";
-        const p : Promise<boolean> = new Promise((resolve, reject) => {
-            VsCodeUtils.makeRequest("GET", url, cred)
+    public async checkCredential( credentials : Credentials ) : Promise<boolean> {
+        const url = credentials.serverURL + "/app/rest/";
+        return new Promise<boolean>((resolve, reject) => {
+            VsCodeUtils.makeRequest("GET", url, credentials)
             .then((response) => {
                 Logger.logDebug("TCRestApiProvider#checkCredential: good response from " + url);
                 resolve(true);
@@ -41,22 +41,21 @@ export class TCRestApiProvider implements TCApiProvider {
                 resolve(false);
             });
         });
-        return p;
     }
 
-    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
+    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], credentials : Credentials ) : Promise<ProjectItem[]> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         Logger.logError(`TCRestApiProvider#getSuitableBuildConfigs: this method is unsopported by rest provider`);
         throw new Error("UnsupportedMethodException.");
     }
 
-    public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
+    public async getTotalNumberOfEvents( credentials : Credentials ) : Promise<number> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         Logger.logError(`TCRestApiProvider#getTotalNumberOfEvents: this method is unsopported by rest provider`);
         throw new Error("UnsupportedMethodException.");
     }
 
-    public async getSummary( cred : Credential ) : Promise<SummaryDataProxy> {
+    public async getSummary( credentials : Credentials ) : Promise<SummaryDataProxy> {
         //TODO: implement with RestBuildConfigResolver class. API from TeamCity required.
         Logger.logError(`TCRestApiProvider#getSummary: this method is unsopported by rest provider`);
         throw new Error("UnsupportedMethodException.");
@@ -65,27 +64,27 @@ export class TCRestApiProvider implements TCApiProvider {
 
 export class TCXmlRpcApiProvider implements TCApiProvider {
 
-    public async checkCredential(cred : Credential) : Promise<boolean> {
+    public async checkCredential(credentials : Credentials) : Promise<boolean> {
         Logger.logError(`TCXmlRpcApiProvider#checkCredential: this method is unsopported by xmlrpc provider`);
         throw new Error("UnsupportedMethodException.");
     }
 
-    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], cred : Credential ) : Promise<ProjectItem[]> {
-        const configResolver : BuildConfigResolver =  new XmlRpcBuildConfigResolver(cred.serverURL);
-        return configResolver.getSuitableBuildConfigs(tcFormatedFilePaths, cred);
+    public async getSuitableBuildConfigs( tcFormatedFilePaths : string[], credentials : Credentials ) : Promise<ProjectItem[]> {
+        const configResolver : BuildConfigResolver =  new XmlRpcBuildConfigResolver(credentials.serverURL);
+        return configResolver.getSuitableBuildConfigs(tcFormatedFilePaths, credentials);
     }
 
     /**
      * @return - number of event for existing subscriptions.
-     * Subs are created at ModificationCounterSubscription.fromTeamServerSummaryData during NotificationProvider#init
+     * Subscription is created at ModificationCounterSubscription.fromTeamServerSummaryData during NotificationProvider#init
      */
-    public async getTotalNumberOfEvents( cred : Credential ) : Promise<number> {
-        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(cred);
+    public async getTotalNumberOfEvents( credentials : Credentials ) : Promise<number> {
+        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(credentials);
         return notificationProvider.getTotalNumberOfEvents();
     }
 
-    public async getSummary( cred : Credential ) : Promise<SummaryDataProxy> {
-        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(cred);
-        return notificationProvider.getSummeryData(cred);
+    public async getSummary( credentials : Credentials ) : Promise<SummaryDataProxy> {
+        const notificationProvider : NotificationProvider = await NotificationProvider.getInstance(credentials);
+        return notificationProvider.getSummeryData(credentials);
     }
 }

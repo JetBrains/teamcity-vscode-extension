@@ -3,20 +3,20 @@
 import { OutputChannel } from "vscode";
 import { Logger } from "../utils/logger";
 import { VsCodeUtils } from "../utils/vscodeutils";
-import { Credential } from "../credentialstore/credential";
-import { CredentialStore } from "../credentialstore/credentialstore";
+import { Credentials } from "../credentialsstore/credentials";
+import { CredentialsStore } from "../credentialsstore/credentialsstore";
 import { SummaryDataProxy, ChangeItemProxy } from "../entities/summarydata";
 import { TCApiProvider, TCXmlRpcApiProvider } from "../teamcityapi/tcapiprovider";
 
 export class NotificationWatcher {
-    private readonly _credentialStore : CredentialStore;
+    private readonly _credentialStore : CredentialsStore;
     private readonly CHECK_FREQUENCY_MS : number = 10000;
     private readonly outdatedChangeIds : string[] = [];
     private readonly outdatedPersonalChangeIds : string[] = [];
     private readonly _outputChannal : OutputChannel;
     private isActive = false;
 
-    constructor (credentialStore : CredentialStore, outputChannal : OutputChannel) {
+    constructor (credentialStore : CredentialsStore, outputChannal : OutputChannel) {
         this._credentialStore = credentialStore;
         this._outputChannal = outputChannal;
         Logger.logDebug("Credential Store was initialized");
@@ -29,24 +29,24 @@ export class NotificationWatcher {
     public async activate() {
         const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
         this.isActive = true;
-        const cred : Credential = this._credentialStore.getCredential();
-        if (!cred) {
+        const credentials : Credentials = this._credentialStore.getCredential();
+        if (!credentials) {
             Logger.logWarning("NotificationWatcher#activate: User Credentials absent");
             return;
         }
-        let prevEventCounter : number = await apiProvider.getTotalNumberOfEvents(cred);
-        const summary : SummaryDataProxy = await apiProvider.getSummary(cred);
+        let prevEventCounter : number = await apiProvider.getTotalNumberOfEvents(credentials);
+        const summary : SummaryDataProxy = await apiProvider.getSummary(credentials);
         //filling outdatedChangeIds and outdatedPersonalChangeIds arrays
         this.collectNewChanges(summary.changes);
         this.collectNewChanges(summary.personalChanges);
-        while (this.isActive && cred) {
-            const eventCounter : number = await apiProvider.getTotalNumberOfEvents(cred);
+        while (this.isActive && credentials) {
+            const eventCounter : number = await apiProvider.getTotalNumberOfEvents(credentials);
             if (eventCounter === prevEventCounter) {
                 await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
                 continue;
             }
             Logger.logInfo("Notification Logger was changed. We should process new notifications.");
-            const summary : SummaryDataProxy = await apiProvider.getSummary(cred);
+            const summary : SummaryDataProxy = await apiProvider.getSummary(credentials);
             let changes : ChangeItemProxy[] = this.collectNewChanges(summary.changes);
             changes = changes.concat(this.collectNewChanges(summary.personalChanges));
             await this.displayChanges(changes);
@@ -89,13 +89,13 @@ export class NotificationWatcher {
      * @param changes - change objects to display.
      */
     private async displayChanges(changes : ChangeItemProxy[]) {
-        const cred : Credential = this._credentialStore.getCredential();
-        if (!changes || !cred) {
+        const credentials : Credentials = this._credentialStore.getCredential();
+        if (!changes || !credentials) {
             Logger.logWarning(`NotificationWatcher#displayChanges: changes or user credentials absent`);
             return;
         }
         changes.forEach((change) => {
-            const message : string = VsCodeUtils.formMessage(change, cred);
+            const message : string = VsCodeUtils.formMessage(change, credentials);
             this._outputChannal.appendLine(message + "\n");
         });
     }

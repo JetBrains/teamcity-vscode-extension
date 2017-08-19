@@ -2,7 +2,6 @@
 
 import * as url from "url";
 import * as path from "path";
-import * as stream from "stream";
 import { Logger } from "../utils/logger";
 import * as cp from "child-process-promise";
 import { CvsSupportProvider } from "./cvsprovider";
@@ -76,7 +75,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         }
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkin info`);
         const commitMessage: string = scm.inputBox.value;
-        const workItemIds: number[] = this.getWorkItemIdsFromMessage(commitMessage);
+        const workItemIds: number[] = TfsSupportProvider.getWorkItemIdsFromMessage(commitMessage);
         const cvsLocalResources : CvsLocalResource[] = await this.getLocalResources();
         const serverItems : string[] = await this.getServerItems(cvsLocalResources);
         return {
@@ -134,7 +133,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefind and we can use a content of the file from the file system.
      */
-    public showFile(fileAbsPath : string) : undefined {
+    public getStagedFileContentStream(fileAbsPath : string) : undefined {
         return undefined;
     }
 
@@ -238,8 +237,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
             const parsedLastHistoryRow : string[] = parseHistoryRegExp.exec(lastHistoryRow);
             if (parsedLastHistoryRow && parsedLastHistoryRow.length === 2) {
                 const prevRelativePath : string = parsedLastHistoryRow[1].replace(tfsInfo.projectRemotePath, "");
-                const prevFileAbsPath = path.join(tfsInfo.projectLocalPath, prevRelativePath);
-                return prevFileAbsPath;
+                return path.join(tfsInfo.projectLocalPath, prevRelativePath);
             }
             Logger.logWarning(`TfsSupportProvider#getPrevFileNameIfExist: can't parse last history command row`);
             return undefined;
@@ -271,7 +269,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 };
                 Logger.LogObject(tfsInfo);
                 return tfsInfo;
-            }else {
+            } else {
                 Logger.logError(`TfsSupportProvider#getTfsInfo: TfsInfo cannot be parsed.`);
                 return undefined;
             }
@@ -285,7 +283,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      *  Find all the work item mentions in the string.
      *  This returns an array like: ["#1", "#12", "#33"]
     */
-    private getWorkItemIdsFromMessage(message: string) : number[] {
+    private static getWorkItemIdsFromMessage(message: string) : number[] {
         const ids: number[] = [];
         try {
             const matches: string[] = message ? message.match(/#(\d+)/gm) : [];

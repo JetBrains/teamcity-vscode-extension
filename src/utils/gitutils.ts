@@ -53,15 +53,15 @@ export class GitUtils {
 
             const gitDiffOutput = await cp_promise.exec(gitDiffCommand);
             const diffResults : string = gitDiffOutput.stdout.toString("utf8").trim();
-            cvsInfo.isChanged = diffResults ? true : false;
+            cvsInfo.isChanged = !!diffResults;
         } catch (err) {
             Logger.logWarning(`GitUtils#collectInfo:  ${VsCodeUtils.formatErrorMessage(err)}`);
         } finally {
             Logger.logDebug(`GitUtils#collectInfo: path: ${cvsInfo.path},
                 versionErrMsg: ${cvsInfo.versionErrorMsg},
                 changed: ${cvsInfo.isChanged}`);
-            return cvsInfo;
         }
+        return cvsInfo;
     }
 
     private static async findGit(hint: string | undefined): Promise<GitPartialInfo> {

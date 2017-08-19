@@ -7,7 +7,7 @@ import { Logger } from "../utils/logger";
 import { Strings } from "../utils/constants";
 import { RestHeader } from "../utils/interfaces";
 import { window, MessageItem, workspace } from "vscode";
-import { Credential } from "../credentialstore/credential";
+import { Credentials } from "../credentialsstore/credentials";
 import { ChangeItemProxy, BuildItemProxy } from "../entities/summarydata";
 
 export class VsCodeUtils {
@@ -73,12 +73,12 @@ export class VsCodeUtils {
         /**
      * @param method - type of request (GET, POST, ...)
      * @param url - url of request
-     * @param cred? - Credential for basic authorization
+     * @param credentials? - Credential for basic authorization
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
     public static makeRequest(  method : string,
                                 url : string,
-                                cred? : Credential,
+                                credentials? : Credentials,
                                 data? : Buffer | String,
                                 additionalArgs? : string[],
                                 additionalHeaders? : RestHeader[]) : Promise<string> {
@@ -99,10 +99,9 @@ export class VsCodeUtils {
         return new Promise(function (resolve, reject) {
             const request : XHR.XMLHttpRequest = new XMLHttpRequest();
             request.open(method, url, true);
-            if (cred) {
-                Logger.logDebug(`VsCodeUtils#makeRequest: creds:`);
-                Logger.LogObject(cred);
-                request.setRequestHeader("Authorization", "Basic " + new Buffer(cred.user + ":" + cred.pass).toString("base64"));
+            if (credentials) {
+                Logger.logDebug(`VsCodeUtils#makeRequest: credentials: userName ${credentials.user}, serverUrl ${credentials.serverURL}`);
+                request.setRequestHeader("Authorization", "Basic " + new Buffer(credentials.user + ":" + credentials.pass).toString("base64"));
             }
 
             if (additionalHeaders) {
@@ -140,9 +139,9 @@ export class VsCodeUtils {
     /**
      * This method prepares message to display from change items and user credential.
      * @param change - changeItemProxy
-     * @param cred - user credential. Required to get serverUrl.
+     * @param credentials - user credential. Required to get serverUrl.
      */
-    public static formMessage(change : ChangeItemProxy, cred : Credential) : string {
+    public static formMessage(change : ChangeItemProxy, credentials : Credentials) : string {
         const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
         const messageSB : string[] = [];
         messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
@@ -150,7 +149,7 @@ export class VsCodeUtils {
         if (builds) {
             builds.forEach((build) => {
                 const buildPrefix = build.isPersonal ? "Personal build" : "Build";
-                const buildChangeUrl = `${cred.serverURL}/viewLog.html?buildId=${build.buildId}`;
+                const buildChangeUrl = `${credentials.serverURL}/viewLog.html?buildId=${build.buildId}`;
                 if (build.buildId !== -1) {
                     messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More detales: ${buildChangeUrl}`);
                 }

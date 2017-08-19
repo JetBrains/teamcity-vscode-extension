@@ -5,10 +5,10 @@ import { CvsFileStatusCode } from "../utils/constants";
 import { TreeItem, Uri, Command, TreeItemCollapsibleState } from "vscode";
 
 export abstract class LeaveSelectableItem extends TreeItem {
-    private _isIncl : boolean;
-    constructor(label: string, isIncl: boolean = false) {
+    private _isIncluded : boolean;
+    constructor(label: string, isIncluded: boolean = false) {
         super(label, TreeItemCollapsibleState.None);
-        this._isIncl = isIncl;
+        this._isIncluded = isIncluded;
     }
     public get command() : Command {
         return {
@@ -18,12 +18,12 @@ export abstract class LeaveSelectableItem extends TreeItem {
         };
     }
 
-    public get isIncl() : boolean {
-        return this._isIncl;
+    public get isIncluded() : boolean {
+        return this._isIncluded;
     }
 
     public changeState() : void {
-        this._isIncl = !this._isIncl;
+        this._isIncluded = !this._isIncluded;
     }
 }
 
@@ -37,7 +37,7 @@ export class BuildConfigItem extends LeaveSelectableItem {
     }
 
     public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName : string = "config - " + (this.isIncl ? "incl" : "excl") + ".png";
+        const iconName : string = "config - " + (this.isIncluded ? "incl" : "excl") + ".png";
         return {
             light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
             dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName)
@@ -66,7 +66,7 @@ export class CvsLocalResource extends LeaveSelectableItem {
     }
 
     public get iconPath() : string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName : string = `status-${this.isIncl ? this.status : "I"}.svg`;
+        const iconName : string = `status-${this.isIncluded ? this.status : "I"}.svg`;
         return {
             light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
             dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "dark", iconName)

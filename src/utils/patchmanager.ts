@@ -40,7 +40,7 @@ export class PatchManager {
             let fileReadStream : ReadableSet | undefined;
             //When fileReadStream !== undefined we should use the stream.
             try {
-                fileReadStream = staged ? await cvsProvider.showFile(absPath) : undefined;
+                fileReadStream = staged ? await cvsProvider.getStagedFileContentStream(absPath) : undefined;
             } catch (err) {
                 //An error message should be already logged at the #showFile
                 Logger.logError("PatchManager#preparePatch: an error occurs during getting showFile stream - use a file content from the file system");
@@ -152,26 +152,10 @@ export class PatchManager {
     }
 }
 
-function copyData(savPath, srcPath) {
-    fs.readFile(srcPath, "utf8", function (err, data) {
-            if (err) {
-                throw err;
-            }
-            //Do your processing, MD5, send a satellite to the moon, etc.
-            fs.writeFile (savPath, data, function(err) {
-                if (err) {
-                    throw err;
-                }
-                console.log("complete");
-            });
-        });
-}
-
 /**
  * Private class to build a patch from checkin info
  */
 class PatchBuilder {
-    private readonly _bufferArray : Buffer[];
     private static readonly DELETE_PREFIX : number = 3;
     private static readonly END_OF_PATCH_MARK : number = 10;
     private static readonly RENAME_PREFIX : number = 19;
@@ -182,12 +166,11 @@ class PatchBuilder {
 
     constructor() {
         Logger.logDebug(`PatchBuilder#constructor: start constract patch`);
-        this._bufferArray = [];
     }
 
     public init() : Promise<void> {
         Logger.logDebug(`PatchBuilder#init: start constract patch`);
-        const prom : Promise<void> = new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
                 if (err) {
                     Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ${VsCodeUtils.formatErrorMessage(err)}`);
@@ -200,7 +183,6 @@ class PatchBuilder {
                 resolve();
             });
         });
-        return prom;
     }
 
     /**

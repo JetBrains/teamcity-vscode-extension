@@ -23,18 +23,12 @@ export abstract class BaseSettings {
 
     public async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
         const configuration = workspace.getConfiguration();
-        const prom : Promise<void> = new Promise((resolve, reject) => {
-            configuration.update(key, value, global).then(() => {
-                resolve();
-            });
-        });
-        return prom;
+        return configuration.update(key, value, global);
     }
 
     public getSettingsProperty<T>(key: string, defaultValue?:T): T {
         const configuration = workspace.getConfiguration();
-        const value = configuration.get<T>(key, defaultValue);
-        return value;
+        return configuration.get<T>(key, defaultValue);
     }
 
 }

@@ -43,7 +43,7 @@ export class TfsUtils {
             */
             const outBriefDiff = await cpprom.exec(briefDiffCommand);
             const briefDiffResults : string = outBriefDiff.stdout.toString("utf8").trim();
-            cvsInfo.isChanged = briefDiffResults ? true : false;
+            cvsInfo.isChanged = !!briefDiffResults;
         } finally {
             Logger.logDebug(`GitUtils#collectInfo: path: ${cvsInfo.path},
                 versionErrMsg: ${cvsInfo.versionErrorMsg},

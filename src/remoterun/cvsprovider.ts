@@ -1,6 +1,5 @@
 "use strict";
 
-import * as stream from "stream";
 import { CvsLocalResource } from "../entities/leaveitems";
 import { CheckinInfo, MappingFileContent, ReadableSet } from "../utils/interfaces";
 
@@ -41,5 +40,5 @@ export interface CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefind and we can use a content of the file from the file system.
      */
-    showFile(fileAbsPath : string) : Promise<ReadableSet> | undefined;
+    getStagedFileContentStream(fileAbsPath : string) : Promise<ReadableSet> | undefined;
 }

@@ -4,7 +4,6 @@ import * as fs from "fs";
 import * as stream from "stream";
 import { Disposable } from "vscode";
 import { Logger } from "../utils/logger";
-import * as passthrough_counter from "passthrough-counter";
 import { ByteWriter } from "../utils/bytewriter";
 import { ReadableSet } from "../utils/interfaces";
 import { VsCodeUtils } from "../utils/vscodeutils";
@@ -33,7 +32,6 @@ export class AsyncWriteStream implements Disposable {
         const stats : fs.Stats = fs.statSync(fileAbsPath);
         const fileSizeInBytes : number = stats.size;
         Logger.logDebug(`AsyncWriteStream#writeFile: file size in bytes: ${fileSizeInBytes}`);
-        const fileSizeBuffer : Buffer = ByteWriter.longToByteArray(fileSizeInBytes);
         const readstream : stream.Readable = fs.createReadStream(fileAbsPath);
         return this.writeStreamedFile({stream: readstream, length: fileSizeInBytes});
     }

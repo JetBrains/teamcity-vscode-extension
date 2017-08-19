@@ -1,6 +1,5 @@
 "use strict";
 
-import * as fs from "fs";
 import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
@@ -39,14 +38,14 @@ export class GitSupportProvider implements CvsSupportProvider {
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
         const lastRevHash = await this.getLastRevision(remoteBranch);
-        const formatedChangedFiles = [];
+        const formattedChangedFiles = [];
         cvsLocalResources.forEach((localResource) => {
             const relativePath : string = localResource.fileAbsPath.replace(this._workspaceRootPath, "");
             const formatedFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
-            formatedChangedFiles.push(formatedFilePath);
+            formattedChangedFiles.push(formatedFilePath);
             Logger.logDebug(`GitSupportProvider#getFormattedFilenames: formatedFilePath: ${formatedFilePath}`);
         });
-        return formatedChangedFiles;
+        return formattedChangedFiles;
     }
 
     /**
@@ -144,12 +143,12 @@ export class GitSupportProvider implements CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefind and we can use a content of the file from the file system.
      */
-    public async showFile(fileAbsPath : string) : Promise<ReadableSet> {
+    public async getStagedFileContentStream(fileAbsPath : string) : Promise<ReadableSet> {
         const relPath = path.relative(this._workspaceRootPath, fileAbsPath).replace(/\\/g, "/");
         const showFileCommand : string = `"${this._gitPath}" -C "${this._workspaceRootPath}" show :"${relPath}"`;
         const showFileStream : stream.Readable = cp.exec(showFileCommand).stdout;
         let streamLength : number = 0;
-        const prom : Promise<ReadableSet> = new Promise((resolve, reject) => {
+        return new Promise<ReadableSet>((resolve, reject) => {
             showFileStream.on("end", function () {
                 Logger.logDebug(`GitSupportProvider#showFile: stream for counting bytes of ${fileAbsPath} has ended. Total size is ${streamLength}`);
                 const showFileStream : stream.Readable = cp.exec(showFileCommand).stdout;
@@ -163,7 +162,6 @@ export class GitSupportProvider implements CvsSupportProvider {
                 streamLength += chunk.length;
             });
         });
-        return prom;
     }
 
     /**

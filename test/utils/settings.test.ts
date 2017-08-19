@@ -36,8 +36,13 @@ suite("Settings", () => {
         settings.setShowSignInWelcome(false).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.showSignInWelcome, false);
-            settings.setShowSignInWelcome(temp);
-            done();
+            settings.setShowSignInWelcome(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -47,8 +52,13 @@ suite("Settings", () => {
         settings.setShowSignInWelcome(true).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.showSignInWelcome, true);
-            settings.setShowSignInWelcome(temp);
-            done();
+            settings.setShowSignInWelcome(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -59,8 +69,13 @@ suite("Settings", () => {
         settings.setLastUrl(testUrl).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.getLastUrl(), testUrl);
-            settings.setLastUrl(temp);
-            done();
+            settings.setLastUrl(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -70,8 +85,13 @@ suite("Settings", () => {
         settings.setLastUrl(undefined).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.getLastUrl(), "");
-            settings.setLastUrl(temp);
-            done();
+            settings.setLastUrl(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -82,8 +102,13 @@ suite("Settings", () => {
         settings.setLastUsername(testUser).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.getLastUsername(), testUser);
-            settings.setLastUsername(temp);
-            done();
+            settings.setLastUsername(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -93,8 +118,13 @@ suite("Settings", () => {
         settings.setLastUsername(undefined).then(() => {
             const settings : Settings = new SettingsImpl();
             assert.equal(settings.getLastUsername(), "");
-            settings.setLastUsername(temp);
-            done();
+            settings.setLastUsername(temp).then(() => {
+                done();
+            }).catch((err) => {
+                done(err);
+            });
+        }).catch((err) => {
+            done(err);
         });
     });
 

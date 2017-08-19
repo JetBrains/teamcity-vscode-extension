@@ -7,12 +7,11 @@ export class FileController {
 
     /* Abs path should not contains symbols like " */
     public static async exists(fileAbsPath : string) : Promise<boolean> {
-        const prom : Promise<boolean> = new Promise((resolve, reject) => {
+        return new Promise<boolean> ((resolve, reject) => {
             const exists : boolean = fs.existsSync(fileAbsPath);
             Logger.logDebug(`FileController#exists: file ${fileAbsPath} ${exists ? "exists" : "doesn't exist"}`);
             resolve(exists);
         });
-        return prom;
     }
 
     public static async removeFileAsync(fileAbsPath : string) {
@@ -41,7 +40,7 @@ export class FileController {
             return;
         }
 
-        const prom : Promise<Buffer> = new Promise((resolve, reject) => {
+        return new Promise<Buffer>((resolve, reject) => {
             fs.readFile(fileAbsPath, function(err : NodeJS.ErrnoException, data : Buffer) {
                 if (err) {
                     Logger.logError(`FileController#writeFileAsync: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
@@ -50,8 +49,6 @@ export class FileController {
                 resolve(data);
             });
         });
-
-        return prom;
     }
 
     /* If file with this name exists, it will be rewritten */
