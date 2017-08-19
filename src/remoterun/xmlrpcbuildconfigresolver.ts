@@ -173,17 +173,4 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
             project.configs = filteredConfigs;
         });
     }
-
-    /**
-     * The object that provides api for private fields and methods of class.
-     * Use for test purposes only!
-     */
-    public getTestObject(): any {
-        const testObject: any = {};
-        testObject._xmlRpcClient = this.client;
-        testObject.parseXml = this.parseXml;
-        testObject.collectProject = XmlRpcBuildConfigResolver.collectProject;
-        testObject.filterConfigs = this.filterConfigs;
-        return testObject;
-    }
 }

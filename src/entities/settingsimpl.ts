@@ -58,14 +58,4 @@ export class SettingsImpl extends BaseSettings implements Settings {
     public async setEnableRemoteRun(enableRemoteRun: boolean): Promise<void> {
         await BaseSettings.setSettingsProperty(Constants.REMOTERUN_ENABLED, enableRemoteRun, false /* global */);
     }
-
-    /**
-     * The object that provides api for private fields and methods of class.
-     * Use for test purposes only!
-     */
-    public getTestObject(): any {
-        const testObject: any = {};
-        testObject.getSettingsProperty = BaseSettings.getSettingsProperty;
-        return testObject;
-    }
 }

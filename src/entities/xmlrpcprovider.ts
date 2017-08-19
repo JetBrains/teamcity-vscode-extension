@@ -106,14 +106,4 @@ export class XmlRpcProvider {
             throw new Error("Cannot connect via XmlRpc. Try to sign in again.");
         }
     }
-
-    /**
-     * The object that provides api for private fields and methods of class.
-     * Use for test purposes only!
-     */
-    public getTestObject(): any {
-        const testObject: any = {};
-        testObject.client = this.client;
-        return testObject;
-    }
 }
