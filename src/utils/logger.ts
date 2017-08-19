@@ -2,26 +2,29 @@
 
 import * as path from "path";
 import * as winston from "winston";
+import {LoggingLevel} from "./constants";
 
 export class Logger {
     private static initialized: boolean = false;
     private static loggingLevel: LoggingLevel;
     private static logPath: string = "";
 
-    private static initalize() {
+    private static initialize() {
         //Only initialize the logger if a logging level is set (in settings) and we haven't initialized it yet
         if (Logger.loggingLevel !== undefined && Logger.initialized === false) {
-            const fileOpt:winston.FileTransportOptions =  { json: false, filename: path.join(Logger.logPath, "teamcity-extension.log"),
-                                                            level: LoggingLevel[Logger.loggingLevel].toLowerCase(), maxsize: 4000000,
-                                                            maxFiles: 5, tailable: false };
+            const fileOpt: winston.FileTransportOptions = {
+                json: false, filename: path.join(Logger.logPath, "teamcity-extension.log"),
+                level: LoggingLevel[Logger.loggingLevel].toLowerCase(), maxsize: 4000000,
+                maxFiles: 5, tailable: false
+            };
             winston.add(winston.transports.File, fileOpt);
             winston.remove(winston.transports.Console);
             Logger.initialized = true;
         }
     }
 
-    public static logDebug(message: string) : void {
-        Logger.initalize();
+    public static logDebug(message: string): void {
+        Logger.initialize();
         if (Logger.initialized === true && this.loggingLevel === LoggingLevel.Debug) {
             winston.log("debug", this.addPid(message));
             console.log(Logger.getNow() + message);
@@ -29,24 +32,24 @@ export class Logger {
     }
 
     //Logs message to console and winston logger
-    public static logError(message: string) : void {
-        Logger.initalize();
+    public static logError(message: string): void {
+        Logger.initialize();
         if (Logger.initialized === true && this.loggingLevel >= LoggingLevel.Error) {
             winston.log("error", this.addPid(message));
             console.log(Logger.getNow() + "ERROR: " + message);
         }
     }
 
-    public static logInfo(message: string) : void {
-        Logger.initalize();
+    public static logInfo(message: string): void {
+        Logger.initialize();
         if (Logger.initialized === true && this.loggingLevel >= LoggingLevel.Info) {
             winston.log("info", " " + this.addPid(message));
             console.log(Logger.getNow() + message);
         }
     }
 
-    public static LogObject(object: any) : void {
-        Logger.initalize();
+    public static LogObject(object: any): void {
+        Logger.initialize();
         if (Logger.initialized === true && this.loggingLevel === LoggingLevel.Debug) {
             winston.log("debug", object);
             console.log(object);
@@ -54,8 +57,8 @@ export class Logger {
     }
 
     //Logs message to console and displays Warning message
-    public static logWarning(message: string) : void {
-        Logger.initalize();
+    public static logWarning(message: string): void {
+        Logger.initialize();
         if (Logger.initialized === true && this.loggingLevel >= LoggingLevel.Warn) {
             winston.log("warn", " " + this.addPid(message));
             console.log(Logger.getNow() + "WARNING: " + message);
@@ -107,7 +110,7 @@ export class Logger {
     private static getNow(): string {
         const now: Date = new Date();
         const strDateTime: string = [[Logger.addZero(now.getHours()), Logger.addZero(now.getMinutes()), Logger.addZero(now.getSeconds())].join(":"),
-                                        Logger.addZero(now.getMilliseconds(), 100)].join(".");
+            Logger.addZero(now.getMilliseconds(), 100)].join(".");
 
         return strDateTime + " ";
     }
@@ -121,15 +124,9 @@ export class Logger {
      */
     private static addZero(num: number, base?: number): string {
         let val: number = base;
-        if (val === undefined) { val = 10; }
-        return (num >= 0 && num < val) ? "0" + num.toString() :  num.toString() + "";
+        if (val === undefined) {
+            val = 10;
+        }
+        return (num >= 0 && num < val) ? "0" + num.toString() : num.toString() + "";
     }
-}
-
-export enum LoggingLevel {
-    Error = 0,
-    Warn = 1,
-    Info = 2,
-    Verbose = 3,
-    Debug = 4
 }

@@ -1,24 +1,26 @@
 "use strict";
 
-import { OutputChannel } from "vscode";
-import { Logger } from "../utils/logger";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { Credentials } from "../credentialsstore/credentials";
-import { CredentialsStore } from "../credentialsstore/credentialsstore";
-import { SummaryDataProxy, ChangeItemProxy } from "../entities/summarydata";
-import { TCApiProvider, TCXmlRpcApiProvider } from "../teamcityapi/tcapiprovider";
+import {OutputChannel} from "vscode";
+import {Logger} from "../utils/logger";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {Credentials} from "../credentialsstore/credentials";
+import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {TCApiProvider} from "../interfaces/TCApiProvider";
+import {SummaryDataProxy} from "../entities/summarydataproxy";
+import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {TCXmlRpcApiProvider} from "../teamcityapi/TCXmlRpcApiProvider";
 
 export class NotificationWatcher {
-    private readonly _credentialStore : CredentialsStore;
-    private readonly CHECK_FREQUENCY_MS : number = 10000;
-    private readonly outdatedChangeIds : string[] = [];
-    private readonly outdatedPersonalChangeIds : string[] = [];
-    private readonly _outputChannal : OutputChannel;
+    private readonly _credentialStore: CredentialsStore;
+    private readonly CHECK_FREQUENCY_MS: number = 10000;
+    private readonly outdatedChangeIds: string[] = [];
+    private readonly outdatedPersonalChangeIds: string[] = [];
+    private readonly _outputChannel: OutputChannel;
     private isActive = false;
 
-    constructor (credentialStore : CredentialsStore, outputChannal : OutputChannel) {
+    constructor(credentialStore: CredentialsStore, outputChannel: OutputChannel) {
         this._credentialStore = credentialStore;
-        this._outputChannal = outputChannal;
+        this._outputChannel = outputChannel;
         Logger.logDebug("Credential Store was initialized");
     }
 
@@ -27,27 +29,27 @@ export class NotificationWatcher {
      * Frequency of requests on server is settled by CHECK_FREQUENCY_MS.
      */
     public async activate() {
-        const apiProvider : TCApiProvider = new TCXmlRpcApiProvider();
+        const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
         this.isActive = true;
-        const credentials : Credentials = this._credentialStore.getCredential();
+        const credentials: Credentials = this._credentialStore.getCredential();
         if (!credentials) {
             Logger.logWarning("NotificationWatcher#activate: User Credentials absent");
             return;
         }
-        let prevEventCounter : number = await apiProvider.getTotalNumberOfEvents(credentials);
-        const summary : SummaryDataProxy = await apiProvider.getSummary(credentials);
+        let prevEventCounter: number = await apiProvider.getTotalNumberOfEvents(credentials);
+        const summary: SummaryDataProxy = await apiProvider.getSummary(credentials);
         //filling outdatedChangeIds and outdatedPersonalChangeIds arrays
         this.collectNewChanges(summary.changes);
         this.collectNewChanges(summary.personalChanges);
         while (this.isActive && credentials) {
-            const eventCounter : number = await apiProvider.getTotalNumberOfEvents(credentials);
+            const eventCounter: number = await apiProvider.getTotalNumberOfEvents(credentials);
             if (eventCounter === prevEventCounter) {
                 await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
                 continue;
             }
             Logger.logInfo("Notification Logger was changed. We should process new notifications.");
-            const summary : SummaryDataProxy = await apiProvider.getSummary(credentials);
-            let changes : ChangeItemProxy[] = this.collectNewChanges(summary.changes);
+            const summary: SummaryDataProxy = await apiProvider.getSummary(credentials);
+            let changes: ChangeItemProxy[] = this.collectNewChanges(summary.changes);
             changes = changes.concat(this.collectNewChanges(summary.personalChanges));
             await this.displayChanges(changes);
             prevEventCounter = eventCounter;
@@ -62,7 +64,7 @@ export class NotificationWatcher {
         this.isActive = false;
         this.outdatedChangeIds.length = 0;
         this.outdatedPersonalChangeIds.length = 0;
-        Logger.logDebug("Notification Watcher data was reseted");
+        Logger.logDebug("Notification Watcher data were reset");
     }
 
     /**
@@ -70,8 +72,8 @@ export class NotificationWatcher {
      * @param changes - sorted array of personal or non-personal changes
      * @return - all new changes.
      */
-    private collectNewChanges(changes : ChangeItemProxy[]) : ChangeItemProxy[] {
-        const newChanges : ChangeItemProxy[] = [];
+    private collectNewChanges(changes: ChangeItemProxy[]): ChangeItemProxy[] {
+        const newChanges: ChangeItemProxy[] = [];
         for (let i = 0; i < changes.length; i++) {
             const correspondingArray = changes[i].isPersonal ? this.outdatedPersonalChangeIds : this.outdatedChangeIds;
             if (correspondingArray.indexOf(`${changes[i].changeId}:${changes[i].status}`) === -1) {
@@ -88,15 +90,15 @@ export class NotificationWatcher {
      * This method collect required info from change objects and display corresponding message into TeamCity output.
      * @param changes - change objects to display.
      */
-    private async displayChanges(changes : ChangeItemProxy[]) {
-        const credentials : Credentials = this._credentialStore.getCredential();
+    private async displayChanges(changes: ChangeItemProxy[]) {
+        const credentials: Credentials = this._credentialStore.getCredential();
         if (!changes || !credentials) {
             Logger.logWarning(`NotificationWatcher#displayChanges: changes or user credentials absent`);
             return;
         }
         changes.forEach((change) => {
-            const message : string = VsCodeUtils.formMessage(change, credentials);
-            this._outputChannal.appendLine(message + "\n");
+            const message: string = VsCodeUtils.formMessage(change, credentials);
+            this._outputChannel.appendLine(message + "\n");
         });
     }
 }

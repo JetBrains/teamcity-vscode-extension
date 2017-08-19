@@ -1,27 +1,27 @@
 "use strict";
 
-import { assert } from "chai";
+import {assert} from "chai";
 import * as xml2js from "xml2js";
-import { SummaryDataProxy, ChangeItemProxy, BuildItemProxy } from "../../src/entities/summarydata";
+import {SummaryDataProxy} from "../../src/entities/summarydataproxy";
 
 suite("SummaryDataProxy", () => {
-    test("should verify constructor", function(done) {
+    test("should verify constructor", function (done) {
         xml2js.parseString(summaryObjXml, (err, obj) => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
             assert.equal(summeryData.getVisibleProjectIds.length, 2);
             done();
         });
     });
 
-    test("should verify getVisibleProjectIds", function(done) {
+    test("should verify getVisibleProjectIds", function (done) {
         xml2js.parseString(summaryObjXml, (err, obj) => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
             assert.equal(summeryData.getVisibleProjectIds[0], "_Root");
             assert.equal(summeryData.getVisibleProjectIds[1], "project2");
             assert.equal(summeryData.getVisibleProjectIds.length, 2);
@@ -29,134 +29,30 @@ suite("SummaryDataProxy", () => {
         });
     });
 
-    test("should verify changes", function(done) {
+    test("should verify changes", function (done) {
         xml2js.parseString(summaryObjXml, (err, obj) => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
             assert.equal(summeryData.changes.length, 11);
             done();
         });
     });
 
-    test("should verify personalChanges", function(done) {
+    test("should verify personalChanges", function (done) {
         xml2js.parseString(summaryObjXml, (err, obj) => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData : SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
             assert.equal(summeryData.personalChanges.length, 102);
             done();
         });
     });
 });
 
-suite("ChangeItemProxy", () => {
-    test("should verify constructor/changeId", function(done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            const changeItem : ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.changeId, 61);
-            done();
-        });
-    });
-
-    test("should verify is Personal", function(done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            const changeItem : ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.isPersonal, true);
-            done();
-        });
-    });
-
-    test("should verify is not Personal", function(done) {
-        xml2js.parseString(changeNonPersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            const changeItem : ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.isPersonal, false);
-            done();
-        });
-    });
-
-    test("should verify status", function(done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            const changeItem : ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.status, "CHECKED");
-            done();
-        });
-    });
-
-    test("should verify builds", function(done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            const changeItem : ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.builds.length, 1);
-            assert.equal(changeItem.builds[0].buildId, 87);
-            done();
-        });
-    });
-});
-
-suite("BuildItemProxy", () => {
-    test("should verify constructor/buildId", function(done) {
-        xml2js.parseString(personalBuildObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of personalBuildObjXml.");
-            }
-            const buildItem : BuildItemProxy = new BuildItemProxy(obj.Build);
-            assert.equal(buildItem.buildId, 134);
-            done();
-        });
-    });
-
-    test("should verify is Personal", function(done) {
-        xml2js.parseString(personalBuildObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of personalBuildObjXml.");
-            }
-            const buildItem : BuildItemProxy = new BuildItemProxy(obj.Build);
-            assert.equal(buildItem.isPersonal, true);
-            done();
-        });
-    });
-
-    test("should verify is not Personal", function(done) {
-        xml2js.parseString(nonPersonalBuildObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of personalBuildObjXml.");
-            }
-            const buildItem : BuildItemProxy = new BuildItemProxy(obj.Build);
-            assert.equal(buildItem.isPersonal, false);
-            done();
-        });
-    });
-
-    test("should verify status", function(done) {
-        xml2js.parseString(personalBuildObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of personalBuildObjXml.");
-            }
-            const buildItem : BuildItemProxy = new BuildItemProxy(obj.Build);
-            assert.equal(buildItem.status, "Success");
-            done();
-        });
-    });
-});
-
-const summaryObjXml : string = `<Summary>
+const summaryObjXml: string = `<Summary>
   <projects>
     <Project>
       <myProjectId>_Root</myProjectId>
@@ -8134,147 +8030,3 @@ const summaryObjXml : string = `<Summary>
   <myFilteredOutChangesCount>0</myFilteredOutChangesCount>
   <mySummaryCounter>637</mySummaryCounter>
 </Summary>`;
-
-const changePersonalObjXml : string = `<ChangeInfo>
-    <mod>
-    <myVcsDate>1500457539333</myVcsDate>
-    <myVersion>19 07 2017 12:45</myVersion>
-    <myDisplayVersion>19 07 2017 12:45</myDisplayVersion>
-    <myUser>rugpanov</myUser>
-    <myDescription></myDescription>
-    <myChanges class="java.util.Collections$EmptyList" reference="../../../../changes/ChangeInfo/mod/myChanges"/>
-    <myChangesCount>5</myChangesCount>
-    <myCanBeIgnored>true</myCanBeIgnored>
-    <id>61</id>
-    <personal>true</personal>
-    <myVersionControlName>Pre-Tested Commit</myVersionControlName>
-    </mod>
-    <myTypeToInstanceMap class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[3]/configs/Configuration"/>
-        <Build>
-        <start>1500457541285</start>
-        <finish>1500457552884</finish>
-        <agent>UNIT-1028</agent>
-        <id>87</id>
-        <estimationTimeLeft>-1</estimationTimeLeft>
-        <statusDescriptor>
-            <myText>Success</myText>
-            <myStatus reference="../../../../../../../projects/Project/status"/>
-        </statusDescriptor>
-        <personal>true</personal>
-        <number>1</number>
-        <configuration reference="../../../../../../projects/Project[3]/configs/Configuration"/>
-        <myDuration>11</myDuration>
-        </Build>
-    </entry>
-    </myTypeToInstanceMap>
-    <fixed class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[3]/configs/Configuration"/>
-        <Build reference="../../../myTypeToInstanceMap/entry/Build"/>
-    </entry>
-    </fixed>
-    <current class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[3]/configs/Configuration"/>
-        <null/>
-    </entry>
-    </current>
-    <users class="java.util.Collections$SingletonList">
-    <element class="long">1</element>
-    </users>
-    <myPersonalDesc>
-    <myId>61</myId>
-    <myUserId>1</myUserId>
-    <myCommitType>1</myCommitType>
-    <myStatus reference="../../../ChangeInfo/myPersonalDesc/myStatus"/>
-    <myCommitDecision>COMMIT</myCommitDecision>
-    </myPersonalDesc>
-    <myStatus>CHECKED</myStatus>
-</ChangeInfo>`;
-
-const changeNonPersonalObjXml : string = `<ChangeInfo>
-    <mod>
-    <myVcsDate>1500895071000</myVcsDate>
-    <myVersion>cc898a2ce6b33ce1bc1c70b343dd8fc4cd1486da</myVersion>
-    <myDisplayVersion>cc898a2ce6b33ce1bc1c70b343dd8fc4cd1486da</myDisplayVersion>
-    <myUser>gripanov</myUser>
-    <myDescription>Some test commit
-</myDescription>
-    <myChanges class="java.util.Collections$EmptyList"/>
-    <myChangesCount>1</myChangesCount>
-    <myCanBeIgnored>true</myCanBeIgnored>
-    <id>23</id>
-    <personal>false</personal>
-    <myVersionControlName>Git</myVersionControlName>
-    </mod>
-    <myTypeToInstanceMap class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[2]/configs/Configuration[2]"/>
-        <Build>
-        <start>1500895147485</start>
-        <finish>1500895151619</finish>
-        <agent>UNIT-1028</agent>
-        <id>153</id>
-        <estimationTimeLeft>-1</estimationTimeLeft>
-        <statusDescriptor>
-            <myText>Success</myText>
-            <myStatus reference="../../../../../../../projects/Project/status"/>
-        </statusDescriptor>
-        <personal>false</personal>
-        <number>70</number>
-        <configuration reference="../../../../../../projects/Project[2]/configs/Configuration[2]"/>
-        <myDuration>4</myDuration>
-        </Build>
-    </entry>
-    </myTypeToInstanceMap>
-    <fixed class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[2]/configs/Configuration[2]"/>
-        <Build reference="../../../myTypeToInstanceMap/entry/Build"/>
-    </entry>
-    </fixed>
-    <current class="linked-hash-map">
-    <entry>
-        <Configuration reference="../../../../../projects/Project[2]/configs/Configuration[2]"/>
-        <Build reference="../../../myTypeToInstanceMap/entry/Build"/>
-    </entry>
-    </current>
-    <users>
-    <long>1</long>
-    </users>
-    <myStatus>CHECKED</myStatus>
-</ChangeInfo>`;
-
-const personalBuildObjXml = `<Build>
-    <start>1500628294505</start>
-    <finish>1500628298430</finish>
-    <agent>UNIT-1028</agent>
-    <id>134</id>
-    <estimationTimeLeft>-1</estimationTimeLeft>
-    <statusDescriptor>
-    <myText>Success</myText>
-    <myStatus reference="../../../../../../../projects/Project/status"/>
-    </statusDescriptor>
-    <personal>true</personal>
-    <number>64</number>
-    <configuration reference="../../../../../../projects/Project[2]/configs/Configuration[2]"/>
-    <myDuration>3</myDuration>
-</Build>`;
-
-const nonPersonalBuildObjXml = `<Build>
-    <start>1500628294505</start>
-    <finish>1500628298430</finish>
-    <agent>UNIT-1028</agent>
-    <id>134</id>
-    <estimationTimeLeft>-1</estimationTimeLeft>
-    <statusDescriptor>
-    <myText>Success</myText>
-    <myStatus reference="../../../../../../../projects/Project/status"/>
-    </statusDescriptor>
-    <personal>false</personal>
-    <number>64</number>
-    <configuration reference="../../../../../../projects/Project[2]/configs/Configuration[2]"/>
-    <myDuration>3</myDuration>
-</Build>`;

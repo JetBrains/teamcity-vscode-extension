@@ -1,18 +1,18 @@
 "use strict";
 
-import { assert } from "chai";
-import { ByteWriter } from "../../src/utils/bytewriter";
+import {assert} from "chai";
+import {ByteWriter} from "../../src/utils/bytewriter";
 
 suite("ByteWriter", () => {
-    test("should verify writeUTF with empty string", function() {
-        const buffer : Buffer = new Buffer(2);
+    test("should verify writeUTF with empty string", function () {
+        const buffer: Buffer = new Buffer(2);
         buffer[0] = 0;
         buffer[1] = 0;
         assert.isTrue(areBuffersEqual(ByteWriter.writeUTF(""), buffer));
     });
 
-    test("should verify writeUTF with not empty string", function() {
-        const buffer : Buffer = new Buffer(19);
+    test("should verify writeUTF with not empty string", function () {
+        const buffer: Buffer = new Buffer(19);
         buffer[0] = 0;
         buffer[1] = 17; // Two first bytes are the size of the byte array
         buffer[2] = 58;
@@ -35,8 +35,8 @@ suite("ByteWriter", () => {
         assert.isTrue(areBuffersEqual(ByteWriter.writeUTF(":/qwerty2! |+=?&$"), buffer));
     });
 
-    test("should verify writeByte with correct number", function() {
-        const buffer : Buffer = new Buffer(1);
+    test("should verify writeByte with correct number", function () {
+        const buffer: Buffer = new Buffer(1);
         buffer[0] = 0;
         assert.isTrue(areBuffersEqual(ByteWriter.writeByte(0), buffer));
         buffer[0] = 1;
@@ -47,8 +47,8 @@ suite("ByteWriter", () => {
         assert.isTrue(areBuffersEqual(ByteWriter.writeByte(257), buffer));
     });
 
-    test("should verify longToByteArray with correct number", function() {
-        const buffer : Buffer = new Buffer(8);
+    test("should verify longToByteArray with correct number", function () {
+        const buffer: Buffer = new Buffer(8);
         buffer[0] = 0;
         buffer[1] = 0;
         buffer[2] = 0;
@@ -61,7 +61,7 @@ suite("ByteWriter", () => {
     });
 });
 
-function areBuffersEqual(bufA : Buffer, bufB : Buffer) {
+function areBuffersEqual(bufA: Buffer, bufB: Buffer) {
     const len = bufA.length;
     if (len !== bufB.length) {
         return false;

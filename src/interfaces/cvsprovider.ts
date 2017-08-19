@@ -1,27 +1,29 @@
 "use strict";
 
-import { CvsLocalResource } from "../entities/leaveitems";
-import { CheckinInfo, MappingFileContent, ReadableSet } from "../utils/interfaces";
+import {MappingFileContent} from "./MappingFileContent";
+import {CheckInInfo} from "./CheckinInfo";
+import {CvsLocalResource} from "../entities/cvslocalresource";
+import {ReadableSet} from "./ReadableSet";
 
 export interface CvsSupportProvider {
 
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    getFormattedFilenames() : Promise<string[]>;
+    getFormattedFileNames(): Promise<string[]>;
 
     /**
      * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
      * @return content of the ".teamcity-mappings.properties" file
      */
-    generateMappingFileContent() : Promise<MappingFileContent>;
+    generateMappingFileContent(): Promise<MappingFileContent>;
 
     /**
      * This method provides required info for provisioning remote run and post-commit execution.
-     * (Obly for git) In case of git there are no workItemIds
-     * @return CheckinInfo object
+     * (Only for git) In case of git there are no workItemIds
+     * @return CheckInInfo object
      */
-    getRequiredCheckinInfo() : Promise<CheckinInfo>;
+    getRequiredCheckInInfo(): Promise<CheckInInfo>;
 
     /**
      * Commit all staged/changed (at the moment of a post-commit) files with new content.
@@ -33,12 +35,12 @@ export interface CvsSupportProvider {
     /**
      * Sets files for remote run, when user wants to provide them manually.
      */
-    setFilesForRemoteRun(resources : CvsLocalResource[]);
+    setFilesForRemoteRun(resources: CvsLocalResource[]);
 
     /**
      * For some CVSes staged files and files at the file system aren't the same.
      * If they are not the same this method @returns ReadStream with content of the specified file.
-     * Otherwise this method @returns undefind and we can use a content of the file from the file system.
+     * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
-    getStagedFileContentStream(fileAbsPath : string) : Promise<ReadableSet> | undefined;
+    getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> | undefined;
 }

@@ -1,14 +1,14 @@
 "use strict";
 
 import * as path from "path";
-import { assert } from "chai";
-import { workspace } from "vscode";
-import { FileController } from "../../src/utils/filecontroller";
-import { AsyncWriteStream } from "../../src/entities/writestream";
+import {assert} from "chai";
+import {workspace} from "vscode";
+import {FileController} from "../../src/utils/filecontroller";
+import {AsyncWriteStream} from "../../src/entities/writestream";
 
 suite("WriteStream", () => {
-    test("should verify typical usecase for asyncWriteStream", function(done) {
-        const buffer : Buffer = new Buffer(19);
+    test("should verify typical useCase for asyncWriteStream", function (done) {
+        const buffer: Buffer = new Buffer(19);
         buffer[0] = 0;
         buffer[1] = 17; // Two first bytes are the size of the byte array
         buffer[2] = 58;
@@ -29,11 +29,11 @@ suite("WriteStream", () => {
         buffer[17] = 38;
         buffer[18] = 36;
         //TODO: move to the temp folder
-        const fileAbsPath : string = path.join(__dirname, ".testPatch");
-        const asyncWriteStream : AsyncWriteStream = new AsyncWriteStream(fileAbsPath);
+        const fileAbsPath: string = path.join(__dirname, ".testPatch");
+        const asyncWriteStream: AsyncWriteStream = new AsyncWriteStream(fileAbsPath);
         asyncWriteStream.write(buffer).then(() => {
             asyncWriteStream.dispose();
-            FileController.writeFileAsync(fileAbsPath).then((data : Buffer) => {
+            FileController.writeFileAsync(fileAbsPath).then((data: Buffer) => {
                 FileController.removeFileAsync(fileAbsPath).then(() => {
                     if (areBuffersEqual(buffer, data)) {
                         done();
@@ -47,7 +47,7 @@ suite("WriteStream", () => {
 
 });
 
-function areBuffersEqual(bufA : Buffer, bufB : Buffer) {
+function areBuffersEqual(bufA: Buffer, bufB: Buffer) {
     const len = bufA.length;
     if (len !== bufB.length) {
         return false;

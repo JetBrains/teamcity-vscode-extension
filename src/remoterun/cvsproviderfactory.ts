@@ -1,14 +1,14 @@
 "use strict";
 
-import { Logger } from "../utils/logger";
-import { GitUtils } from "../utils/gitutils";
-import { TfsUtils } from "../utils/tfsutils";
-import { CvsInfo } from "../utils/interfaces";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { CvsSupportProvider } from "./cvsprovider";
-import { GitSupportProvider } from "./gitprovider";
-import { TfsSupportProvider } from "./tfsprovider";
-import { CvsProviderTypes } from "../utils/constants";
+import {Logger} from "../utils/logger";
+import {GitUtils} from "../utils/gitutils";
+import {TfsUtils} from "../utils/tfsutils";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {CvsSupportProvider} from "../interfaces/cvsprovider";
+import {GitSupportProvider} from "./gitprovider";
+import {TfsSupportProvider} from "./tfsprovider";
+import {CvsProviderTypes} from "../utils/constants";
+import {CvsInfo} from "../interfaces/CvsInfo";
 
 export class CvsSupportProviderFactory {
 
@@ -17,9 +17,9 @@ export class CvsSupportProviderFactory {
      * @return an appropriate CvsSupportProvider implementation.
      * When particularProvider != undefined, this method returns requested CvsProvide, but without initialization;
      */
-    public static async getCvsSupportProvider() : Promise<CvsSupportProvider> {
-        const gitCvsInfo : CvsInfo = await GitUtils.collectInfo();
-        const gitIsActive : boolean = gitCvsInfo.isChanged;
+    public static async getCvsSupportProvider(): Promise<CvsSupportProvider> {
+        const gitCvsInfo: CvsInfo = await GitUtils.collectInfo();
+        const gitIsActive: boolean = gitCvsInfo.isChanged;
         if (gitIsActive) {
             Logger.logDebug(`CvsSupportProviderFactory#getCvsSupportProvider: git is an activeCvs`);
             const getProvider = new GitSupportProvider(gitCvsInfo.path);
@@ -27,8 +27,8 @@ export class CvsSupportProviderFactory {
             return getProvider;
         }
 
-        const tfsCvsInfo : CvsInfo = await TfsUtils.collectInfo();
-        const tfsIsActive : boolean = tfsCvsInfo.isChanged;
+        const tfsCvsInfo: CvsInfo = await TfsUtils.collectInfo();
+        const tfsIsActive: boolean = tfsCvsInfo.isChanged;
         if (tfsIsActive) {
             Logger.logDebug(`CvsSupportProviderFactory#getCvsSupportProvider: tfs is an activeCvs`);
             const tfsProvider = new TfsSupportProvider(tfsCvsInfo.path);
@@ -41,16 +41,16 @@ export class CvsSupportProviderFactory {
     }
 
     /**
-     * This method is trying to find the problem from hightest prioritet.
+     * This method is trying to find the problem from highest priority.
      * Problem hierarchy:
-     * 1. There is no cvs intalled
+     * 1. There is no cvs installed
      * 2. Incompatible cvs version
      * 3. RootPath isn't a cvs repo path
      * 4. There are no staged changes
      */
-    private static detectProblems( ...cvsInfoArray : CvsInfo[]) : string {
-        let errMsg : string = undefined;
-        const problemCvs : CvsProviderTypes[] = [];
+    private static detectProblems(...cvsInfoArray: CvsInfo[]): string {
+        let errMsg: string = undefined;
+        const problemCvs: CvsProviderTypes[] = [];
         if (!cvsInfoArray && cvsInfoArray.length === 0) {
             Logger.logDebug(`CvsSupportProviderFactory#detectProblems: cvsInfoArray is empty`);
             return;
@@ -82,11 +82,11 @@ export class CvsSupportProviderFactory {
             return errMsg;
         }
 
-        const proplemCvsMsg : string[] = [];
+        const problemCvsMsg: string[] = [];
         cvsInfoArray.forEach((cvsInfo) => {
             if (cvsInfo.versionErrorMsg !== undefined) {
                 problemCvs.push(cvsInfo.cvsType);
-                proplemCvsMsg.push(cvsInfo.versionErrorMsg);
+                problemCvsMsg.push(cvsInfo.versionErrorMsg);
             }
         });
 
@@ -96,7 +96,7 @@ export class CvsSupportProviderFactory {
             } else {
                 errMsg = `There are problems with ${problemCvs.join("/")} versions`;
             }
-            Logger.logWarning(`CvsSupportProviderFactory#detectProblems: ${errMsg}: ${proplemCvsMsg.join("; ")}`);
+            Logger.logWarning(`CvsSupportProviderFactory#detectProblems: ${errMsg}: ${problemCvsMsg.join("; ")}`);
             return errMsg;
         }
 

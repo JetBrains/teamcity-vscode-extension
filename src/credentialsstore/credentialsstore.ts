@@ -1,20 +1,21 @@
 "use strict";
 
-import { Logger } from "../utils/logger";
-import { Credentials } from "./credentials";
-import { TCApiProvider, TCRestApiProvider } from "../teamcityapi/tcapiprovider";
+import {Logger} from "../utils/logger";
+import {Credentials} from "./credentials";
+import {TCApiProvider} from "../interfaces/TCApiProvider";
+import {TCRestApiProvider} from "../teamcityapi/TCRestApiProvider";
 
 export class CredentialsStore {
-    private _credentials : Credentials;
+    private _credentials: Credentials;
 
     /**
      * @param credentials - user credential
      * @return the result of a credential check
      */
-    public async setCredential(credentials : Credentials) : Promise<boolean> {
+    public async setCredential(credentials: Credentials): Promise<boolean> {
         // Should credential is not undefined, it will be updated
-        const tcapiprovider : TCApiProvider = new TCRestApiProvider();
-        const checkResult = await tcapiprovider.checkCredential(credentials);
+        const tcApiProvider: TCApiProvider = new TCRestApiProvider();
+        const checkResult = await tcApiProvider.checkCredential(credentials);
         if (checkResult) {
             this._credentials = credentials;
             Logger.logInfo(`User ${credentials.user} was passed the credential check`);
@@ -24,13 +25,13 @@ export class CredentialsStore {
         return false;
     }
 
-    public getCredential() : Credentials {
+    public getCredential(): Credentials {
         return this._credentials;
     }
 
-    public async removeCredential() : Promise<void> {
+    public async removeCredential(): Promise<void> {
         if (this._credentials) {
-            Logger.logInfo(`The credentials for ${this._credentials.user} will be deleted from the credentialstore`);
+            Logger.logInfo(`The credentials for ${this._credentials.user} will be deleted from the CredentialsStore`);
             this._credentials = undefined;
         }
     }

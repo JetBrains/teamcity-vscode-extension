@@ -2,31 +2,31 @@
 
 import xmlrpc = require("xmlrpc");
 import forge = require("node-forge");
-import { Logger } from "../utils/logger";
-import { Strings } from "../utils/constants";
-import { Constants } from "../utils/constants";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { Credentials } from "../credentialsstore/credentials";
+import {Logger} from "../utils/logger";
+import {Constants} from "../utils/constants";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {MessageConstants} from "../utils/MessageConstants";
+import {Credentials} from "../credentialsstore/credentials";
 const BigInteger = forge.jsbn.BigInteger;
 
 export class XmlRpcProvider {
     private readonly _client;
 
-    constructor(serverURL : string) {
-        this._client = xmlrpc.createClient( { url: serverURL + "/RPC2", cookies: true } );
+    constructor(serverURL: string) {
+        this._client = xmlrpc.createClient({url: serverURL + "/RPC2", cookies: true});
     }
 
     /**
-     * @return XmlRpc cliend that was created at the constructor.
+     * @return XmlRpc client that was created at the constructor.
      */
-    protected get client() : any {
+    protected get client(): any {
         return this._client;
     }
 
     /**
      * @return - Promise for RSAPublicKey object from node-forge module.
      */
-    private async getRSAPublicKey() : Promise<any> {
+    private async getRSAPublicKey(): Promise<any> {
         try {
             return new Promise((resolve, reject) => {
                 this._client.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
@@ -36,7 +36,7 @@ export class XmlRpcProvider {
                     }
                     /* tslint:enable:no-null-keyword */
                     const pki = forge.pki;
-                    const keys : string[] = VsCodeUtils.parseValueColonValue(data);
+                    const keys: string[] = VsCodeUtils.parseValueColonValue(data);
 
                     if (!keys || keys.length !== 2) {
                         return reject(err);
@@ -48,20 +48,20 @@ export class XmlRpcProvider {
                 });
             });
         } catch (err) {
-            Logger.logError(`XmlRpcProvider#getRSAPublicKey: caught an error during gettign RSAPublicKEy: ${VsCodeUtils.formatErrorMessage(err)}`);
-            throw new Error(Strings.RCA_PUBLIC_KEY_EXCEPTION);
+            Logger.logError(`XmlRpcProvider#getRSAPublicKey: caught an error during getting RSAPublicKEy: ${VsCodeUtils.formatErrorMessage(err)}`);
+            throw new Error(MessageConstants.RCA_PUBLIC_KEY_EXCEPTION);
         }
     }
 
     /**
      * @param credentials - user credential
      * @return - Promise<any>. In case of success the local XmlRpcClient object should be filled by
-     * received sessionIdKey and userId will be setted to the credential object
+     * received sessionIdKey and userId will be set to the credential object
      */
-    private async authenticate(credentials : Credentials) {
+    private async authenticate(credentials: Credentials) {
         const rsaPublicKey = await this.getRSAPublicKey();
         if (!rsaPublicKey) {
-            throw Strings.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
+            throw MessageConstants.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
         }
         try {
             const pass = credentials.pass;
@@ -75,19 +75,19 @@ export class XmlRpcProvider {
                         return reject(err);
                     }
                     /* tslint:enable:no-null-keyword */
-                    const sessIduserId = VsCodeUtils.parseValueColonValue(data);
-                    if (!sessIduserId || sessIduserId.length !== 2) {
+                    const sessionIdUserId = VsCodeUtils.parseValueColonValue(data);
+                    if (!sessionIdUserId || sessionIdUserId.length !== 2) {
                         return reject(err);
                     }
-                    credentials.userId = sessIduserId[1];
-                    this._client.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessIduserId[0]);
-                    Logger.logDebug(`XmlRpcProvider#authenticate: user id is ${sessIduserId[1]}, session id is ${sessIduserId[0]}`);
+                    credentials.userId = sessionIdUserId[1];
+                    this._client.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessionIdUserId[0]);
+                    Logger.logDebug(`XmlRpcProvider#authenticate: user id is ${sessionIdUserId[1]}, session id is ${sessionIdUserId[0]}`);
                     resolve();
                 });
             });
         } catch (err) {
             Logger.logError(`XmlRpcProvider#authenticate: caught an error during xmlrpc authentication: ${VsCodeUtils.formatErrorMessage(err)}`);
-            throw new Error(Strings.XMLRPC_AUTH_EXCEPTION);
+            throw new Error(MessageConstants.XMLRPC_AUTH_EXCEPTION);
         }
     }
 
@@ -95,7 +95,7 @@ export class XmlRpcProvider {
      * Call an authentication method in case of sessionKey or userId absence
      * @param credentials - user credential
      */
-    protected async authenticateIfRequired(credentials : Credentials) : Promise<void> {
+    protected async authenticateIfRequired(credentials: Credentials): Promise<void> {
         if (!this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) || credentials.userId === undefined) {
             Logger.logDebug("XmlRpcProvider#authenticateIfRequired: authentication is required");
             await this.authenticate(credentials);
@@ -107,12 +107,12 @@ export class XmlRpcProvider {
         }
     }
 
-     /**
-     * The object that provids api for private fields and methods of class.
+    /**
+     * The object that provides api for private fields and methods of class.
      * Use for test purposes only!
      */
-    public getTestObject() : any {
-        const testObject : any = {};
+    public getTestObject(): any {
+        const testObject: any = {};
         testObject.client = this.client;
         return testObject;
     }

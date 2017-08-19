@@ -1,15 +1,30 @@
 "use strict";
 
-import { ProjectItem } from "../entities/projectitem";
-import { CvsLocalResource, BuildConfigItem } from "../entities/leaveitems";
-import { TreeItemCollapsibleState, Uri, TextDocumentContentProvider, CancellationToken, ProviderResult } from "vscode";
-import { ExtensionContext, TreeDataProvider, EventEmitter, TreeItem, Command, Event, workspace, commands } from "vscode";
+import {ProjectItem} from "../entities/projectitem";
+import {
+    CancellationToken,
+    Command,
+    commands,
+    Event,
+    EventEmitter,
+    ExtensionContext,
+    ProviderResult,
+    TextDocumentContentProvider,
+    TreeDataProvider,
+    TreeItem,
+    TreeItemCollapsibleState,
+    Uri,
+    workspace
+} from "vscode";
+
+import {CvsLocalResource} from "../entities/cvslocalresource";
+import {BuildConfigItem} from "../entities/buildconfigitem";
 
 export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
-    private _projects : ProjectItem[] = [];
-    private _resources : CvsLocalResource[] = [];
+    private _projects: ProjectItem[] = [];
+    private _resources: CvsLocalResource[] = [];
 
     public refresh(config?: BuildConfigItem): void {
         if (!config) {
@@ -20,7 +35,7 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     }
 
     public setExplorerContent(content: CvsLocalResource[] | ProjectItem[]) {
-        if (!content || content.length ===  0) {
+        if (!content || content.length === 0) {
             this.setProjects([]);
             this.setResources([]);
             return;
@@ -47,11 +62,11 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     }
 
     /**
-	 * This method detemines which objects will shown inside the TeamCity Build Config section.
-     * It fires every time there is a click on any element on the configExlorer.
-	 */
+     * This method determines which objects will shown inside the TeamCity Build Config section.
+     * It fires every time there is a click on any element on the configExplorer.
+     */
     public getChildren(element?: TreeItem): TreeItem[] | Thenable<TreeItem[]> {
-        if (!element && (!this._projects || this._projects.length === 0) ) {
+        if (!element && (!this._projects || this._projects.length === 0)) {
             return this._resources;
         } else if (!element) {
             return this._projects;
@@ -62,10 +77,10 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     }
 
     /**
-	 * @return - all included build configs for remote run.
-	 */
+     * @return - all included build configs for remote run.
+     */
     public getIncludedBuildConfigs(): BuildConfigItem[] {
-        const result : BuildConfigItem[] = [];
+        const result: BuildConfigItem[] = [];
         this._projects.forEach((project) => {
             project.configs.forEach((configuration) => {
                 if (configuration.isIncluded) {
@@ -77,10 +92,10 @@ export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
     }
 
     /**
-	 * @return - all included resources for remote run.
-	 */
+     * @return - all included resources for remote run.
+     */
     public getInclResources(): CvsLocalResource[] {
-        const result : CvsLocalResource[] = [];
+        const result: CvsLocalResource[] = [];
         this._resources.forEach((resource) => {
             if (resource.isIncluded) {
                 result.push(resource);

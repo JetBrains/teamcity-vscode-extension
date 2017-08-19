@@ -2,42 +2,46 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Logger } from "../utils/logger";
-import { ByteWriter } from "../utils/bytewriter";
-import { VsCodeUtils } from "../utils/vscodeutils";
-import { CvsFileStatusCode } from "../utils/constants";
-import { FileController } from "../utils/filecontroller";
-import { CvsLocalResource } from "../entities/leaveitems";
-import { AsyncWriteStream } from "../entities/writestream";
-import { CvsSupportProvider } from "../remoterun/cvsprovider";
-import { CheckinInfo, MappingFileContent, ReadableSet } from "../utils/interfaces";
+import {Logger} from "./logger";
+import {ByteWriter} from "./bytewriter";
+import {VsCodeUtils} from "./vscodeutils";
+import {CvsFileStatusCode} from "./constants";
+import {FileController} from "./filecontroller";
+import {AsyncWriteStream} from "../entities/writestream";
+import {CvsSupportProvider} from "../interfaces/cvsprovider";
+import {CheckInInfo} from "../interfaces/CheckinInfo";
+import {CvsLocalResource} from "../entities/cvslocalresource";
+import {MappingFileContent} from "../interfaces/MappingFileContent";
+import {ReadableSet} from "../interfaces/ReadableSet";
 const temp = require("temp").track();
 
 export class PatchManager {
-    static _cvsProvider : any;
+    static _cvsProvider: any;
+
     /**
      * This method uses PatchBuilder to write all required info into the patch file
      * @param cvsProvider - CvsProvider object
+     * @param staged - patch content will be taken from staged area
      * @return Promise<string> - absPath of the patch
      */
-    public static async preparePatch(cvsProvider : CvsSupportProvider, staged : boolean = true) : Promise<string> {
-        const checkInInfo : CheckinInfo = await cvsProvider.getRequiredCheckinInfo();
+    public static async preparePatch(cvsProvider: CvsSupportProvider, staged: boolean = true): Promise<string> {
+        const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
         PatchManager._cvsProvider = cvsProvider;
-        const changedFilesNames : CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        const changedFilesNames: CvsLocalResource[] = checkInInfo.cvsLocalResources;
         if (!changedFilesNames) {
             return;
         }
-        const configFileContent : MappingFileContent = await cvsProvider.generateMappingFileContent();
-        const patchBuilder : PatchBuilder = new PatchBuilder();
+        const configFileContent: MappingFileContent = await cvsProvider.generateMappingFileContent();
+        const patchBuilder: PatchBuilder = new PatchBuilder();
         await patchBuilder.init();
         //It's impossible to use forEach loop with await calls
-        for (let i : number = 0; i < changedFilesNames.length; i++) {
-            const absPath : string = changedFilesNames[i].fileAbsPath;
-            const status : CvsFileStatusCode = changedFilesNames[i].status;
-            const relPath : string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
-            const fileExist : boolean = await FileController.exists(absPath);
-            const teamcityFileName : string = `${configFileContent.tcProjectRootPath}/${relPath}`;
-            let fileReadStream : ReadableSet | undefined;
+        for (let i: number = 0; i < changedFilesNames.length; i++) {
+            const absPath: string = changedFilesNames[i].fileAbsPath;
+            const status: CvsFileStatusCode = changedFilesNames[i].status;
+            const relPath: string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
+            const fileExist: boolean = await FileController.exists(absPath);
+            const teamcityFileName: string = `${configFileContent.tcProjectRootPath}/${relPath}`;
+            let fileReadStream: ReadableSet | undefined;
             //When fileReadStream !== undefined we should use the stream.
             try {
                 fileReadStream = staged ? await cvsProvider.getStagedFileContentStream(absPath) : undefined;
@@ -68,9 +72,9 @@ export class PatchManager {
                     break;
                 }
                 case CvsFileStatusCode.RENAMED : {
-                    const prevAbsPath : string = changedFilesNames[i].prevFileAbsPath;
-                    const prevRelPath : string = path.relative(configFileContent.localRootPath, prevAbsPath).replace(/\\/g, "/");
-                    const prevTcFileName : string = `${configFileContent.tcProjectRootPath}/${prevRelPath}`;
+                    const prevAbsPath: string = changedFilesNames[i].prevFileAbsPath;
+                    const prevRelPath: string = path.relative(configFileContent.localRootPath, prevAbsPath).replace(/\\/g, "/");
+                    const prevTcFileName: string = `${configFileContent.tcProjectRootPath}/${prevRelPath}`;
                     await patchBuilder.addDeletedFile(prevTcFileName);
                     if (fileExist) {
                         if (!fileReadStream && fileExist) {
@@ -96,16 +100,16 @@ export class PatchManager {
         return patchBuilder.finishPatching();
     }
 
-    public static async applyPatch(patchAbsPath : string, mappingFileContent : MappingFileContent) : Promise<string> {
-        const patchFileExists : boolean = await FileController.exists(patchAbsPath);
+    public static async applyPatch(patchAbsPath: string, mappingFileContent: MappingFileContent): Promise<string> {
+        const patchFileExists: boolean = await FileController.exists(patchAbsPath);
         if (!patchFileExists) {
             return;
         }
-        fs.open(patchAbsPath, "r", function(err, fd) {
+        fs.open(patchAbsPath, "r", function (err, fd) {
             if (err) {
                 throw err;
             }
-            let readByteCounter : number = 0;
+            let readByteCounter: number = 0;
             const prefixBuffer = new Buffer(1);
             const fileNameLengthBuffer = new Buffer(2);
             const fileLengthBuffer = new Buffer(8);
@@ -118,8 +122,8 @@ export class PatchManager {
                 const fileNameBuffer = new Buffer(fileNameLength);
                 fs.readSync(fd, fileNameBuffer, 0, fileNameLength, readByteCounter);
                 readByteCounter += fileNameLength;
-                const relativePath : string = fileNameBuffer.toString().replace(mappingFileContent.tcProjectRootPath, "");
-                const absPath : string = path.join(mappingFileContent.localRootPath, relativePath);
+                const relativePath: string = fileNameBuffer.toString().replace(mappingFileContent.tcProjectRootPath, "");
+                const absPath: string = path.join(mappingFileContent.localRootPath, relativePath);
                 if (prefixBuffer[0] === 26 || prefixBuffer[0] === 25) {
                     fs.readSync(fd, fileLengthBuffer, 0, 8, readByteCounter);
                     readByteCounter += 8;
@@ -132,10 +136,10 @@ export class PatchManager {
                         start: readByteCounter,
                         end: readByteCounter + fileLength - 1
                     };
-                    const readStream : fs.ReadStream = fs.createReadStream(patchAbsPath, options);
-                    const writeStream : fs.WriteStream = fs.createWriteStream(absPath);
+                    const readStream: fs.ReadStream = fs.createReadStream(patchAbsPath, options);
+                    const writeStream: fs.WriteStream = fs.createWriteStream(absPath);
                     readStream.pipe(writeStream, {end: true});
-                    writeStream.on("end", function() {
+                    writeStream.on("end", function () {
                         Logger.logDebug(`AsyncWriteStream#writeFile: file was successfully added to the patch`);
                     });
                     readByteCounter += fileLength;
@@ -153,23 +157,24 @@ export class PatchManager {
 }
 
 /**
- * Private class to build a patch from checkin info
+ * Private class to build a patch from checkIn info
  */
+/*private*/
 class PatchBuilder {
-    private static readonly DELETE_PREFIX : number = 3;
-    private static readonly END_OF_PATCH_MARK : number = 10;
-    private static readonly RENAME_PREFIX : number = 19;
-    private static readonly REPLACE_PREFIX : number = 25;
-    private static readonly CREATE_PREFIX : number = 26;
-    private _writeSteam : AsyncWriteStream;
-    private _patchAbsPath : string;
+    private static readonly DELETE_PREFIX: number = 3;
+    private static readonly END_OF_PATCH_MARK: number = 10;
+    private static readonly RENAME_PREFIX: number = 19;
+    private static readonly REPLACE_PREFIX: number = 25;
+    private static readonly CREATE_PREFIX: number = 26;
+    private _writeSteam: AsyncWriteStream;
+    private _patchAbsPath: string;
 
     constructor() {
-        Logger.logDebug(`PatchBuilder#constructor: start constract patch`);
+        Logger.logDebug(`PatchBuilder#constructor: start construct patch`);
     }
 
-    public init() : Promise<void> {
-        Logger.logDebug(`PatchBuilder#init: start constract patch`);
+    public init(): Promise<void> {
+        Logger.logDebug(`PatchBuilder#init: start construct patch`);
         return new Promise<void>((resolve, reject) => {
             temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
                 if (err) {
@@ -190,7 +195,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
-    public async addAddedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
+    public async addAddedFile(tcFileName: string, absLocalPath: string): Promise<void> {
         return this.addFile(tcFileName, absLocalPath, PatchBuilder.CREATE_PREFIX);
     }
 
@@ -199,7 +204,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param readStream - stream with a content of the added file
      */
-    public async addAddedStreamedFile(tcFileName: string, readStream : ReadableSet) : Promise<void> {
+    public async addAddedStreamedFile(tcFileName: string, readStream: ReadableSet): Promise<void> {
         return this.addStreamedFile(tcFileName, readStream, PatchBuilder.CREATE_PREFIX);
     }
 
@@ -208,7 +213,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
-    public async addReplacedFile(tcFileName: string, absLocalPath : string) : Promise<void> {
+    public async addReplacedFile(tcFileName: string, absLocalPath: string): Promise<void> {
         return this.addFile(tcFileName, absLocalPath, PatchBuilder.REPLACE_PREFIX);
     }
 
@@ -217,7 +222,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param readStream - stream with a content of the added file
      */
-    public async addReplacedStreamedFile(tcFileName: string, readStream : ReadableSet) : Promise<void> {
+    public async addReplacedStreamedFile(tcFileName: string, readStream: ReadableSet): Promise<void> {
         return this.addStreamedFile(tcFileName, readStream, PatchBuilder.REPLACE_PREFIX);
     }
 
@@ -227,10 +232,10 @@ class PatchBuilder {
      * @param absLocalPath - absolute path to the file in the system
      * @param prefix - prefix which specifies the operation, eg. CREATE/REPLACE
      */
-    private async addFile(tcFileName: string, absLocalPath : string, prefix : number) : Promise<void> {
+    private async addFile(tcFileName: string, absLocalPath: string, prefix: number): Promise<void> {
         try {
-            const bytePrefix : Buffer = ByteWriter.writeByte(prefix);
-            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
+            const bytePrefix: Buffer = ByteWriter.writeByte(prefix);
+            const byteFileName: Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
             await this._writeSteam.writeFile(absLocalPath);
         } catch (err) {
@@ -241,13 +246,13 @@ class PatchBuilder {
     /**
      * This method adds to the patch any not deleted file
      * @param tcFileName - fileName at the TeamCity format
-     * @param absLocalPath - absolute path to the file in the system
+     * @param readStream - stream with a content of the added file
      * @param prefix - prefix which specifies the operation, eg. CREATE/REPLACE
      */
-    private async addStreamedFile(tcFileName: string, readStream : ReadableSet, prefix : number) : Promise<void> {
+    private async addStreamedFile(tcFileName: string, readStream: ReadableSet, prefix: number): Promise<void> {
         try {
-            const bytePrefix : Buffer = ByteWriter.writeByte(prefix);
-            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
+            const bytePrefix: Buffer = ByteWriter.writeByte(prefix);
+            const byteFileName: Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
             await this._writeSteam.writeStreamedFile(readStream);
         } catch (err) {
@@ -255,15 +260,17 @@ class PatchBuilder {
         }
     }
 
-     /**
+    /**
+     * @Deprecated - use addDeletedFile/addAddedFile instead
      * This method adds to the patch a renamed file
      * @param tcFileName - fileName at the TeamCity format
+     * @param prevTcFileName - previous pileName at the TeamCity format
      */
     public async addRenamedFile(tcFileName: string, prevTcFileName: string) {
         try {
-            const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.RENAME_PREFIX);
-            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
-            const bytePrevFileName : Buffer = ByteWriter.writeUTF(prevTcFileName);
+            const bytePrefix: Buffer = ByteWriter.writeByte(PatchBuilder.RENAME_PREFIX);
+            const byteFileName: Buffer = ByteWriter.writeUTF(tcFileName);
+            const bytePrevFileName: Buffer = ByteWriter.writeUTF(prevTcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, bytePrevFileName, byteFileName]));
         } catch (err) {
             Logger.logError(`CustomPatchSender#addDeletedFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
@@ -276,8 +283,8 @@ class PatchBuilder {
      */
     public async addDeletedFile(tcFileName: string) {
         try {
-            const bytePrefix : Buffer = ByteWriter.writeByte(PatchBuilder.DELETE_PREFIX);
-            const byteFileName : Buffer = ByteWriter.writeUTF(tcFileName);
+            const bytePrefix: Buffer = ByteWriter.writeByte(PatchBuilder.DELETE_PREFIX);
+            const byteFileName: Buffer = ByteWriter.writeUTF(tcFileName);
             await this._writeSteam.write(Buffer.concat([bytePrefix, byteFileName]));
         } catch (err) {
             Logger.logError(`CustomPatchSender#addDeletedFile: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
@@ -290,10 +297,10 @@ class PatchBuilder {
      * - dispose writeStream
      * @return absPath of the patch
      */
-    public async finishPatching() : Promise<string> {
+    public async finishPatching(): Promise<string> {
         try {
-            const byteEOPMark : Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
-            const byteEmptyLine : Buffer = ByteWriter.writeUTF("");
+            const byteEOPMark: Buffer = ByteWriter.writeByte(PatchBuilder.END_OF_PATCH_MARK);
+            const byteEmptyLine: Buffer = ByteWriter.writeUTF("");
             await this._writeSteam.write(Buffer.concat([byteEOPMark, byteEmptyLine]));
             this._writeSteam.dispose();
         } catch (err) {

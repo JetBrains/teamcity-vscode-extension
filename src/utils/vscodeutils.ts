@@ -1,41 +1,41 @@
 "use strict";
 
-import fs = require("fs");
-import pako = require("pako");
-import XHR = require("xmlhttprequest");
-import { Logger } from "../utils/logger";
-import { Strings } from "../utils/constants";
-import { RestHeader } from "../utils/interfaces";
-import { window, MessageItem, workspace } from "vscode";
-import { Credentials } from "../credentialsstore/credentials";
-import { ChangeItemProxy, BuildItemProxy } from "../entities/summarydata";
+import * as pako from "pako";
+import * as XHR from "xmlhttprequest";
+import {Logger} from "./logger";
+import {MessageItem, window, workspace} from "vscode";
+import {Credentials} from "../credentialsstore/credentials";
+import {MessageConstants} from "./MessageConstants";
+import {RestHeader} from "../interfaces/RestHeader";
+import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {BuildItemProxy} from "../entities/BuildItemProxy";
 
 export class VsCodeUtils {
 
-    public static async showErrorMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+    public static async showErrorMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return await window.showErrorMessage(messageToDisplay, ...messageItems);
     }
 
-    public static async showInfoMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+    public static async showInfoMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return await window.showInformationMessage(messageToDisplay, ...messageItems);
     }
 
-    public static async showWarningMessage(messageToDisplay: string, ...messageItems : MessageItem[]) : Promise<MessageItem> {
+    public static async showWarningMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return await window.showWarningMessage(messageToDisplay, ...messageItems);
     }
 
     public static async displayNoCredentialsMessage(): Promise<void> {
-        const displayError: string = Strings.NO_CREDENTIALS_RUN_SIGNIN;
+        const displayError: string = MessageConstants.NO_CREDENTIALS_RUN_SIGNIN;
         VsCodeUtils.showErrorMessage(displayError);
     }
 
     public static async displayNoSelectedConfigsMessage(): Promise<void> {
-        const displayError: string = Strings.NO_CONFIGS_RUN_REMOTERUN;
+        const displayError: string = MessageConstants.NO_CONFIGS_RUN_REMOTERUN;
         VsCodeUtils.showErrorMessage(displayError);
     }
 
     public static async displayNoTccUtilMessage(): Promise<void> {
-        const displayError: string = Strings.NO_TCC_UTIL;
+        const displayError: string = MessageConstants.NO_TCC_UTIL;
         VsCodeUtils.showErrorMessage(displayError);
     }
 
@@ -43,8 +43,8 @@ export class VsCodeUtils {
      * @param value - any string in the format ${value1:value2}
      * @return - an array in the format ${[value1, value2]}
      */
-    public static parseValueColonValue(value : string) : string[] {
-        const KEY_SEPARATOR : string = ":";
+    public static parseValueColonValue(value: string): string[] {
+        const KEY_SEPARATOR: string = ":";
         if (value === undefined || !value.indexOf(KEY_SEPARATOR)) {
             Logger.logWarning(`VsCodeUtils#parseValueColonValue: value ${value} wasn't parsed`);
             return undefined;
@@ -53,51 +53,54 @@ export class VsCodeUtils {
         return keys.length !== 2 ? undefined : keys;
     }
 
-    public static gzip2Str(gzip : Uint8Array[]) : string {
-        Logger.logDebug(`VsCodeUtils#gzip2Str: starts unziping gzip`);
-        const buffer : string[] = [];
+    public static gzip2Str(gzip: Uint8Array[]): string {
+        Logger.logDebug(`VsCodeUtils#gzip2Str: starts unzipping gzip`);
+        const buffer: string[] = [];
         // Pako magic
-        const inflatedGzip : Uint16Array = pako.inflate(gzip);
-        // Convert gunzipped byteArray back to ascii string:
-        for (let i : number = 0; i < inflatedGzip.byteLength; i = i + 200000) {
+        const inflatedGzip: Uint16Array = pako.inflate(gzip);
+        // Convert gzipped byteArray back to ascii string:
+        for (let i: number = 0; i < inflatedGzip.byteLength; i = i + 200000) {
             /*RangeError: Maximum call stack size exceeded when i is between 250000 and 260000*/
             const topIndex = Math.min(i + 200000, inflatedGzip.byteLength);
             /* tslint:disable:no-null-keyword */
             buffer.push(String.fromCharCode.apply(null, new Uint16Array(inflatedGzip.slice(i, topIndex))));
             /* tslint:enable:no-null-keyword */
         }
-        Logger.logDebug(`VsCodeUtils#gzip2Str: finishes unziping gzip`);
+        Logger.logDebug(`VsCodeUtils#gzip2Str: finishes unzipping gzip`);
         return buffer.join("");
     }
 
-        /**
+    /**
      * @param method - type of request (GET, POST, ...)
      * @param url - url of request
      * @param credentials? - Credential for basic authorization
+     * @param data - POST content
+     * @param additionalArgs - additional args in the url
+     * @param additionalHeaders - additional headers =)
      * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
      */
-    public static makeRequest(  method : string,
-                                url : string,
-                                credentials? : Credentials,
-                                data? : Buffer | String,
-                                additionalArgs? : string[],
-                                additionalHeaders? : RestHeader[]) : Promise<string> {
+    public static makeRequest(method: string,
+                              url: string,
+                              credentials?: Credentials,
+                              data?: Buffer | String,
+                              additionalArgs?: string[],
+                              additionalHeaders?: RestHeader[]): Promise<string> {
         Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
         //Add additional args to url
         if (additionalArgs) {
-            const urlBulder : string[] = [];
-            urlBulder.push(url);
-            urlBulder.push("?");
+            const urlBuilder: string[] = [];
+            urlBuilder.push(url);
+            urlBuilder.push("?");
             additionalArgs.forEach((arg) => {
-                urlBulder.push(arg);
-                urlBulder.push("&");
+                urlBuilder.push(arg);
+                urlBuilder.push("&");
             });
-            url = urlBulder.join("");
+            url = urlBuilder.join("");
         }
 
         const XMLHttpRequest = XHR.XMLHttpRequest;
         return new Promise(function (resolve, reject) {
-            const request : XHR.XMLHttpRequest = new XMLHttpRequest();
+            const request: XHR.XMLHttpRequest = new XMLHttpRequest();
             request.open(method, url, true);
             if (credentials) {
                 Logger.logDebug(`VsCodeUtils#makeRequest: credentials: userName ${credentials.user}, serverUrl ${credentials.serverURL}`);
@@ -141,17 +144,17 @@ export class VsCodeUtils {
      * @param change - changeItemProxy
      * @param credentials - user credential. Required to get serverUrl.
      */
-    public static formMessage(change : ChangeItemProxy, credentials : Credentials) : string {
+    public static formMessage(change: ChangeItemProxy, credentials: Credentials): string {
         const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
-        const messageSB : string[] = [];
+        const messageSB: string[] = [];
         messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
-        const builds : BuildItemProxy[] = change.builds;
+        const builds: BuildItemProxy[] = change.builds;
         if (builds) {
             builds.forEach((build) => {
                 const buildPrefix = build.isPersonal ? "Personal build" : "Build";
                 const buildChangeUrl = `${credentials.serverURL}/viewLog.html?buildId=${build.buildId}`;
                 if (build.buildId !== -1) {
-                    messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More detales: ${buildChangeUrl}`);
+                    messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More details: ${buildChangeUrl}`);
                 }
             });
         }
@@ -159,14 +162,14 @@ export class VsCodeUtils {
     }
 
     /**
-     * Prepares an error for writting into log
+     * Prepares an error for writing into log
      * @param err - an error
      */
-    public static formatErrorMessage(err) : string {
+    public static formatErrorMessage(err): string {
         if (!err || !err.message) {
             return "";
         }
-        let formattedMsg : string = err.message;
+        let formattedMsg: string = err.message;
         if (err.stderr) {
             formattedMsg = `${formattedMsg} ${err.stderr}`;
         }
@@ -198,8 +201,8 @@ export class VsCodeUtils {
     /**
      * This method generates uniq UUID in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".
      */
-    public static uuidv4() : string {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    public static uuidv4(): string {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
             // tslint:disable-next-line:no-bitwise
             const r = Math.random() * 16 | 0;
             // tslint:disable-next-line:no-bitwise
@@ -211,7 +214,7 @@ export class VsCodeUtils {
     /**
      * @param ms - Time of sleep in milliseconds
      */
-    public static sleep(ms : number) {
+    public static sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
