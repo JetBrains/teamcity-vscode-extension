@@ -6,51 +6,17 @@ export class ByteWriter {
 
     public static writeUTF(str: string): Buffer {
         Logger.logDebug(`ByteWriter#writeUTF: writing str ${str}`);
-        const strlen: number = str.length;
-        let utflen: number = 0;
-        let count: number = 0;
-        for (let i = 0; i < strlen; i++) {
-            const c: number = str.charCodeAt(i);
-            if ((c >= 0x0001) && (c <= 0x007F)) {
-                utflen++;
-            } else if (c > 0x07FF) {
-                utflen += 3;
-            } else {
-                utflen += 2;
-            }
-        }
-        if (utflen > 65535) {
-            Logger.logError(`ByteWriter#writeUTF: UTF encoding: encoded string too long: ${utflen} bytes`);
-            throw new Error(`UTF encoding: encoded string too long: ${utflen} bytes`);
-        }
-        Logger.logDebug(`ByteWriter#writeUTF: UTF length is ${utflen}`);
-        const byteArr = new Buffer(utflen + 2);
         // tslint:disable:no-bitwise
-        byteArr[count++] = ((utflen >> 8) & 0xFF);
-        byteArr[count++] = ((utflen >> 0) & 0xFF);
-        let i: number;
-        for (i = 0; i < strlen; i++) {
-            const c: number = str.charCodeAt(i);
-            if (!((c >= 0x0001) && (c <= 0x007F))) {
-                break;
-            }
-            byteArr[count++] = c;
+        const strlen: number = str.length;
+        if (strlen > 65535) {
+            Logger.logError(`ByteWriter#writeUTF: UTF encoding: encoded string too long: ${strlen} bytes`);
+            throw new Error(`UTF encoding: encoded string too long: ${strlen} bytes`);
         }
-
-        for (; i < strlen; i++) {
-            const c: number = str.charCodeAt(i);
-            if ((c >= 0x0001) && (c <= 0x007F)) {
-                byteArr[count++] = c;
-            } else if (c > 0x07FF) {
-                byteArr[count++] = (0xE0 | ((c >> 12) & 0x0F));
-                byteArr[count++] = (0x80 | ((c >> 6) & 0x3F));
-                byteArr[count++] = (0x80 | ((c >> 0) & 0x3F));
-            } else {
-                byteArr[count++] = (0xC0 | ((c >> 6) & 0x1F));
-                byteArr[count++] = (0x80 | ((c >> 0) & 0x3F));
-            }
-        }
-        return byteArr;
+        Logger.logDebug(`ByteWriter#writeUTF: UTF length is ${strlen}`);
+        const byteArrLength = new Buffer(2);
+        byteArrLength[0] = ((strlen >> 8) & 0xFF);
+        byteArrLength[1] = ((strlen >> 0) & 0xFF);
+        return Buffer.concat([byteArrLength, Buffer.from(str)]);
     }
 
     public static writeByte(code: number): Buffer {

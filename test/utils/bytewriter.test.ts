@@ -12,6 +12,7 @@ suite("ByteWriter", () => {
     });
 
     test("should verify writeUTF with not empty string", function () {
+        const testName = ":/qwerty2! |+=?&$";
         const buffer: Buffer = new Buffer(19);
         buffer[0] = 0;
         buffer[1] = 17; // Two first bytes are the size of the byte array
@@ -32,7 +33,7 @@ suite("ByteWriter", () => {
         buffer[16] = 63;
         buffer[17] = 38;
         buffer[18] = 36;
-        assert.isTrue(areBuffersEqual(ByteWriter.writeUTF(":/qwerty2! |+=?&$"), buffer));
+        assert.isTrue(areBuffersEqual(ByteWriter.writeUTF(testName), buffer));
     });
 
     test("should verify writeByte with correct number", function () {
