@@ -53,10 +53,6 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
      * @return - Array of all suitable Build Config Ids.
      */
     private async requestConfigIds(serverPaths: string[]): Promise<string[]> {
-        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-            Logger.logError("XmlRpcBuildConfigResolver#requestConfigIds: user is not authorized. Session key is empty.");
-            throw new Error("Something went wrong. Try to signIn again.");
-        }
         //Sometimes Server Path contains incorrect backslash symbols.
         const changedFiles: string[] = [];
         serverPaths.forEach((row) => {
@@ -84,10 +80,6 @@ export class XmlRpcBuildConfigResolver extends XmlRpcProvider implements BuildCo
      * @return - list of ProjectItems that contain related buildConfigs.
      */
     private async getRelatedProjects(configurationId: string[]): Promise<ProjectItem[]> {
-        if (this.client.getCookie(Constants.XMLRPC_SESSIONID_KEY) === undefined) {
-            Logger.logError("XmlRpcBuildConfigResolver#requestConfigIds: user is not authorized. Session key is empty.");
-            throw new Error("Something went wrong. Try to signIn again.");
-        }
         try {
             return new Promise<ProjectItem[]>((resolve, reject) => {
                 this.client.methodCall("RemoteBuildServer2.getRelatedProjects", [configurationId], (err, buildsXml) => {
