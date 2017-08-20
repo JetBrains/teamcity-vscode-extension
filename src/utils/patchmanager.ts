@@ -4,9 +4,9 @@ import * as fs from "fs";
 import * as path from "path";
 import {Logger} from "./logger";
 import {ByteWriter} from "./bytewriter";
+import * as fs_async from "async-file";
 import {VsCodeUtils} from "./vscodeutils";
 import {CvsFileStatusCode} from "./constants";
-import {FileController} from "./filecontroller";
 import {AsyncWriteStream} from "../entities/writestream";
 import {CvsSupportProvider} from "../interfaces/cvsprovider";
 import {CheckInInfo} from "../interfaces/CheckinInfo";
@@ -39,7 +39,7 @@ export class PatchManager {
             const absPath: string = changedFilesNames[i].fileAbsPath;
             const status: CvsFileStatusCode = changedFilesNames[i].status;
             const relPath: string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
-            const fileExist: boolean = await FileController.exists(absPath);
+            const fileExist: boolean = await fs_async.exists(absPath);
             const teamcityFileName: string = `${configFileContent.tcProjectRootPath}/${relPath}`;
             let fileReadStream: ReadableSet | undefined;
             //When fileReadStream !== undefined we should use the stream.
@@ -101,7 +101,7 @@ export class PatchManager {
     }
 
     public static async applyPatch(patchAbsPath: string, mappingFileContent: MappingFileContent): Promise<string> {
-        const patchFileExists: boolean = await FileController.exists(patchAbsPath);
+        const patchFileExists: boolean = await fs_async.exists(patchAbsPath);
         if (!patchFileExists) {
             return;
         }
@@ -144,7 +144,7 @@ export class PatchManager {
                     });
                     readByteCounter += fileLength;
                 } else if (prefixBuffer[0] === 3) {
-                    FileController.removeFileAsync(absPath);
+                    fs_async.unlink(absPath);
                 } else {
                     console.log(prefixBuffer);
                 }

@@ -3,7 +3,7 @@
 import * as path from "path";
 import {assert} from "chai";
 import {workspace} from "vscode";
-import {FileController} from "../../src/utils/filecontroller";
+import * as fs_async from "async-file";
 import {AsyncWriteStream} from "../../src/entities/writestream";
 
 suite("WriteStream", () => {
@@ -33,16 +33,16 @@ suite("WriteStream", () => {
         const asyncWriteStream: AsyncWriteStream = new AsyncWriteStream(fileAbsPath);
         asyncWriteStream.write(buffer).then(() => {
             asyncWriteStream.dispose();
-            FileController.writeFileAsync(fileAbsPath).then((data: Buffer) => {
-                FileController.removeFileAsync(fileAbsPath).then(() => {
+            fs_async.readFile(fileAbsPath).then((data: Buffer) => {
+                fs_async.unlink(fileAbsPath).then(() => {
                     if (areBuffersEqual(buffer, data)) {
                         done();
                     } else {
                         done("File content is incorrect");
                     }
-                });
-            });
-        });
+                }).catch((err) => done(err));
+            }).catch((err) => done(err));
+        }).catch((err) => done(err));
     });
 
 });
