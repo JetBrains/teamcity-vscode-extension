@@ -48,7 +48,10 @@ export class AsyncWriteStream implements Disposable {
                 Logger.logDebug(`AsyncWriteStream#writeStreamedFile: file was successfully added to the patch`);
                 resolve();
             });
-
+            readStream.on("close", function () {
+                Logger.logDebug(`AsyncWriteStream#writeStreamedFile: file was closed`);
+                resolve();
+            });
             readStream.on("error", function () {
                 Logger.logError(`AsyncWriteStream#writeStreamedFile: an error occurs at the readStream`);
                 reject("An error occurs during piping from source file to the writeStream");

@@ -145,18 +145,24 @@ export class GitSupportProvider implements CvsSupportProvider {
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
     public async getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> {
+        const gitPath : string = this._gitPath;
         const relPath = path.relative(this._workspaceRootPath, fileAbsPath).replace(/\\/g, "/");
-        const showFileCommand: string = `"${this._gitPath}" -C "${this._workspaceRootPath}" show :"${relPath}"`;
-        const showFileStream: stream.Readable = cp.exec(showFileCommand).stdout;
+        const spawnArgs : string[] = [`-C`, `${this._workspaceRootPath}`, `show`, `:${relPath}`];
+        const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
         let streamLength: number = 0;
         return new Promise<ReadableSet>((resolve, reject) => {
-            showFileStream.on("end", function () {
-                Logger.logDebug(`GitSupportProvider#showFile: stream for counting bytes of ${fileAbsPath} has ended. Total size is ${streamLength}`);
-                const showFileStream: stream.Readable = cp.exec(showFileCommand).stdout;
+            showFileStream.on("end", () => {
+                Logger.logDebug(`GitSupportProvider#getStagedFileContentStream: stream for counting bytes of ${fileAbsPath} has ended. Total size is ${streamLength}`);
+                // Get ReadStream for reading file content
+                const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
                 resolve({stream: showFileStream, length: streamLength});
             });
+            showFileStream.on("close", () => {
+                Logger.logError(`GitSupportProvider#getStagedFileContentStream: Stream was closed before it ended`);
+                reject("GitSupportProvider#getStagedFileContentStream: Stream was closed before it ended");
+            });
             showFileStream.on("error", function (err) {
-                Logger.logError(`GitSupportProvider#showFile: stream for counting bytes of ${fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
+                Logger.logError(`GitSupportProvider#getStagedFileContentStream: stream for counting bytes of ${fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
                 reject(err);
             });
             showFileStream.on("data", function (chunk) {
