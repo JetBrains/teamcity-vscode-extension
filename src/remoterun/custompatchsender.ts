@@ -1,6 +1,5 @@
 "use strict";
 
-import {XmlRpcProvider} from "../entities/xmlrpcprovider";
 import {PatchSender} from "../interfaces/PatchSender";
 import {Credentials} from "../credentialsstore/credentials";
 import {BuildConfigItem} from "../entities/buildconfigitem";
@@ -16,17 +15,13 @@ import {Logger} from "../utils/logger";
 import {RestHeader} from "../interfaces/RestHeader";
 import * as xml2js from "xml2js";
 
-export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
+export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
 
     /**
      * @returns true in case of success, otherwise false.
      */
     public async remoteRun(credentials: Credentials, configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean> {
-        //We might not have userId at the moment
-        if (!credentials.userId) {
-            await this.authenticateIfRequired(credentials);
-        }
         const patchAbsPath: string = await PatchManager.preparePatch(cvsProvider);
         const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
         const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?userId=${credentials.userId}&description="${checkInInfo.message}"&commitType=0`;
@@ -37,7 +32,7 @@ export class CustomPatchSender extends XmlRpcProvider implements PatchSender {
                         reject(err);
                     }
                     resolve(body);
-                }).auth(credentials.user, credentials.pass, false));
+                }).auth(credentials.user, credentials.password, false));
             });
             const changeListId = await prom;
             //We should not remove patchFile because it will be deleted as file inside a temp folder

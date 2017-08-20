@@ -104,7 +104,7 @@ export class VsCodeUtils {
             request.open(method, url, true);
             if (credentials) {
                 Logger.logDebug(`VsCodeUtils#makeRequest: credentials: userName ${credentials.user}, serverUrl ${credentials.serverURL}`);
-                request.setRequestHeader("Authorization", "Basic " + new Buffer(credentials.user + ":" + credentials.pass).toString("base64"));
+                request.setRequestHeader("Authorization", "Basic " + new Buffer(credentials.user + ":" + credentials.password).toString("base64"));
             }
 
             if (additionalHeaders) {

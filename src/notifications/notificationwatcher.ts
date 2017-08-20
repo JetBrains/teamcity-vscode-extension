@@ -5,10 +5,12 @@ import {Logger} from "../utils/logger";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {Credentials} from "../credentialsstore/credentials";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
-import {TCApiProvider} from "../interfaces/TCApiProvider";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
 import {ChangeItemProxy} from "../entities/ChangeItemProxy";
-import {TCXmlRpcApiProvider} from "../teamcityapi/TCXmlRpcApiProvider";
+import {IRemoteBuildServer} from "../dal/iremotebuildserver";
+import {XmlParser} from "../bll/xmlparser";
+import {RemoteBuildServer} from "../dal/remotebuldserver";
+import {ModificationCounterSubscription} from "./modificationcountersubscription";
 
 export class NotificationWatcher {
     private readonly _credentialStore: CredentialsStore;
@@ -16,6 +18,8 @@ export class NotificationWatcher {
     private readonly outdatedChangeIds: string[] = [];
     private readonly outdatedPersonalChangeIds: string[] = [];
     private readonly _outputChannel: OutputChannel;
+    private _remoteBuildServer: IRemoteBuildServer;
+    private _subscription: ModificationCounterSubscription;
     private isActive = false;
 
     constructor(credentialStore: CredentialsStore, outputChannel: OutputChannel) {
@@ -29,26 +33,35 @@ export class NotificationWatcher {
      * Frequency of requests on server is settled by CHECK_FREQUENCY_MS.
      */
     public async activate() {
-        const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
         this.isActive = true;
         const credentials: Credentials = this._credentialStore.getCredential();
         if (!credentials) {
             Logger.logWarning("NotificationWatcher#activate: User Credentials absent");
             return;
         }
-        let prevEventCounter: number = await apiProvider.getTotalNumberOfEvents(credentials);
-        const summary: SummaryDataProxy = await apiProvider.getSummary(credentials);
+        this._remoteBuildServer = new RemoteBuildServer(credentials.serverURL, credentials.sessionId);
+        const gZippedSummary : Uint8Array[] = await this._remoteBuildServer.getGZippedSummary(credentials.userId);
+        const summeryXmlObj: string = VsCodeUtils.gzip2Str(gZippedSummary);
+        const summary: SummaryDataProxy = await XmlParser.parseSummary(summeryXmlObj);
+        this.updateSubscriptions(summary, credentials.userId);
+        const serializedSubscription : string = this._subscription.serialize();
+        let prevEventCounter: number = await this._remoteBuildServer.getTotalNumberOfEvents(serializedSubscription);
         //filling outdatedChangeIds and outdatedPersonalChangeIds arrays
+
         this.collectNewChanges(summary.changes);
         this.collectNewChanges(summary.personalChanges);
         while (this.isActive && credentials) {
-            const eventCounter: number = await apiProvider.getTotalNumberOfEvents(credentials);
+            const serializedSubscription : string = this._subscription.serialize();
+            const eventCounter: number = await this._remoteBuildServer.getTotalNumberOfEvents(serializedSubscription);
             if (eventCounter === prevEventCounter) {
                 await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
                 continue;
             }
             Logger.logInfo("Notification Logger was changed. We should process new notifications.");
-            const summary: SummaryDataProxy = await apiProvider.getSummary(credentials);
+            const gZippedSummary : Uint8Array[] = await this._remoteBuildServer.getGZippedSummary(credentials.userId);
+            const summeryXmlObj: string = VsCodeUtils.gzip2Str(gZippedSummary);
+            const summary: SummaryDataProxy = await XmlParser.parseSummary(summeryXmlObj);
+            this.updateSubscriptions(summary, credentials.userId);
             let changes: ChangeItemProxy[] = this.collectNewChanges(summary.changes);
             changes = changes.concat(this.collectNewChanges(summary.personalChanges));
             await this.displayChanges(changes);
@@ -57,6 +70,9 @@ export class NotificationWatcher {
         }
     }
 
+    private updateSubscriptions(summary : SummaryDataProxy, userId : string) : void {
+        this._subscription = ModificationCounterSubscription.fromTeamServerSummaryData(summary, userId);
+    }
     /**
      * This method resets all contained data.
      */

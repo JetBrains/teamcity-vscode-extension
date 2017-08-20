@@ -22,16 +22,21 @@ import {
     WorkspaceEdit
 } from "vscode";
 import {CheckInInfo} from "./interfaces/CheckinInfo";
-import {TCApiProvider} from "./interfaces/TCApiProvider";
-import {TCXmlRpcApiProvider} from "./teamcityapi/TCXmlRpcApiProvider";
 import {CvsLocalResource} from "./entities/cvslocalresource";
 import {BuildConfigItem} from "./entities/buildconfigitem";
 import {CustomPatchSender} from "./remoterun/CustomPatchSender";
 import {MessageConstants} from "./utils/MessageConstants";
+import {IRemoteLogin} from "./dal/iremotelogin";
+import {RemoteLogin} from "./dal/remotelogin";
+import {IRemoteBuildServer} from "./dal/iremotebuildserver";
+import {XmlParser} from "./bll/xmlparser";
+import {RemoteBuildServer} from "./dal/remotebuldserver";
 
 export class CommandHolder {
     private _extManager: ExtensionManager;
     private _cvsProvider: CvsSupportProvider;
+    private _remoteLogin: IRemoteLogin;
+    private _remoteBuildServer: IRemoteBuildServer;
 
     public constructor(extManager: ExtensionManager) {
         this._extManager = extManager;
@@ -45,11 +50,17 @@ export class CommandHolder {
         try {
             const keytar = require("keytar");
             Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`);
-            const url = await keytar.getPassword("teamcity", "serverurl");
+            const serverUrl = await keytar.getPassword("teamcity", "serverurl");
             const user = await keytar.getPassword("teamcity", "username");
-            const pass = await keytar.getPassword("teamcity", "password");
-            credentials = new Credentials(url, user, pass);
-            signedIn = credentials ? await this._extManager.credentialStore.setCredential(credentials) : false;
+            const password = await keytar.getPassword("teamcity", "password");
+            if (serverUrl && user && password) {
+                this._remoteLogin = new RemoteLogin(serverUrl);
+                const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(user, password));
+                const sessionId = loginInfo[0];
+                const userId = loginInfo[1];
+                credentials = new Credentials(serverUrl, user, password, userId, sessionId);
+                signedIn = !!loginInfo;
+            }
             Logger.logDebug(`CommandHolder#signIn: password was${signedIn ? "" : " not"} found at keytar.`);
         } catch (err) {
             Logger.logError(`CommandHolder#signIn: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
@@ -57,7 +68,7 @@ export class CommandHolder {
 
         if (!signedIn) {
             credentials = await this.requestTypingCredentials();
-            signedIn = credentials ? await this._extManager.credentialStore.setCredential(credentials) : false;
+            signedIn = !!credentials;
         }
 
         if (signedIn) {
@@ -66,6 +77,8 @@ export class CommandHolder {
                 this.showWelcomeMessage();
             }
             this.storeLastUserCredentials(credentials);
+
+            this._remoteBuildServer = new RemoteBuildServer(credentials.serverURL, credentials.sessionId);
             this._extManager.notificationWatcher.activate();
         } else {
             Logger.logWarning("CommandHolder#signIn: failed");
@@ -91,7 +104,7 @@ export class CommandHolder {
             //If there are no credentials, log already contains message about the problem
             return;
         }
-        const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
+        // const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
         const selectedResources: CvsLocalResource[] = this._extManager.configurationExplorer.getInclResources();
         if (selectedResources && selectedResources.length > 0) {
             this._cvsProvider.setFilesForRemoteRun(selectedResources);
@@ -104,7 +117,13 @@ export class CommandHolder {
             return;
         }
         const tcFormattedFilePaths: string[] = await this._cvsProvider.getFormattedFileNames();
-        const projects: ProjectItem[] = await apiProvider.getSuitableBuildConfigs(tcFormattedFilePaths, credentials);
+
+        /* get suitable build configs hierarchically */
+        const shortBuildConfigNames : string[] = await this._remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
+        const buildXmlArray : string[] = await this._remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const projects: ProjectItem[] = await XmlParser.parseBuilds(buildXmlArray);
+        this.filterConfigs(projects, shortBuildConfigNames);
+
         if (projects && projects.length > 0) {
             await this._extManager.settings.setEnableRemoteRun(true);
         }
@@ -114,11 +133,28 @@ export class CommandHolder {
         Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
     }
 
+    /**
+     *
+     * @param projects - array of ProjectItems that contain all project's buildConfigs.
+     * @param configurationIds - array of ids of suitable build configs.
+     * @return - contains at the first arg, not at @return clause. List of projects with only suitable build configs.
+     */
+    private filterConfigs(projects: ProjectItem[], configurationIds: string[]) {
+        projects.forEach((project) => {
+            const filteredConfigs: BuildConfigItem[] = [];
+            project.configs.forEach((configuration) => {
+                if (configurationIds.indexOf(configuration.id) !== -1) {
+                    filteredConfigs.push(configuration);
+                }
+            });
+            project.configs = filteredConfigs;
+        });
+    }
+
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: starts");
         const credentials: Credentials = await this.tryGetCredentials();
         if (!credentials || !this._cvsProvider) {
-            //TODO: think about the message in this case
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: credentials or cvsProvider absents. Try to sign in again");
             return;
         }
@@ -132,7 +168,7 @@ export class CommandHolder {
         await this._extManager.settings.setEnableRemoteRun(false);
         this._extManager.configurationExplorer.setExplorerContent([]);
         this._extManager.configurationExplorer.refresh();
-        const patchSender: PatchSender = new CustomPatchSender(credentials.serverURL);
+        const patchSender: PatchSender = new CustomPatchSender();
         const remoteRunResult: boolean = await patchSender.remoteRun(credentials, includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
@@ -197,24 +233,24 @@ export class CommandHolder {
         const defaultURL: string = this.getDefaultURL();
         const defaultUsername: string = this.getDefaultUsername();
 
-        let url: string = await window.showInputBox({
+        let serverUrl: string = await window.showInputBox({
             value: defaultURL || "",
             prompt: MessageConstants.PROVIDE_URL,
             placeHolder: "",
             password: false
         });
-        if (!url) {
+        if (!serverUrl) {
             //It means that user clicked "Esc": abort the operation
-            Logger.logDebug("CommandHolder#signIn: abort after url inputBox");
+            Logger.logDebug("CommandHolder#signIn: abort after serverUrl inputBox");
             return;
         } else {
-            //to prevent exception in case of slash in the end ("localhost:80/). url should be contained without it"
-            url = url.replace(/\/$/, "");
+            //to prevent exception in case of slash in the end ("localhost:80/). serverUrl should be contained without it"
+            serverUrl = serverUrl.replace(/\/$/, "");
         }
 
         const user: string = await window.showInputBox({
             value: defaultUsername || "",
-            prompt: MessageConstants.PROVIDE_USERNAME + " ( URL: " + url + " )",
+            prompt: MessageConstants.PROVIDE_USERNAME + " ( URL: " + serverUrl + " )",
             placeHolder: "",
             password: false
         });
@@ -224,17 +260,21 @@ export class CommandHolder {
             return;
         }
 
-        const pass = await window.showInputBox({
+        const password = await window.showInputBox({
             prompt: MessageConstants.PROVIDE_PASSWORD + " ( username: " + user + " )",
             placeHolder: "",
             password: true
         });
-        if (!pass) {
+        if (!password) {
             //It means that user clicked "Esc": abort the operation
             Logger.logDebug("CommandHolder#signIn: abort after password inputBox");
             return;
         }
-        return new Credentials(url, user, pass);
+        this._remoteLogin = new RemoteLogin(serverUrl);
+        const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(user, password));
+        const sessionId = loginInfo[0];
+        const userId = loginInfo[1];
+        return new Credentials(serverUrl, user, password, userId, sessionId);
     }
 
     private async storeLastUserCredentials(credentials: Credentials): Promise<void> {
@@ -248,7 +288,7 @@ export class CommandHolder {
             Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Good job user.`);
             keytar.setPassword("teamcity", "serverurl", credentials.serverURL);
             keytar.setPassword("teamcity", "username", credentials.user);
-            keytar.setPassword("teamcity", "password", credentials.pass);
+            keytar.setPassword("teamcity", "password", credentials.password);
         } catch (err) {
             Logger.logError(`CommandHolder#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }

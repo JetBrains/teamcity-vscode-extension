@@ -5,16 +5,18 @@ import {Credentials} from "../../src/credentialsstore/credentials";
 
 suite("Credential", () => {
     test("should verify constructor", function () {
-        const credentials: Credentials = new Credentials("http://localhost/", "user", "password");
+        const credentials: Credentials = new Credentials("http://localhost/", "user", "password", "1", "xxx");
         assert.equal(credentials.serverURL, "http://localhost/");
         assert.equal(credentials.user, "user");
-        assert.equal(credentials.pass, "password");
+        assert.equal(credentials.password, "password");
+        assert.equal(credentials.userId, "1");
+        assert.equal(credentials.sessionId, "xxx");
     });
 
     test("should verify constructor - with undefined param", function () {
-        const credentials: Credentials = new Credentials("http://localhost/", "user", undefined);
+        const credentials: Credentials = new Credentials("http://localhost/", "user", undefined, "1", "xxx");
         assert.equal(credentials.serverURL, "http://localhost/");
         assert.equal(credentials.user, "user");
-        assert.equal(credentials.pass, undefined);
+        assert.equal(credentials.password, undefined);
     });
 });
