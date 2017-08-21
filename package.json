@@ -146,10 +146,12 @@
   "dependencies": {
     "async-file": "^2.0.2",
     "child-process-promise": "^2.2.1",
+    "inversify": "^4.3.0",
     "keytar": "^4.0.4",
     "node-forge": "^0.7.1",
     "node-gyp": "^3.6.2",
     "pako": "^1.0.5",
+    "reflect-metadata": "^0.1.10",
     "request": "^2.81.0",
     "temp": "^0.8.3",
     "winston": "^2.3.1",

@@ -102,3 +102,14 @@ export enum MessageTypes {
     Warn = 1,
     Info = 2
 }
+
+export const TYPES = {
+    Settings: Symbol("Settings"),
+    CredentialsStore: Symbol("CredentialsStore"),
+    ExtensionManager: Symbol("ExtensionManager"),
+    CommandHolder: Symbol("CommandHolder"),
+    NotificationWatcher: Symbol("NotificationWatcher"),
+    RemoteLogin: Symbol("RemoteLogin"),
+    RemoteBuildServer: Symbol("RemoteBuildServer"),
+    WebLinks: Symbol("WebLinks")
+};

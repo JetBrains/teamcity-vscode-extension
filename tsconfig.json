@@ -5,7 +5,9 @@
         "outDir": "out",
         "lib": ["es6"],
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "exclude": [
         "node_modules",

@@ -1,7 +1,10 @@
 "use strict";
 
-export interface IRemoteBuildServer {
+import {CredentialsStore} from "../credentialsstore/credentialsstore";
 
+export interface RemoteBuildServer {
+
+    init(credentialsStore: CredentialsStore): void;
     /**
      * @param userId - user internal id
      * @return SummeryDataProxy object

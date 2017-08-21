@@ -6,6 +6,8 @@ import {MessageItem, workspace} from "vscode";
 import {BuildItemProxy} from "../entities/BuildItemProxy";
 import {ChangeItemProxy} from "../entities/ChangeItemProxy";
 import {Credentials} from "../credentialsstore/credentials";
+import {ProjectItem} from "../entities/projectitem";
+import {BuildConfigItem} from "../entities/buildconfigitem";
 
 export class VsCodeUtils {
 
@@ -117,5 +119,22 @@ export class VsCodeUtils {
      */
     public static sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    /**
+     * @param projects - array of ProjectItems that contain all project's buildConfigs.
+     * @param configurationIds - array of ids of suitable build configs.
+     * @return - contains at the first arg, not at @return clause. List of projects with only suitable build configs.
+     */
+    public static filterConfigs(projects: ProjectItem[], configurationIds: string[]) {
+        projects.forEach((project) => {
+            const filteredConfigs: BuildConfigItem[] = [];
+            project.configs.forEach((configuration) => {
+                if (configurationIds.indexOf(configuration.id) !== -1) {
+                    filteredConfigs.push(configuration);
+                }
+            });
+            project.configs = filteredConfigs;
+        });
     }
 }

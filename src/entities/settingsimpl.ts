@@ -1,22 +1,33 @@
 "use strict";
 
-import {BaseSettings} from "./basesettings";
-import {Settings} from "../interfaces/settings";
 import {Constants} from "../utils/constants";
+import {injectable} from "inversify";
+import {Settings} from "../interfaces/settings";
+import {workspace} from "vscode";
 
-export class SettingsImpl extends BaseSettings implements Settings {
+@injectable()
+export class SettingsImpl implements Settings {
     private readonly _loggingLevel: string;
     private _showSignInWelcome: boolean;
     private _lastUrl: string;
     private _lastUsername: string;
 
     constructor() {
-        super();
         this.setEnableRemoteRun(undefined);
-        this._loggingLevel = BaseSettings.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
-        this._showSignInWelcome = BaseSettings.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
-        this._lastUrl = BaseSettings.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
-        this._lastUsername = BaseSettings.getSettingsProperty<string>(Constants.DEFAULT_USER_NAME, "");
+        this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
+        this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
+        this._lastUrl = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
+        this._lastUsername = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_NAME, "");
+    }
+
+    private static async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
+        const configuration = workspace.getConfiguration();
+        return configuration.update(key, value, global);
+    }
+
+    private static getSettingsProperty<T>(key: string, defaultValue?: T): T {
+        const configuration = workspace.getConfiguration();
+        return configuration.get<T>(key, defaultValue);
     }
 
     public get loggingLevel(): string {
@@ -31,7 +42,7 @@ export class SettingsImpl extends BaseSettings implements Settings {
      * If undefined then signInWelcomeMessage = true
      */
     public async setShowSignInWelcome(newValue: boolean): Promise<void> {
-        await BaseSettings.setSettingsProperty(Constants.SIGNIN_WELCOME_SETTING_KEY, newValue, true /* global */);
+        await SettingsImpl.setSettingsProperty(Constants.SIGNIN_WELCOME_SETTING_KEY, newValue, true /* global */);
         this._showSignInWelcome = newValue !== undefined ? newValue : true;
         return;
     }
@@ -46,16 +57,16 @@ export class SettingsImpl extends BaseSettings implements Settings {
     }
 
     public async setLastUrl(url: string): Promise<void> {
-        await BaseSettings.setSettingsProperty(Constants.DEFAULT_USER_URL, url, true /* global */);
+        await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_URL, url, true /* global */);
         this._lastUrl = url;
     }
 
     public async setLastUsername(username: string): Promise<void> {
-        await BaseSettings.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
+        await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
         this._lastUsername = username;
     }
 
     public async setEnableRemoteRun(enableRemoteRun: boolean): Promise<void> {
-        await BaseSettings.setSettingsProperty(Constants.REMOTERUN_ENABLED, enableRemoteRun, false /* global */);
+        await SettingsImpl.setSettingsProperty(Constants.REMOTERUN_ENABLED, enableRemoteRun, false /* global */);
     }
 }

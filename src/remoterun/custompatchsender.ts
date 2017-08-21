@@ -1,8 +1,8 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
+import {WebLinksImpl} from "../dal/weblinksimpl";
 import {WebLinks} from "../dal/weblinks";
-import {IWebLinks} from "../dal/iweblinks";
 import {XmlParser} from "../bll/xmlparser";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {PatchManager} from "../utils/patchmanager";
@@ -17,10 +17,10 @@ import {MessageManager} from "../view/messagemanager";
 
 export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
-    private readonly _webLinks : IWebLinks;
+    private readonly _webLinks : WebLinks;
 
     constructor(credentials : Credentials) {
-        this._webLinks = new WebLinks(credentials);
+        this._webLinks = new WebLinksImpl(credentials);
     }
 
     /**

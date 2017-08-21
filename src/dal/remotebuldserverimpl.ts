@@ -4,15 +4,18 @@ import * as xmlrpc from "xmlrpc";
 import {Logger} from "../utils/logger";
 import {Constants} from "../utils/constants";
 import {VsCodeUtils} from "../utils/vscodeutils";
-import {IRemoteBuildServer} from "./iremotebuildserver";
+import {RemoteBuildServer} from "./remotebuildserver";
+import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {injectable} from "inversify";
 
-export class RemoteBuildServer implements IRemoteBuildServer {
+@injectable()
+export class RemoteBuildServerImpl implements RemoteBuildServer {
 
-    private readonly _client;
+    private _client;
 
-    constructor(serverURL: string, sessionId: string) {
-        this._client = xmlrpc.createClient({url: serverURL + "/RPC2", cookies: true});
-        this._client.setCookie(Constants.XMLRPC_SESSIONID_KEY, sessionId);
+    init(credentialsStore: CredentialsStore) {
+        this._client = xmlrpc.createClient({url: credentialsStore.getCredential().serverURL + "/RPC2", cookies: true});
+        this._client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentialsStore.getCredential().sessionId);
     }
 
     /**
