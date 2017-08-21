@@ -1,18 +1,19 @@
 "use strict";
 
+import {Logger} from "../utils/logger";
+import {WebLinks} from "../dal/weblinks";
+import {IWebLinks} from "../dal/iweblinks";
+import {XmlParser} from "../bll/xmlparser";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {PatchManager} from "../utils/patchmanager";
+import {ChangeListStatus} from "../utils/constants";
 import {PatchSender} from "../interfaces/PatchSender";
+import {CheckInInfo} from "../interfaces/checkininfo";
+import {QueuedBuild} from "../interfaces/queuedbuild";
 import {Credentials} from "../credentialsstore/credentials";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {PatchManager} from "../utils/patchmanager";
-import {CheckInInfo} from "../interfaces/checkininfo";
-import {QueuedBuild} from "../interfaces/queuedbuild";
-import {ChangeListStatus} from "../utils/constants";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {Logger} from "../utils/logger";
-import {IWebLinks} from "../dal/iweblinks";
-import {WebLinks} from "../dal/weblinks";
-import {XmlParser} from "../bll/xmlparser";
+import {MessageManager} from "../view/messagemanager";
 
 export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
@@ -34,10 +35,10 @@ export class CustomPatchSender implements PatchSender {
             const queuedBuilds: QueuedBuild[] = await this.triggerChangeList(changeListId, configs);
             const changeListStatus: ChangeListStatus = await this.getChangeListStatus(queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
-                VsCodeUtils.showInfoMessage(`Personal build for change #${changeListId} has "CHECKED" status.`);
+                MessageManager.showInfoMessage(`Personal build for change #${changeListId} has "CHECKED" status.`);
                 return true;
             } else {
-                VsCodeUtils.showWarningMessage(`Personal build for change #${changeListId} has "FAILED" status.`);
+                MessageManager.showWarningMessage(`Personal build for change #${changeListId} has "FAILED" status.`);
                 return false;
             }
         } catch (err) {

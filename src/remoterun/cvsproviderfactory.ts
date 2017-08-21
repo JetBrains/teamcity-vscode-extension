@@ -3,12 +3,12 @@
 import {Logger} from "../utils/logger";
 import {GitUtils} from "../utils/gitutils";
 import {TfsUtils} from "../utils/tfsutils";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsSupportProvider} from "../interfaces/cvsprovider";
 import {GitSupportProvider} from "./gitprovider";
 import {TfsSupportProvider} from "./tfsprovider";
 import {CvsProviderTypes} from "../utils/constants";
 import {CvsInfo} from "../interfaces/CvsInfo";
+import { MessageManager } from "../view/messagemanager";
 
 export class CvsSupportProviderFactory {
 
@@ -37,7 +37,7 @@ export class CvsSupportProviderFactory {
         }
 
         Logger.logWarning(`CvsSupportProviderFactory#getCvsSupportProvider: cvs was not found!`);
-        VsCodeUtils.showWarningMessage(this.detectProblems(gitCvsInfo, tfsCvsInfo));
+        MessageManager.showWarningMessage(this.detectProblems(gitCvsInfo, tfsCvsInfo));
     }
 
     /**

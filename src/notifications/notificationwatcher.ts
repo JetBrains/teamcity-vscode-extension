@@ -2,14 +2,15 @@
 
 import {OutputChannel} from "vscode";
 import {Logger} from "../utils/logger";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {Credentials} from "../credentialsstore/credentials";
-import {CredentialsStore} from "../credentialsstore/credentialsstore";
-import {SummaryDataProxy} from "../entities/summarydataproxy";
-import {ChangeItemProxy} from "../entities/ChangeItemProxy";
-import {IRemoteBuildServer} from "../dal/iremotebuildserver";
 import {XmlParser} from "../bll/xmlparser";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {TeamCityOutput} from "../view/teamcityoutput";
 import {RemoteBuildServer} from "../dal/remotebuldserver";
+import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {Credentials} from "../credentialsstore/credentials";
+import {IRemoteBuildServer} from "../dal/iremotebuildserver";
+import {SummaryDataProxy} from "../entities/summarydataproxy";
+import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {ModificationCounterSubscription} from "./modificationcountersubscription";
 
 export class NotificationWatcher {
@@ -17,14 +18,12 @@ export class NotificationWatcher {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
     private readonly outdatedChangeIds: string[] = [];
     private readonly outdatedPersonalChangeIds: string[] = [];
-    private readonly _outputChannel: OutputChannel;
     private _remoteBuildServer: IRemoteBuildServer;
     private _subscription: ModificationCounterSubscription;
     private isActive = false;
 
-    constructor(credentialStore: CredentialsStore, outputChannel: OutputChannel) {
+    constructor(credentialStore: CredentialsStore) {
         this._credentialStore = credentialStore;
-        this._outputChannel = outputChannel;
         Logger.logDebug("Credential Store was initialized");
     }
 
@@ -114,7 +113,8 @@ export class NotificationWatcher {
         }
         changes.forEach((change) => {
             const message: string = VsCodeUtils.formMessage(change, credentials);
-            this._outputChannel.appendLine(message + "\n");
+            TeamCityOutput.appendLine(message);
+            TeamCityOutput.show();
         });
     }
 }

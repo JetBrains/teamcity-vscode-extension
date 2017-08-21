@@ -2,10 +2,10 @@
 
 import {assert} from "chai";
 import {ProjectItem} from "../../src/entities/projectitem";
-import {BuildConfigTreeDataProvider} from "../../src/remoterun/configexplorer";
 import {BuildConfigItem} from "../../src/entities/buildconfigitem";
+import {DataProviderManager} from "../../src/view/dataprovidermanager";
 
-suite("ConfigExplorer", () => {
+suite("DataProviderManager", () => {
     test("should verify BuildConfig constructor", function () {
         const buildConfig: BuildConfigItem = new BuildConfigItem("id", "externalId", "label");
         assert.equal(buildConfig.id, "id");
@@ -27,24 +27,14 @@ suite("ConfigExplorer", () => {
         assert.equal(buildConfig.isIncluded, true);
     });
 
-    test("should verify BuildConfigTreeDataProvider setConfigs", function () {
-        const bcArr: ProjectItem[] = [];
-        const configExplorer: BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
-        bcArr.push(new ProjectItem("id1", []));
-        bcArr.push(new ProjectItem("id2", []));
-        configExplorer.setExplorerContent(bcArr);
-        assert.equal(configExplorer.getChildren(), bcArr);
-    });
-
-    test("should verify BuildConfigTreeDataProvider getIncludedBuildConfigs", function () {
+    test("should verify TeamCityTreeDataProvider getIncludedBuildConfigs", function () {
         const projectArr: ProjectItem[] = [];
-        const configExplorer: BuildConfigTreeDataProvider = new BuildConfigTreeDataProvider();
         const bcItem1: BuildConfigItem = new BuildConfigItem("id1", "externalId1", "name1");
         const bcItem2: BuildConfigItem = new BuildConfigItem("id2", "externalId2", "name2");
         projectArr.push(new ProjectItem("id1", [bcItem1, bcItem2]));
-        configExplorer.setExplorerContent(projectArr);
-        assert.equal(configExplorer.getIncludedBuildConfigs().length, 0);
+        DataProviderManager.setExplorerContent(projectArr);
+        assert.equal(DataProviderManager.getIncludedBuildConfigs().length, 0);
         bcItem1.changeState();
-        assert.equal(configExplorer.getIncludedBuildConfigs().length, 1);
+        assert.equal(DataProviderManager.getIncludedBuildConfigs().length, 1);
     });
 });

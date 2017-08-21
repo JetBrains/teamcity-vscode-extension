@@ -14,4 +14,7 @@ export class MessageConstants {
     static readonly XMLRPC_AUTH_EXCEPTION: string = "Unexpected exception during xmlrpc authentication";
     static readonly GET_SUITABLE_CONFIG_EXCEPTION: string = "Unexpected exception during getting suitable configurations";
     static readonly GET_BUILDS_EXCEPTION: string = "Unexpected exception during getting builds";
+    static readonly PLEASE_SPECIFY_BUILDS: string = "Please specify builds for remote run.";
+    static readonly DO_NOT_SHOW_AGAIN = "Don't show again";
+    static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
 }

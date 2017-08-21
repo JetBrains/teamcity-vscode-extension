@@ -68,7 +68,7 @@ export class WebLinks implements IWebLinks {
                 if (err) {
                     reject(err);
                 }
-                if (response.status >= 200 && response.status < 300) {
+                if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(body);
                 } else {
                     reject(response.statusMessage);

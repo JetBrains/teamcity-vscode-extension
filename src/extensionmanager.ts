@@ -4,26 +4,26 @@ import {Logger} from "./utils/logger";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./interfaces/settings";
 import {CredentialsStore} from "./credentialsstore/credentialsstore";
-import {BuildConfigTreeDataProvider} from "./remoterun/configexplorer";
 import {NotificationWatcher} from "./notifications/notificationwatcher";
-import {Disposable, ExtensionContext, OutputChannel, window, workspace} from "vscode";
+import {Disposable, ExtensionContext, OutputChannel, workspace} from "vscode";
 import {SettingsImpl} from "./entities/settingsimpl";
+import {TeamCityOutput} from "./view/teamcityoutput";
+import {DataProviderManager} from "./view/dataprovidermanager";
 
 export class ExtensionManager implements Disposable {
     private _settings: Settings;
     private _credentialStore: CredentialsStore;
     private _commandHolder: CommandHolder;
-    private _configurationExplorer: BuildConfigTreeDataProvider;
     private _notificationWatcher: NotificationWatcher;
-    private _outputChannel: OutputChannel;
+    private readonly _disposables : Disposable[] = [];
 
-    public async Initialize(configExplorer: BuildConfigTreeDataProvider): Promise<void> {
+    public async Initialize(): Promise<void> {
         this._settings = new SettingsImpl();
-        this._configurationExplorer = configExplorer;
         this._credentialStore = new CredentialsStore();
         this._commandHolder = new CommandHolder(this);
-        this._outputChannel = window.createOutputChannel("TeamCity");
-        this._notificationWatcher = new NotificationWatcher(this._credentialStore, this._outputChannel);
+        DataProviderManager.init(this._disposables);
+        TeamCityOutput.init(this._disposables);
+        this._notificationWatcher = new NotificationWatcher(this._credentialStore);
         const loggingLevel: string = this._settings.loggingLevel;
         this.initLogger(loggingLevel, workspace.rootPath);
     }
@@ -36,6 +36,7 @@ export class ExtensionManager implements Disposable {
 
     public dispose(): void {
         this.cleanUp();
+        this._disposables.forEach((disposable) => disposable.dispose());
     }
 
     public get commandHolder(): CommandHolder {
@@ -44,10 +45,6 @@ export class ExtensionManager implements Disposable {
 
     public get credentialStore(): CredentialsStore {
         return this._credentialStore;
-    }
-
-    public get configurationExplorer(): BuildConfigTreeDataProvider {
-        return this._configurationExplorer;
     }
 
     public get notificationWatcher(): NotificationWatcher {

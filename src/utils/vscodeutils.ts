@@ -2,40 +2,12 @@
 
 import * as pako from "pako";
 import {Logger} from "./logger";
-import {MessageConstants} from "./MessageConstants";
-import {MessageItem, window, workspace} from "vscode";
-import {Credentials} from "../credentialsstore/credentials";
-import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {MessageItem, workspace} from "vscode";
 import {BuildItemProxy} from "../entities/BuildItemProxy";
+import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {Credentials} from "../credentialsstore/credentials";
 
 export class VsCodeUtils {
-
-    public static async showErrorMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
-        return await window.showErrorMessage(messageToDisplay, ...messageItems);
-    }
-
-    public static async showInfoMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
-        return await window.showInformationMessage(messageToDisplay, ...messageItems);
-    }
-
-    public static async showWarningMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
-        return await window.showWarningMessage(messageToDisplay, ...messageItems);
-    }
-
-    public static async displayNoCredentialsMessage(): Promise<void> {
-        const displayError: string = MessageConstants.NO_CREDENTIALS_RUN_SIGNIN;
-        VsCodeUtils.showErrorMessage(displayError);
-    }
-
-    public static async displayNoSelectedConfigsMessage(): Promise<void> {
-        const displayError: string = MessageConstants.NO_CONFIGS_RUN_REMOTERUN;
-        VsCodeUtils.showErrorMessage(displayError);
-    }
-
-    public static async displayNoTccUtilMessage(): Promise<void> {
-        const displayError: string = MessageConstants.NO_TCC_UTIL;
-        VsCodeUtils.showErrorMessage(displayError);
-    }
 
     /**
      * @param value - any string in the format ${value1:value2}

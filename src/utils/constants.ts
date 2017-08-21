@@ -96,3 +96,9 @@ export enum LoggingLevel {
     Verbose = 3,
     Debug = 4
 }
+
+export enum MessageTypes {
+    Error = 0,
+    Warn = 1,
+    Info = 2
+}

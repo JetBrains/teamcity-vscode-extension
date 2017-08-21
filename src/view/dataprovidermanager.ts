@@ -1,6 +1,5 @@
 "use strict";
 
-import {ProjectItem} from "../entities/projectitem";
 import {
     CancellationToken,
     Command,
@@ -16,11 +15,44 @@ import {
     Uri,
     workspace
 } from "vscode";
-
-import {CvsLocalResource} from "../entities/cvslocalresource";
+import {Disposable, window} from "vscode";
+import {ProjectItem} from "../entities/projectitem";
 import {BuildConfigItem} from "../entities/buildconfigitem";
+import {CvsLocalResource} from "../entities/cvslocalresource";
 
-export class BuildConfigTreeDataProvider implements TreeDataProvider<TreeItem> {
+export class DataProviderManager {
+    private static _dataProvider: TeamCityTreeDataProvider;
+
+    public static init(disposables: Disposable[]): void {
+        if (DataProviderManager._dataProvider !== undefined) {
+            return;
+        }
+        DataProviderManager._dataProvider = new TeamCityTreeDataProvider();
+        if (disposables) {
+            disposables.push(window.registerTreeDataProvider("teamcityExplorer", DataProviderManager._dataProvider));
+        } else {
+            window.registerTreeDataProvider("teamcityExplorer", DataProviderManager._dataProvider);
+        }
+    }
+
+    public static setExplorerContent(content: CvsLocalResource[] | ProjectItem[]): void {
+        this._dataProvider.setExplorerContent(content);
+    }
+
+    public static refresh(): void {
+        this._dataProvider.refresh();
+    }
+
+    public static getInclResources() {
+        return this._dataProvider.getInclResources();
+    }
+
+    public static getIncludedBuildConfigs() {
+        return this._dataProvider.getIncludedBuildConfigs();
+    }
+}
+
+class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
     private _projects: ProjectItem[] = [];

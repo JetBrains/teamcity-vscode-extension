@@ -29,8 +29,10 @@ import {BuildConfigItem} from "./entities/buildconfigitem";
 import {IRemoteBuildServer} from "./dal/iremotebuildserver";
 import {CvsSupportProvider} from "./interfaces/cvsprovider";
 import {CvsLocalResource} from "./entities/cvslocalresource";
+import { MessageManager } from "./view/messagemanager";
 import {CustomPatchSender} from "./remoterun/custompatchsender";
 import {CvsSupportProviderFactory} from "./remoterun/cvsproviderfactory";
+import {DataProviderManager} from "./view/dataprovidermanager";
 
 export class CommandHolder {
     private _extManager: ExtensionManager;
@@ -94,8 +96,8 @@ export class CommandHolder {
             return;
         }
         const checkInInfo: CheckInInfo = await this._cvsProvider.getRequiredCheckInInfo();
-        this._extManager.configurationExplorer.setExplorerContent(checkInInfo.cvsLocalResources);
-        this._extManager.configurationExplorer.refresh();
+        DataProviderManager.setExplorerContent(checkInInfo.cvsLocalResources);
+        DataProviderManager.refresh();
     }
 
     public async getSuitableConfigs() {
@@ -106,7 +108,7 @@ export class CommandHolder {
             return;
         }
         // const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
-        const selectedResources: CvsLocalResource[] = this._extManager.configurationExplorer.getInclResources();
+        const selectedResources: CvsLocalResource[] = DataProviderManager.getInclResources();
         if (selectedResources && selectedResources.length > 0) {
             this._cvsProvider.setFilesForRemoteRun(selectedResources);
         } else {
@@ -128,9 +130,9 @@ export class CommandHolder {
         if (projects && projects.length > 0) {
             await this._extManager.settings.setEnableRemoteRun(true);
         }
-        this._extManager.configurationExplorer.setExplorerContent(projects);
-        this._extManager.configurationExplorer.refresh();
-        VsCodeUtils.showInfoMessage("[TeamCity] Please specify builds for remote run.");
+        DataProviderManager.setExplorerContent(projects);
+        DataProviderManager.refresh();
+        MessageManager.showInfoMessage(MessageConstants.PLEASE_SPECIFY_BUILDS);
         Logger.logInfo("CommandHolder#getSuitableConfigs: finished");
     }
 
@@ -159,16 +161,16 @@ export class CommandHolder {
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: credentials or cvsProvider absents. Try to sign in again");
             return;
         }
-        const includedBuildConfigs: BuildConfigItem[] = this._extManager.configurationExplorer.getIncludedBuildConfigs();
+        const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
         if (includedBuildConfigs === undefined || includedBuildConfigs.length === 0) {
-            VsCodeUtils.displayNoSelectedConfigsMessage();
+            MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             Logger.logWarning("CommandHolder#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'GitRemote run' command");
             return;
         }
 
         await this._extManager.settings.setEnableRemoteRun(false);
-        this._extManager.configurationExplorer.setExplorerContent([]);
-        this._extManager.configurationExplorer.refresh();
+        DataProviderManager.setExplorerContent([]);
+        DataProviderManager.refresh();
         const patchSender: PatchSender = new CustomPatchSender(credentials);
         const remoteRunResult: boolean = await patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
@@ -190,7 +192,7 @@ export class CommandHolder {
 
     public changeConfigState(config: BuildConfigItem) {
         config.changeState();
-        this._extManager.configurationExplorer.refresh();
+        DataProviderManager.refresh();
     }
 
     public changeCollapsibleState(project: ProjectItem) {
@@ -210,7 +212,7 @@ export class CommandHolder {
             await this.signIn();
             credentials = this._extManager.credentialStore.getCredential();
             if (!credentials) {
-                VsCodeUtils.displayNoCredentialsMessage();
+                MessageManager.showErrorMessage(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
                 Logger.logWarning("CommandHolder#tryGetCredentials: An attempt to get credentials failed");
                 return undefined;
             }
@@ -220,12 +222,10 @@ export class CommandHolder {
     }
 
     private async showWelcomeMessage() {
-        const DO_NOT_SHOW_AGAIN = "Don't show again";
-        const WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
-        const messageItems: MessageItem[] = [];
-        messageItems.push({title: DO_NOT_SHOW_AGAIN});
-        const chosenItem: MessageItem = await VsCodeUtils.showInfoMessage(WELCOME_MESSAGE, ...messageItems);
-        if (chosenItem && chosenItem.title === DO_NOT_SHOW_AGAIN) {
+
+        const dontShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
+        const chosenItem: MessageItem = await MessageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, dontShowAgainItem);
+        if (chosenItem && chosenItem.title === dontShowAgainItem.title) {
             this._extManager.settings.setShowSignInWelcome(false);
         }
     }
