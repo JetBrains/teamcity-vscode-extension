@@ -4,11 +4,11 @@ import * as xmlrpc from "xmlrpc";
 import * as forge from "node-forge";
 import {Logger} from "../utils/logger";
 import {IRemoteLogin} from "./iremotelogin";
-import {RcaPublicKey} from "../interfaces/rcapublickey";
 import {VsCodeUtils} from "../utils/vscodeutils";
+import {RcaPublicKey} from "../interfaces/rcapublickey";
 import {MessageConstants} from "../utils/messageconstants";
-const pki = forge.pki;
 const BigInteger = forge.jsbn.BigInteger;
+const pki = forge.pki;
 
 export class RemoteLogin implements IRemoteLogin {
 

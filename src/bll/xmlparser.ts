@@ -1,9 +1,11 @@
 "use strict";
-import {ProjectItem} from "../entities/projectitem";
-import {Logger} from "../utils/logger";
+
 import * as xml2js from "xml2js";
-import {BuildConfigItem} from "../entities/buildconfigitem";
+import {Logger} from "../utils/logger";
 import {VsCodeUtils} from "../utils/vscodeutils";
+import {ProjectItem} from "../entities/projectitem";
+import {QueuedBuild} from "../interfaces/queuedbuild";
+import {BuildConfigItem} from "../entities/buildconfigitem";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
 
 export class XmlParser {
@@ -72,5 +74,36 @@ export class XmlParser {
         if (buildConfigurations.length > 0) {
             projectContainer.push(new ProjectItem(project.Project.name[0], buildConfigurations));
         }
+    }
+
+    public static parseQueuedBuild(queuedBuildInfoXml: string) : Promise<QueuedBuild> {
+        return new Promise<QueuedBuild>((resolve, reject) => {
+            xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
+                if (err) {
+                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo. An error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+                    reject(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo`);
+                }
+                resolve(queuedBuildInfo.build.$);
+            });
+        });
+    }
+
+    public static parseBuildStatus(buildInfoXml: string) : Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            xml2js.parseString(buildInfoXml, (err, buildInfo) => {
+                if (err) {
+                    reject(`XmlParser#parseBuildInfo: Can't parse buildInfoXml ${VsCodeUtils.formatErrorMessage(err)}`);
+                }
+                if (!buildInfo
+                    || !buildInfo.build
+                    || !buildInfo.build.$
+                    || !buildInfo.build.$.state
+                    || !buildInfo.build.$.status
+                    || buildInfo.build.$.state !== "finished") {
+                    resolve(undefined);
+                }
+                resolve(buildInfo.build.$.status);
+            });
+        });
     }
 }

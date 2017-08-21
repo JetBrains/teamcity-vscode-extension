@@ -2,7 +2,6 @@
 
 import {Logger} from "../utils/logger";
 import {Credentials} from "./credentials";
-import {TCApiProvider} from "../interfaces/TCApiProvider";
 
 export class CredentialsStore {
     private _credentials: Credentials;

@@ -1,10 +1,10 @@
 "use strict";
 
 import * as xmlrpc from "xmlrpc";
-import {IRemoteBuildServer} from "./iremotebuildserver";
 import {Logger} from "../utils/logger";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {Constants} from "../utils/constants";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {IRemoteBuildServer} from "./iremotebuildserver";
 
 export class RemoteBuildServer implements IRemoteBuildServer {
 

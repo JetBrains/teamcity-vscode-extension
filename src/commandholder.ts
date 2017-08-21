@@ -1,13 +1,5 @@
 "use strict";
 
-import {Logger} from "./utils/logger";
-import {VsCodeUtils} from "./utils/vscodeutils";
-import {ProjectItem} from "./entities/projectitem";
-import {PatchSender} from "./interfaces/PatchSender";
-import {ExtensionManager} from "./extensionmanager";
-import {Credentials} from "./credentialsstore/credentials";
-import {CvsSupportProvider} from "./interfaces/cvsprovider";
-import {CvsSupportProviderFactory} from "./remoterun/cvsproviderfactory";
 import {
     Disposable,
     extensions,
@@ -21,16 +13,24 @@ import {
     workspace,
     WorkspaceEdit
 } from "vscode";
-import {CheckInInfo} from "./interfaces/CheckinInfo";
-import {CvsLocalResource} from "./entities/cvslocalresource";
-import {BuildConfigItem} from "./entities/buildconfigitem";
-import {CustomPatchSender} from "./remoterun/CustomPatchSender";
-import {MessageConstants} from "./utils/MessageConstants";
-import {IRemoteLogin} from "./dal/iremotelogin";
-import {RemoteLogin} from "./dal/remotelogin";
-import {IRemoteBuildServer} from "./dal/iremotebuildserver";
+import {Logger} from "./utils/logger";
 import {XmlParser} from "./bll/xmlparser";
+import {RemoteLogin} from "./dal/remotelogin";
+import {VsCodeUtils} from "./utils/vscodeutils";
+import {IRemoteLogin} from "./dal/iremotelogin";
+import {ProjectItem} from "./entities/projectitem";
+import {ExtensionManager} from "./extensionmanager";
+import {CheckInInfo} from "./interfaces/checkininfo";
+import {PatchSender} from "./interfaces/PatchSender";
 import {RemoteBuildServer} from "./dal/remotebuldserver";
+import {MessageConstants} from "./utils/MessageConstants";
+import {Credentials} from "./credentialsstore/credentials";
+import {BuildConfigItem} from "./entities/buildconfigitem";
+import {IRemoteBuildServer} from "./dal/iremotebuildserver";
+import {CvsSupportProvider} from "./interfaces/cvsprovider";
+import {CvsLocalResource} from "./entities/cvslocalresource";
+import {CustomPatchSender} from "./remoterun/custompatchsender";
+import {CvsSupportProviderFactory} from "./remoterun/cvsproviderfactory";
 
 export class CommandHolder {
     private _extManager: ExtensionManager;
@@ -72,6 +72,7 @@ export class CommandHolder {
         }
 
         if (signedIn) {
+            this._extManager.credentialStore.setCredential(credentials);
             Logger.logInfo("CommandHolder#signIn: success");
             if (this._extManager.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
@@ -168,8 +169,8 @@ export class CommandHolder {
         await this._extManager.settings.setEnableRemoteRun(false);
         this._extManager.configurationExplorer.setExplorerContent([]);
         this._extManager.configurationExplorer.refresh();
-        const patchSender: PatchSender = new CustomPatchSender();
-        const remoteRunResult: boolean = await patchSender.remoteRun(credentials, includedBuildConfigs, this._cvsProvider);
+        const patchSender: PatchSender = new CustomPatchSender(credentials);
+        const remoteRunResult: boolean = await patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolder#remoteRunWithChosenConfigs: remote run is ok");
             this._cvsProvider.requestForPostCommit();

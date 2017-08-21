@@ -1,12 +1,10 @@
 "use strict";
 
 import * as pako from "pako";
-import * as XHR from "xmlhttprequest";
 import {Logger} from "./logger";
+import {MessageConstants} from "./MessageConstants";
 import {MessageItem, window, workspace} from "vscode";
 import {Credentials} from "../credentialsstore/credentials";
-import {MessageConstants} from "./MessageConstants";
-import {RestHeader} from "../interfaces/RestHeader";
 import {ChangeItemProxy} from "../entities/ChangeItemProxy";
 import {BuildItemProxy} from "../entities/BuildItemProxy";
 
@@ -68,75 +66,6 @@ export class VsCodeUtils {
         }
         Logger.logDebug(`VsCodeUtils#gzip2Str: finishes unzipping gzip`);
         return buffer.join("");
-    }
-
-    /**
-     * @param method - type of request (GET, POST, ...)
-     * @param url - url of request
-     * @param credentials? - Credential for basic authorization
-     * @param data - POST content
-     * @param additionalArgs - additional args in the url
-     * @param additionalHeaders - additional headers =)
-     * @return Promise with request.response in case of success, otherwise a reject with status of response and statusText.
-     */
-    public static makeRequest(method: string,
-                              url: string,
-                              credentials?: Credentials,
-                              data?: Buffer | String,
-                              additionalArgs?: string[],
-                              additionalHeaders?: RestHeader[]): Promise<string> {
-        Logger.logDebug(`VsCodeUtils#makeRequest: url: ${url} by ${method}`);
-        //Add additional args to url
-        if (additionalArgs) {
-            const urlBuilder: string[] = [];
-            urlBuilder.push(url);
-            urlBuilder.push("?");
-            additionalArgs.forEach((arg) => {
-                urlBuilder.push(arg);
-                urlBuilder.push("&");
-            });
-            url = urlBuilder.join("");
-        }
-
-        const XMLHttpRequest = XHR.XMLHttpRequest;
-        return new Promise(function (resolve, reject) {
-            const request: XHR.XMLHttpRequest = new XMLHttpRequest();
-            request.open(method, url, true);
-            if (credentials) {
-                Logger.logDebug(`VsCodeUtils#makeRequest: credentials: userName ${credentials.user}, serverUrl ${credentials.serverURL}`);
-                request.setRequestHeader("Authorization", "Basic " + new Buffer(credentials.user + ":" + credentials.password).toString("base64"));
-            }
-
-            if (additionalHeaders) {
-                additionalHeaders.forEach((header) => {
-                    request.setRequestHeader(header.header, header.value);
-                });
-            }
-
-            request.onload = function () {
-                if (this.status >= 200 && this.status < 300) {
-                    if (request.response) {
-                        resolve(request.response);
-                    } else if (this.responseText) {
-                        resolve(this.responseText);
-                    } else {
-                        resolve("");
-                    }
-                } else {
-                    reject({
-                        status: this.status,
-                        statusText: request.statusText
-                    });
-                }
-            };
-            request.onerror = function () {
-                reject({
-                    status: this.status,
-                    statusText: request.statusText
-                });
-            };
-            request.send(data);
-        });
     }
 
     /**
