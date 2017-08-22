@@ -1,8 +1,8 @@
 "use strict";
 
 import {assert} from "chai";
-import {Credentials} from "../../src/credentialsstore/credentials";
-import {CredentialsStoreImpl} from "../../src/credentialsstore/credentialsstoreimpl";
+import {Credentials} from "../../src/bll/credentialsstore/credentials";
+import {CredentialsStoreImpl} from "../../src/bll/credentialsstore/credentialsstoreimpl";
 
 suite("CredentialStore", function () {
 

@@ -1,7 +1,7 @@
 "use strict";
 
 import {TrackerEventType} from "../utils/constants";
-import {KeyValueSubscriptionEvent} from "./KeyValueSubscriptionEvent";
+import {KeyValueSubscriptionEvent} from "./keyvaluesubscriptionevent";
 
 export class UserEvent extends KeyValueSubscriptionEvent {
     private readonly _userId: string;

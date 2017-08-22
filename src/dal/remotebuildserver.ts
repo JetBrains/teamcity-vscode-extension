@@ -1,6 +1,6 @@
 "use strict";
 
-import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 
 export interface RemoteBuildServer {
 

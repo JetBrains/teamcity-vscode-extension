@@ -2,12 +2,12 @@
 
 import {TrackerEventType} from "../utils/constants";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
-import {ModificationCounterSubscriptionInfo} from "../interfaces/ModificationCounterSubscriptionInfo";
-import {SubscriptionEvent} from "../interfaces/SubscriptionEvent";
-import {ProjectEvent} from "./ProjectEvent";
-import {UserEvent} from "./UserEvent";
+import {ModificationSubscription} from "./modificationcountersubscription";
+import {SubscriptionEvent} from "./subscriptionevent";
+import {ProjectEvent} from "./projectevent";
+import {UserEvent} from "./userevent";
 
-export class ModificationCounterSubscription implements ModificationCounterSubscriptionInfo {
+export class ModificationSubscriptionImpl implements ModificationSubscription {
     private readonly myEvents: SubscriptionEvent[] = [];
 
     public serialize(): string {
@@ -30,8 +30,8 @@ export class ModificationCounterSubscription implements ModificationCounterSubsc
         this.addEvent(new UserEvent(type, userId));
     }
 
-    public static fromTeamServerSummaryData(data: SummaryDataProxy, userId: string): ModificationCounterSubscription {
-        const subscription = new ModificationCounterSubscription();
+    public static fromTeamServerSummaryData(data: SummaryDataProxy, userId: string): ModificationSubscriptionImpl {
+        const subscription = new ModificationSubscriptionImpl();
         data.getVisibleProjectIds.forEach((projectId) => {
             subscription.addProjectEvent(TrackerEventType.BUILD_TYPE_ACTIVE_STATUS_CHANGED, projectId);
             subscription.addProjectEvent(TrackerEventType.BUILD_TYPE_RESPONSIBILITY_CHANGES, projectId);

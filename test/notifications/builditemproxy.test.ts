@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {BuildItemProxy} from "../../src/entities/BuildItemProxy";
+import {BuildItemProxy} from "../../src/bll/entities/BuildItemProxy";
 
 suite("BuildItemProxy", () => {
     test("should verify constructor/buildId", function (done) {

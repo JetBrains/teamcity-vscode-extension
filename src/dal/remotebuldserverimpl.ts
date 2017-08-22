@@ -1,11 +1,11 @@
 "use strict";
 
 import * as xmlrpc from "xmlrpc";
-import {Logger} from "../utils/logger";
-import {Constants} from "../utils/constants";
-import {VsCodeUtils} from "../utils/vscodeutils";
+import {Logger} from "../bll/utils/logger";
+import {Constants} from "../bll/utils/constants";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {RemoteBuildServer} from "./remotebuildserver";
-import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {injectable} from "inversify";
 
 @injectable()

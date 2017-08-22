@@ -3,11 +3,11 @@
 
 import "reflect-metadata";
 import * as vscode from "vscode";
-import {Constants, TYPES} from "./utils/constants";
+import {Constants, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
-import {ProjectItem} from "./entities/projectitem";
+import {ProjectItem} from "./bll/entities/projectitem";
 import {ExtensionManager} from "./extensionmanager";
-import {BuildConfigItem} from "./entities/buildconfigitem";
+import {BuildConfigItem} from "./bll/entities/buildconfigitem";
 import {DataProviderManager} from "./view/dataprovidermanager";
 
 // this method is called when the extension is activated

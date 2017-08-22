@@ -20,8 +20,8 @@ export class CvsLocalResource extends LeaveSelectableItem {
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
         const iconName: string = `status-${this.isIncluded ? this.status : "I"}.svg`;
         return {
-            light: path.join(__dirname, "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "resources", "icons", "dark", iconName)
+            light: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName),
+            dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
         };
     }
 }

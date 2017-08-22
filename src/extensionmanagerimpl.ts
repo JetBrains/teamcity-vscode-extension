@@ -1,14 +1,14 @@
 "use strict";
 
-import {Logger} from "./utils/logger";
-import {TYPES} from "./utils/constants";
+import {Logger} from "./bll/utils/logger";
+import {TYPES} from "./bll/utils/constants";
 import {CommandHolder} from "./commandholder";
-import {Settings} from "./interfaces/settings";
+import {Settings} from "./bll/entities/settings";
 import {inject, injectable} from "inversify";
 import {TeamCityOutput} from "./view/teamcityoutput";
 import {DataProviderManager} from "./view/dataprovidermanager";
-import {CredentialsStore} from "./credentialsstore/credentialsstore";
-import {NotificationWatcher} from "./notifications/notificationwatcher";
+import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
+import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {Disposable, ExtensionContext, OutputChannel, workspace} from "vscode";
 import {ExtensionManager} from "./extensionmanager";
 

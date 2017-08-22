@@ -1,7 +1,7 @@
 "use strict";
 
-import {Settings} from "./interfaces/settings";
-import {CredentialsStore} from "./credentialsstore/credentialsstore";
+import {Settings} from "./bll/entities/settings";
+import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 
 export interface CommandHolder {
     init(settings: Settings, credentialsStore: CredentialsStore): void;

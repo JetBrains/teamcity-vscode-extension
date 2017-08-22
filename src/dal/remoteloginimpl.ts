@@ -2,12 +2,12 @@
 
 import * as xmlrpc from "xmlrpc";
 import * as forge from "node-forge";
-import {Logger} from "../utils/logger";
+import {Logger} from "../bll/utils/logger";
 import {injectable} from "inversify";
 import {RemoteLogin} from "./remotelogin";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {RcaPublicKey} from "../interfaces/rcapublickey";
-import {MessageConstants} from "../utils/messageconstants";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {RcaPublicKey} from "./rcapublickey";
+import {MessageConstants} from "../bll/utils/messageconstants";
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
 

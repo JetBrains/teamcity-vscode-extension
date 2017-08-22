@@ -3,10 +3,10 @@
 import * as fs from "fs";
 import * as stream from "stream";
 import {Disposable} from "vscode";
-import {Logger} from "../utils/logger";
-import {ByteWriter} from "../utils/bytewriter";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {ReadableSet} from "../interfaces/ReadableSet";
+import {Logger} from "../bll/utils/logger";
+import {ByteWriter} from "../bll/utils/bytewriter";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {ReadableSet} from "../bll/utils/readableset";
 
 export class AsyncWriteStream implements Disposable {
     private readonly _writeSteam: fs.WriteStream;

@@ -1,19 +1,19 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {WebLinksImpl} from "../dal/weblinksimpl";
-import {WebLinks} from "../dal/weblinks";
-import {XmlParser} from "../bll/xmlparser";
+import {WebLinksImpl} from "../../dal/weblinksimpl";
+import {WebLinks} from "../../dal/weblinks";
+import {XmlParser} from "../utils/xmlparser";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {PatchManager} from "../utils/patchmanager";
 import {ChangeListStatus} from "../utils/constants";
-import {PatchSender} from "../interfaces/PatchSender";
-import {CheckInInfo} from "../interfaces/checkininfo";
-import {QueuedBuild} from "../interfaces/queuedbuild";
+import {PatchSender} from "./patchsender";
+import {CheckInInfo} from "./checkininfo";
+import {QueuedBuild} from "../utils/queuedbuild";
 import {Credentials} from "../credentialsstore/credentials";
 import {BuildConfigItem} from "../entities/buildconfigitem";
-import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {MessageManager} from "../view/messagemanager";
+import {CvsSupportProvider} from "../../dal/cvsprovider";
+import {MessageManager} from "../../view/messagemanager";
 
 export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;

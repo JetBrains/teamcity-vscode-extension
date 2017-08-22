@@ -3,8 +3,8 @@
 import * as pako from "pako";
 import {Logger} from "./logger";
 import {MessageItem, workspace} from "vscode";
-import {BuildItemProxy} from "../entities/BuildItemProxy";
-import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {BuildItemProxy} from "../entities/builditemproxy";
+import {ChangeItemProxy} from "../entities/changeitemproxy";
 import {Credentials} from "../credentialsstore/credentials";
 import {ProjectItem} from "../entities/projectitem";
 import {BuildConfigItem} from "../entities/buildconfigitem";

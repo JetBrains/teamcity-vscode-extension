@@ -3,16 +3,16 @@
 import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
-import {Logger} from "../utils/logger";
-import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {VsCodeUtils} from "../utils/vscodeutils";
+import {Logger} from "../bll/utils/logger";
+import {CvsSupportProvider} from "./cvsprovider";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {CvsFileStatusCode} from "../utils/constants";
+import {CvsFileStatusCode} from "../bll/utils/constants";
 import {workspace, scm, QuickPickItem, QuickPickOptions, window} from "vscode";
-import {CvsLocalResource} from "../entities/cvslocalresource";
-import {CheckInInfo} from "../interfaces/CheckinInfo";
-import {MappingFileContent} from "../interfaces/MappingFileContent";
-import {ReadableSet} from "../interfaces/ReadableSet";
+import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
+import {ReadableSet} from "../bll/utils/readableset";
 
 /**
  * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath.

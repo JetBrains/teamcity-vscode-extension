@@ -1,7 +1,7 @@
 "use strict";
 
-import {QueuedBuild} from "../interfaces/queuedbuild";
-import {BuildConfigItem} from "../entities/buildconfigitem";
+import {QueuedBuild} from "../bll/utils/queuedbuild";
+import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 
 export interface WebLinks {
     uploadChanges(patchAbsPath: string, message: string): Promise<string>;

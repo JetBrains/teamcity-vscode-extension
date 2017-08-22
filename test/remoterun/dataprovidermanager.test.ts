@@ -1,8 +1,8 @@
 "use strict";
 
 import {assert} from "chai";
-import {ProjectItem} from "../../src/entities/projectitem";
-import {BuildConfigItem} from "../../src/entities/buildconfigitem";
+import {ProjectItem} from "../../src/bll/entities/projectitem";
+import {BuildConfigItem} from "../../src/bll/entities/buildconfigitem";
 import {DataProviderManager} from "../../src/view/dataprovidermanager";
 
 suite("DataProviderManager", () => {

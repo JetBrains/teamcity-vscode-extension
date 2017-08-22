@@ -2,15 +2,15 @@
 
 import * as url from "url";
 import * as path from "path";
-import {Logger} from "../utils/logger";
+import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
-import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {CvsFileStatusCode} from "../utils/constants";
+import {CvsSupportProvider} from "./cvsprovider";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {CvsFileStatusCode} from "../bll/utils/constants";
 import {workspace, scm, QuickPickItem, QuickPickOptions, window} from "vscode";
-import {CvsLocalResource} from "../entities/cvslocalresource";
-import {MappingFileContent} from "../interfaces/MappingFileContent";
-import {CheckInInfo} from "../interfaces/CheckinInfo";
+import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
+import {CheckInInfo} from "../bll/remoterun/checkininfo";
 
 export class TfsSupportProvider implements CvsSupportProvider {
     private readonly _workspaceRootPath: string;

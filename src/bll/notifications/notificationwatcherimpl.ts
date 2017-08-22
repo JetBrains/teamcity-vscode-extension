@@ -2,15 +2,15 @@
 
 import {OutputChannel} from "vscode";
 import {Logger} from "../utils/logger";
-import {XmlParser} from "../bll/xmlparser";
+import {XmlParser} from "../utils/xmlparser";
 import {VsCodeUtils} from "../utils/vscodeutils";
-import {TeamCityOutput} from "../view/teamcityoutput";
-import {ChangeItemProxy} from "../entities/ChangeItemProxy";
+import {TeamCityOutput} from "../../view/teamcityoutput";
+import {ChangeItemProxy} from "../entities/changeitemproxy";
 import {Credentials} from "../credentialsstore/credentials";
-import {RemoteBuildServer} from "../dal/remotebuildserver";
+import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
-import {ModificationCounterSubscription} from "./modificationcountersubscription";
+import {ModificationSubscriptionImpl} from "./modificationcountersubscriptionimpl";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
 
@@ -22,7 +22,7 @@ export class NotificationWatcherImpl {
     private readonly outdatedChangeIds: string[] = [];
     private readonly outdatedPersonalChangeIds: string[] = [];
     private _remoteBuildServer: RemoteBuildServer;
-    private _subscription: ModificationCounterSubscription;
+    private _subscription: ModificationSubscriptionImpl;
     private isActive = false;
 
     constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer) {
@@ -76,7 +76,7 @@ export class NotificationWatcherImpl {
     }
 
     private updateSubscriptions(summary: SummaryDataProxy, userId: string): void {
-        this._subscription = ModificationCounterSubscription.fromTeamServerSummaryData(summary, userId);
+        this._subscription = ModificationSubscriptionImpl.fromTeamServerSummaryData(summary, userId);
     }
 
     /**

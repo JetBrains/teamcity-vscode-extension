@@ -13,28 +13,28 @@ import {
     workspace,
     WorkspaceEdit
 } from "vscode";
-import {Logger} from "./utils/logger";
-import {XmlParser} from "./bll/xmlparser";
-import {VsCodeUtils} from "./utils/vscodeutils";
+import {Logger} from "./bll/utils/logger";
+import {XmlParser} from "./bll/utils/xmlparser";
+import {VsCodeUtils} from "./bll/utils/vscodeutils";
 import {RemoteLogin} from "./dal/remotelogin";
-import {ProjectItem} from "./entities/projectitem";
-import {CheckInInfo} from "./interfaces/checkininfo";
-import {PatchSender} from "./interfaces/PatchSender";
-import {MessageConstants} from "./utils/MessageConstants";
-import {CredentialsStore} from "./credentialsstore/credentialsstore";
-import {Credentials} from "./credentialsstore/credentials";
-import {BuildConfigItem} from "./entities/buildconfigitem";
+import {ProjectItem} from "./bll/entities/projectitem";
+import {CheckInInfo} from "./bll/remoterun/checkininfo";
+import {PatchSender} from "./bll/remoterun/patchsender";
+import {MessageConstants} from "./bll/utils/MessageConstants";
+import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
+import {Credentials} from "./bll/credentialsstore/credentials";
+import {BuildConfigItem} from "./bll/entities/buildconfigitem";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
-import {CvsSupportProvider} from "./interfaces/cvsprovider";
-import {CvsLocalResource} from "./entities/cvslocalresource";
+import {CvsSupportProvider} from "./dal/cvsprovider";
+import {CvsLocalResource} from "./bll/entities/cvslocalresource";
 import {MessageManager} from "./view/messagemanager";
-import {CustomPatchSender} from "./remoterun/custompatchsender";
-import {CvsSupportProviderFactory} from "./remoterun/cvsproviderfactory";
+import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
+import {CvsSupportProviderFactory} from "./bll/remoterun/cvsproviderfactory";
 import {DataProviderManager} from "./view/dataprovidermanager";
 import {CommandHolder} from "./commandholder";
-import {Settings} from "./interfaces/settings";
+import {Settings} from "./bll/entities/settings";
 import {injectable, inject} from "inversify";
-import {TYPES} from "./utils/constants";
+import {TYPES} from "./bll/utils/constants";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {

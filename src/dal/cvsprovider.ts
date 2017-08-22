@@ -1,9 +1,9 @@
 "use strict";
 
-import {MappingFileContent} from "./MappingFileContent";
-import {CheckInInfo} from "./CheckinInfo";
-import {CvsLocalResource} from "../entities/cvslocalresource";
-import {ReadableSet} from "./ReadableSet";
+import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
+import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {ReadableSet} from "../bll/utils/readableset";
 
 export interface CvsSupportProvider {
 

@@ -1,6 +1,6 @@
 "use strict";
 
-import {RcaPublicKey} from "../interfaces/rcapublickey";
+import {RcaPublicKey} from "./rcapublickey";
 
 export interface RemoteLogin {
 

@@ -4,12 +4,12 @@ import * as fs from "fs";
 import * as path from "path";
 import {workspace} from "vscode";
 import * as cp from "child_process";
-import {Logger} from "./logger";
-import {VsCodeUtils} from "./vscodeutils";
+import {Logger} from "../utils/logger";
+import {VsCodeUtils} from "../utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {CvsProviderTypes} from "./constants";
-import {CvsInfo} from "../interfaces/CvsInfo";
-import {CvsPartialInfo} from "../interfaces/cvspartiaiInfo";
+import {CvsProviderTypes} from "../utils/constants";
+import {CvsInfo} from "./cvsinfo";
+import {CvsPartialInfo} from "./cvspartiaIinfo";
 
 export class GitUtils {
 

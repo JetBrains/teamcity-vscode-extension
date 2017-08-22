@@ -2,12 +2,12 @@
 
 import * as os from "os";
 import {workspace} from "vscode";
-import {Logger} from "./logger";
+import {Logger} from "../utils/logger";
 import * as cpprom from "child-process-promise";
-import {Constants, CvsProviderTypes} from "./constants";
-import {CvsInfo} from "../interfaces/CvsInfo";
-import {VsCodeUtils} from "./vscodeutils";
-import {CvsPartialInfo} from "../interfaces/cvspartiaiInfo";
+import {Constants, CvsProviderTypes} from "../utils/constants";
+import {CvsInfo} from "./cvsinfo";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {CvsPartialInfo} from "./cvspartiaIinfo";
 
 export class TfsUtils {
 

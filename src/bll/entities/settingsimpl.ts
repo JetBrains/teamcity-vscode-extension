@@ -2,7 +2,7 @@
 
 import {Constants} from "../utils/constants";
 import {injectable} from "inversify";
-import {Settings} from "../interfaces/settings";
+import {Settings} from "./settings";
 import {workspace} from "vscode";
 
 @injectable()

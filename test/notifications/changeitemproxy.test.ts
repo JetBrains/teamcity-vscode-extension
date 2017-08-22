@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {ChangeItemProxy} from "../../src/entities/ChangeItemProxy";
+import {ChangeItemProxy} from "../../src/bll/entities/ChangeItemProxy";
 
 suite("ChangeItemProxy", () => {
     test("should verify constructor/changeId", function (done) {

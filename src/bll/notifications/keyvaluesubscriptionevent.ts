@@ -1,6 +1,6 @@
 "use strict";
 
-import {SubscriptionEvent} from "../interfaces/subscriptionevent";
+import {SubscriptionEvent} from "./subscriptionevent";
 import {TrackerEventType} from "../utils/constants";
 
 export abstract class KeyValueSubscriptionEvent implements SubscriptionEvent {

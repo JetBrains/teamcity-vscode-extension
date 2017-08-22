@@ -3,9 +3,9 @@
 import * as fs from "fs";
 import * as request from "request";
 import {WebLinks} from "./weblinks";
-import {QueuedBuild} from "../interfaces/queuedbuild";
-import {BuildConfigItem} from "../entities/buildconfigitem";
-import {Credentials} from "../credentialsstore/credentials";
+import {QueuedBuild} from "../bll/utils/queuedbuild";
+import {BuildConfigItem} from "../bll/entities/buildconfigitem";
+import {Credentials} from "../bll/credentialsstore/credentials";
 import {injectable} from "inversify";
 
 @injectable()

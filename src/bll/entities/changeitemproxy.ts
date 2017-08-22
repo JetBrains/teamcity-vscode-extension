@@ -1,7 +1,7 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {BuildItemProxy} from "./BuildItemProxy";
+import {BuildItemProxy} from "./builditemproxy";
 
 export class ChangeItemProxy {
     private readonly _changeObj: any;

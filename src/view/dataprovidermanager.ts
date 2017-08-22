@@ -16,9 +16,9 @@ import {
     workspace
 } from "vscode";
 import {Disposable, window} from "vscode";
-import {ProjectItem} from "../entities/projectitem";
-import {BuildConfigItem} from "../entities/buildconfigitem";
-import {CvsLocalResource} from "../entities/cvslocalresource";
+import {ProjectItem} from "../bll/entities/projectitem";
+import {BuildConfigItem} from "../bll/entities/buildconfigitem";
+import {CvsLocalResource} from "../bll/entities/cvslocalresource";
 
 export class DataProviderManager {
     private static _dataProvider: TeamCityTreeDataProvider;

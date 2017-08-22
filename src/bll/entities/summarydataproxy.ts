@@ -1,7 +1,7 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {ChangeItemProxy} from "./ChangeItemProxy";
+import {ChangeItemProxy} from "./changeitemproxy";
 
 /**
  * Summary Obj contains some number of changes. Some changes Obj contains some number of builds.

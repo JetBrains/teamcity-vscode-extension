@@ -1,14 +1,14 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {GitUtils} from "../utils/gitutils";
-import {TfsUtils} from "../utils/tfsutils";
-import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {GitSupportProvider} from "./gitprovider";
-import {TfsSupportProvider} from "./tfsprovider";
+import {GitUtils} from "../cvsutils/gitutils";
+import {TfsUtils} from "../cvsutils/tfsutils";
+import {CvsSupportProvider} from "../../dal/cvsprovider";
+import {GitSupportProvider} from "../../dal/gitprovider";
+import {TfsSupportProvider} from "../../dal/tfsprovider";
 import {CvsProviderTypes} from "../utils/constants";
-import {CvsInfo} from "../interfaces/CvsInfo";
-import { MessageManager } from "../view/messagemanager";
+import {CvsInfo} from "../cvsutils/cvsinfo";
+import { MessageManager } from "../../view/messagemanager";
 
 export class CvsSupportProviderFactory {
 

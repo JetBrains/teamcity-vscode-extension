@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {SummaryDataProxy} from "../../src/entities/summarydataproxy";
+import {SummaryDataProxy} from "../../src/bll/entities/summarydataproxy";
 
 suite("SummaryDataProxy", () => {
     test("should verify constructor", function (done) {

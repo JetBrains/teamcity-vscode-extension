@@ -1,17 +1,17 @@
 "use strict";
 
 import {Container} from "inversify";
-import {TYPES} from "./utils/constants";
-import {Settings} from "./interfaces/settings";
-import {SettingsImpl} from "./entities/settingsimpl";
-import {CredentialsStore} from "./credentialsstore/credentialsstore";
-import {CredentialsStoreImpl} from "./credentialsstore/credentialsstoreimpl";
+import {TYPES} from "./bll/utils/constants";
+import {Settings} from "./bll/entities/settings";
+import {SettingsImpl} from "./bll/entities/settingsimpl";
+import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
+import {CredentialsStoreImpl} from "./bll/credentialsstore/credentialsstoreimpl";
 import {ExtensionManager} from "./extensionmanager";
 import {ExtensionManagerImpl} from "./extensionmanagerimpl";
 import {CommandHolder} from "./commandholder";
 import {CommandHolderImpl} from "./commandholderimpl";
-import {NotificationWatcherImpl} from "./notifications/notificationwatcherimpl";
-import {NotificationWatcher} from "./notifications/notificationwatcher";
+import {NotificationWatcherImpl} from "./bll/notifications/notificationwatcherimpl";
+import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {RemoteLogin} from "./dal/remotelogin";
 import {RemoteLoginImpl} from "./dal/remoteloginimpl";
 import {RemoteBuildServer} from "./dal/remotebuildserver";

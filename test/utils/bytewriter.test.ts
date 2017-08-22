@@ -1,7 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
-import {ByteWriter} from "../../src/utils/bytewriter";
+import {ByteWriter} from "../../src/bll/utils/bytewriter";
 
 suite("ByteWriter", () => {
     test("should verify writeUTF with empty string", function () {

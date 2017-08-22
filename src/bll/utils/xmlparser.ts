@@ -1,10 +1,10 @@
 "use strict";
 
 import * as xml2js from "xml2js";
-import {Logger} from "../utils/logger";
-import {VsCodeUtils} from "../utils/vscodeutils";
+import {Logger} from "./logger";
+import {VsCodeUtils} from "./vscodeutils";
 import {ProjectItem} from "../entities/projectitem";
-import {QueuedBuild} from "../interfaces/queuedbuild";
+import {QueuedBuild} from "./queuedbuild";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
 

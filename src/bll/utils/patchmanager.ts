@@ -7,12 +7,12 @@ import {ByteWriter} from "./bytewriter";
 import * as fs_async from "async-file";
 import {VsCodeUtils} from "./vscodeutils";
 import {CvsFileStatusCode} from "./constants";
-import {AsyncWriteStream} from "../entities/writestream";
-import {CvsSupportProvider} from "../interfaces/cvsprovider";
-import {CheckInInfo} from "../interfaces/CheckinInfo";
+import {AsyncWriteStream} from "../../dal/asyncwritestream";
+import {CvsSupportProvider} from "../../dal/cvsprovider";
+import {CheckInInfo} from "../remoterun/checkininfo";
 import {CvsLocalResource} from "../entities/cvslocalresource";
-import {MappingFileContent} from "../interfaces/MappingFileContent";
-import {ReadableSet} from "../interfaces/ReadableSet";
+import {MappingFileContent} from "../remoterun/mappingfilecontent";
+import {ReadableSet} from "./readableset";
 const temp = require("temp").track();
 
 export class PatchManager {

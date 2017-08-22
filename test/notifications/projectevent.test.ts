@@ -1,8 +1,8 @@
 "use strict";
 
 import {assert} from "chai";
-import {TrackerEventType} from "../../src/utils/constants";
-import {ProjectEvent} from "../../src/notifications/ProjectEvent";
+import {TrackerEventType} from "../../src/bll/utils/constants";
+import {ProjectEvent} from "../../src/bll/notifications/ProjectEvent";
 
 suite("ProjectEvent", () => {
     test("should verify constructor", function () {

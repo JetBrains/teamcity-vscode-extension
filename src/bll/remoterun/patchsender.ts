@@ -1,7 +1,7 @@
 "use strict";
 
-import {PatchSender} from "./PatchSender";
-import {CvsSupportProvider} from "./cvsprovider";
+import {PatchSender} from "./patchsender";
+import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 
 export interface PatchSender {

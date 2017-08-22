@@ -1,8 +1,8 @@
 "use strict";
 
 import {assert} from "chai";
-import {Settings} from "../../src/interfaces/settings";
-import {SettingsImpl} from "../../src/entities/settingsimpl";
+import {Settings} from "../../src/bll/entities/settings";
+import {SettingsImpl} from "../../src/bll/entities/settingsimpl";
 
 suite("Settings", () => {
 
