@@ -17,14 +17,15 @@ export class CvsSupportProviderFactory {
      * @return an appropriate CvsSupportProvider implementation.
      * When particularProvider != undefined, this method returns requested CvsProvide, but without initialization;
      */
-    public static async getCvsSupportProvider(): Promise<CvsSupportProvider> {
+    public static async getCvsSupportProviders(): Promise<CvsSupportProvider[]> {
         const gitCvsInfo: CvsInfo = await GitUtils.collectInfo();
+        const cvsProviders : CvsSupportProvider[] = [];
         const gitIsActive: boolean = gitCvsInfo.isChanged;
         if (gitIsActive) {
             Logger.logDebug(`CvsSupportProviderFactory#getCvsSupportProvider: git is an activeCvs`);
-            const getProvider = new GitSupportProvider(gitCvsInfo.path);
-            await getProvider.init();
-            return getProvider;
+            const gitProvider = new GitSupportProvider(gitCvsInfo.path);
+            await gitProvider.init();
+            cvsProviders.push(gitProvider);
         }
 
         const tfsCvsInfo: CvsInfo = await TfsUtils.collectInfo();
@@ -33,11 +34,13 @@ export class CvsSupportProviderFactory {
             Logger.logDebug(`CvsSupportProviderFactory#getCvsSupportProvider: tfs is an activeCvs`);
             const tfsProvider = new TfsSupportProvider(tfsCvsInfo.path);
             await tfsProvider.init();
-            return tfsProvider;
+            cvsProviders.push(tfsProvider);
         }
-
-        Logger.logWarning(`CvsSupportProviderFactory#getCvsSupportProvider: cvs was not found!`);
-        MessageManager.showWarningMessage(this.detectProblems(gitCvsInfo, tfsCvsInfo));
+        if (cvsProviders.length === 0) {
+            Logger.logWarning(`CvsSupportProviderFactory#getCvsSupportProvider: cvs was not found!`);
+            MessageManager.showWarningMessage(this.detectProblems(gitCvsInfo, tfsCvsInfo));
+        }
+        return cvsProviders;
     }
 
     /**

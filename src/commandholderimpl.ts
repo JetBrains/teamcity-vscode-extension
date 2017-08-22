@@ -11,7 +11,9 @@ import {
     SourceControlResourceState,
     window,
     workspace,
-    WorkspaceEdit
+    WorkspaceEdit,
+    QuickPickItem,
+    QuickPickOptions
 } from "vscode";
 import {Logger} from "./bll/utils/logger";
 import {XmlParser} from "./bll/utils/xmlparser";
@@ -99,11 +101,7 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async selectFilesForRemoteRun() {
         Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
-        this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
-        if (this._cvsProvider === undefined) {
-            //If there is no provider, log already contains message about the problem
-            return;
-        }
+        this._cvsProvider = await this.getCvsSupportProvider();
         const checkInInfo: CheckInInfo = await this._cvsProvider.getRequiredCheckInInfo();
         DataProviderManager.setExplorerContent(checkInInfo.cvsLocalResources);
         DataProviderManager.refresh();
@@ -121,7 +119,7 @@ export class CommandHolderImpl implements CommandHolder {
         if (selectedResources && selectedResources.length > 0) {
             this._cvsProvider.setFilesForRemoteRun(selectedResources);
         } else {
-            this._cvsProvider = await CvsSupportProviderFactory.getCvsSupportProvider();
+            this._cvsProvider = await this.getCvsSupportProvider();
         }
 
         if (this._cvsProvider === undefined) {
@@ -269,6 +267,44 @@ export class CommandHolderImpl implements CommandHolder {
             keytar.setPassword("teamcity", "password", credentials.password);
         } catch (err) {
             Logger.logError(`CommandHolder#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
+        }
+    }
+
+    private async getCvsSupportProvider(): Promise<CvsSupportProvider> {
+        const cvsProviders : CvsSupportProvider[] = await CvsSupportProviderFactory.getCvsSupportProviders();
+        if (!cvsProviders || cvsProviders.length === 0) {
+            //If there is no provider, log already contains message about the problem
+            Logger.logInfo("No one cvs was found");
+            return;
+        } else if (cvsProviders.length === 1) {
+            Logger.logInfo(`${cvsProviders[0].cvsType.toString()} cvsProvider was found`);
+            return cvsProviders[0];
+        } else if (cvsProviders.length > 1) {
+            const choices: QuickPickItem[] = [];
+            cvsProviders.forEach((cvsProvider) => {
+                Logger.logInfo(`Several cvsProviders were found:`);
+                choices.push({label: cvsProvider.cvsType.toString(), description: cvsProvider.cvsType.toString()});
+                Logger.logInfo(`${cvsProvider.cvsType.toString()} cvsProvider was found`);
+            });
+            const SEVERAL_CVS_DETECTED = "Several CSV were detected. Please specify which should be selected.";
+            const options: QuickPickOptions = {
+                ignoreFocusOut: true,
+                matchOnDescription: false,
+                placeHolder: SEVERAL_CVS_DETECTED
+            };
+            const selectedCvs: QuickPickItem = await window.showQuickPick(choices, options);
+            if (!selectedCvs) {
+                Logger.logWarning(`Cvs Provider was not specified!`);
+                throw new Error("Cvs Provider was not specified!");
+            } else {
+                cvsProviders.forEach((cvsProvider) => {
+                    if (cvsProvider.cvsType.toString() === selectedCvs.label) {
+                        Logger.logInfo(`${cvsProvider.cvsType.toString()} cvsProvider was selected`);
+                        return cvsProvider;
+                    }
+                });
+            }
+            Logger.logWarning(`Cvs Provider is not determined. It should have not happen.`);
         }
     }
 }

@@ -6,6 +6,7 @@ import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsFileStatusCode} from "../bll/utils/constants";
 import {workspace, scm, QuickPickItem, QuickPickOptions, window} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
@@ -21,6 +22,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
     public constructor(tfPath: string) {
         this._workspaceRootPath = workspace.rootPath;
         this._tfPath = tfPath;
+    }
+
+    public get cvsType(): CvsProviderTypes {
+        return CvsProviderTypes.Tfs;
     }
 
     public async init() {

@@ -4,6 +4,7 @@ import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
 import {Logger} from "../bll/utils/logger";
+import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
@@ -25,6 +26,10 @@ export class GitSupportProvider implements CvsSupportProvider {
     public constructor(gitPath: string) {
         this._workspaceRootPath = workspace.rootPath;
         this._gitPath = gitPath;
+    }
+
+    public get cvsType(): CvsProviderTypes {
+        return CvsProviderTypes.Git;
     }
 
     public async init() {

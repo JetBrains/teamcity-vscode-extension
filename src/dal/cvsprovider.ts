@@ -2,10 +2,13 @@
 
 import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
 import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
 import {ReadableSet} from "../bll/utils/readableset";
 
 export interface CvsSupportProvider {
+
+    cvsType: CvsProviderTypes;
 
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
