@@ -134,10 +134,6 @@ export class CommandHolderImpl implements CommandHolder {
         const buildXmlArray: string[] = await this._remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         const projects: ProjectItem[] = await XmlParser.parseBuilds(buildXmlArray);
         VsCodeUtils.filterConfigs(projects, shortBuildConfigNames);
-
-        if (projects && projects.length > 0) {
-            await this._settings.setEnableRemoteRun(true);
-        }
         DataProviderManager.setExplorerContent(projects);
         DataProviderManager.refresh();
         MessageManager.showInfoMessage(MessageConstants.PLEASE_SPECIFY_BUILDS);
@@ -146,9 +142,15 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
+        if (!this._cvsProvider) {
+            Logger.logError("CommandHolderImpl#remoteRunWithChosenConfigs: cvsProvider absents. Please execute " +
+                            "`Find Suitable Build Configuration` command first");
+            MessageManager.showWarningMessage("Please execute `Find Suitable Build Configuration` command first!");
+            return;
+        }
         const credentials: Credentials = await this.tryGetCredentials();
-        if (!credentials || !this._cvsProvider) {
-            Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: credentials or cvsProvider absents. Try to sign in again");
+        if (!credentials) {
+            Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: credentials absent. Try to sign in again");
             return;
         }
         const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
@@ -157,8 +159,6 @@ export class CommandHolderImpl implements CommandHolder {
             Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'GitRemote run' command");
             return;
         }
-
-        await this._settings.setEnableRemoteRun(false);
         DataProviderManager.setExplorerContent([]);
         DataProviderManager.refresh();
         const patchSender: PatchSender = new CustomPatchSender(credentials);
@@ -247,7 +247,13 @@ export class CommandHolderImpl implements CommandHolder {
             return;
         }
         this._remoteLogin.init(serverUrl);
-        const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(user, password));
+        let authenticationResponse : string;
+        try {
+            authenticationResponse = await this._remoteLogin.authenticate(user, password);
+        } catch (err) {
+            throw Error(MessageConstants.STATUS_CODE_401);
+        }
+        const loginInfo: string[] = VsCodeUtils.parseValueColonValue(authenticationResponse);
         const sessionId = loginInfo[0];
         const userId = loginInfo[1];
         return new Credentials(serverUrl, user, password, userId, sessionId);

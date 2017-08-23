@@ -49,7 +49,6 @@
         "command": "teamcity.remoteRun",
         "title": "Remote Run. Run With Chosen Build Configurations",
         "category": "TeamCity",
-        "when": " && config.teamcity.remoterun.enabled",
         "icon": {
           "light": "resources/icons/light/remoterun.png",
           "dark": "resources/icons/light/remoterun.png"
@@ -73,7 +72,7 @@
         },
         {
           "command": "teamcity.remoteRun",
-          "when": "view == teamcityExplorer && config.teamcity.remoterun.enabled",
+          "when": "view == teamcityExplorer",
           "group": "navigation@2"
         },
         {
@@ -93,7 +92,7 @@
         },
         {
           "command": "teamcity.remoteRun",
-          "when": "view == teamcityExplorer && config.teamcity.remoterun.enabled",
+          "when": "view == teamcityExplorer",
           "group": "@2"
         },
         {
@@ -123,11 +122,6 @@
         "teamcity.credentials.username": {
           "type": "string",
           "description": "Sets default username for the Signin operation."
-        },
-        "teamcity.remoterun.enabled": {
-          "type": "boolean",
-          "default": false,
-          "description": "Sets whether the TC build configuration explorer contents RemoteRun button."
         }
       }
     }

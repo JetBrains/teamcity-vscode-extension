@@ -13,7 +13,6 @@ export class SettingsImpl implements Settings {
     private _lastUsername: string;
 
     constructor() {
-        this.setEnableRemoteRun(undefined);
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._lastUrl = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
@@ -64,9 +63,5 @@ export class SettingsImpl implements Settings {
     public async setLastUsername(username: string): Promise<void> {
         await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
         this._lastUsername = username;
-    }
-
-    public async setEnableRemoteRun(enableRemoteRun: boolean): Promise<void> {
-        await SettingsImpl.setSettingsProperty(Constants.REMOTERUN_ENABLED, enableRemoteRun, false /* global */);
     }
 }

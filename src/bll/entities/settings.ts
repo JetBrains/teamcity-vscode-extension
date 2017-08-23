@@ -15,5 +15,4 @@ export interface Settings {
     setLastUrl(url: string): Promise<void>;
     setLastUsername(username: string): Promise<void>;
     setShowSignInWelcome(newValue: boolean): Promise<void>;
-    setEnableRemoteRun(newValue: boolean): Promise<void>;
 }

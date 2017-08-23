@@ -40,7 +40,7 @@ export class RemoteLoginImpl implements RemoteLogin {
         return new Promise<string>((resolve, reject) => {
             this._client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err, data) => {
                 /* tslint:disable:no-null-keyword */
-                if (err !== null || data === undefined || data.length === 0) {
+                if (err !== null) {
                     Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + VsCodeUtils.formatErrorMessage(err));
                     return reject(err);
                 }
