@@ -41,8 +41,8 @@ export class NotificationWatcherImpl {
         this.isActive = true;
         const credentials: Credentials = this._credentialStore.getCredential();
         if (!credentials) {
-            Logger.logWarning("NotificationWatcherImpl#activate: User Credentials absent");
-            return;
+            Logger.logError("NotificationWatcherImpl#activate: User Credentials absent");
+            throw new Error("NotificationWatcherImpl#activate: User Credentials absent");
         }
         this._remoteBuildServer.init(this._credentialStore);
         const gZippedSummary: Uint8Array[] = await this._remoteBuildServer.getGZippedSummary(credentials.userId);
