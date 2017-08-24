@@ -54,7 +54,7 @@ Also data provider contains header with buttons as alternative to typing command
 3. ![Show Context Menu](assets/tc-show-context-menu.png) - show a context menu that contains next options: 
 * `Signin`
 * `Remote Run. Find Suitable Build Configurations` 
-* `Select Files For Remote Run`
+* `Remote Run. Select Files For Remote Run`
 * `Remote Run. Run With Chosen Build Configurations`
 * `Signout`
 

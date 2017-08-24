@@ -37,6 +37,7 @@ import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
 import {injectable, inject} from "inversify";
 import {TYPES} from "./bll/utils/constants";
+import {TeamCityOutput} from "./view/teamcityoutput";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {
@@ -92,6 +93,7 @@ export class CommandHolderImpl implements CommandHolder {
             if (this._settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
+            TeamCityOutput.appendLine(MessageConstants.WELCOME_MESSAGE);
             this.storeLastUserCredentials(credentials);
         } else {
             Logger.logWarning("CommandHolderImpl#signIn: failed");

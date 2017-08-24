@@ -30,6 +30,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
         this._commandHolder.init(settings, credentialStore);
         this._notificationWatcher = notificationWatcher;
         notificationWatcher.init(credentialStore);
+        this._disposables.push(notificationWatcher);
         DataProviderManager.init(this._disposables);
         TeamCityOutput.init(this._disposables);
         const loggingLevel: string = this._settings.loggingLevel;
@@ -37,13 +38,10 @@ export class ExtensionManagerImpl implements ExtensionManager {
     }
 
     public async executeSignIn(): Promise<void> {
-        if (await this._commandHolder.signIn()) {
-            this._notificationWatcher.activate();
-        }
+        await this._commandHolder.signIn();
     }
 
     public cleanUp(): void {
-        this._notificationWatcher.resetData();
         this._credentialStore.removeCredential();
     }
 

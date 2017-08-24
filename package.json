@@ -37,7 +37,7 @@
         "category": "TeamCity"
       },
       {
-        "command": "teamcity.findSuitableBConfigs",
+        "command": "teamcity.findSuitableBuildConfigurations",
         "title": "Remote Run. Find Suitable Build Configurations",
         "category": "TeamCity",
         "icon": {
@@ -66,7 +66,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "teamcity.findSuitableBConfigs",
+          "command": "teamcity.findSuitableBuildConfigurations",
           "when": "view == teamcityExplorer",
           "group": "navigation@1"
         },
@@ -86,7 +86,7 @@
           "group": "@2"
         },
         {
-          "command": "teamcity.findSuitableBConfigs",
+          "command": "teamcity.findSuitableBuildConfigurations",
           "when": "view == teamcityExplorer",
           "group": "@2"
         },
