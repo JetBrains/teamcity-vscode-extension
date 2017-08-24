@@ -37,20 +37,14 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     /**
+     * Fill TeamCity Server Paths and
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
     public async getFormattedFileNames(): Promise<string[]> {
         const cvsLocalResources: CvsLocalResource[] = this._checkInInfo.cvsLocalResources;
-        const remoteBranch = await this.getRemoteBrunch();
-        let firstMonthRevHash = await this.getFirstMonthRev();
-        firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
-        const lastRevHash = await this.getLastRevision(remoteBranch);
         const formattedChangedFiles = [];
         cvsLocalResources.forEach((localResource) => {
-            const relativePath: string = localResource.fileAbsPath.replace(this._workspaceRootPath, "");
-            const formattedFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
-            formattedChangedFiles.push(formattedFilePath);
-            Logger.logDebug(`GitSupportProvider#getFormattedFilenames: formattedFilePath: ${formattedFilePath}`);
+            formattedChangedFiles.push(localResource.serverFilePath);
         });
         return formattedChangedFiles;
     }
@@ -92,12 +86,28 @@ export class GitSupportProvider implements CvsSupportProvider {
         const commitMessage: string = scm.inputBox.value;
         const cvsLocalResource: CvsLocalResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
+        await this.fillInServerPaths(cvsLocalResource);
         return {
             cvsLocalResources: cvsLocalResource,
             message: commitMessage,
             serverItems: [],
             workItemIds: []
         };
+    }
+
+    private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
+        const remoteBranch = await this.getRemoteBrunch();
+        let firstMonthRevHash = await this.getFirstMonthRev();
+        firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
+        const lastRevHash = await this.getLastRevision(remoteBranch);
+        cvsLocalResources.forEach((localResource) => {
+            const relativePath: string = localResource.fileAbsPath.replace(this._workspaceRootPath, "");
+            localResource.serverFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
+            if (localResource.prevFileAbsPath) {
+                const relativePath: string = localResource.prevFileAbsPath.replace(this._workspaceRootPath, "");
+                localResource.prevServerFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
+            }
+        });
     }
 
     /**

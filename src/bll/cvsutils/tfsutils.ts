@@ -74,7 +74,7 @@ export class TfsUtils {
     }
 
     private static async findSpecificTfs(path: string): Promise<CvsPartialInfo> {
-        const promiseResult = await cpprom.exec(path);
+        const promiseResult = await cpprom.exec(`"${path}"`);
         const tfCommandResult: string = promiseResult.stdout.toString("utf8").trim();
         if (!tfCommandResult) {
             throw new Error("Not found");

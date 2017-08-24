@@ -8,6 +8,8 @@ import {LeaveSelectableItem} from "./leaveselectableitem";
 export class CvsLocalResource extends LeaveSelectableItem {
     status: CvsFileStatusCode;
     fileAbsPath: string;
+    serverFilePath?: string;
+    prevServerFilePath?: string;
     prevFileAbsPath?: string;
 
     constructor(status: CvsFileStatusCode, fileAbsPath: string, label: string, prevFileAbsPath?: string) {

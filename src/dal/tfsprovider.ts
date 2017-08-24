@@ -43,12 +43,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     public async getFormattedFileNames(): Promise<string[]> {
         const formatFileNames: string[] = [];
-        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
         const cvsResources: CvsLocalResource[] = this._checkInInfo.cvsLocalResources;
-        cvsResources.forEach((resource) => {
-            const relativePath = path.relative(tfsInfo.projectLocalPath, resource.fileAbsPath);
-            const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
-            formatFileNames.push(`tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/"));
+        cvsResources.forEach((localResource) => {
+            formatFileNames.push(localResource.serverFilePath);
         });
         Logger.logDebug(`TfsSupportProvider#getFormattedFilenames: formatFileNames: ${formatFileNames.join(" ")}`);
         return formatFileNames;
@@ -84,12 +81,27 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const workItemIds: number[] = TfsSupportProvider.getWorkItemIdsFromMessage(commitMessage);
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
+        await this.fillInServerPaths(cvsLocalResources);
         return {
             cvsLocalResources: cvsLocalResources,
             message: commitMessage,
             serverItems: serverItems,
             workItemIds: workItemIds
         };
+    }
+
+    private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
+        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
+        cvsLocalResources.forEach((localResource) => {
+            const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
+            const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
+            localResource.serverFilePath = `tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/");
+            if (localResource.prevFileAbsPath) {
+                const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.prevFileAbsPath);
+                const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
+                localResource.prevServerFilePath = `tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/");
+            }
+        });
     }
 
     /**

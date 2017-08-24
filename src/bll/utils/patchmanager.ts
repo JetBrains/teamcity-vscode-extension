@@ -31,16 +31,14 @@ export class PatchManager {
         if (!changedFilesNames) {
             return;
         }
-        const configFileContent: MappingFileContent = await cvsProvider.generateMappingFileContent();
         const patchBuilder: PatchBuilder = new PatchBuilder();
         await patchBuilder.init();
         //It's impossible to use forEach loop with await calls
         for (let i: number = 0; i < changedFilesNames.length; i++) {
             const absPath: string = changedFilesNames[i].fileAbsPath;
             const status: CvsFileStatusCode = changedFilesNames[i].status;
-            const relPath: string = path.relative(configFileContent.localRootPath, absPath).replace(/\\/g, "/");
             const fileExist: boolean = await fs_async.exists(absPath);
-            const teamcityFileName: string = `${configFileContent.tcProjectRootPath}/${relPath}`;
+            const teamcityFileName: string = changedFilesNames[i].serverFilePath;
             let fileReadStream: ReadableSet | undefined;
             //When fileReadStream !== undefined we should use the stream.
             try {
@@ -72,9 +70,7 @@ export class PatchManager {
                     break;
                 }
                 case CvsFileStatusCode.RENAMED : {
-                    const prevAbsPath: string = changedFilesNames[i].prevFileAbsPath;
-                    const prevRelPath: string = path.relative(configFileContent.localRootPath, prevAbsPath).replace(/\\/g, "/");
-                    const prevTcFileName: string = `${configFileContent.tcProjectRootPath}/${prevRelPath}`;
+                    const prevTcFileName: string =  changedFilesNames[i].prevServerFilePath;
                     await patchBuilder.addDeletedFile(prevTcFileName);
                     if (fileExist) {
                         if (!fileReadStream && fileExist) {
