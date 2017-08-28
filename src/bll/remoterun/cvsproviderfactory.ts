@@ -24,7 +24,11 @@ export class CvsSupportProviderFactory {
         if (gitIsActive) {
             Logger.logDebug(`CvsSupportProviderFactory#getCvsSupportProvider: git is an activeCvs`);
             const gitProvider = new GitSupportProvider(gitCvsInfo.path);
-            await gitProvider.init();
+            try {
+                await gitProvider.init();
+            } catch (err) {
+                throw new Error("(teamcity) An error occurred during gitProvider initialisation");
+            }
             cvsProviders.push(gitProvider);
         }
 

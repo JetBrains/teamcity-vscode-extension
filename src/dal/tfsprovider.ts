@@ -127,8 +127,8 @@ export class TfsSupportProvider implements CvsSupportProvider {
             const checkInCommandPrefix = `"${this._tfPath}" checkIn /comment:"${this._checkInInfo.message}" /noprompt `;
             const checkInCommandSB: string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);
-            this._checkInInfo.cvsLocalResources.forEach((filePath) => {
-                checkInCommandSB.push(`"${filePath}" `);
+            this._checkInInfo.cvsLocalResources.forEach((localResource) => {
+                checkInCommandSB.push(`"${localResource.fileAbsPath}" `);
             });
             try {
                 await cp.exec(checkInCommandSB.join(""));

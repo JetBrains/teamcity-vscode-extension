@@ -264,7 +264,7 @@ export class GitSupportProvider implements CvsSupportProvider {
      * This method uses the "git branch -vv" command
      */
     private async getRemoteBrunch(): Promise<string> {
-        const getRemoteBranchCommand: string = `"${this._gitPath}" -C "${this._workspaceRootPath}" branch -vv --format='%(upstream:short)'`;
+        const getRemoteBranchCommand: string = `"${this._gitPath}" -C "${this._workspaceRootPath}" rev-parse --abbrev-ref --symbolic-full-name @{u}`;
         const prom = await cp_promise.exec(getRemoteBranchCommand);
         let remoteBranch: string = prom.stdout;
         if (remoteBranch === undefined || remoteBranch.length === 0) {
@@ -326,6 +326,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         commitCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkInInfo.message}" --quiet --allow-empty-message`);
         this._checkInInfo.cvsLocalResources.forEach((cvsLocalResource) => {
             commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
+            if (cvsLocalResource.prevFileAbsPath) {
+                commitCommandBuilder.push(`"${cvsLocalResource.prevFileAbsPath}"`);
+            }
         });
         return commitCommandBuilder.join(" ");
     }
