@@ -22,6 +22,7 @@ export class Constants {
     public static readonly SIGNOUT_COMMAND_NAME = "teamcity.signOut";
     public static readonly REMOTE_RUN_COMMAND_NAME = "teamcity.findSuitableBuildConfigurations";
     public static readonly SELECT_FILES_COMMAND_NAME = "teamcity.selectFilesForRemoteRun";
+    public static readonly SHOW_OUTPUT_COMMAND_NAME = "teamcity.showOutput";
     public static readonly CHANGE_CONFIG_STATE = "changeConfigState";
     public static readonly CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";

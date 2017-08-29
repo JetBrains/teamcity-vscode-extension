@@ -2,15 +2,16 @@
 
 import {Logger} from "./bll/utils/logger";
 import {TYPES} from "./bll/utils/constants";
+import {inject, injectable} from "inversify";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
-import {inject, injectable} from "inversify";
+import {ExtensionManager} from "./extensionmanager";
 import {TeamCityOutput} from "./view/teamcityoutput";
 import {DataProviderManager} from "./view/dataprovidermanager";
+import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
-import {Disposable, ExtensionContext, OutputChannel, workspace} from "vscode";
-import {ExtensionManager} from "./extensionmanager";
+import {Disposable, ExtensionContext, OutputChannel, workspace, StatusBarItem, window, StatusBarAlignment} from "vscode";
 
 @injectable()
 export class ExtensionManagerImpl implements ExtensionManager {
@@ -35,6 +36,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
         TeamCityOutput.init(this._disposables);
         const loggingLevel: string = this._settings.loggingLevel;
         this.initLogger(loggingLevel, workspace.rootPath);
+        TeamCityStatusBarItem.init(this._disposables);
     }
 
     public async executeSignIn(): Promise<void> {
@@ -43,6 +45,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
 
     public cleanUp(): void {
         this._credentialStore.removeCredential();
+        TeamCityStatusBarItem.setLoggedOut();
     }
 
     public dispose(): void {

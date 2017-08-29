@@ -1,9 +1,10 @@
 "use strict";
 
 import {Disposable} from "vscode";
+import {CommandHolder} from "./commandholder";
 
 export interface ExtensionManager extends Disposable {
-    commandHolder: any;
+    commandHolder: CommandHolder;
     cleanUp(): void;
     executeSignIn(): Promise<void>;
 }

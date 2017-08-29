@@ -21,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_COMMAND_NAME, () => extensionManager.commandHolder.getSuitableConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.remoteRunWithChosenConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_OUTPUT_COMMAND_NAME, () => extensionManager.commandHolder.showOutput()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (config: BuildConfigItem) => {
         config.changeState();
         DataProviderManager.refresh();

@@ -28,6 +28,7 @@ import {Credentials} from "./bll/credentialsstore/credentials";
 import {BuildConfigItem} from "./bll/entities/buildconfigitem";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
 import {CvsSupportProvider} from "./dal/cvsprovider";
+import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CvsLocalResource} from "./bll/entities/cvslocalresource";
 import {MessageManager} from "./view/messagemanager";
 import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
@@ -95,6 +96,7 @@ export class CommandHolderImpl implements CommandHolder {
             }
             TeamCityOutput.appendLine(MessageConstants.WELCOME_MESSAGE);
             this.storeLastUserCredentials(credentials);
+            TeamCityStatusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         } else {
             Logger.logWarning("CommandHolderImpl#signIn: failed");
         }
@@ -176,6 +178,10 @@ export class CommandHolderImpl implements CommandHolder {
             Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: something went wrong during remote run");
         }
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: finishes");
+    }
+
+    public showOutput(): void {
+        TeamCityOutput.show();
     }
 
     private getDefaultURL(): string {

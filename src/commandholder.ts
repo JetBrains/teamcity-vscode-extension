@@ -9,4 +9,5 @@ export interface CommandHolder {
     selectFilesForRemoteRun(): Promise<void>;
     getSuitableConfigs(): Promise<void>;
     remoteRunWithChosenConfigs(): Promise<void>;
+    showOutput(): void;
 }

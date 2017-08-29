@@ -2,7 +2,7 @@
   "name": "teamcity-vscode-extension",
   "displayName": "teamcity-vscode-extension",
   "description": "TeamCity integrarion for VSCode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "rugpanov",
   "icon": "assets/icon.png",
   "engines": {
@@ -14,9 +14,9 @@
   "activationEvents": [
     "*"
   ],
-  "repository" :
-  { "type" : "git"
-  , "url" : "https://github.com/rugpanov/teamcity-vscode-extension.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rugpanov/teamcity-vscode-extension.git"
   },
   "main": "./out/src/extension",
   "contributes": {
@@ -53,6 +53,11 @@
           "light": "resources/icons/light/remoterun.png",
           "dark": "resources/icons/light/remoterun.png"
         }
+      },
+      {
+        "command": "teamcity.showOutput",
+        "title": "Show TeamCity Output",
+        "category": "TeamCity"
       }
     ],
     "views": {
