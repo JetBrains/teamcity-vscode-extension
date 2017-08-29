@@ -29,7 +29,7 @@ export class ProjectItem extends TreeItem {
         const iconName: string = "project.png";
         return {
             light: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName)
+            dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
         };
     }
 

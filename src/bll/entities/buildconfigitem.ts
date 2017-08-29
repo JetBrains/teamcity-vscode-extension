@@ -18,7 +18,7 @@ export class BuildConfigItem extends LeaveSelectableItem {
         const iconName: string = "config - " + (this.isIncluded ? "incl" : "excl") + ".png";
         return {
             light: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName)
+            dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
         };
     }
 
