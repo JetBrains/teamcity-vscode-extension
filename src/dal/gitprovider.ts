@@ -139,11 +139,19 @@ export class GitSupportProvider implements CvsSupportProvider {
         if (nextGitOperation === undefined) {
             //Do nothing
         } else if (nextGitOperation.label === COMMIT_LABEL) {
-            await cp_promise.exec(this.buildCommitCommand());
+            try {
+                await this.commit();
+            } catch (err) {
+                throw new Error(`(teamcity) An error occurrs during processing commit. Please try manually`);
+            }
         } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            await cp_promise.exec(this.buildCommitCommand());
-            const pushCommand: string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
-            await cp_promise.exec(pushCommand);
+            try {
+                await this.commit();
+                const pushCommand: string = `"${this._gitPath}" -C "${this._workspaceRootPath}" push"`;
+                await cp_promise.exec(pushCommand);
+            } catch (err) {
+                throw new Error(`(teamcity) An error occurrs during processing commit/push. Please try manually`);
+            }
         }
     }
 
@@ -321,7 +329,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 
-    private buildCommitCommand(): string {
+    private async commit(): Promise<void> {
         const commitCommandBuilder: string[] = [];
         commitCommandBuilder.push(`"${this._gitPath}" -C "${this._workspaceRootPath}" commit -m "${this._checkInInfo.message}" --quiet --allow-empty-message`);
         this._checkInInfo.cvsLocalResources.forEach((cvsLocalResource) => {
@@ -330,7 +338,17 @@ export class GitSupportProvider implements CvsSupportProvider {
                 commitCommandBuilder.push(`"${cvsLocalResource.prevFileAbsPath}"`);
             }
         });
-        return commitCommandBuilder.join(" ");
+        try {
+            await cp_promise.exec(commitCommandBuilder.join(" "));
+        } catch (err) {
+            if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
+                Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this._gitPath}. ` +
+                `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name" ` +
+                `to set your account's default identity. ${VsCodeUtils.formatErrorMessage(err)}`);
+                throw new Error(`Unable to auto-detect email address for ${this._gitPath}`);
+            }
+            throw err;
+        }
     }
 }
 

@@ -167,7 +167,11 @@ export class CommandHolderImpl implements CommandHolder {
         const remoteRunResult: boolean = await patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: remote run is ok");
-            this._cvsProvider.requestForPostCommit();
+            try {
+                await this._cvsProvider.requestForPostCommit();
+            } catch (err) {
+                throw err;
+            }
         } else {
             Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: something went wrong during remote run");
         }

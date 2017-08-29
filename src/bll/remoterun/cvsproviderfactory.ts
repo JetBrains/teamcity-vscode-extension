@@ -8,7 +8,8 @@ import {GitSupportProvider} from "../../dal/gitprovider";
 import {TfsSupportProvider} from "../../dal/tfsprovider";
 import {CvsProviderTypes} from "../utils/constants";
 import {CvsInfo} from "../cvsutils/cvsinfo";
-import { MessageManager } from "../../view/messagemanager";
+import {MessageManager} from "../../view/messagemanager";
+import {VsCodeUtils} from "../utils/vscodeutils";
 
 export class CvsSupportProviderFactory {
 
@@ -27,6 +28,8 @@ export class CvsSupportProviderFactory {
             try {
                 await gitProvider.init();
             } catch (err) {
+                Logger.logError(`CvsSupportProviderFactory#getCvsSupportProviders: An error occurred during ` +
+                                `gitProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
                 throw new Error("(teamcity) An error occurred during gitProvider initialisation");
             }
             cvsProviders.push(gitProvider);
