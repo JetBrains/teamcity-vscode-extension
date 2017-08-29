@@ -52,7 +52,7 @@ export class WebLinksImpl implements WebLinks {
     }
 
     uploadChanges(patchAbsPath: string, message: string): Promise<string> {
-        const patchDestinationUrl: string = `${this._credentials.serverURL}/uploadChanges.html?userId=${this._credentials.userId}&description="${message}"&commitType=0`;
+        const patchDestinationUrl: string = `${this._credentials.serverURL}/uploadChanges.html?userId=${this._credentials.userId}&description=${message}&commitType=0`;
         return new Promise<string>((resolve, reject) => {
             fs.createReadStream(patchAbsPath).pipe(request.post(patchDestinationUrl, (err, httpResponse, body) => {
                 if (err) {
