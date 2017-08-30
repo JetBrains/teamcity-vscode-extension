@@ -26,6 +26,7 @@ export class Constants {
     public static readonly CHANGE_CONFIG_STATE = "changeConfigState";
     public static readonly CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
+    public static readonly ROOT_PROJECT_ID = "_Root";
 }
 
 export enum CvsProviderTypes {

@@ -18,11 +18,11 @@ import {
 } from "vscode";
 
 export class ProjectItem extends TreeItem {
-    public configs: BuildConfigItem[];
+    public children: TreeItem[];
 
     constructor(label: string, configs: BuildConfigItem[]) {
         super(label, TreeItemCollapsibleState.Collapsed);
-        this.configs = configs;
+        this.children = configs;
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
@@ -47,5 +47,9 @@ export class ProjectItem extends TreeItem {
         } else {
             this.collapsibleState = TreeItemCollapsibleState.Collapsed;
         }
+    }
+
+    public addChildProject(project: ProjectItem) {
+        this.children.push(project);
     }
 }

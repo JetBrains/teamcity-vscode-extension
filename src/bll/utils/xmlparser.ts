@@ -4,6 +4,7 @@ import {Logger} from "./logger";
 import * as xml2js from "xml2js";
 import {VsCodeUtils} from "./vscodeutils";
 import {QueuedBuild} from "./queuedbuild";
+import {Constants} from "../utils/constants";
 import {ProjectItem} from "../entities/projectitem";
 import {BuildItemProxy} from "../entities/builditemproxy";
 import {BuildConfigItem} from "../entities/buildconfigitem";
@@ -20,7 +21,7 @@ export class XmlParser {
             Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
         }
-        const projects: ProjectItem[] = [];
+        const projectMap: ProjectItem[] = [];
         Logger.logDebug("XmlParser#parseBuilds: start collect projects");
         for (let i: number = 0; i < buildsXml.length; i++) {
             const buildXml = buildsXml[i];
@@ -29,11 +30,12 @@ export class XmlParser {
                     if (err) {
                         reject(err);
                     }
-                    XmlParser.collectProject(project, projects);
+                    XmlParser.collectProject(project, projectMap);
                     resolve();
                 });
             });
         }
+        const projects: ProjectItem[] = projectMap[Constants.ROOT_PROJECT_ID].children;
         Logger.logDebug("XmlParser#parseBuilds: collected projects:");
         Logger.LogObject(projects);
         return projects;
@@ -75,26 +77,34 @@ export class XmlParser {
     /**
      * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
      * @param project - project as a TeamCity project entity with lots of useless fields.
-     * @param projectContainer - the result of the call of the method will be pushed to this object.
+     * @param projectMap - the result of the call of the method will be pushed to this object.
      */
-    private static collectProject(project: any, projectContainer: ProjectItem[]) {
-        if (!project || !project.Project || !project.Project.configs ||
-            !project.Project.configs[0] || !project.Project.configs[0].Configuration) {
+    private static collectProject(project: any, projectMap: ProjectItem[]) {
+        if (!project || !project.Project) {
             return;
         }
-        const xmlConfigurations: any = project.Project.configs[0].Configuration;
         const buildConfigurations: BuildConfigItem[] = [];
-        for (let i = 0; i < xmlConfigurations.length; i++) {
-            const xmlConfiguration = xmlConfigurations[i];
-            if (!xmlConfiguration.id || !xmlConfiguration.id[0] ||
-                !xmlConfiguration.name || !xmlConfiguration.name[0] ||
-                !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
-                continue;
+        if (project.Project.configs &&
+            project.Project.configs[0] && project.Project.configs[0].Configuration) {
+            const xmlConfigurations: any = project.Project.configs[0].Configuration;
+            for (let i = 0; i < xmlConfigurations.length; i++) {
+                const xmlConfiguration = xmlConfigurations[i];
+                if (!xmlConfiguration.id || !xmlConfiguration.id[0] ||
+                    !xmlConfiguration.name || !xmlConfiguration.name[0] ||
+                    !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
+                    continue;
+                }
+                buildConfigurations.push(new BuildConfigItem(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
             }
-            buildConfigurations.push(new BuildConfigItem(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
         }
-        if (buildConfigurations.length > 0) {
-            projectContainer.push(new ProjectItem(project.Project.name[0], buildConfigurations));
+        const currentProject = new ProjectItem(project.Project.name[0], buildConfigurations);
+        projectMap[project.Project.myProjectId[0]] = currentProject;
+        if (project &&
+            project.Project &&
+            project.Project.myParentProjectId &&
+            project.Project.myParentProjectId[0] &&
+            projectMap[project.Project.myParentProjectId[0]]) {
+            projectMap[project.Project.myParentProjectId[0]].addChildProject(currentProject);
         }
     }
 

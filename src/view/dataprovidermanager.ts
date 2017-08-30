@@ -4,6 +4,7 @@ import {
     CancellationToken,
     Command,
     commands,
+    Disposable,
     Event,
     EventEmitter,
     ExtensionContext,
@@ -13,9 +14,9 @@ import {
     TreeItem,
     TreeItemCollapsibleState,
     Uri,
+    window,
     workspace
 } from "vscode";
-import {Disposable, window} from "vscode";
 import {ProjectItem} from "../bll/entities/projectitem";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
@@ -103,7 +104,7 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         } else if (!element) {
             return this._projects;
         } else if (element instanceof ProjectItem) {
-            return element.configs;
+            return element.children;
         }
         return [];
     }
@@ -114,13 +115,21 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     public getIncludedBuildConfigs(): BuildConfigItem[] {
         const result: BuildConfigItem[] = [];
         this._projects.forEach((project) => {
-            project.configs.forEach((configuration) => {
-                if (configuration.isIncluded) {
-                    result.push(configuration);
-                }
-            });
+            this.collectAllProject(project, result);
         });
+
         return result;
+    }
+
+    private collectAllProject(project: ProjectItem, summaryCollection: BuildConfigItem[]) {
+        project.children.forEach((child) => {
+            if (child instanceof BuildConfigItem && child.isIncluded) {
+                summaryCollection.push(child);
+            }
+            if (child instanceof ProjectItem) {
+                this.collectAllProject(child, summaryCollection);
+            }
+        });
     }
 
     /**

@@ -140,7 +140,6 @@ export class CommandHolderImpl implements CommandHolder {
         const shortBuildConfigNames: string[] = await this._remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         const buildXmlArray: string[] = await this._remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         const projects: ProjectItem[] = await XmlParser.parseBuilds(buildXmlArray);
-        VsCodeUtils.filterConfigs(projects, shortBuildConfigNames);
         DataProviderManager.setExplorerContent(projects);
         DataProviderManager.refresh();
         MessageManager.showInfoMessage(MessageConstants.PLEASE_SPECIFY_BUILDS);

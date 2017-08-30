@@ -3,10 +3,8 @@
 import * as pako from "pako";
 import {Logger} from "./logger";
 import {MessageItem, workspace} from "vscode";
-import {ProjectItem} from "../entities/projectitem";
 import {BuildItemProxy} from "../entities/builditemproxy";
 import {ChangeItemProxy} from "../entities/changeitemproxy";
-import {BuildConfigItem} from "../entities/buildconfigitem";
 
 export class VsCodeUtils {
 
@@ -50,7 +48,7 @@ export class VsCodeUtils {
         const messageSB: string[] = [];
         if (change.id !== -1) {
             const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
-            const changeUrl : string = `${serverURL}/viewModification.html?modId=${change.id}&personal=true`;
+            const changeUrl: string = `${serverURL}/viewModification.html?modId=${change.id}&personal=true`;
             messageSB.push(`${changePrefix} #${change.id} has "${change.status}" status. ${changeUrl}`);
         }
         const builds: BuildItemProxy[] = change.builds;
@@ -59,25 +57,26 @@ export class VsCodeUtils {
         }
 
         builds.forEach((build) => {
-            if (build.id !== -1) {
-                let buildStatus: string;
-                switch (build.status) {
-                    case ("SUCCESS"): {
-                        buildStatus = "successful";
-                        break;
-                    }
-                    case ("FAILURE"): {
-                        buildStatus = `failed (${build.statusText})`;
-                        break;
-                    }
-                    default:
-                        buildStatus = `has "${build.status}" status`;
-                }
-                const buildPrefix = build.isPersonal ? "Personal build" : "Build";
-                const buildChangeUrl = build.webUrl || `${serverURL}/viewLog.html?buildId=${build.id}`;
-                messageSB.push(`${buildPrefix} ${build.projectName} :: ${build.name} ` +
-                    `#${build.number} ${buildStatus}. More details: ${buildChangeUrl}`);
+            if (build.id === -1) {
+                return;
             }
+            let buildStatus: string;
+            switch (build.status) {
+                case ("SUCCESS"): {
+                    buildStatus = "successful";
+                    break;
+                }
+                case ("FAILURE"): {
+                    buildStatus = `failed (${build.statusText})`;
+                    break;
+                }
+                default:
+                    buildStatus = `has "${build.status}" status`;
+            }
+            const buildPrefix = build.isPersonal ? "Personal build" : "Build";
+            const buildChangeUrl = build.webUrl || `${serverURL}/viewLog.html?buildId=${build.id}`;
+            messageSB.push(`${buildPrefix} ${build.projectName} :: ${build.name} ` +
+                `#${build.number} ${buildStatus}. More details: ${buildChangeUrl}`);
         });
         return messageSB.join("\n");
     }
@@ -137,22 +136,5 @@ export class VsCodeUtils {
      */
     public static sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    /**
-     * @param projects - array of ProjectItems that contain all project's buildConfigs.
-     * @param configurationIds - array of ids of suitable build configs.
-     * @return - contains at the first arg, not at @return clause. List of projects with only suitable build configs.
-     */
-    public static filterConfigs(projects: ProjectItem[], configurationIds: string[]) {
-        projects.forEach((project) => {
-            const filteredConfigs: BuildConfigItem[] = [];
-            project.configs.forEach((configuration) => {
-                if (configurationIds.indexOf(configuration.id) !== -1) {
-                    filteredConfigs.push(configuration);
-                }
-            });
-            project.configs = filteredConfigs;
-        });
     }
 }
