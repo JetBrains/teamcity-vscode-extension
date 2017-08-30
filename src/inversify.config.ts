@@ -18,6 +18,8 @@ import {RemoteBuildServer} from "./dal/remotebuildserver";
 import {RemoteBuildServerImpl} from "./dal/remotebuldserverimpl";
 import {WebLinks} from "./dal/weblinks";
 import {WebLinksImpl} from "./dal/weblinksimpl";
+import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
+import {PatchSender} from "./bll/remoterun/patchsender";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl);
@@ -28,3 +30,4 @@ myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(Notification
 myContainer.bind<RemoteLogin>(TYPES.RemoteLogin).to(RemoteLoginImpl);
 myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServerImpl);
 myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinksImpl);
+myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);

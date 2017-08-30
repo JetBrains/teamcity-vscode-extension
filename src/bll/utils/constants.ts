@@ -112,5 +112,6 @@ export const TYPES = {
     NotificationWatcher: Symbol("NotificationWatcher"),
     RemoteLogin: Symbol("RemoteLogin"),
     RemoteBuildServer: Symbol("RemoteBuildServer"),
-    WebLinks: Symbol("WebLinks")
+    WebLinks: Symbol("WebLinks"),
+    PatchSender: Symbol("PatchSender")
 };

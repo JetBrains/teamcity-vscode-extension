@@ -11,7 +11,7 @@ suite("BuildItemProxy", () => {
                 done("Unexpected error during parse of personalBuildObjXml.");
             }
             const buildItem: BuildItemProxy = new BuildItemProxy(obj.Build);
-            assert.equal(buildItem.buildId, 134);
+            assert.equal(buildItem.id, 134);
             done();
         });
     });

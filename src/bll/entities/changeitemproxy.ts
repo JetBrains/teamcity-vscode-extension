@@ -5,9 +5,29 @@ import {BuildItemProxy} from "./builditemproxy";
 
 export class ChangeItemProxy {
     private readonly _changeObj: any;
+    public builds: BuildItemProxy[];
 
     constructor(changeObj: any) {
         this._changeObj = changeObj;
+
+        if (!this._changeObj ||
+            !this._changeObj.myTypeToInstanceMap ||
+            !this._changeObj.myTypeToInstanceMap[0] ||
+            !this._changeObj.myTypeToInstanceMap[0].entry ||
+            !this._changeObj.myTypeToInstanceMap[0].entry[0] ||
+            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build ||
+            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0] ||
+            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0].id) {
+            Logger.logDebug(`ChangeItemProxy#constructor: builds is not reachable`);
+            this.builds = [];
+        }
+        const builds: BuildItemProxy[] = [];
+        this._changeObj.myTypeToInstanceMap[0].entry.forEach((entry) => {
+            if (entry && entry.Build && entry.Build[0]) {
+                builds.push(new BuildItemProxy(entry.Build[0]));
+            }
+        });
+        this.builds = builds;
     }
 
     public get isPersonal(): boolean {
@@ -42,26 +62,5 @@ export class ChangeItemProxy {
             return "UNKNOWN";
         }
         return this._changeObj.myStatus[0];
-    }
-
-    public get builds(): BuildItemProxy[] {
-        if (!this._changeObj ||
-            !this._changeObj.myTypeToInstanceMap ||
-            !this._changeObj.myTypeToInstanceMap[0] ||
-            !this._changeObj.myTypeToInstanceMap[0].entry ||
-            !this._changeObj.myTypeToInstanceMap[0].entry[0] ||
-            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build ||
-            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0] ||
-            !this._changeObj.myTypeToInstanceMap[0].entry[0].Build[0].id) {
-            Logger.logDebug(`ChangeItemProxy#builds: builds is not reachable`);
-            return [];
-        }
-        const builds: BuildItemProxy[] = [];
-        this._changeObj.myTypeToInstanceMap[0].entry.forEach((entry) => {
-            if (entry && entry.Build && entry.Build[0]) {
-                builds.push(new BuildItemProxy(entry.Build[0]));
-            }
-        });
-        return builds;
     }
 }

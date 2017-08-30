@@ -1,10 +1,11 @@
 "use strict";
 
-import * as xml2js from "xml2js";
 import {Logger} from "./logger";
+import * as xml2js from "xml2js";
 import {VsCodeUtils} from "./vscodeutils";
-import {ProjectItem} from "../entities/projectitem";
 import {QueuedBuild} from "./queuedbuild";
+import {ProjectItem} from "../entities/projectitem";
+import {BuildItemProxy} from "../entities/builditemproxy";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {SummaryDataProxy} from "../entities/summarydataproxy";
 
@@ -16,11 +17,11 @@ export class XmlParser {
      */
     public static async parseBuilds(buildsXml: string[]): Promise<ProjectItem[]> {
         if (buildsXml === undefined) {
-            Logger.logWarning("XmlRpcBuildConfigResolver#parseXml: buildsXml is empty");
+            Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
         }
         const projects: ProjectItem[] = [];
-        Logger.logDebug("XmlRpcBuildConfigResolver#parseXml: start collect projects");
+        Logger.logDebug("XmlParser#parseBuilds: start collect projects");
         for (let i: number = 0; i < buildsXml.length; i++) {
             const buildXml = buildsXml[i];
             await new Promise<{}>((resolve, reject) => {
@@ -33,16 +34,37 @@ export class XmlParser {
                 });
             });
         }
-        Logger.logDebug("XmlRpcBuildConfigResolver#parseXml: collected projects:");
+        Logger.logDebug("XmlParser#parseBuilds: collected projects:");
         Logger.LogObject(projects);
         return projects;
     }
 
-    public static parseSummary(summeryXmlObj : string) : Promise<SummaryDataProxy> {
+    /**
+     * @param buildsXml - xml that contains all info about related projects.
+     * @return - list of ProjectItems that contain related buildConfigs.
+     */
+    public static async parseBuild(buildXml: string): Promise<BuildItemProxy> {
+        if (buildXml === undefined) {
+            Logger.logWarning("XmlParser#parseBuild: buildXml is empty");
+            return;
+        }
+        Logger.logDebug("XmlParser#parseBuild: start collect projects");
+        return await new Promise<BuildItemProxy>((resolve, reject) => {
+            xml2js.parseString(buildXml, (err, buildObj) => {
+                if (err) {
+                    reject(err);
+                }
+                const buildItemProxy: BuildItemProxy = new BuildItemProxy(buildObj);
+                resolve(buildItemProxy);
+            });
+        });
+    }
+
+    public static parseSummary(summeryXmlObj: string): Promise<SummaryDataProxy> {
         return new Promise<SummaryDataProxy>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
-                    Logger.logError("NotificationProvider#getSummeryData: caught an error during parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
                     reject(err);
                 }
                 resolve(new SummaryDataProxy(obj.Summary));
@@ -76,7 +98,7 @@ export class XmlParser {
         }
     }
 
-    public static parseQueuedBuild(queuedBuildInfoXml: string) : Promise<QueuedBuild> {
+    public static parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {
         return new Promise<QueuedBuild>((resolve, reject) => {
             xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
                 if (err) {
@@ -88,7 +110,7 @@ export class XmlParser {
         });
     }
 
-    public static parseBuildStatus(buildInfoXml: string) : Promise<string> {
+    public static parseBuildStatus(buildInfoXml: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             xml2js.parseString(buildInfoXml, (err, buildInfo) => {
                 if (err) {

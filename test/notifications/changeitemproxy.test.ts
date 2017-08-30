@@ -56,7 +56,7 @@ suite("ChangeItemProxy", () => {
             }
             const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
             assert.equal(changeItem.builds.length, 1);
-            assert.equal(changeItem.builds[0].buildId, 87);
+            assert.equal(changeItem.builds[0].id, 87);
             done();
         });
     });

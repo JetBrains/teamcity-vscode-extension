@@ -2,9 +2,11 @@
 
 import {OutputChannel} from "vscode";
 import {Logger} from "../utils/logger";
+import {WebLinks} from "../../dal/weblinks";
 import {XmlParser} from "../utils/xmlparser";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {TeamCityOutput} from "../../view/teamcityoutput";
+import {BuildItemProxy} from "../entities/builditemproxy";
 import {ChangeItemProxy} from "../entities/changeitemproxy";
 import {Credentials} from "../credentialsstore/credentials";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
@@ -12,7 +14,7 @@ import {SummaryDataProxy} from "../entities/summarydataproxy";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {NotificationWatcher} from "../notifications/notificationwatcher";
 import {ModificationSubscriptionImpl} from "./modificationcountersubscriptionimpl";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 
 @injectable()
@@ -23,15 +25,19 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     private readonly outdatedChangeIds: string[] = [];
     private readonly outdatedPersonalChangeIds: string[] = [];
     private _remoteBuildServer: RemoteBuildServer;
+    private _webLinks: WebLinks;
     private _subscription: ModificationSubscriptionImpl;
     private isActive = true;
 
-    constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer) {
+    constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
+                @inject(TYPES.WebLinks) webLinks: WebLinks) {
         this._remoteBuildServer = remoteBuildServer;
+        this._webLinks = webLinks;
     }
 
     public init(credentialStore: CredentialsStore) {
         this._credentialStore = credentialStore;
+        this._webLinks.init(credentialStore);
         this.activate();
     }
 
@@ -64,7 +70,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
                 this.collectNewChanges(summary.changes);
                 this.collectNewChanges(summary.personalChanges);
             }
-            while (credentials  && this.isActive) {
+            while (credentials && this.isActive) {
                 const serializedSubscription: string = this._subscription.serialize();
                 const eventCounter: number = await this._remoteBuildServer.getTotalNumberOfEvents(serializedSubscription);
                 if (eventCounter === prevEventCounter) {
@@ -130,10 +136,19 @@ export class NotificationWatcherImpl implements NotificationWatcher {
             Logger.logWarning(`NotificationWatcher#displayChanges: changes or user credentials absent`);
             return;
         }
-        changes.forEach((change) => {
-            const message: string = VsCodeUtils.formMessage(change, credentials);
+        for (let changeIndex = 0; changeIndex < changes.length; changeIndex++) {
+            const change: ChangeItemProxy = changes[changeIndex];
+            const builds: BuildItemProxy[] = change.builds;
+            if (change.builds) {
+                for (let buildIndex = 0; buildIndex < builds.length; buildIndex++) {
+                    const build: BuildItemProxy = change.builds[buildIndex];
+                    const buildXml = await this._webLinks.getBuildInfo(build.id);
+                    change.builds[buildIndex] = buildXml ? await XmlParser.parseBuild(buildXml) : change.builds[buildIndex];
+                }
+            }
+            const message: string = VsCodeUtils.formMessage(change, credentials.serverURL);
             TeamCityOutput.appendLine(message);
             TeamCityOutput.show();
-        });
+        }
     }
 }

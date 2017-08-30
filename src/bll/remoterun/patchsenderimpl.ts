@@ -1,26 +1,31 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {WebLinksImpl} from "../../dal/weblinksimpl";
-import {WebLinks} from "../../dal/weblinks";
-import {XmlParser} from "../utils/xmlparser";
-import {VsCodeUtils} from "../utils/vscodeutils";
-import {PatchManager} from "../utils/patchmanager";
-import {ChangeListStatus} from "../utils/constants";
 import {PatchSender} from "./patchsender";
 import {CheckInInfo} from "./checkininfo";
+import {WebLinks} from "../../dal/weblinks";
+import {XmlParser} from "../utils/xmlparser";
 import {QueuedBuild} from "../utils/queuedbuild";
-import {Credentials} from "../credentialsstore/credentials";
-import {BuildConfigItem} from "../entities/buildconfigitem";
+import {VsCodeUtils} from "../utils/vscodeutils";
+import {PatchManager} from "../utils/patchmanager";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {MessageManager} from "../../view/messagemanager";
+import {ChangeListStatus, TYPES} from "../utils/constants";
+import {BuildConfigItem} from "../entities/buildconfigitem";
+import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
-    private readonly _webLinks : WebLinks;
+    private readonly _webLinks: WebLinks;
 
-    constructor(credentials : Credentials) {
-        this._webLinks = new WebLinksImpl(credentials);
+    constructor(@inject(TYPES.WebLinks) webLinks: WebLinks) {
+        this._webLinks = webLinks;
+    }
+
+    init(credentialsStore: CredentialsStore): void {
+        this._webLinks.init(credentialsStore);
     }
 
     /**
@@ -73,7 +78,7 @@ export class CustomPatchSender implements PatchSender {
         let i: number = 0;
         while (i < queuedBuilds.length) {
             const build: QueuedBuild = queuedBuilds[i];
-            const buildInfoXml: string = await this._webLinks.getBuildInfo(build);
+            const buildInfoXml: string = await this._webLinks.getBuildInfo(build.id);
             const buildStatus: string = await XmlParser.parseBuildStatus(buildInfoXml);
             if (!buildStatus) {
                 await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);

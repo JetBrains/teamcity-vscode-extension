@@ -6,14 +6,14 @@ import {
     MessageItem,
     OutputChannel,
     QuickDiffProvider,
+    QuickPickItem,
+    QuickPickOptions,
     scm,
     SourceControlInputBox,
     SourceControlResourceState,
     window,
     workspace,
-    WorkspaceEdit,
-    QuickPickItem,
-    QuickPickOptions
+    WorkspaceEdit
 } from "vscode";
 import {Logger} from "./bll/utils/logger";
 import {XmlParser} from "./bll/utils/xmlparser";
@@ -31,12 +31,11 @@ import {CvsSupportProvider} from "./dal/cvsprovider";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CvsLocalResource} from "./bll/entities/cvslocalresource";
 import {MessageManager} from "./view/messagemanager";
-import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
 import {CvsSupportProviderFactory} from "./bll/remoterun/cvsproviderfactory";
 import {DataProviderManager} from "./view/dataprovidermanager";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {TeamCityOutput} from "./view/teamcityoutput";
 
@@ -46,17 +45,21 @@ export class CommandHolderImpl implements CommandHolder {
     private _remoteLogin: RemoteLogin;
     private _remoteBuildServer: RemoteBuildServer;
     private _credentialsStore: CredentialsStore;
+    private _patchSender: PatchSender;
     private _settings: Settings;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
-                @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer) {
+                @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
+                @inject(TYPES.PatchSender) patchSender: PatchSender) {
         this._remoteLogin = remoteLogin;
         this._remoteBuildServer = remoteBuildServer;
+        this._patchSender = patchSender;
     }
 
     public init(settings: Settings, credentialsStore: CredentialsStore): void {
         this._settings = settings;
         this._credentialsStore = credentialsStore;
+        this._patchSender.init(credentialsStore);
     }
 
     public async signIn(): Promise<boolean> {
@@ -148,7 +151,7 @@ export class CommandHolderImpl implements CommandHolder {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
         if (!this._cvsProvider) {
             Logger.logError("CommandHolderImpl#remoteRunWithChosenConfigs: cvsProvider absents. Please execute " +
-                            "`Find Suitable Build Configuration` command first");
+                "`Find Suitable Build Configuration` command first");
             MessageManager.showWarningMessage("Please execute `Find Suitable Build Configuration` command first!");
             return;
         }
@@ -165,8 +168,7 @@ export class CommandHolderImpl implements CommandHolder {
         }
         DataProviderManager.setExplorerContent([]);
         DataProviderManager.refresh();
-        const patchSender: PatchSender = new CustomPatchSender(credentials);
-        const remoteRunResult: boolean = await patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
+        const remoteRunResult: boolean = await this._patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: remote run is ok");
             try {
@@ -259,7 +261,7 @@ export class CommandHolderImpl implements CommandHolder {
             return;
         }
         this._remoteLogin.init(serverUrl);
-        let authenticationResponse : string;
+        let authenticationResponse: string;
         try {
             authenticationResponse = await this._remoteLogin.authenticate(user, password);
         } catch (err) {
@@ -289,7 +291,7 @@ export class CommandHolderImpl implements CommandHolder {
     }
 
     private async getCvsSupportProvider(): Promise<CvsSupportProvider> {
-        const cvsProviders : CvsSupportProvider[] = await CvsSupportProviderFactory.getCvsSupportProviders();
+        const cvsProviders: CvsSupportProvider[] = await CvsSupportProviderFactory.getCvsSupportProviders();
         if (!cvsProviders || cvsProviders.length === 0) {
             //If there is no provider, log already contains message about the problem
             Logger.logInfo("No one cvs was found");

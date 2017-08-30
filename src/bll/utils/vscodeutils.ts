@@ -3,10 +3,9 @@
 import * as pako from "pako";
 import {Logger} from "./logger";
 import {MessageItem, workspace} from "vscode";
+import {ProjectItem} from "../entities/projectitem";
 import {BuildItemProxy} from "../entities/builditemproxy";
 import {ChangeItemProxy} from "../entities/changeitemproxy";
-import {Credentials} from "../credentialsstore/credentials";
-import {ProjectItem} from "../entities/projectitem";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 
 export class VsCodeUtils {
@@ -43,24 +42,40 @@ export class VsCodeUtils {
     }
 
     /**
-     * This method prepares message to display from change items and user credential.
+     * This method prepares message to display from change items and serverUrl.
      * @param change - changeItemProxy
-     * @param credentials - user credential. Required to get serverUrl.
+     * @param serverURL - serverURL
      */
-    public static formMessage(change: ChangeItemProxy, credentials: Credentials): string {
+    public static formMessage(change: ChangeItemProxy, serverURL: string): string {
         const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
         const messageSB: string[] = [];
         messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
         const builds: BuildItemProxy[] = change.builds;
-        if (builds) {
-            builds.forEach((build) => {
-                const buildPrefix = build.isPersonal ? "Personal build" : "Build";
-                const buildChangeUrl = `${credentials.serverURL}/viewLog.html?buildId=${build.buildId}`;
-                if (build.buildId !== -1) {
-                    messageSB.push(`${buildPrefix} #${build.buildId} has "${build.status}" status. More details: ${buildChangeUrl}`);
-                }
-            });
+        if (!builds) {
+            return messageSB.join("\n");
         }
+
+        builds.forEach((build) => {
+            if (build.id !== -1) {
+                let buildStatus: string;
+                switch (build.status) {
+                    case ("SUCCESS"): {
+                        buildStatus = "successful";
+                        break;
+                    }
+                    case ("FAILURE"): {
+                        buildStatus = `failed (${build.statusText})`;
+                        break;
+                    }
+                    default:
+                        buildStatus = `has "${build.status}" status`;
+                }
+                const buildPrefix = build.isPersonal ? "Personal build" : "Build";
+                const buildChangeUrl = build.webUrl || `${serverURL}/viewLog.html?buildId=${build.id}`;
+                messageSB.push(`${buildPrefix} ${build.projectName} :: ${build.name} ` +
+                    `#${build.number} ${buildStatus}. More details: ${buildChangeUrl}`);
+            }
+        });
         return messageSB.join("\n");
     }
 
