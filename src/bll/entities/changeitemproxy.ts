@@ -42,13 +42,13 @@ export class ChangeItemProxy {
         return (this._changeObj.mod[0].personal[0] === "true");
     }
 
-    public get changeId(): number {
+    public get id(): number {
         if (!this._changeObj ||
             !this._changeObj.mod ||
             !this._changeObj.mod[0] ||
             this._changeObj.mod[0].id === undefined ||
             this._changeObj.mod[0].id[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#changeId: changeId is not reachable. default: -1`);
+            Logger.logDebug(`ChangeItemProxy#id: id is not reachable. default: -1`);
             return -1;
         }
         return this._changeObj.mod[0].id[0];

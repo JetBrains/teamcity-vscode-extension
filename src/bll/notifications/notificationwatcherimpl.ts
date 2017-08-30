@@ -116,9 +116,9 @@ export class NotificationWatcherImpl implements NotificationWatcher {
         const newChanges: ChangeItemProxy[] = [];
         for (let i = 0; i < changes.length; i++) {
             const correspondingArray = changes[i].isPersonal ? this.outdatedPersonalChangeIds : this.outdatedChangeIds;
-            if (correspondingArray.indexOf(`${changes[i].changeId}:${changes[i].status}`) === -1) {
+            if (correspondingArray.indexOf(`${changes[i].id}:${changes[i].status}`) === -1) {
                 newChanges.push(changes[i]);
-                correspondingArray.push(`${changes[i].changeId}:${changes[i].status}`);
+                correspondingArray.push(`${changes[i].id}:${changes[i].status}`);
             } else {
                 break;
             }

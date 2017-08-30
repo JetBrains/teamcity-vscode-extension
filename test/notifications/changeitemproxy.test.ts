@@ -11,7 +11,7 @@ suite("ChangeItemProxy", () => {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
             const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
-            assert.equal(changeItem.changeId, 61);
+            assert.equal(changeItem.id, 61);
             done();
         });
     });

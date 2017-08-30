@@ -47,9 +47,12 @@ export class VsCodeUtils {
      * @param serverURL - serverURL
      */
     public static formMessage(change: ChangeItemProxy, serverURL: string): string {
-        const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
         const messageSB: string[] = [];
-        messageSB.push(`${changePrefix} #${change.changeId} has "${change.status}" status.`);
+        if (change.id !== -1) {
+            const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
+            const changeUrl : string = `${serverURL}/viewModification.html?modId=${change.id}&personal=true`;
+            messageSB.push(`${changePrefix} #${change.id} has "${change.status}" status. ${changeUrl}`);
+        }
         const builds: BuildItemProxy[] = change.builds;
         if (!builds) {
             return messageSB.join("\n");
