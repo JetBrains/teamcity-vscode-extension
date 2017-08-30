@@ -23,7 +23,7 @@ export class TeamCityOutput {
 
     public static show() {
         if (TeamCityOutput._outputChannel) {
-            TeamCityOutput._outputChannel.show();
+            TeamCityOutput._outputChannel.show(true);
         }
     }
 }
