@@ -71,10 +71,20 @@ to Visual Studio Code's Settings and restart VSCode. Once you are finished loggi
 ```
 The log file will be placed at the root of your workspace and will be named `teamcity-extension.log`.
 
+## Debugging
+To start debugging the extension, please, follow the instructions:
+1. Clone the repository from the GitHub [repository](https://github.com/rugpanov/teamcity-vscode-extension).
+2. Execute `npm install` command from the root of the project.
+3. Open the project via the `Visual Studio Code` editor
+4. `Debug` -> `Start Debugging` 
+
+## Packaging
+To package a custom version of the extension, please, refer to the [VSCode documentation](https://code.visualstudio.com/docs/extensions/publish-extension#_packaging-extensions).
+
 ## Support
-Support for this extension is provided on my [GitHub Issue Tracker](https://github.com/rugpanov/TeamCity-extension-for-VSCode/issues). You
-can submit a [bug report](https://github.com/rugpanov/TeamCity-extension-for-VSCode/issues/new), a [feature request](https://github.com/rugpanov/TeamCity-extension-for-VSCode/issues/new)
-or participate in [discussions](https://github.com/rugpanov/TeamCity-extension-for-VSCode/issues).
+Support for this extension is provided on my [GitHub Issue Tracker](https://github.com/rugpanov/teamcity-vscode-extension/issues). You
+can submit a [bug report](https://github.com/rugpanov/teamcity-vscode-extension/issues/new), a [feature request](https://github.com/rugpanov/teamcity-vscode-extension/issues/new)
+or participate in [discussions](https://github.com/rugpanov/teamcity-vscode-extension/issues).
 
 ## License
 This extension is [licensed under the MIT License](LICENSE.txt).
