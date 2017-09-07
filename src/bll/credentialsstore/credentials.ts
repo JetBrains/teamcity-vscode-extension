@@ -7,10 +7,10 @@ export class Credentials {
     private _userId: string;
     private _sessionId: string;
 
-    public constructor(_serverURL, _user, _password, userId, sessionId) {
-        this._serverURL = _serverURL;
-        this._user = _user;
-        this._password = _password;
+    public constructor(serverURL, user, password, userId, sessionId) {
+        this._serverURL = serverURL;
+        this._user = user;
+        this._password = password;
         this._userId = userId;
         this._sessionId = sessionId;
     }

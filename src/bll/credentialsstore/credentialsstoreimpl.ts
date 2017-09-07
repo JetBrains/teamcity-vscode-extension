@@ -9,12 +9,7 @@ import {CredentialsStore} from "./credentialsstore";
 export class CredentialsStoreImpl implements CredentialsStore {
     private _credentials: Credentials;
 
-    /**
-     * @param credentials - user credential
-     * @return the result of a credential check
-     */
     public setCredential(credentials: Credentials): void {
-        Logger.logWarning(`User ${credentials.user} was failed the credential check`);
         this._credentials = credentials;
     }
 
@@ -22,7 +17,7 @@ export class CredentialsStoreImpl implements CredentialsStore {
         return this._credentials;
     }
 
-    public async removeCredential(): Promise<void> {
+    public removeCredential(): void {
         if (this._credentials) {
             Logger.logInfo(`The credentials for ${this._credentials.user} will be deleted from the CredentialsStore`);
             this._credentials = undefined;

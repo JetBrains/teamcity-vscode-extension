@@ -4,12 +4,11 @@ import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
 import {Logger} from "../bll/utils/logger";
-import {CvsProviderTypes} from "../bll/utils/constants";
+import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {CvsFileStatusCode} from "../bll/utils/constants";
-import {workspace, scm, QuickPickItem, QuickPickOptions, window} from "vscode";
+import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
 import {CheckInInfo} from "../bll/remoterun/checkininfo";
 import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
@@ -23,7 +22,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     private _checkInInfo: CheckInInfo;
     private _gitPath: string;
 
-    public constructor(gitPath: string) {
+    private constructor(gitPath: string) {
         this._workspaceRootPath = workspace.rootPath;
         this._gitPath = gitPath;
     }
@@ -32,8 +31,16 @@ export class GitSupportProvider implements CvsSupportProvider {
         return CvsProviderTypes.Git;
     }
 
-    public async init() {
-        this._checkInInfo = await this.getRequiredCheckInInfo();
+    public static async init(path: string): Promise<GitSupportProvider> {
+        const instance: GitSupportProvider = new GitSupportProvider(path);
+        try {
+            instance._checkInInfo = await instance.getRequiredCheckInInfo();
+        } catch (err) {
+            Logger.logError(`GitSupportProvider#init: An error occurred during ` +
+                `tfvcProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
+            throw new Error("An error occurred during git provider initialisation");
+        }
+        return instance;
     }
 
     /**
@@ -168,9 +175,9 @@ export class GitSupportProvider implements CvsSupportProvider {
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
     public async getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> {
-        const gitPath : string = this._gitPath;
+        const gitPath: string = this._gitPath;
         const relPath = path.relative(this._workspaceRootPath, fileAbsPath).replace(/\\/g, "/");
-        const spawnArgs : string[] = [`-C`, `${this._workspaceRootPath}`, `show`, `:${relPath}`];
+        const spawnArgs: string[] = [`-C`, `${this._workspaceRootPath}`, `show`, `:${relPath}`];
         const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
         let streamLength: number = 0;
         return new Promise<ReadableSet>((resolve, reject) => {
@@ -343,8 +350,8 @@ export class GitSupportProvider implements CvsSupportProvider {
         } catch (err) {
             if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
                 Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this._gitPath}. ` +
-                `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name" ` +
-                `to set your account's default identity. ${VsCodeUtils.formatErrorMessage(err)}`);
+                    `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name" ` +
+                    `to set your account's default identity. ${VsCodeUtils.formatErrorMessage(err)}`);
                 throw new Error(`Unable to auto-detect email address for ${this._gitPath}`);
             }
             throw err;

@@ -6,9 +6,8 @@ import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
-import {CvsProviderTypes} from "../bll/utils/constants";
-import {CvsFileStatusCode} from "../bll/utils/constants";
-import {workspace, scm, QuickPickItem, QuickPickOptions, window} from "vscode";
+import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
+import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
 import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
 import {CheckInInfo} from "../bll/remoterun/checkininfo";
@@ -19,7 +18,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
     private _tfsInfo: TfsWorkFoldInfo;
     private _tfPath: string;
 
-    public constructor(tfPath: string) {
+    private constructor(tfPath: string) {
         this._workspaceRootPath = workspace.rootPath;
         this._tfPath = tfPath;
     }
@@ -28,10 +27,18 @@ export class TfsSupportProvider implements CvsSupportProvider {
         return CvsProviderTypes.Tfs;
     }
 
-    public async init() {
-        this._tfsInfo = await this.getTfsInfo();
-        this._checkInInfo = await this.getRequiredCheckInInfo();
-        Logger.logDebug(`TfsSupportProvider#init: TfsSupportProvider was initialized`);
+    public static async init(path: string): Promise<TfsSupportProvider> {
+        const instance = new TfsSupportProvider(path);
+        try {
+            instance._tfsInfo = await instance.getTfsInfo();
+            instance._checkInInfo = await instance.getRequiredCheckInInfo();
+            Logger.logDebug(`TfsSupportProvider#init: TfsSupportProvider was initialized`);
+        } catch (err) {
+            Logger.logError(`TfsSupportProvider#init: An error occurred during ` +
+                `tfvcProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
+            throw new Error("An error occurred during tfvc provider initialisation");
+        }
+        return instance;
     }
 
     /**
