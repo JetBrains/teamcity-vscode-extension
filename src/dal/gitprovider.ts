@@ -90,7 +90,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             return this._checkInInfo;
         }
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
-        const commitMessage: string = scm.inputBox.value;
+        const commitMessage: string = this.getCommitMessage();
         const cvsLocalResource: CvsLocalResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         await this.fillInServerPaths(cvsLocalResource);
@@ -100,6 +100,13 @@ export class GitSupportProvider implements CvsSupportProvider {
             serverItems: [],
             workItemIds: []
         };
+    }
+
+    private getCommitMessage(): string {
+        if (!scm || !scm.inputBox) {
+            return "";
+        }
+        return scm.inputBox.value;
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {

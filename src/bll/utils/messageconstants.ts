@@ -17,4 +17,5 @@ export class MessageConstants {
     static readonly PLEASE_SPECIFY_BUILDS: string = "Please specify builds for remote run.";
     static readonly DO_NOT_SHOW_AGAIN = "Don't show again";
     static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
+    static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
 }

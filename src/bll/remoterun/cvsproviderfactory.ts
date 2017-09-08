@@ -1,8 +1,12 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {GitUtils} from "../cvsutils/gitutils";
-import {TfsUtils} from "../cvsutils/tfsutils";
+import {GitIsActiveValidator} from "../cvsutils/gitisactivevalidator";
+import {Finder} from "../cvsutils/finder";
+import {Validator} from "../cvsutils/validator";
+import {GitPathFinder} from "../cvsutils/gitpathfinder";
+import {TfvcPathFinder} from "../cvsutils/tfvcpathfinder";
+import {TfvcIsActiveValidator} from "../cvsutils/tfvcisactivevalidator";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {GitSupportProvider} from "../../dal/gitprovider";
@@ -22,8 +26,10 @@ export class CvsSupportProviderFactory {
         let gitIsActive: boolean = false;
         let gitErrorMessage: string = undefined;
         try {
-            gitPath = await GitUtils.getPath();
-            await GitUtils.checkIsActive(gitPath);
+            const pathFinder: Finder = new GitPathFinder();
+            gitPath = await pathFinder.find();
+            const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
+            await isActiveValidator.validate();
             gitIsActive = true;
         } catch (err) {
             gitErrorMessage = VsCodeUtils.formatErrorMessage(err);
@@ -37,8 +43,10 @@ export class CvsSupportProviderFactory {
         let tfvcIsActive: boolean = false;
         let tfvcErrorMessage: string = undefined;
         try {
-            tfvcPath = await TfsUtils.getPath();
-            await TfsUtils.checkIsActive(tfvcPath);
+            const pathFinder: Finder = new TfvcPathFinder();
+            tfvcPath = await pathFinder.find();
+            const isActiveValidator: Validator = new TfvcIsActiveValidator(gitPath);
+            await isActiveValidator.validate();
             tfvcIsActive = true;
         } catch (err) {
             tfvcErrorMessage = VsCodeUtils.formatErrorMessage(err);

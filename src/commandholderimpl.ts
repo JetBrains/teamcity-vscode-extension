@@ -294,7 +294,7 @@ export class CommandHolderImpl implements CommandHolder {
         if (!cvsProviders || cvsProviders.length === 0) {
             //If there is no provider, log already contains message about the problem
             Logger.logInfo("No one cvs was found");
-            return;
+            return Promise.reject<CvsSupportProvider>(undefined);
         } else if (cvsProviders.length === 1) {
             Logger.logInfo(`${cvsProviders[0].cvsType.toString()} cvsProvider was found`);
             return cvsProviders[0];

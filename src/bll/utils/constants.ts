@@ -14,6 +14,7 @@ export class Constants {
     public static readonly DEFAULT_USER_NAME = `${Constants.EXTENSION_NAME_PREFIX}credentials.username`;
     public static readonly REMOTERUN_ENABLED = `${Constants.EXTENSION_NAME_PREFIX}remoterun.enabled`;
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
+    public static readonly GIT_PATH_SETTING_NAME = "git.path";
 
     public static readonly POST_METHOD = "POST";
     public static readonly GET_METHOD = "GET";
