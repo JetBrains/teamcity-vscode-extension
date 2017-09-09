@@ -1,16 +1,16 @@
 "use strict";
 
-import * as path from "path";
 import {workspace} from "vscode";
 import {Validator} from "./validator";
 import {Logger} from "../utils/logger";
 import * as cp_module from "child-process-promise";
+import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 
 export class GitIsActiveValidator implements Validator {
     private readonly _path: string;
-    private readonly _childProcess: any;
+    private readonly _childProcess: AsyncChildProcess;
 
-    constructor (path: string, childProcessMock?: any) {
+    constructor(path: string, childProcessMock?: any) {
         this._path = path;
         this._childProcess = childProcessMock || cp_module;
     }

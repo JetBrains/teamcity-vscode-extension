@@ -3,11 +3,12 @@
 import {workspace} from "vscode";
 import {Validator} from "./validator";
 import * as cp_module from "child-process-promise";
+import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 
 export class TfvcIsActiveValidator implements Validator {
 
     private readonly _path: string;
-    private readonly _childProcess: any;
+    private readonly _childProcess: AsyncChildProcess;
 
     constructor(path: string, childProcessMock?: any) {
         this._path = path;

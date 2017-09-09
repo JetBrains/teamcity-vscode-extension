@@ -1,21 +1,25 @@
 "use strict";
 
-import * as fs from "fs";
 import * as path from "path";
 import {Finder} from "./finder";
 import {workspace} from "vscode";
-import {Logger} from "../utils/logger";
 import {Constants} from "../utils/constants";
-import {MessageConstants} from "../utils/messageconstants";
+import * as fs_async_module from "async-file";
 import * as cp_module from "child-process-promise";
+import {Process} from "../moduleinterfaces/process";
+import {AsyncFs} from "../moduleinterfaces/asyncfs";
+import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
+import {MessageConstants} from "../utils/messageconstants";
 
 export class GitPathFinder implements Finder {
-    private readonly _childProcess: any;
-    private readonly _process: any;
+    private readonly _fs: AsyncFs;
+    private readonly _process: Process;
+    private readonly _childProcess: AsyncChildProcess;
 
-    constructor(childProcessMock?: any, processMock?: any) {
-        this._childProcess = childProcessMock || cp_module;
+    constructor(childProcessMock?: AsyncChildProcess, processMock?: Process, fsMock?: AsyncFs) {
+        this._fs = fsMock || fs_async_module;
         this._process = processMock || process;
+        this._childProcess = childProcessMock || cp_module;
     }
 
     public async find(): Promise<string> {
@@ -78,9 +82,7 @@ export class GitPathFinder implements Finder {
     }
 
     private async getChildObjects(path: string): Promise<string[]> {
-        return new Promise<string[]>((resolve, reject) => {
-            fs.readdir(path, (err, children) => err ? reject() : resolve(children));
-        });
+        return this._fs.readdir(path);
     }
 
     private async getFirstPortableGitObject(childObjects: string[]): Promise<string> {
@@ -119,7 +121,8 @@ export class GitPathFinder implements Finder {
     }
 
     private isGitNotInstalled(err: any) {
-        const GIT_IS_NOT_INSTALLED_ERR_CODE = 2; /*According to Microsoft*/
+        const GIT_IS_NOT_INSTALLED_ERR_CODE = 2;
+        /*According to Microsoft*/
         return err.code === GIT_IS_NOT_INSTALLED_ERR_CODE;
     }
 }

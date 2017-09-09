@@ -1,19 +1,21 @@
 "use strict";
 
-import {Finder} from "./finder";
 import * as os_module from "os";
+import {Finder} from "./finder";
 import {workspace} from "vscode";
+import {Os} from "../moduleinterfaces/os";
 import {Constants} from "../utils/constants";
 import * as cp_module from "child-process-promise";
+import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 
 export class TfvcPathFinder implements Finder {
 
-    private readonly _childProcess;
-    private readonly _os;
+    private readonly _os: Os;
+    private readonly _childProcess: AsyncChildProcess;
 
-    constructor(childProcessMock?: any, osMock?: any) {
-        this._childProcess = childProcessMock || cp_module;
+    constructor(childProcessMock?: AsyncChildProcess, osMock?: Os) {
         this._os = osMock || os_module;
+        this._childProcess = childProcessMock || cp_module;
     }
 
     public async find(): Promise<string> {
