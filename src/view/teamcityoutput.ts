@@ -3,27 +3,30 @@
 import {OutputChannel, window, Disposable} from "vscode";
 
 export class TeamCityOutput {
-    private static _outputChannel: OutputChannel;
+    private static _instance: TeamCityOutput;
+    private _outputChannel: OutputChannel;
 
-    public static init(disposables: Disposable[]): void {
-        if (TeamCityOutput._outputChannel !== undefined) {
-            return;
-        }
-        TeamCityOutput._outputChannel = window.createOutputChannel("TeamCity");
+    private constructor(disposables: Disposable[]) {
+        this._outputChannel = window.createOutputChannel("TeamCity");
         if (disposables) {
-            disposables.push(TeamCityOutput._outputChannel);
+            disposables.push(this._outputChannel);
         }
     }
 
-    public static appendLine(line: string) {
-        if (TeamCityOutput._outputChannel) {
-            TeamCityOutput._outputChannel.append(line + "\n\n");
+    public static initAndGetInstance(disposables?: Disposable[]): TeamCityOutput {
+        this._instance = new TeamCityOutput(disposables);
+        return this._instance;
+    }
+
+    public appendLine(line: string) {
+        if (this._outputChannel) {
+            this._outputChannel.append(line + "\n\n");
         }
     }
 
-    public static show() {
-        if (TeamCityOutput._outputChannel) {
-            TeamCityOutput._outputChannel.show(true);
+    public show() {
+        if (this._outputChannel) {
+            this._outputChannel.show(true);
         }
     }
 }

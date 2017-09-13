@@ -29,6 +29,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
 
     private readonly CHECK_FREQUENCY_MS: number = 10000;
     private credentialStore: CredentialsStore;
+    private teamCityOutput: TeamCityOutput;
     private webLinks: WebLinks;
     private remoteBuildServer: RemoteBuildServer;
     private shouldNotBeDisposed: boolean;
@@ -41,8 +42,9 @@ export class NotificationWatcherImpl implements NotificationWatcher {
         this.changeStorage = new ChangeStorage();
     }
 
-    public initAndActivate(credentialStore: CredentialsStore) {
+    public initAndActivate(credentialStore: CredentialsStore, teamCityOutput: TeamCityOutput) {
         this.credentialStore = credentialStore;
+        this.teamCityOutput = teamCityOutput;
         this.remoteBuildServer.init(credentialStore);
         this.webLinks.init(credentialStore);
         Logger.logInfo("NotificationWatcherImpl#initAndActivate: NW was initialized and should be activate now.");
@@ -103,10 +105,12 @@ export class NotificationWatcherImpl implements NotificationWatcher {
         while (this.shouldNotBeDisposed) {
             const credentials: Credentials = this.credentialStore.getCredential();
             if (credentials) {
+                Logger.logInfo(`NotificationWatcherImpl#waitAndGetCredentials: user ${credentials.userId} is logged in.`);
                 return credentials;
             }
             await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
         }
+        Logger.logInfo(`NotificationWatcherImpl#waitAndGetCredentials: shouldNotBeDisposed - abort opperation`);
         return Promise.reject<Credentials>(undefined);
     }
 
@@ -168,14 +172,14 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     private async displayChangesToOutput(changes: ChangeItemProxy[]): Promise<void> {
         const credentials: Credentials = this.credentialStore.getCredential();
         if (!changes || !credentials) {
-            Logger.logWarning(`NotificationWatcher#displayChanges: changes or user credentials absent`);
+            Logger.logWarning(`NotificationWatcher#displayChangesToOutput: changes or user credentials absent`);
             return;
         }
 
         for (let i = 0; i < changes.length; i++) {
             const message: string = VsCodeUtils.formMessage(changes[i], credentials.serverURL);
-            TeamCityOutput.appendLine(message);
-            TeamCityOutput.show();
+            this.teamCityOutput.appendLine(message);
+            this.teamCityOutput.show();
         }
     }
 }

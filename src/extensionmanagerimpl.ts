@@ -28,12 +28,12 @@ export class ExtensionManagerImpl implements ExtensionManager {
         this._settings = settings;
         this._credentialStore = credentialStore;
         this._commandHolder = commandHolder;
-        this._commandHolder.init(settings, credentialStore);
+        const teamCityOutput = TeamCityOutput.initAndGetInstance(this._disposables);
+        this._commandHolder.init(settings, credentialStore, teamCityOutput);
         this._notificationWatcher = notificationWatcher;
-        notificationWatcher.initAndActivate(credentialStore);
+        notificationWatcher.initAndActivate(credentialStore, teamCityOutput);
         this._disposables.push(notificationWatcher);
         DataProviderManager.init(this._disposables);
-        TeamCityOutput.init(this._disposables);
         const loggingLevel: string = this._settings.loggingLevel;
         this.initLogger(loggingLevel, workspace.rootPath);
         TeamCityStatusBarItem.init(this._disposables);

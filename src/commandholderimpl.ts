@@ -45,6 +45,7 @@ export class CommandHolderImpl implements CommandHolder {
     private _remoteLogin: RemoteLogin;
     private _remoteBuildServer: RemoteBuildServer;
     private _credentialsStore: CredentialsStore;
+    private _teamCityOutput: TeamCityOutput;
     private _patchSender: PatchSender;
     private _settings: Settings;
 
@@ -56,10 +57,11 @@ export class CommandHolderImpl implements CommandHolder {
         this._patchSender = patchSender;
     }
 
-    public init(settings: Settings, credentialsStore: CredentialsStore): void {
+    public init(settings: Settings, credentialsStore: CredentialsStore, teamCityOutput: TeamCityOutput): void {
         this._settings = settings;
         this._credentialsStore = credentialsStore;
         this._patchSender.init(credentialsStore);
+        this._teamCityOutput = teamCityOutput;
     }
 
     public async signIn(): Promise<boolean> {
@@ -97,7 +99,7 @@ export class CommandHolderImpl implements CommandHolder {
             if (this._settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
-            TeamCityOutput.appendLine(MessageConstants.WELCOME_MESSAGE);
+            this._teamCityOutput.appendLine(MessageConstants.WELCOME_MESSAGE);
             this.storeLastUserCredentials(credentials);
             TeamCityStatusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         } else {
@@ -182,7 +184,7 @@ export class CommandHolderImpl implements CommandHolder {
     }
 
     public showOutput(): void {
-        TeamCityOutput.show();
+        this._teamCityOutput.show();
     }
 
     private getDefaultURL(): string {
