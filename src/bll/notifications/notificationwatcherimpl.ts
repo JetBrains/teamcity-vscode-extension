@@ -144,7 +144,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
 
         changeSet.forEach((changes) => {
             changes.forEach((change) => {
-                if (this.changeStorage.contains(change)) {
+                if (!this.changeStorage.contains(change)) {
                     newChanges.push(change);
                 }
             });
