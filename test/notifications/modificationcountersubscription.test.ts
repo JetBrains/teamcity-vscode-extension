@@ -2,12 +2,12 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {ModificationSubscriptionImpl} from "../../src/bll/notifications/modificationcountersubscriptionimpl";
+import {ModificationSubscription} from "../../src/bll/notifications/modificationsubscription";
 import {SummaryDataProxy} from "../../src/bll/entities/summarydataproxy";
 
 suite("ModificationSubscriptionImpl", () => {
     test("should verify constructor", function () {
-        const modificationCounter: ModificationSubscriptionImpl = new ModificationSubscriptionImpl();
+        const modificationCounter: ModificationSubscription = new ModificationSubscription();
         assert.equal(modificationCounter.serialize(), "");
     });
 
@@ -18,8 +18,8 @@ suite("ModificationSubscriptionImpl", () => {
                 done("Unexpected error during parse of summaryObjXml.");
             }
             const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
-            const modificationCounter: ModificationSubscriptionImpl =
-                ModificationSubscriptionImpl.fromTeamServerSummaryData(summeryData, "239");
+            const modificationCounter: ModificationSubscription =
+                ModificationSubscription.generateFromTeamServerSummaryData(summeryData, "239");
             assert.equal(modificationCounter.serialize(), expectedResult);
             done();
         });

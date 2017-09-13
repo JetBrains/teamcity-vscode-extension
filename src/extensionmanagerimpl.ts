@@ -30,7 +30,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
         this._commandHolder = commandHolder;
         this._commandHolder.init(settings, credentialStore);
         this._notificationWatcher = notificationWatcher;
-        notificationWatcher.init(credentialStore);
+        notificationWatcher.initAndActivate(credentialStore);
         this._disposables.push(notificationWatcher);
         DataProviderManager.init(this._disposables);
         TeamCityOutput.init(this._disposables);

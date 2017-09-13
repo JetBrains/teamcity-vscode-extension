@@ -63,4 +63,8 @@ export class ChangeItemProxy {
         }
         return this._changeObj.myStatus[0];
     }
+
+    public toString(): string {
+        return `${this.id}:${this.status}`;
+    }
 }

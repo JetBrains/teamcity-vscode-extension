@@ -22,7 +22,7 @@ export class VsCodeUtils {
         return keys.length !== 2 ? undefined : keys;
     }
 
-    public static gzip2Str(gzip: Uint8Array[]): string {
+    public static gzip2Xml(gzip: Uint8Array[]): string {
         Logger.logDebug(`VsCodeUtils#gzip2Str: starts unzipping gzip`);
         const buffer: string[] = [];
         // Pako magic

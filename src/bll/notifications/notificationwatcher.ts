@@ -5,5 +5,5 @@ import {CredentialsStore} from "../credentialsstore/credentialsstore";
 
 export interface NotificationWatcher extends Disposable {
 
-    init(credentialStore: CredentialsStore): void;
+    initAndActivate(credentialStore: CredentialsStore): void;
 }

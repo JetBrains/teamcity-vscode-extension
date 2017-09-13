@@ -34,4 +34,15 @@ export class Credentials {
     public get sessionId(): string {
         return this._sessionId;
     }
+
+    public equals(credentials: Credentials): boolean {
+        if (credentials === undefined ||
+            this.user !== credentials.user ||
+            this.userId !== credentials.userId ||
+            this.serverURL !== credentials.serverURL ||
+            this.sessionId !== credentials.sessionId) {
+            return false;
+        }
+        return true;
+    }
 }

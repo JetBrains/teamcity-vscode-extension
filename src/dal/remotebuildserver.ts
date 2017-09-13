@@ -5,15 +5,7 @@ import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 export interface RemoteBuildServer {
 
     init(credentialsStore: CredentialsStore): void;
-    /**
-     * @param userId - user internal id
-     * @return SummeryDataProxy object
-     */
-    getGZippedSummary(userId: string): Promise<Uint8Array[]>;
-
-    /**
-     * @return - number of event for existing subscriptions.
-     */
+    getGZippedSummary(): Promise<Uint8Array[]>;
     getTotalNumberOfEvents(subscription: string): Promise<number>;
 
     /**
