@@ -20,6 +20,10 @@ import {WebLinks} from "./dal/weblinks";
 import {WebLinksImpl} from "./dal/weblinksimpl";
 import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
 import {PatchSender} from "./bll/remoterun/patchsender";
+import {SummaryDao} from "./dal/summarydao";
+import {BuildDao} from "./dal/builddao";
+import {BuildDaoImpl} from "./dal/builddaoimpl";
+import {SummaryDaoImpl} from "./dal/summarydaoimpl";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl);
@@ -31,3 +35,5 @@ myContainer.bind<RemoteLogin>(TYPES.RemoteLogin).to(RemoteLoginImpl);
 myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServerImpl);
 myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinksImpl);
 myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);
+myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDaoImpl);
+myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);

@@ -4,8 +4,8 @@ import {UserEvent} from "./userevent";
 import {Serializable} from "./serializable";
 import {ProjectEvent} from "./projectevent";
 import {TrackerEventType} from "../utils/constants";
-import {SummaryDataProxy} from "../entities/summarydataproxy";
 import {SubscriptionEvent} from "./subscriptionevent";
+import {Summary} from "../entities/summary";
 
 export class ModificationSubscription implements Serializable {
     private readonly myEvents: SubscriptionEvent[] = [];
@@ -30,9 +30,9 @@ export class ModificationSubscription implements Serializable {
         this.addEvent(new UserEvent(type, userId));
     }
 
-    public static generateFromTeamServerSummaryData(data: SummaryDataProxy, userId: string): ModificationSubscription {
+    public static generateFromTeamServerSummaryData(summary: Summary, userId: string): ModificationSubscription {
         const subscription = new ModificationSubscription();
-        data.getVisibleProjectIds.forEach((projectId) => {
+        summary.visibleProjectIds.forEach((projectId) => {
             subscription.addProjectEvent(TrackerEventType.BUILD_TYPE_ACTIVE_STATUS_CHANGED, projectId);
             subscription.addProjectEvent(TrackerEventType.BUILD_TYPE_RESPONSIBILITY_CHANGES, projectId);
             subscription.addProjectEvent(TrackerEventType.BUILD_TYPE_ADDED_TO_QUEUE, projectId);

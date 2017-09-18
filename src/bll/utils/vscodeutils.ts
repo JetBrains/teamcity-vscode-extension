@@ -3,8 +3,8 @@
 import * as pako from "pako";
 import {Logger} from "./logger";
 import {MessageItem, workspace} from "vscode";
-import {BuildItemProxy} from "../entities/builditemproxy";
-import {ChangeItemProxy} from "../entities/changeitemproxy";
+import {Change} from "../entities/change";
+import {Build} from "../entities/build";
 
 export class VsCodeUtils {
 
@@ -44,14 +44,14 @@ export class VsCodeUtils {
      * @param change - changeItemProxy
      * @param serverURL - serverURL
      */
-    public static formMessage(change: ChangeItemProxy, serverURL: string): string {
+    public static formMessage(change: Change, serverURL: string): string {
         const messageSB: string[] = [];
         if (change.id !== -1) {
             const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
             const changeUrl: string = `${serverURL}/viewModification.html?modId=${change.id}&personal=true`;
             messageSB.push(`${changePrefix} #${change.id} has "${change.status}" status. ${changeUrl}`);
         }
-        const builds: BuildItemProxy[] = change.builds;
+        const builds: Build[] = change.builds;
         if (!builds) {
             return messageSB.join("\n");
         }
@@ -76,7 +76,7 @@ export class VsCodeUtils {
             const buildPrefix = build.isPersonal ? "Personal build" : "Build";
             const buildChangeUrl = build.webUrl || `${serverURL}/viewLog.html?buildId=${build.id}`;
             messageSB.push(`${buildPrefix} ${build.projectName} :: ${build.name} ` +
-                `#${build.number} ${buildStatus}. More details: ${buildChangeUrl}`);
+                `#${build.buildNumber} ${buildStatus}. More details: ${buildChangeUrl}`);
         });
         return messageSB.join("\n");
     }

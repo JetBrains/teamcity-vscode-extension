@@ -6,9 +6,9 @@ import {VsCodeUtils} from "./vscodeutils";
 import {QueuedBuild} from "./queuedbuild";
 import {Constants} from "../utils/constants";
 import {ProjectItem} from "../entities/projectitem";
-import {BuildItemProxy} from "../entities/builditemproxy";
 import {BuildConfigItem} from "../entities/buildconfigitem";
-import {SummaryDataProxy} from "../entities/summarydataproxy";
+import {Summary} from "../entities/summary";
+import {Build} from "../entities/build";
 
 export class XmlParser {
 
@@ -42,34 +42,34 @@ export class XmlParser {
     }
 
     /**
-     * @param buildsXml - xml that contains all info about related projects.
+     * @param buildXml - xml that contains all info about related projects.
      * @return - list of ProjectItems that contain related buildConfigs.
      */
-    public static async parseBuild(buildXml: string): Promise<BuildItemProxy> {
+    public static async parseRestBuild(buildXml: string): Promise<Build> {
         if (buildXml === undefined) {
-            Logger.logWarning("XmlParser#parseBuild: buildXml is empty");
+            Logger.logWarning("XmlParser#parseRestBuild: buildXml is empty");
             return;
         }
-        Logger.logDebug("XmlParser#parseBuild: start collect projects");
-        return await new Promise<BuildItemProxy>((resolve, reject) => {
+        Logger.logDebug("XmlParser#parseRestBuild: start collect projects");
+        return await new Promise<Build>((resolve, reject) => {
             xml2js.parseString(buildXml, (err, buildObj) => {
                 if (err) {
                     reject(err);
                 }
-                const buildItemProxy: BuildItemProxy = new BuildItemProxy(buildObj);
-                resolve(buildItemProxy);
+                const build: Build = Build.fromRestParcedObject(buildObj);
+                resolve(build);
             });
         });
     }
 
-    public static parseSummary(summeryXmlObj: string): Promise<SummaryDataProxy> {
-        return new Promise<SummaryDataProxy>((resolve, reject) => {
+    public static parseSummary(summeryXmlObj: string): Promise<Summary> {
+        return new Promise<Summary>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
                     Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
                     reject(err);
                 }
-                resolve(new SummaryDataProxy(obj.Summary));
+                resolve(Summary.fromXmlRpcObject(obj));
             });
         });
     }

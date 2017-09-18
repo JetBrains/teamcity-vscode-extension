@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {ChangeItemProxy} from "../../src/bll/entities/ChangeItemProxy";
+import {Change} from "../../src/bll/entities/change";
 
 suite("ChangeItemProxy", () => {
     test("should verify constructor/changeId", function (done) {
@@ -10,7 +10,7 @@ suite("ChangeItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
-            const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.id, 61);
             done();
         });
@@ -21,7 +21,7 @@ suite("ChangeItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
-            const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.isPersonal, true);
             done();
         });
@@ -32,7 +32,7 @@ suite("ChangeItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
-            const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.isPersonal, false);
             done();
         });
@@ -43,7 +43,7 @@ suite("ChangeItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
-            const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.status, "CHECKED");
             done();
         });
@@ -54,7 +54,7 @@ suite("ChangeItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
-            const changeItem: ChangeItemProxy = new ChangeItemProxy(obj.ChangeInfo);
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.builds.length, 1);
             assert.equal(changeItem.builds[0].id, 87);
             done();

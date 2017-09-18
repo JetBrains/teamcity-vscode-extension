@@ -115,5 +115,7 @@ export const TYPES = {
     RemoteLogin: Symbol("RemoteLogin"),
     RemoteBuildServer: Symbol("RemoteBuildServer"),
     WebLinks: Symbol("WebLinks"),
-    PatchSender: Symbol("PatchSender")
+    PatchSender: Symbol("PatchSender"),
+    SummaryDao: Symbol("SummaryDao"),
+    BuildDao: Symbol("BuildDao")
 };

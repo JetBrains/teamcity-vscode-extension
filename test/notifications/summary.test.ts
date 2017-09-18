@@ -1,17 +1,17 @@
 "use strict";
-
+//TODO: update tests
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {SummaryDataProxy} from "../../src/bll/entities/summarydataproxy";
+import {Summary} from "../../src/bll/entities/summary";
 
-suite("SummaryDataProxy", () => {
+suite("Summary", () => {
     test("should verify constructor", function (done) {
         xml2js.parseString(summaryObjXml, (err, obj) => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
-            assert.equal(summeryData.getVisibleProjectIds.length, 2);
+            const summeryData: Summary = Summary.fromXmlRpcObject(obj);
+            assert.equal(summeryData.visibleProjectIds.length, 2);
             done();
         });
     });
@@ -21,10 +21,10 @@ suite("SummaryDataProxy", () => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
-            assert.equal(summeryData.getVisibleProjectIds[0], "_Root");
-            assert.equal(summeryData.getVisibleProjectIds[1], "project2");
-            assert.equal(summeryData.getVisibleProjectIds.length, 2);
+            const summeryData: Summary = Summary.fromXmlRpcObject(obj);
+            assert.equal(summeryData.visibleProjectIds[0], "_Root");
+            assert.equal(summeryData.visibleProjectIds[1], "project2");
+            assert.equal(summeryData.visibleProjectIds.length, 2);
             done();
         });
     });
@@ -34,7 +34,7 @@ suite("SummaryDataProxy", () => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: Summary = Summary.fromXmlRpcObject(obj);
             assert.equal(summeryData.changes.length, 11);
             done();
         });
@@ -45,7 +45,7 @@ suite("SummaryDataProxy", () => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: Summary = Summary.fromXmlRpcObject(obj);
             assert.equal(summeryData.personalChanges.length, 102);
             done();
         });

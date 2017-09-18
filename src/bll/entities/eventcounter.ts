@@ -16,11 +16,11 @@ export class EventCounter {
         return instance;
     }
 
-    public async update(newCounter: EventCounter) {
+    public update(newCounter: EventCounter) {
         this.counter = newCounter.counter;
     }
 
-    public async notEquals(newCounter: EventCounter) {
+    public notEquals(newCounter: EventCounter): boolean {
         return !newCounter || this.counter !== newCounter.counter;
     }
 }

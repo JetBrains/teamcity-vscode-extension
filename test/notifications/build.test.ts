@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {BuildItemProxy} from "../../src/bll/entities/BuildItemProxy";
+import {Build} from "../../src/bll/entities/build";
 
 suite("BuildItemProxy", () => {
     test("should verify constructor/buildId", function (done) {
@@ -10,7 +10,7 @@ suite("BuildItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of personalBuildObjXml.");
             }
-            const buildItem: BuildItemProxy = new BuildItemProxy(obj.Build);
+            const buildItem: Build = Build.fromXmlRpcObject(obj.Build);
             assert.equal(buildItem.id, 134);
             done();
         });
@@ -21,7 +21,7 @@ suite("BuildItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of personalBuildObjXml.");
             }
-            const buildItem: BuildItemProxy = new BuildItemProxy(obj.Build);
+            const buildItem: Build = Build.fromXmlRpcObject(obj.Build);
             assert.equal(buildItem.isPersonal, true);
             done();
         });
@@ -32,7 +32,7 @@ suite("BuildItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of personalBuildObjXml.");
             }
-            const buildItem: BuildItemProxy = new BuildItemProxy(obj.Build);
+            const buildItem: Build = Build.fromXmlRpcObject(obj.Build);
             assert.equal(buildItem.isPersonal, false);
             done();
         });
@@ -43,7 +43,7 @@ suite("BuildItemProxy", () => {
             if (err) {
                 done("Unexpected error during parse of personalBuildObjXml.");
             }
-            const buildItem: BuildItemProxy = new BuildItemProxy(obj.Build);
+            const buildItem: Build = Build.fromXmlRpcObject(obj.Build);
             assert.equal(buildItem.status, "Success");
             done();
         });

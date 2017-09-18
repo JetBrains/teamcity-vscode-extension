@@ -3,7 +3,7 @@
 import {assert} from "chai";
 import * as xml2js from "xml2js";
 import {ModificationSubscription} from "../../src/bll/notifications/modificationsubscription";
-import {SummaryDataProxy} from "../../src/bll/entities/summarydataproxy";
+import {Summary} from "../../src/bll/entities/summary";
 
 suite("ModificationSubscriptionImpl", () => {
     test("should verify constructor", function () {
@@ -17,7 +17,7 @@ suite("ModificationSubscriptionImpl", () => {
             if (err) {
                 done("Unexpected error during parse of summaryObjXml.");
             }
-            const summeryData: SummaryDataProxy = new SummaryDataProxy(obj.Summary);
+            const summeryData: Summary = Summary.fromXmlRpcObject(obj);
             const modificationCounter: ModificationSubscription =
                 ModificationSubscription.generateFromTeamServerSummaryData(summeryData, "239");
             assert.equal(modificationCounter.serialize(), expectedResult);
