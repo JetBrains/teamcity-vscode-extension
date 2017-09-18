@@ -1,4 +1,4 @@
-# TeamCity Extension for Visual Studio Code IDE
+# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](http://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
 This extension allows you to connect to TeamCity Server and run personal builds on TeamCity server without leaving Visual Studio Code.
 
