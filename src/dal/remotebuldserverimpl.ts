@@ -7,19 +7,20 @@ import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {RemoteBuildServer} from "./remotebuildserver";
 import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
-import {injectable} from "inversify";
+import {injectable, inject} from "inversify";
+import {TYPES} from "../bll/utils/constants";
 
 @injectable()
 export class RemoteBuildServerImpl implements RemoteBuildServer {
 
-    private _credentialsStore: CredentialsStore;
+    private credentialsStore: CredentialsStore;
 
-    init(credentialsStore: CredentialsStore) {
-        this._credentialsStore = credentialsStore;
+    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+        this.credentialsStore = credentialsStore;
     }
 
     private createAndInitClient(): any {
-        const credentials: Credentials = this._credentialsStore.getCredential();
+        const credentials: Credentials = this.credentialsStore.getCredential();
         if (credentials) {
             const client = xmlrpc.createClient({url: credentials.serverURL + "/RPC2", cookies: true});
             client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentials.sessionId);
@@ -30,7 +31,7 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
     }
 
     private getUserId(): any {
-        const credentials = this._credentialsStore.getCredential();
+        const credentials = this.credentialsStore.getCredential();
         if (credentials) {
             return credentials.userId;
         } else {

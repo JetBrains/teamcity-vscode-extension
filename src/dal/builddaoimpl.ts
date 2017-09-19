@@ -16,10 +16,6 @@ export class BuildDaoImpl {
         this.webLinks = webLinks;
     }
 
-    public init(credentialsStore: CredentialsStore) {
-        this.webLinks.init(credentialsStore);
-    }
-
     public async getById(id: number): Promise<Build> {
         const buildXml = await this.webLinks.getBuildInfo(id);
         return await XmlParser.parseRestBuild(buildXml);

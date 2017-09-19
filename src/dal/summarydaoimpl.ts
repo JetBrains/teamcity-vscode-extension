@@ -17,10 +17,6 @@ export class SummaryDaoImpl implements SummaryDao {
         this.remoteBuildServer = remoteBuildServer;
     }
 
-    init(credentialsStore: CredentialsStore) {
-        this.remoteBuildServer.init(credentialsStore);
-    }
-
     public async get(): Promise<Summary> {
         const gZippedSummary: Uint8Array[] = await this.remoteBuildServer.getGZippedSummary();
         const summeryXmlObj: string = VsCodeUtils.gzip2Xml(gZippedSummary);

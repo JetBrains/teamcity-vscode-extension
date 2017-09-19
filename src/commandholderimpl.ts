@@ -51,16 +51,16 @@ export class CommandHolderImpl implements CommandHolder {
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
-                @inject(TYPES.PatchSender) patchSender: PatchSender) {
+                @inject(TYPES.PatchSender) patchSender: PatchSender,
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
         this._remoteLogin = remoteLogin;
         this._remoteBuildServer = remoteBuildServer;
         this._patchSender = patchSender;
+        this._credentialsStore = credentialsStore;
     }
 
-    public init(settings: Settings, credentialsStore: CredentialsStore, teamCityOutput: TeamCityOutput): void {
+    public init(settings: Settings, teamCityOutput: TeamCityOutput): void {
         this._settings = settings;
-        this._credentialsStore = credentialsStore;
-        this._patchSender.init(credentialsStore);
         this._teamCityOutput = teamCityOutput;
     }
 
@@ -76,8 +76,7 @@ export class CommandHolderImpl implements CommandHolder {
             const user = await keytar.getPassword("teamcity", "username");
             const password = await keytar.getPassword("teamcity", "password");
             if (serverUrl && user && password) {
-                this._remoteLogin.init(serverUrl);
-                const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(user, password));
+                const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(serverUrl, user, password));
                 const sessionId = loginInfo[0];
                 const userId = loginInfo[1];
                 credentials = new Credentials(serverUrl, user, password, userId, sessionId);
@@ -138,7 +137,6 @@ export class CommandHolderImpl implements CommandHolder {
         const tcFormattedFilePaths: string[] = await this._cvsProvider.getFormattedFileNames();
 
         /* get suitable build configs hierarchically */
-        this._remoteBuildServer.init(this._credentialsStore);
         const shortBuildConfigNames: string[] = await this._remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         const buildXmlArray: string[] = await this._remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         const projects: ProjectItem[] = await XmlParser.parseBuilds(buildXmlArray);
@@ -261,10 +259,9 @@ export class CommandHolderImpl implements CommandHolder {
             Logger.logDebug("CommandHolderImpl#signIn: abort after password inputBox");
             return;
         }
-        this._remoteLogin.init(serverUrl);
         let authenticationResponse: string;
         try {
-            authenticationResponse = await this._remoteLogin.authenticate(user, password);
+            authenticationResponse = await this._remoteLogin.authenticate(serverUrl, user, password);
         } catch (err) {
             throw Error(MessageConstants.STATUS_CODE_401);
         }

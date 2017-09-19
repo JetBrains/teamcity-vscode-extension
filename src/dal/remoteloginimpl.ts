@@ -14,31 +14,21 @@ const pki = forge.pki;
 @injectable()
 export class RemoteLoginImpl implements RemoteLogin {
 
-    private _client;
-
-    init(serverUrl: string) {
-        this._client = xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true});
-    }
-
-    getFullServerVersion(): Promise<string> {
-        Logger.logError(`RemoteLogin#getFullServerVersion: method not implemented.`);
-        throw new Error("#getFullServerVersion: method not implemented.");
-    }
-
     /**
      * @param user - user name
      * @param password - user password
      * @return - Promise<any>. In case of success it returns the line in a format ${sessionId}:${userId}
      */
-    async authenticate(user: string, password: string): Promise<string> {
-        const rsaPublicKey: RcaPublicKey = await this.getPublicKey();
+    async authenticate(serverUrl: string, user: string, password: string): Promise<string> {
+        const client = this.createClient(serverUrl);
+        const rsaPublicKey: RcaPublicKey = await this.getPublicKey(client);
         if (!rsaPublicKey) {
             throw MessageConstants.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
         }
         const encPass = rsaPublicKey.encrypt(password);
         const hexEncPass = forge.util.createBuffer(encPass).toHex();
         return new Promise<string>((resolve, reject) => {
-            this._client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err, data) => {
+            client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null) {
                     Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + VsCodeUtils.formatErrorMessage(err));
@@ -50,17 +40,19 @@ export class RemoteLoginImpl implements RemoteLogin {
         });
     }
 
-    logout(): Promise<boolean> {
-        Logger.logError(`RemoteLogin#logout: method not implemented.`);
-        throw new Error("#logout: method not implemented.");
+    private createClient(serverUrl: string): any {
+        return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true});
     }
 
     /**
      * @return - Promise for RSAPublicKey object from node-forge module.
      */
-    getPublicKey(): Promise<RcaPublicKey> {
+    private getPublicKey(client: any): Promise<RcaPublicKey> {
+        if (!client && !client.methodCall) {
+            throw Error("Incorrect client!");
+        }
         return new Promise<RcaPublicKey>((resolve, reject) => {
-            this._client.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
+            client.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === undefined) {
                     Logger.logError(`RemoteAuthenticationServer.getPublicKey: it failed at getting public key: ${VsCodeUtils.formatErrorMessage(err)}`);

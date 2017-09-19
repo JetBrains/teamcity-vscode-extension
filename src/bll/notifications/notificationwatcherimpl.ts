@@ -39,20 +39,18 @@ export class NotificationWatcherImpl implements NotificationWatcher {
 
     constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                 @inject(TYPES.SummaryDao) summaryDao: SummaryDao,
-                @inject(TYPES.BuildDao) buildDao: BuildDao) {
+                @inject(TYPES.BuildDao) buildDao: BuildDao,
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
         this.remoteBuildServer = remoteBuildServer;
         this.summaryDao = summaryDao;
         this.buildDao = buildDao;
         this.shouldNotBeDisposed = true;
         this.changeStorage = new ChangeStorage();
+        this.credentialStore = credentialsStore;
     }
 
     public initAndActivate(credentialStore: CredentialsStore, teamCityOutput: TeamCityOutput) {
-        this.credentialStore = credentialStore;
         this.teamCityOutput = teamCityOutput;
-        this.buildDao.init(credentialStore);
-        this.summaryDao.init(credentialStore);
-        this.remoteBuildServer.init(credentialStore);
         Logger.logInfo("NotificationWatcherImpl#initAndActivate: NW was initialized and should be activate now.");
         this.activate().then(() => {
             Logger.logDebug(`NotificationWatcherImpl#initAndActivate: NW has finnished without errors.`);

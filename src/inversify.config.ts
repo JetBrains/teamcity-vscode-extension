@@ -27,7 +27,7 @@ import {SummaryDaoImpl} from "./dal/summarydaoimpl";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl);
-myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(CredentialsStoreImpl);
+myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(CredentialsStoreImpl).inSingletonScope();
 myContainer.bind<ExtensionManager>(TYPES.ExtensionManager).to(ExtensionManagerImpl);
 myContainer.bind<CommandHolder>(TYPES.CommandHolder).to(CommandHolderImpl);
 myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(NotificationWatcherImpl);

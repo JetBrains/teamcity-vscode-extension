@@ -4,7 +4,6 @@ import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 
 export interface RemoteBuildServer {
 
-    init(credentialsStore: CredentialsStore): void;
     getGZippedSummary(): Promise<Uint8Array[]>;
     getTotalNumberOfEvents(subscription: string): Promise<number>;
 

@@ -16,22 +16,22 @@ import {Disposable, ExtensionContext, OutputChannel, workspace, StatusBarItem, w
 @injectable()
 export class ExtensionManagerImpl implements ExtensionManager {
     private _settings: Settings;
-    private _credentialStore: CredentialsStore;
+    private credentialsStore: CredentialsStore;
     private readonly _commandHolder: CommandHolder;
     private _notificationWatcher: NotificationWatcher;
     private readonly _disposables: Disposable[] = [];
 
     constructor(@inject(TYPES.Settings) settings: Settings,
-                @inject(TYPES.CredentialsStore) credentialStore: CredentialsStore,
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
                 @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher) {
         this._settings = settings;
-        this._credentialStore = credentialStore;
+        this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         const teamCityOutput = TeamCityOutput.initAndGetInstance(this._disposables);
-        this._commandHolder.init(settings, credentialStore, teamCityOutput);
+        this._commandHolder.init(settings, teamCityOutput);
         this._notificationWatcher = notificationWatcher;
-        notificationWatcher.initAndActivate(credentialStore, teamCityOutput);
+        notificationWatcher.initAndActivate(credentialsStore, teamCityOutput);
         this._disposables.push(notificationWatcher);
         DataProviderManager.init(this._disposables);
         const loggingLevel: string = this._settings.loggingLevel;
@@ -44,7 +44,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
     }
 
     public cleanUp(): void {
-        this._credentialStore.removeCredential();
+        this.credentialsStore.removeCredential();
         TeamCityStatusBarItem.setLoggedOut();
     }
 

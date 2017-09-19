@@ -24,10 +24,6 @@ export class CustomPatchSender implements PatchSender {
         this._webLinks = webLinks;
     }
 
-    init(credentialsStore: CredentialsStore): void {
-        this._webLinks.init(credentialsStore);
-    }
-
     /**
      * @returns true in case of success, otherwise false.
      */

@@ -7,8 +7,6 @@ import {CredentialsStore} from "../credentialsstore/credentialsstore";
 
 export interface PatchSender {
 
-    init(credentialsStore: CredentialsStore): void;
-
     /**
      * @returns true in case of success, otherwise false.
      */

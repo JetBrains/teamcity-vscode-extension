@@ -6,17 +6,16 @@ import {WebLinks} from "./weblinks";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
-import {injectable} from "inversify";
+import {injectable, inject} from "inversify";
+import {TYPES} from "../bll/utils/constants";
 
 @injectable()
 export class WebLinksImpl implements WebLinks {
 
-    private _credentialsStorage: CredentialsStore;
+    private credentialsStore: CredentialsStore;
 
-    init(credentialsStorage: CredentialsStore) {
-        if (!this._credentialsStorage) {
-            this._credentialsStorage = credentialsStorage;
-        }
+    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+        this.credentialsStore = credentialsStore;
     }
 
     /**
@@ -27,7 +26,7 @@ export class WebLinksImpl implements WebLinks {
         if (!buildConfig) {
             return undefined;
         }
-        const credentials: Credentials = this._credentialsStorage.getCredential();
+        const credentials: Credentials = this.credentialsStore.getCredential();
         const url: string = `${credentials.serverURL}/app/rest/buildQueue`;
         const data = `
             <build personal="true">
@@ -55,7 +54,7 @@ export class WebLinksImpl implements WebLinks {
     }
 
     uploadChanges(patchAbsPath: string, message: string): Promise<string> {
-        const credentials: Credentials = this._credentialsStorage.getCredential();
+        const credentials: Credentials = this.credentialsStore.getCredential();
         const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?userId=${credentials.userId}&description=${message}&commitType=0`;
         return new Promise<string>((resolve, reject) => {
             fs.createReadStream(patchAbsPath).pipe(request.post(patchDestinationUrl, (err, httpResponse, body) => {
@@ -71,7 +70,7 @@ export class WebLinksImpl implements WebLinks {
         if (buildId === undefined || buildId === -1 || buildId === "-1") {
             return undefined;
         }
-        const credentials: Credentials = this._credentialsStorage.getCredential();
+        const credentials: Credentials = this.credentialsStore.getCredential();
         const url = `${credentials.serverURL}/app/rest/buildQueue/${buildId}`;
         return new Promise((resolve, reject) => {
             request.get(url, function (err, response, body) {
