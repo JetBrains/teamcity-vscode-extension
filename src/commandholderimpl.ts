@@ -37,7 +37,7 @@ import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
 import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
-import {TeamCityOutput} from "./view/teamcityoutput";
+import {Output} from "./view/output";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {
@@ -45,23 +45,22 @@ export class CommandHolderImpl implements CommandHolder {
     private _remoteLogin: RemoteLogin;
     private _remoteBuildServer: RemoteBuildServer;
     private _credentialsStore: CredentialsStore;
-    private _teamCityOutput: TeamCityOutput;
+    private output: Output;
     private _patchSender: PatchSender;
-    private _settings: Settings;
+    private settings: Settings;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                 @inject(TYPES.PatchSender) patchSender: PatchSender,
-                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
+                @inject(TYPES.Output) output: Output,
+                @inject(TYPES.Settings) settings: Settings) {
         this._remoteLogin = remoteLogin;
         this._remoteBuildServer = remoteBuildServer;
         this._patchSender = patchSender;
         this._credentialsStore = credentialsStore;
-    }
-
-    public init(settings: Settings, teamCityOutput: TeamCityOutput): void {
-        this._settings = settings;
-        this._teamCityOutput = teamCityOutput;
+        this.output = output;
+        this.settings = settings;
     }
 
     public async signIn(): Promise<boolean> {
@@ -95,10 +94,10 @@ export class CommandHolderImpl implements CommandHolder {
         if (signedIn) {
             this._credentialsStore.setCredential(credentials);
             Logger.logInfo("CommandHolderImpl#signIn: success");
-            if (this._settings.showSignInWelcome) {
+            if (this.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
             }
-            this._teamCityOutput.appendLine(MessageConstants.WELCOME_MESSAGE);
+            this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
             this.storeLastUserCredentials(credentials);
             TeamCityStatusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         } else {
@@ -182,15 +181,15 @@ export class CommandHolderImpl implements CommandHolder {
     }
 
     public showOutput(): void {
-        this._teamCityOutput.show();
+        this.output.show();
     }
 
     private getDefaultURL(): string {
-        return this._settings.getLastUrl();
+        return this.settings.getLastUrl();
     }
 
     private getDefaultUsername(): string {
-        return this._settings.getLastUsername();
+        return this.settings.getLastUsername();
     }
 
     private async tryGetCredentials(): Promise<Credentials> {
@@ -214,7 +213,7 @@ export class CommandHolderImpl implements CommandHolder {
         const dontShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
         const chosenItem: MessageItem = await MessageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, dontShowAgainItem);
         if (chosenItem && chosenItem.title === dontShowAgainItem.title) {
-            this._settings.setShowSignInWelcome(false);
+            this.settings.setShowSignInWelcome(false);
         }
     }
 
@@ -275,8 +274,8 @@ export class CommandHolderImpl implements CommandHolder {
         if (!credentials) {
             return;
         }
-        await this._settings.setLastUrl(credentials.serverURL);
-        await this._settings.setLastUsername(credentials.user);
+        await this.settings.setLastUrl(credentials.serverURL);
+        await this.settings.setLastUsername(credentials.user);
         try {
             const keytar = require("keytar");
             Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Good job user.`);

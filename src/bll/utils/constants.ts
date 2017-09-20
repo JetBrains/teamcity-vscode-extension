@@ -117,5 +117,6 @@ export const TYPES = {
     WebLinks: Symbol("WebLinks"),
     PatchSender: Symbol("PatchSender"),
     SummaryDao: Symbol("SummaryDao"),
-    BuildDao: Symbol("BuildDao")
+    BuildDao: Symbol("BuildDao"),
+    Output: Symbol("Output")
 };

@@ -12,7 +12,7 @@ import {SummaryDao} from "../../dal/summarydao";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {EventCounter} from "../entities/eventcounter";
 import {ChangeStorage} from "../entities/changestorage";
-import {TeamCityOutput} from "../../view/teamcityoutput";
+import {Output} from "../../view/output";
 import {Credentials} from "../credentialsstore/credentials";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
@@ -31,7 +31,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
 
     private readonly CHECK_FREQUENCY_MS: number = 10000;
     private credentialStore: CredentialsStore;
-    private teamCityOutput: TeamCityOutput;
+    private teamCityOutput: Output;
     private remoteBuildServer: RemoteBuildServer;
     private summaryDao: SummaryDao;
     private buildDao: BuildDao;
@@ -40,23 +40,15 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                 @inject(TYPES.SummaryDao) summaryDao: SummaryDao,
                 @inject(TYPES.BuildDao) buildDao: BuildDao,
-                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
+                @inject(TYPES.Output) output: Output) {
         this.remoteBuildServer = remoteBuildServer;
         this.summaryDao = summaryDao;
         this.buildDao = buildDao;
         this.shouldNotBeDisposed = true;
         this.changeStorage = new ChangeStorage();
         this.credentialStore = credentialsStore;
-    }
-
-    public initAndActivate(credentialStore: CredentialsStore, teamCityOutput: TeamCityOutput) {
-        this.teamCityOutput = teamCityOutput;
-        Logger.logInfo("NotificationWatcherImpl#initAndActivate: NW was initialized and should be activate now.");
-        this.activate().then(() => {
-            Logger.logDebug(`NotificationWatcherImpl#initAndActivate: NW has finnished without errors.`);
-        }).catch((err) => {
-            Logger.logError(`NotificationWatcherImpl#initAndActivate: NW has finnished with error: ${err}.`);
-        });
+        this.teamCityOutput = output;
     }
 
     public dispose() {
@@ -64,7 +56,8 @@ export class NotificationWatcherImpl implements NotificationWatcher {
         this.shouldNotBeDisposed = false;
     }
 
-    private async activate(): Promise<void> {
+    public async activate(): Promise<void> {
+        Logger.logInfo("NotificationWatcherImpl#activate: NW was activated");
         await this.reinitWatcherMutableResources();
         while (this.shouldNotBeDisposed) {
             try {

@@ -6,7 +6,7 @@ import {inject, injectable} from "inversify";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
 import {ExtensionManager} from "./extensionmanager";
-import {TeamCityOutput} from "./view/teamcityoutput";
+import {Output} from "./view/output";
 import {DataProviderManager} from "./view/dataprovidermanager";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
@@ -15,7 +15,6 @@ import {Disposable, ExtensionContext, OutputChannel, workspace, StatusBarItem, w
 
 @injectable()
 export class ExtensionManagerImpl implements ExtensionManager {
-    private _settings: Settings;
     private credentialsStore: CredentialsStore;
     private readonly _commandHolder: CommandHolder;
     private _notificationWatcher: NotificationWatcher;
@@ -24,18 +23,16 @@ export class ExtensionManagerImpl implements ExtensionManager {
     constructor(@inject(TYPES.Settings) settings: Settings,
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
-                @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher) {
-        this._settings = settings;
+                @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher,
+                @inject(TYPES.Output) output: Output) {
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
-        const teamCityOutput = TeamCityOutput.initAndGetInstance(this._disposables);
-        this._commandHolder.init(settings, teamCityOutput);
         this._notificationWatcher = notificationWatcher;
-        notificationWatcher.initAndActivate(credentialsStore, teamCityOutput);
+        notificationWatcher.activate();
         this._disposables.push(notificationWatcher);
+        this._disposables.push(output);
         DataProviderManager.init(this._disposables);
-        const loggingLevel: string = this._settings.loggingLevel;
-        this.initLogger(loggingLevel, workspace.rootPath);
+        this.initLogger(settings.loggingLevel, workspace.rootPath);
         TeamCityStatusBarItem.init(this._disposables);
     }
 
@@ -65,8 +62,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
         if (rootPath !== undefined) {
             Logger.LogPath = rootPath;
             Logger.logInfo(`Logger path: ${rootPath}`);
-            Logger.logInfo(`Logging level: ${this._settings.loggingLevel}`);
-            Logger.logInfo(`Should show signIn welcome message: ${this._settings.showSignInWelcome}`);
+            Logger.logInfo(`Logging level: ${loggingLevel}`);
         } else {
             Logger.logWarning(`Folder not opened!`);
         }

@@ -24,9 +24,12 @@ import {SummaryDao} from "./dal/summarydao";
 import {BuildDao} from "./dal/builddao";
 import {BuildDaoImpl} from "./dal/builddaoimpl";
 import {SummaryDaoImpl} from "./dal/summarydaoimpl";
+import {TeamCityOutput} from "./view/teamcityoutput";
+import {Output} from "./view/output";
 
 export const myContainer = new Container();
-myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl);
+myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
+myContainer.bind<Output>(TYPES.Output).to(TeamCityOutput).inSingletonScope();
 myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(CredentialsStoreImpl).inSingletonScope();
 myContainer.bind<ExtensionManager>(TYPES.ExtensionManager).to(ExtensionManagerImpl);
 myContainer.bind<CommandHolder>(TYPES.CommandHolder).to(CommandHolderImpl);
