@@ -13,7 +13,7 @@ export class Build {
     public readonly projectName: string;
     public readonly webUrl: string;
 
-    private constructor(
+    public constructor(
         id: number,
         buildNumber: number,
         isPersonal: boolean,

@@ -8,7 +8,7 @@ export class Summary {
     public readonly personalChanges: Change[];
     public readonly visibleProjectIds: string[];
 
-    private constructor(visibleProjectIds: string[], changes: Change[], personalChanges: Change[]) {
+    public constructor(visibleProjectIds: string[], changes: Change[], personalChanges: Change[]) {
         this.changes = changes;
         this.personalChanges = personalChanges;
         this.visibleProjectIds = visibleProjectIds;

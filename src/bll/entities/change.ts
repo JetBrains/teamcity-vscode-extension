@@ -10,7 +10,7 @@ export class Change {
     public readonly status: string;
     public builds: Build[]; //TODO: make readonly
 
-    private constructor(id: number, isPersonal: boolean, status: string, builds: Build[]) {
+    public constructor(id: number, isPersonal: boolean, status: string, builds: Build[]) {
         this.id = id;
         this.isPersonal = isPersonal;
         this.status = status;

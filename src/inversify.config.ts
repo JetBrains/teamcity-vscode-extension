@@ -15,7 +15,7 @@ import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {RemoteLogin} from "./dal/remotelogin";
 import {RemoteLoginImpl} from "./dal/remoteloginimpl";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
-import {RemoteBuildServerImpl} from "./dal/remotebuldserverimpl";
+import {RemoteBuildServerImpl} from "./dal/remotebuildserverimpl";
 import {WebLinks} from "./dal/weblinks";
 import {WebLinksImpl} from "./dal/weblinksimpl";
 import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
