@@ -11,13 +11,16 @@ import {inject, injectable} from "inversify";
 export class BuildDaoImpl {
 
     private webLinks: WebLinks;
+    private xmlParser: XmlParser;
 
-    constructor(@inject(TYPES.WebLinks) webLinks: WebLinks) {
+    constructor(@inject(TYPES.WebLinks) webLinks: WebLinks,
+                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
         this.webLinks = webLinks;
+        this.xmlParser = xmlParser;
     }
 
     public async getById(id: number): Promise<Build> {
         const buildXml = await this.webLinks.getBuildInfo(id);
-        return await XmlParser.parseRestBuild(buildXml);
+        return await this.xmlParser.parseRestBuild(buildXml);
     }
 }

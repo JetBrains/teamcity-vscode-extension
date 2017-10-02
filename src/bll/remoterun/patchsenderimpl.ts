@@ -18,23 +18,28 @@ import {inject, injectable} from "inversify";
 @injectable()
 export class CustomPatchSender implements PatchSender {
     private readonly CHECK_FREQUENCY_MS: number = 10000;
-    private readonly _webLinks: WebLinks;
+    private readonly webLinks: WebLinks;
+    private readonly patchManager: PatchManager;
+    private readonly xmlParser: XmlParser;
 
-    constructor(@inject(TYPES.WebLinks) webLinks: WebLinks) {
-        this._webLinks = webLinks;
+    constructor(@inject(TYPES.WebLinks) webLinks: WebLinks,
+                @inject(TYPES.PatchManager) patchManager: PatchManager,
+                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
+        this.webLinks = webLinks;
+        this.patchManager = patchManager;
+        this.xmlParser = xmlParser;
     }
 
     /**
      * @returns true in case of success, otherwise false.
      */
     public async remoteRun(configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean> {
-        const patchAbsPath: string = await PatchManager.preparePatch(cvsProvider);
+        const patchAbsPath: string = await this.patchManager.preparePatch(cvsProvider);
         const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
         try {
-            const changeListId = await this._webLinks.uploadChanges(patchAbsPath, checkInInfo.message);
-            //We should not remove patchFile because it will be deleted as file inside a temp folder
+            const changeListId = await this.webLinks.uploadChanges(patchAbsPath, checkInInfo.message);
             const queuedBuilds: QueuedBuild[] = await this.triggerChangeList(changeListId, configs);
-            const changeListStatus: ChangeListStatus = await this.getChangeListStatus(queuedBuilds);
+            const changeListStatus: ChangeListStatus = await this.waitChangeStatusAppearance(queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
                 MessageManager.showInfoMessage(`Personal build for change #${changeListId} has "CHECKED" status.`);
                 return true;
@@ -60,36 +65,38 @@ export class CustomPatchSender implements PatchSender {
         const queuedBuilds: QueuedBuild[] = [];
         for (let i = 0; i < buildConfigs.length; i++) {
             const build: BuildConfigItem = buildConfigs[i];
-            const queuedBuildInfoXml: string = await this._webLinks.buildQueue(changeListId, build);
-            queuedBuilds.push(await XmlParser.parseQueuedBuild(queuedBuildInfoXml));
+            const queuedBuildInfoXml: string = await this.webLinks.buildQueue(changeListId, build);
+            queuedBuilds.push(await this.xmlParser.parseQueuedBuild(queuedBuildInfoXml));
         }
         return queuedBuilds;
     }
 
-    private async getChangeListStatus(queuedBuilds: QueuedBuild[]): Promise<ChangeListStatus> {
+    private async waitChangeStatusAppearance(queuedBuilds: QueuedBuild[]): Promise<ChangeListStatus> {
         if (!queuedBuilds) {
-            return ChangeListStatus.CHECKED;
+            return Promise.resolve<ChangeListStatus>(ChangeListStatus.CHECKED);
         }
-        const buildStatuses: string[] = [];
-        let i: number = 0;
-        while (i < queuedBuilds.length) {
-            const build: QueuedBuild = queuedBuilds[i];
-            const buildInfoXml: string = await this._webLinks.getBuildInfo(build.id);
-            const buildStatus: string = await XmlParser.parseBuildStatus(buildInfoXml);
-            if (!buildStatus) {
-                await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
-            } else {
-                buildStatuses.push(buildStatus);
-                i++;
-            }
-        }
-
-        for (let i: number = 0; i < buildStatuses.length; i++) {
-            const status: string = buildStatuses[i];
-            if (status !== "SUCCESS") {
+        for (let i = 0; i < queuedBuilds.length; i++) {
+            const buildStatus: string = await this.waitBuildStatusAppearance(queuedBuilds[i]);
+            if (buildStatus !== "SUCCESS") {
                 return ChangeListStatus.FAILED;
             }
         }
         return ChangeListStatus.CHECKED;
+    }
+
+    private async waitBuildStatusAppearance(build): Promise<string> {
+        let buildStatus: string;
+        while (!buildStatus) {
+            buildStatus = await this.getBuildStatus(build);
+            if (!buildStatus) {
+                await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
+            }
+        }
+        return buildStatus;
+    }
+
+    private async getBuildStatus(build: QueuedBuild): Promise<string> {
+        const buildInfoXml: string = await this.webLinks.getBuildInfo(build.id);
+        return this.xmlParser.parseBuildStatus(buildInfoXml);
     }
 }

@@ -41,26 +41,29 @@ import {Output} from "./view/output";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {
-    private _cvsProvider: CvsSupportProvider;
-    private _remoteLogin: RemoteLogin;
-    private _remoteBuildServer: RemoteBuildServer;
-    private _credentialsStore: CredentialsStore;
+    private cvsProvider: CvsSupportProvider;
+    private remoteLogin: RemoteLogin;
+    private remoteBuildServer: RemoteBuildServer;
+    private credentialsStore: CredentialsStore;
     private output: Output;
-    private _patchSender: PatchSender;
+    private patchSender: PatchSender;
     private settings: Settings;
+    private xmlParser: XmlParser;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                 @inject(TYPES.PatchSender) patchSender: PatchSender,
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.Output) output: Output,
-                @inject(TYPES.Settings) settings: Settings) {
-        this._remoteLogin = remoteLogin;
-        this._remoteBuildServer = remoteBuildServer;
-        this._patchSender = patchSender;
-        this._credentialsStore = credentialsStore;
+                @inject(TYPES.Settings) settings: Settings,
+                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
+        this.remoteLogin = remoteLogin;
+        this.remoteBuildServer = remoteBuildServer;
+        this.patchSender = patchSender;
+        this.credentialsStore = credentialsStore;
         this.output = output;
         this.settings = settings;
+        this.xmlParser = xmlParser;
     }
 
     public async signIn(): Promise<boolean> {
@@ -75,7 +78,7 @@ export class CommandHolderImpl implements CommandHolder {
             const user = await keytar.getPassword("teamcity", "username");
             const password = await keytar.getPassword("teamcity", "password");
             if (serverUrl && user && password) {
-                const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this._remoteLogin.authenticate(serverUrl, user, password));
+                const loginInfo: string[] = VsCodeUtils.parseValueColonValue(await this.remoteLogin.authenticate(serverUrl, user, password));
                 const sessionId = loginInfo[0];
                 const userId = loginInfo[1];
                 credentials = new Credentials(serverUrl, user, password, userId, sessionId);
@@ -92,7 +95,7 @@ export class CommandHolderImpl implements CommandHolder {
         }
 
         if (signedIn) {
-            this._credentialsStore.setCredential(credentials);
+            this.credentialsStore.setCredential(credentials);
             Logger.logInfo("CommandHolderImpl#signIn: success");
             if (this.settings.showSignInWelcome) {
                 this.showWelcomeMessage();
@@ -108,8 +111,8 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async selectFilesForRemoteRun() {
         Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
-        this._cvsProvider = await this.getCvsSupportProvider();
-        const checkInInfo: CheckInInfo = await this._cvsProvider.getRequiredCheckInInfo();
+        this.cvsProvider = await this.getCvsSupportProvider();
+        const checkInInfo: CheckInInfo = await this.cvsProvider.getRequiredCheckInInfo();
         DataProviderManager.setExplorerContent(checkInInfo.cvsLocalResources);
         DataProviderManager.refresh();
     }
@@ -124,21 +127,21 @@ export class CommandHolderImpl implements CommandHolder {
         // const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
         const selectedResources: CvsLocalResource[] = DataProviderManager.getInclResources();
         if (selectedResources && selectedResources.length > 0) {
-            this._cvsProvider.setFilesForRemoteRun(selectedResources);
+            this.cvsProvider.setFilesForRemoteRun(selectedResources);
         } else {
-            this._cvsProvider = await this.getCvsSupportProvider();
+            this.cvsProvider = await this.getCvsSupportProvider();
         }
 
-        if (this._cvsProvider === undefined) {
+        if (this.cvsProvider === undefined) {
             //If there is no provider, log already contains message about the problem
             return;
         }
-        const tcFormattedFilePaths: string[] = await this._cvsProvider.getFormattedFileNames();
+        const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames();
 
         /* get suitable build configs hierarchically */
-        const shortBuildConfigNames: string[] = await this._remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
-        const buildXmlArray: string[] = await this._remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        const projects: ProjectItem[] = await XmlParser.parseBuilds(buildXmlArray);
+        const shortBuildConfigNames: string[] = await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
+        const buildXmlArray: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const projects: ProjectItem[] = await this.xmlParser.parseBuilds(buildXmlArray);
         DataProviderManager.setExplorerContent(projects);
         DataProviderManager.refresh();
         MessageManager.showInfoMessage(MessageConstants.PLEASE_SPECIFY_BUILDS);
@@ -147,7 +150,7 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        if (!this._cvsProvider) {
+        if (!this.cvsProvider) {
             Logger.logError("CommandHolderImpl#remoteRunWithChosenConfigs: cvsProvider absents. Please execute " +
                 "`Find Suitable Build Configuration` command first");
             MessageManager.showWarningMessage("Please execute `Find Suitable Build Configuration` command first!");
@@ -166,11 +169,11 @@ export class CommandHolderImpl implements CommandHolder {
         }
         DataProviderManager.setExplorerContent([]);
         DataProviderManager.refresh();
-        const remoteRunResult: boolean = await this._patchSender.remoteRun(includedBuildConfigs, this._cvsProvider);
+        const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, this.cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: remote run is ok");
             try {
-                await this._cvsProvider.requestForPostCommit();
+                await this.cvsProvider.requestForPostCommit();
             } catch (err) {
                 throw err;
             }
@@ -193,11 +196,11 @@ export class CommandHolderImpl implements CommandHolder {
     }
 
     private async tryGetCredentials(): Promise<Credentials> {
-        let credentials: Credentials = this._credentialsStore.getCredential();
+        let credentials: Credentials = this.credentialsStore.getCredential();
         if (!credentials) {
             Logger.logInfo("CommandHolderImpl#tryGetCredentials: credentials is undefined. An attempt to get them");
             await this.signIn();
-            credentials = this._credentialsStore.getCredential();
+            credentials = this.credentialsStore.getCredential();
             if (!credentials) {
                 MessageManager.showErrorMessage(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
                 Logger.logWarning("CommandHolderImpl#tryGetCredentials: An attempt to get credentials failed");
@@ -260,7 +263,7 @@ export class CommandHolderImpl implements CommandHolder {
         }
         let authenticationResponse: string;
         try {
-            authenticationResponse = await this._remoteLogin.authenticate(serverUrl, user, password);
+            authenticationResponse = await this.remoteLogin.authenticate(serverUrl, user, password);
         } catch (err) {
             throw Error(MessageConstants.STATUS_CODE_401);
         }

@@ -26,6 +26,8 @@ import {BuildDaoImpl} from "./dal/builddaoimpl";
 import {SummaryDaoImpl} from "./dal/summarydaoimpl";
 import {TeamCityOutput} from "./view/teamcityoutput";
 import {Output} from "./view/output";
+import {PatchManager} from "./bll/utils/patchmanager";
+import {XmlParser} from "./bll/utils/xmlparser";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -40,3 +42,5 @@ myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinksImpl);
 myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);
 myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDaoImpl);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);
+myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
+myContainer.bind<XmlParser>(TYPES.XmlParser).to(XmlParser).inSingletonScope();

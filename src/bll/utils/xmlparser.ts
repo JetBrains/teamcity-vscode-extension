@@ -9,14 +9,16 @@ import {ProjectItem} from "../entities/projectitem";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {Summary} from "../entities/summary";
 import {Build} from "../entities/build";
+import {injectable} from "inversify";
 
+@injectable()
 export class XmlParser {
 
     /**
      * @param buildsXml - xml that contains all info about related projects.
      * @return - list of ProjectItems that contain related buildConfigs.
      */
-    public static async parseBuilds(buildsXml: string[]): Promise<ProjectItem[]> {
+    public async parseBuilds(buildsXml: string[]): Promise<ProjectItem[]> {
         if (buildsXml === undefined) {
             Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
@@ -30,7 +32,7 @@ export class XmlParser {
                     if (err) {
                         reject(err);
                     }
-                    XmlParser.collectProject(project, projectMap);
+                    this.collectProject(project, projectMap);
                     resolve();
                 });
             });
@@ -45,7 +47,7 @@ export class XmlParser {
      * @param buildXml - xml that contains all info about related projects.
      * @return - list of ProjectItems that contain related buildConfigs.
      */
-    public static async parseRestBuild(buildXml: string): Promise<Build> {
+    public async parseRestBuild(buildXml: string): Promise<Build> {
         if (buildXml === undefined) {
             Logger.logWarning("XmlParser#parseRestBuild: buildXml is empty");
             return;
@@ -62,7 +64,7 @@ export class XmlParser {
         });
     }
 
-    public static parseSummary(summeryXmlObj: string): Promise<Summary> {
+    public parseSummary(summeryXmlObj: string): Promise<Summary> {
         return new Promise<Summary>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
@@ -79,7 +81,7 @@ export class XmlParser {
      * @param project - project as a TeamCity project entity with lots of useless fields.
      * @param projectMap - the result of the call of the method will be pushed to this object.
      */
-    private static collectProject(project: any, projectMap: ProjectItem[]) {
+    private collectProject(project: any, projectMap: ProjectItem[]) {
         if (!project || !project.Project) {
             return;
         }
@@ -108,7 +110,7 @@ export class XmlParser {
         }
     }
 
-    public static parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {
+    public parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {
         return new Promise<QueuedBuild>((resolve, reject) => {
             xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
                 if (err) {
@@ -120,7 +122,7 @@ export class XmlParser {
         });
     }
 
-    public static parseBuildStatus(buildInfoXml: string): Promise<string> {
+    public parseBuildStatus(buildInfoXml: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             xml2js.parseString(buildInfoXml, (err, buildInfo) => {
                 if (err) {

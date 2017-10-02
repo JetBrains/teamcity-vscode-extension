@@ -13,8 +13,10 @@ import {CheckInInfo} from "../remoterun/checkininfo";
 import {CvsLocalResource} from "../entities/cvslocalresource";
 import {MappingFileContent} from "../remoterun/mappingfilecontent";
 import {ReadableSet} from "./readableset";
+import {injectable} from "inversify";
 const temp = require("temp").track();
 
+@injectable()
 export class PatchManager {
     static _cvsProvider: any;
 
@@ -24,7 +26,7 @@ export class PatchManager {
      * @param staged - patch content will be taken from staged area
      * @return Promise<string> - absPath of the patch
      */
-    public static async preparePatch(cvsProvider: CvsSupportProvider, staged: boolean = true): Promise<string> {
+    public async preparePatch(cvsProvider: CvsSupportProvider, staged: boolean = true): Promise<string> {
         const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
         PatchManager._cvsProvider = cvsProvider;
         const changedFilesNames: CvsLocalResource[] = checkInInfo.cvsLocalResources;

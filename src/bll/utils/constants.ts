@@ -118,5 +118,7 @@ export const TYPES = {
     PatchSender: Symbol("PatchSender"),
     SummaryDao: Symbol("SummaryDao"),
     BuildDao: Symbol("BuildDao"),
-    Output: Symbol("Output")
+    Output: Symbol("Output"),
+    PatchManager: Symbol("PatchManager"),
+    XmlParser: Symbol("XmlParser")
 };

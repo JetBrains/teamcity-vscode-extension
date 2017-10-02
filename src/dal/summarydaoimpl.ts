@@ -12,14 +12,17 @@ import {injectable, inject} from "inversify";
 export class SummaryDaoImpl implements SummaryDao {
 
     private remoteBuildServer: RemoteBuildServer;
+    private xmlParser: XmlParser;
 
-    constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer) {
+    constructor(@inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
+                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
         this.remoteBuildServer = remoteBuildServer;
+        this.xmlParser = xmlParser;
     }
 
     public async get(): Promise<Summary> {
         const gZippedSummary: Uint8Array[] = await this.remoteBuildServer.getGZippedSummary();
         const summeryXmlObj: string = VsCodeUtils.gzip2Xml(gZippedSummary);
-        return XmlParser.parseSummary(summeryXmlObj);
+        return this.xmlParser.parseSummary(summeryXmlObj);
     }
 }
