@@ -23,7 +23,7 @@ export class GitPathFinder implements Finder {
     }
 
     public async find(): Promise<string> {
-        const pathHint = this.getPathHind();
+        const pathHint = this.getPathHint();
         try {
             return await this.findGitPath(pathHint);
         } catch (err) {
@@ -31,7 +31,7 @@ export class GitPathFinder implements Finder {
         }
     }
 
-    private getPathHind(): string {
+    private getPathHint(): string {
         return workspace.getConfiguration().get<string>(Constants.GIT_PATH_SETTING_NAME);
     }
 

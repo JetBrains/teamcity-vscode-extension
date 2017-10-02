@@ -19,7 +19,7 @@ export class TfvcPathFinder implements Finder {
     }
 
     public async find(): Promise<string> {
-        const pathHint = this.getPathHind();
+        const pathHint = this.getPathHint();
         try {
             return await this.findTfsPath(pathHint);
         } catch (err) {
@@ -36,7 +36,7 @@ export class TfvcPathFinder implements Finder {
         return firstSearchPromise.then(void 0, () => this.checkPath("tf"));
     }
 
-    private getPathHind(): string {
+    private getPathHint(): string {
         const configuration = workspace.getConfiguration();
         return configuration.get<string>(Constants.TFS_LOCATION_SETTING_NAME, undefined);
     }

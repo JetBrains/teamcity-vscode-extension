@@ -70,7 +70,7 @@ export class CommandHolderImpl implements CommandHolder {
         //try getting credentials from keytar
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Good job user.`);
+            Logger.logDebug(`CommandHolder#signIn: keytar is supported. Credentials will be stored.`);
             const serverUrl = await keytar.getPassword("teamcity", "serverurl");
             const user = await keytar.getPassword("teamcity", "username");
             const password = await keytar.getPassword("teamcity", "password");
@@ -278,7 +278,7 @@ export class CommandHolderImpl implements CommandHolder {
         await this.settings.setLastUsername(credentials.user);
         try {
             const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Good job user.`);
+            Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Credentials will be stored.`);
             keytar.setPassword("teamcity", "serverurl", credentials.serverURL);
             keytar.setPassword("teamcity", "username", credentials.user);
             keytar.setPassword("teamcity", "password", credentials.password);

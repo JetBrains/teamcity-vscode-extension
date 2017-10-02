@@ -37,7 +37,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             instance._checkInInfo = await instance.getRequiredCheckInInfo();
         } catch (err) {
             Logger.logError(`GitSupportProvider#init: An error occurred during ` +
-                `tfvcProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
+                `gitProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
             throw new Error("An error occurred during git provider initialisation");
         }
         return instance;
