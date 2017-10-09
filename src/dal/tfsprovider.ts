@@ -9,36 +9,45 @@ import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
 import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
-import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
 import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {injectable} from "inversify";
+import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
+import {Finder} from "../bll/cvsutils/finder";
+import {Validator} from "../bll/cvsutils/validator";
+import {TfvcIsActiveValidator} from "../bll/cvsutils/tfvcisactivevalidator";
 
-export class TfsSupportProvider implements CvsSupportProvider {
-    private readonly _workspaceRootPath: string;
-    private _checkInInfo: CheckInInfo;
-    private _tfsInfo: TfsWorkFoldInfo;
-    private _tfPath: string;
+@injectable()
+export class TfvcSupportProvider implements CvsSupportProvider {
+    private workspaceRootPath: string;
+    private tfsInfo: TfsWorkFoldInfo;
+    private tfPath: string;
+    private _isActive: boolean = false;
 
-    private constructor(tfPath: string) {
-        this._workspaceRootPath = workspace.rootPath;
-        this._tfPath = tfPath;
+    constructor() {
+        const pathFinder: Finder = new TfvcPathFinder();
+        pathFinder.find().then((tfPath) => {
+            const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
+            isActiveValidator.validate().then(() => {
+                this.tfPath = tfPath;
+                this.workspaceRootPath = workspace.rootPath;
+                this.getTfsInfo(tfPath, workspace.rootPath).then((tfsInfo) => {
+                    this.tfsInfo = tfsInfo;
+                    this._isActive = true;
+                });
+            }).catch((err) => {
+                Logger.logError(VsCodeUtils.formatErrorMessage(err));
+            });
+        }).catch((err) => {
+            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+        });
+    }
+
+    public get isActive(): boolean {
+        return this._isActive;
     }
 
     public get cvsType(): CvsProviderTypes {
         return CvsProviderTypes.Tfs;
-    }
-
-    public static async init(path: string): Promise<TfsSupportProvider> {
-        const instance = new TfsSupportProvider(path);
-        try {
-            instance._tfsInfo = await instance.getTfsInfo();
-            instance._checkInInfo = await instance.getRequiredCheckInInfo();
-            Logger.logDebug(`TfsSupportProvider#init: TfsSupportProvider was initialized`);
-        } catch (err) {
-            Logger.logError(`TfsSupportProvider#init: An error occurred during ` +
-                `tfvcProvider initialisation: ${VsCodeUtils.formatErrorMessage(err)}`);
-            throw new Error("An error occurred during tfvc provider initialisation");
-        }
-        return instance;
     }
 
     /**
@@ -48,9 +57,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * We use first, because we can get user collection guid without his credential.
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    public async getFormattedFileNames(): Promise<string[]> {
+    public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
         const formatFileNames: string[] = [];
-        const cvsResources: CvsLocalResource[] = this._checkInInfo.cvsLocalResources;
+        const cvsResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
         cvsResources.forEach((localResource) => {
             formatFileNames.push(localResource.serverFilePath);
         });
@@ -59,33 +68,14 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     /**
-     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
-     * @return content of the ".teamcity-mappings.properties" file
-     */
-    public async generateMappingFileContent(): Promise<MappingFileContent> {
-        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
-        const mappingFileContent: MappingFileContent = {
-            localRootPath: this._workspaceRootPath,
-            tcProjectRootPath: `tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`,
-            fullContent: `${this._workspaceRootPath}=tfs://${tfsInfo.repositoryUrl}${tfsInfo.projectRemotePath}`
-        };
-        Logger.logInfo(`TfsSupportProvider#generateConfigFileContent: configFileContent: ${mappingFileContent.fullContent}`);
-        return mappingFileContent;
-    }
-
-    /**
      * This method provides required info for provisioning remote run and post-commit execution.
      * (Only for git) In case of git there are no workItemIds
      * @return CheckInInfo object
      */
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
-        if (this._checkInInfo) {
-            Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: checkIn info already exists`);
-            return this._checkInInfo;
-        }
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const commitMessage: string = scm.inputBox.value;
-        const workItemIds: number[] = TfsSupportProvider.getWorkItemIdsFromMessage(commitMessage);
+        const workItemIds: number[] = TfvcSupportProvider.getWorkItemIdsFromMessage(commitMessage);
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
         await this.fillInServerPaths(cvsLocalResources);
@@ -98,7 +88,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
-        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
+        const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         cvsLocalResources.forEach((localResource) => {
             const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
             const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
@@ -116,7 +106,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    public async requestForPostCommit() {
+    public async requestForPostCommit(checkInInfo: CheckInInfo) {
         const choices: QuickPickItem[] = [];
         const TFS_COMMIT_PUSH_INTRO_MESSAGE = "Would you like to commit your changes?";
         const NO_LABEL: string = "No, thank you";
@@ -131,10 +121,10 @@ export class TfsSupportProvider implements CvsSupportProvider {
         const nextTfsOperation: QuickPickItem = await window.showQuickPick(choices, options);
         Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextTfsOperation ? nextTfsOperation.label : "nothing"}`);
         if (nextTfsOperation !== undefined && nextTfsOperation.label === YES_LABEL) {
-            const checkInCommandPrefix = `"${this._tfPath}" checkIn /comment:"${this._checkInInfo.message}" /noprompt `;
+            const checkInCommandPrefix = `"${this.tfPath}" checkIn /comment:"${checkInInfo.message}" /noprompt `;
             const checkInCommandSB: string[] = [];
             checkInCommandSB.push(checkInCommandPrefix);
-            this._checkInInfo.cvsLocalResources.forEach((localResource) => {
+            checkInInfo.cvsLocalResources.forEach((localResource) => {
                 checkInCommandSB.push(`"${localResource.fileAbsPath}" `);
             });
             try {
@@ -144,13 +134,6 @@ export class TfsSupportProvider implements CvsSupportProvider {
                 throw new Error("Caught an exception during attempt to commit");
             }
         }
-    }
-
-    /**
-     * Sets files for remote run, when user wants to provide them manually.
-     */
-    setFilesForRemoteRun(resources: CvsLocalResource[]) {
-        this._checkInInfo.cvsLocalResources = resources;
     }
 
     /**
@@ -166,7 +149,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * This method requests absPaths of changed files and replaces localProjectPath by $/projectName
      */
     private async getServerItems(cvsLocalResources: CvsLocalResource[]): Promise<string[]> {
-        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
+        const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         const serverItems: string[] = [];
         cvsLocalResources.forEach((localResource) => {
             const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
@@ -179,14 +162,14 @@ export class TfsSupportProvider implements CvsSupportProvider {
      * It's using "tf diff" command, to get required info about changed files.
      */
     private async getLocalResources(): Promise<CvsLocalResource[]> {
-        const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
+        const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         /*
          List of all possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
          const parseBriefDiffRegexp : RegExp = /^(add|delete|edit|rename):\s(.*)$/mg;
          */
         const parseBriefDiffRegExp: RegExp = /^(.*)?:\s(.*)$/mg;
         const localResources: CvsLocalResource[] = [];
-        const briefDiffCommand: string = `"${this._tfPath}" diff /noprompt /format:brief /recursive "${this._workspaceRootPath}"`;
+        const briefDiffCommand: string = `"${this.tfPath}" diff /noprompt /format:brief /recursive "${this.workspaceRootPath}"`;
         let tfsDiffResult: string;
         try {
             const briefDiffCommandOutput = await cp.exec(briefDiffCommand);
@@ -246,9 +229,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
      */
     private async getPrevFileNameIfExist(fileAbsPath: string): Promise<string> {
         try {
-            const tfsInfo: TfsWorkFoldInfo = this._tfsInfo;
+            const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
             const parseHistoryRegExp: RegExp = /(\$.*)$/;
-            const historyCommand: string = `"${this._tfPath}" history /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
+            const historyCommand: string = `"${this.tfPath}" history /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
             const historyCommandOut = await cp.exec(historyCommand);
             const tfsHistoryResultArray: string[] = historyCommandOut.stdout.toString("utf8").trim().split("\n");
             /*
@@ -272,9 +255,9 @@ export class TfsSupportProvider implements CvsSupportProvider {
     /**
      * This method returns some information about tfs repo by executing "tf workfold" command.
      */
-    private async getTfsInfo(): Promise<TfsWorkFoldInfo> {
+    private async getTfsInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
         const parseWorkfoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
-        const getLocalRepoInfoCommand: string = `"${this._tfPath}" workfold "${this._workspaceRootPath}"`;
+        const getLocalRepoInfoCommand: string = `"${tfPath}" workfold "${workspaceRootPath}"`;
         try {
             const out = await cp.exec(getLocalRepoInfoCommand);
             const tfsWorkfoldResult: string = out.stdout.toString("utf8").trim();
@@ -310,7 +293,7 @@ export class TfsSupportProvider implements CvsSupportProvider {
         try {
             const matches: string[] = message ? message.match(/#(\d+)/gm) : [];
             if (!matches) {
-                Logger.logDebug("TfsSupportProvider#getWorkItemIdsFromMessage: no one work item was found");
+                Logger.logDebug("TfvcSupportProvider#getWorkItemIdsFromMessage: no one work item was found");
                 return [];
             }
             for (let i: number = 0; i < matches.length; i++) {

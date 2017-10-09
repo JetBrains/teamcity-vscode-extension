@@ -28,6 +28,10 @@ import {TeamCityOutput} from "./view/teamcityoutput";
 import {Output} from "./view/output";
 import {PatchManager} from "./bll/utils/patchmanager";
 import {XmlParser} from "./bll/utils/xmlparser";
+import {CvsSupportProvider} from "./dal/cvsprovider";
+import {GitSupportProvider} from "./dal/gitprovider";
+import {TfvcSupportProvider} from "./dal/tfsprovider";
+import {CvsSupportProviderFactory} from "./bll/remoterun/cvsproviderfactory";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -44,3 +48,6 @@ myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDaoImpl);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
 myContainer.bind<XmlParser>(TYPES.XmlParser).to(XmlParser).inSingletonScope();
+myContainer.bind<CvsSupportProvider>(TYPES.GitProvider).to(GitSupportProvider).inSingletonScope();
+myContainer.bind<CvsSupportProvider>(TYPES.TfvcProvider).to(TfvcSupportProvider).inSingletonScope();
+myContainer.bind<CvsSupportProviderFactory>(TYPES.CvsProviderFactory).to(CvsSupportProviderFactory).inSingletonScope();

@@ -22,8 +22,7 @@ export class Summary {
         const visibleProjectIds: string[] = Summary.getVisibleProjectIds(summaryObj);
         const changes: Change[] = Summary.extractChanges(summaryObj);
         const personalChanges: Change[] = Summary.extractPersonalChanges(summaryObj);
-        const instance: Summary = new Summary(visibleProjectIds, changes, personalChanges);
-        return instance;
+        return new Summary(visibleProjectIds, changes, personalChanges);
     }
 
     private static getVisibleProjectIds(summaryObj: any): string[] {

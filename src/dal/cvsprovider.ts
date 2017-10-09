@@ -1,25 +1,17 @@
 "use strict";
 
-import {MappingFileContent} from "../bll/remoterun/mappingfilecontent";
 import {CheckInInfo} from "../bll/remoterun/checkininfo";
 import {CvsProviderTypes} from "../bll/utils/constants";
-import {CvsLocalResource} from "../bll/entities/cvslocalresource";
 import {ReadableSet} from "../bll/utils/readableset";
 
 export interface CvsSupportProvider {
 
     cvsType: CvsProviderTypes;
-
+    isActive: boolean;
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */
-    getFormattedFileNames(): Promise<string[]>;
-
-    /**
-     * This method generates content of the ".teamcity-mappings.properties" file to map local changes to remote.
-     * @return content of the ".teamcity-mappings.properties" file
-     */
-    generateMappingFileContent(): Promise<MappingFileContent>;
+    getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]>;
 
     /**
      * This method provides required info for provisioning remote run and post-commit execution.
@@ -33,12 +25,7 @@ export interface CvsSupportProvider {
      * Should user changes them since build config run, it works incorrect.
      * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
      */
-    requestForPostCommit();
-
-    /**
-     * Sets files for remote run, when user wants to provide them manually.
-     */
-    setFilesForRemoteRun(resources: CvsLocalResource[]);
+    requestForPostCommit(checkInInfo: CheckInInfo);
 
     /**
      * For some CVSes staged files and files at the file system aren't the same.

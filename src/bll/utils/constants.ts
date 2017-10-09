@@ -37,7 +37,7 @@ export enum CvsProviderTypes {
 }
 
 /**
- * Without <any> in front of TrackerEventType prefix ts won't compile the code.
+ * Without <any> in front of Tracker Event Type prefix ts won't compile the code.
  */
 
 export enum TrackerEventType {
@@ -120,5 +120,8 @@ export const TYPES = {
     BuildDao: Symbol("BuildDao"),
     Output: Symbol("Output"),
     PatchManager: Symbol("PatchManager"),
-    XmlParser: Symbol("XmlParser")
+    XmlParser: Symbol("XmlParser"),
+    GitProvider: Symbol("GitProvider"),
+    TfvcProvider: Symbol("TfvcProvider"),
+    CvsProviderFactory: Symbol("CvsProviderFactory")
 };

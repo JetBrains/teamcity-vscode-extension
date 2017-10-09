@@ -38,10 +38,10 @@ import {Settings} from "./bll/entities/settings";
 import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
+import {GitSupportProvider} from "./dal/gitprovider";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {
-    private cvsProvider: CvsSupportProvider;
     private remoteLogin: RemoteLogin;
     private remoteBuildServer: RemoteBuildServer;
     private credentialsStore: CredentialsStore;
@@ -49,6 +49,7 @@ export class CommandHolderImpl implements CommandHolder {
     private patchSender: PatchSender;
     private settings: Settings;
     private xmlParser: XmlParser;
+    private cvsSupportProviderFactory: CvsSupportProviderFactory;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
@@ -56,7 +57,8 @@ export class CommandHolderImpl implements CommandHolder {
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.Output) output: Output,
                 @inject(TYPES.Settings) settings: Settings,
-                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
+                @inject(TYPES.XmlParser) xmlParser: XmlParser,
+                @inject(TYPES.CvsProviderFactory) cvsSupportProviderFactory: CvsSupportProviderFactory) {
         this.remoteLogin = remoteLogin;
         this.remoteBuildServer = remoteBuildServer;
         this.patchSender = patchSender;
@@ -64,6 +66,7 @@ export class CommandHolderImpl implements CommandHolder {
         this.output = output;
         this.settings = settings;
         this.xmlParser = xmlParser;
+        this.cvsSupportProviderFactory = cvsSupportProviderFactory;
     }
 
     public async signIn(): Promise<boolean> {
@@ -109,11 +112,12 @@ export class CommandHolderImpl implements CommandHolder {
         return signedIn;
     }
 
+    private lastRequestedCheckInInfo: CheckInInfo;
     public async selectFilesForRemoteRun() {
         Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
-        this.cvsProvider = await this.getCvsSupportProvider();
-        const checkInInfo: CheckInInfo = await this.cvsProvider.getRequiredCheckInInfo();
-        DataProviderManager.setExplorerContent(checkInInfo.cvsLocalResources);
+        const cvsProvider = await this.getCvsSupportProvider();
+        this.lastRequestedCheckInInfo = await cvsProvider.getRequiredCheckInInfo();
+        DataProviderManager.setExplorerContent(this.lastRequestedCheckInInfo.cvsLocalResources);
         DataProviderManager.refresh();
     }
 
@@ -126,17 +130,19 @@ export class CommandHolderImpl implements CommandHolder {
         }
         // const apiProvider: TCApiProvider = new TCXmlRpcApiProvider();
         const selectedResources: CvsLocalResource[] = DataProviderManager.getInclResources();
+        const cvsProvider = await this.getCvsSupportProvider();
         if (selectedResources && selectedResources.length > 0) {
-            this.cvsProvider.setFilesForRemoteRun(selectedResources);
-        } else {
-            this.cvsProvider = await this.getCvsSupportProvider();
+            this.lastRequestedCheckInInfo.cvsLocalResources = selectedResources;
         }
 
-        if (this.cvsProvider === undefined) {
+        if (cvsProvider === undefined) {
             //If there is no provider, log already contains message about the problem
             return;
         }
-        const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames();
+        if (!this.lastRequestedCheckInInfo) {
+            this.lastRequestedCheckInInfo = await cvsProvider.getRequiredCheckInInfo();
+        }
+        const tcFormattedFilePaths: string[] = await cvsProvider.getFormattedFileNames(this.lastRequestedCheckInInfo);
 
         /* get suitable build configs hierarchically */
         const shortBuildConfigNames: string[] = await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
@@ -150,8 +156,8 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        if (!this.cvsProvider) {
-            Logger.logError("CommandHolderImpl#remoteRunWithChosenConfigs: cvsProvider absents. Please execute " +
+        if (!this.lastRequestedCheckInInfo) {
+            Logger.logError("CommandHolderImpl#remoteRunWithChosenConfigs: CheckInInfo to run absents. Please execute " +
                 "`Find Suitable Build Configuration` command first");
             MessageManager.showWarningMessage("Please execute `Find Suitable Build Configuration` command first!");
             return;
@@ -169,11 +175,13 @@ export class CommandHolderImpl implements CommandHolder {
         }
         DataProviderManager.setExplorerContent([]);
         DataProviderManager.refresh();
-        const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, this.cvsProvider);
+        const cvsProvider = await this.getCvsSupportProvider();
+        const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: remote run is ok");
             try {
-                await this.cvsProvider.requestForPostCommit();
+
+                await cvsProvider.requestForPostCommit(this.lastRequestedCheckInInfo);
             } catch (err) {
                 throw err;
             }
@@ -291,7 +299,7 @@ export class CommandHolderImpl implements CommandHolder {
     }
 
     private async getCvsSupportProvider(): Promise<CvsSupportProvider> {
-        const cvsProviders: CvsSupportProvider[] = await CvsSupportProviderFactory.getCvsSupportProviders();
+        const cvsProviders: CvsSupportProvider[] = await this.cvsSupportProviderFactory.getCvsSupportProviders();
         if (!cvsProviders || cvsProviders.length === 0) {
             //If there is no provider, log already contains message about the problem
             Logger.logInfo("No one cvs was found");
@@ -317,14 +325,15 @@ export class CommandHolderImpl implements CommandHolder {
                 Logger.logWarning(`Cvs Provider was not specified!`);
                 throw new Error("Cvs Provider was not specified!");
             } else {
-                cvsProviders.forEach((cvsProvider) => {
+                for (let i = 0; i < cvsProviders.length; i++) {
+                    const cvsProvider = cvsProviders[i];
                     if (cvsProvider.cvsType.toString() === selectedCvs.label) {
                         Logger.logInfo(`${cvsProvider.cvsType.toString()} cvsProvider was selected`);
-                        return cvsProvider;
+                        return Promise.resolve<CvsSupportProvider>(cvsProvider);
                     }
-                });
+                }
+                throw new Error("Cvs Provider was not specified!");
             }
-            Logger.logWarning(`Cvs Provider is not determined. It should have not happen.`);
         }
     }
 }

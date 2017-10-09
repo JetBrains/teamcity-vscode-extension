@@ -19,7 +19,6 @@ export class GitIsActiveValidator implements Validator {
         const path = this._path;
         await this.checkVersionCompatibility(path);
         await this.checkIsGitRepository(path);
-        await this.checkStagedFilesPresence(path);
     }
 
     private async checkVersionCompatibility(path: string) {
