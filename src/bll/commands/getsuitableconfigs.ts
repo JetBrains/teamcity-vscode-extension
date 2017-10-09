@@ -1,7 +1,6 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {CvsLocalResource} from "../entities/cvslocalresource";
 import {DataProviderManager} from "../../view/dataprovidermanager";
 import {ProjectItem} from "../entities/projectitem";
 import {MessageManager} from "../../view/messagemanager";
@@ -14,14 +13,11 @@ import {VsCodeUtils} from "../utils/vscodeutils";
 
 export class GetSuitableConfigs implements Command {
 
-    //Require to be logged in!!!!
-    private readonly lastRequestedCheckInInfo: CheckInInfo;
     private readonly cvsProvider: CvsSupportProvider;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
 
-    public constructor(lastRequestedCheckInInfo: CheckInInfo, cvsProvider: CvsSupportProvider, remoteBuildServer: RemoteBuildServer, xmlParser: XmlParser) {
-        this.lastRequestedCheckInInfo = lastRequestedCheckInInfo;
+    public constructor(cvsProvider: CvsSupportProvider, remoteBuildServer: RemoteBuildServer, xmlParser: XmlParser) {
         this.cvsProvider = cvsProvider;
         this.remoteBuildServer = remoteBuildServer;
         this.xmlParser = xmlParser;
@@ -33,6 +29,7 @@ export class GetSuitableConfigs implements Command {
             const checkInInfo: CheckInInfo = await this.getCheckInInfo();
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInInfo);
             DataProviderManager.setExplorerContentAndRefresh(projects);
+            DataProviderManager.storeCheckInInfo(checkInInfo);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
             return Promise.reject(VsCodeUtils.formatErrorMessage(err));
@@ -42,18 +39,9 @@ export class GetSuitableConfigs implements Command {
     }
 
     private async getCheckInInfo(): Promise<CheckInInfo> {
-        let checkInInfo: CheckInInfo = this.getCheckInInfoFromRequestedResources();
+        let checkInInfo: CheckInInfo = DataProviderManager.getCheckInInfoWithIncludedResources();
         if (!checkInInfo) {
             checkInInfo = await this.cvsProvider.getRequiredCheckInInfo();
-        }
-        return checkInInfo;
-    }
-
-    private getCheckInInfoFromRequestedResources(): CheckInInfo | undefined {
-        const checkInInfo: CheckInInfo = this.lastRequestedCheckInInfo;
-        const selectedResources: CvsLocalResource[] = DataProviderManager.getInclResources();
-        if (checkInInfo && selectedResources && selectedResources.length > 0) {
-            checkInInfo.cvsLocalResources = selectedResources;
         }
         return checkInInfo;
     }

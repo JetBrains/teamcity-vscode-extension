@@ -19,6 +19,8 @@ import {
 import {ProjectItem} from "../bll/entities/projectitem";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {isNullOrUndefined} from "util";
 
 export class DataProviderManager {
     private static _dataProvider: TeamCityTreeDataProvider;
@@ -35,7 +37,17 @@ export class DataProviderManager {
         }
     }
 
-    public static setExplorerContentAndRefresh(content: CvsLocalResource[] | ProjectItem[]): void {
+    public static storeCheckInInfo(content: CheckInInfo): void {
+        this._dataProvider.storeCheckInInfo(content);
+    }
+
+    public static resetExplorerContentAndRefresh(): void {
+        this._dataProvider.setExplorerContent(undefined);
+        this._dataProvider.setExplorerContent([]);
+        this._dataProvider.refresh();
+    }
+
+    public static setExplorerContentAndRefresh(content: CheckInInfo | ProjectItem[]): void {
         this._dataProvider.setExplorerContent(content);
         DataProviderManager.refresh();
     }
@@ -44,8 +56,8 @@ export class DataProviderManager {
         this._dataProvider.refresh();
     }
 
-    public static getInclResources() {
-        return this._dataProvider.getInclResources();
+    public static getCheckInInfoWithIncludedResources() {
+        return this._dataProvider.getCheckInInfoWithIncludedResources();
     }
 
     public static getIncludedBuildConfigs() {
@@ -56,8 +68,8 @@ export class DataProviderManager {
 class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
-    private _projects: ProjectItem[] = [];
-    private _resources: CvsLocalResource[] = [];
+    private projects: ProjectItem[] = [];
+    private checkInInfo: CheckInInfo;
 
     public refresh(config?: BuildConfigItem): void {
         if (!config) {
@@ -67,27 +79,36 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         this._onDidChangeTreeData.fire();
     }
 
-    public setExplorerContent(content: CvsLocalResource[] | ProjectItem[]) {
-        if (!content || content.length === 0) {
-            this.setProjects([]);
-            this.setResources([]);
+    public setExplorerContent(content: CheckInInfo | ProjectItem[], shouldReset: boolean = true) {
+        if (!content) {
+            this.projects = [];
+            this.checkInInfo = undefined;
             return;
         }
-        if (content[0] instanceof ProjectItem) {
-            this.setResources([]);
-            this.setProjects(<ProjectItem[]>content);
+        if (content instanceof Array) {
+            this.resetCheckInInfoIfRequired(shouldReset);
+            this.projects = content;
         } else {
-            this.setProjects([]);
-            this.setResources(<CvsLocalResource[]>content);
+            this.resetProjectsIfRequired(shouldReset);
+            this.checkInInfo = <CheckInInfo>content;
         }
     }
 
-    private setResources(resources: CvsLocalResource[]) {
-        this._resources = resources;
+    private resetCheckInInfoIfRequired(shouldReset: boolean) {
+        if (shouldReset) {
+            this.checkInInfo = undefined;
+        }
     }
 
-    private setProjects(projects: ProjectItem[]) {
-        this._projects = projects;
+    private resetProjectsIfRequired(shouldReset: boolean) {
+        if (shouldReset) {
+            this.projects = [];
+        }
+    }
+
+    public storeCheckInInfo(content: CheckInInfo) {
+        const shouldReset = false;
+        this.setExplorerContent(content, shouldReset);
     }
 
     public getTreeItem(treeItem: TreeItem): TreeItem {
@@ -99,10 +120,10 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
      * It fires every time there is a click on any element on the configExplorer.
      */
     public getChildren(element?: TreeItem): TreeItem[] | Thenable<TreeItem[]> {
-        if (!element && (!this._projects || this._projects.length === 0)) {
-            return this._resources;
+        if (!element && (!this.projects || this.projects.length === 0)) {
+            return this.checkInInfo ? this.checkInInfo.cvsLocalResources : [];
         } else if (!element) {
-            return this._projects;
+            return this.projects;
         } else if (element instanceof ProjectItem) {
             return element.children;
         }
@@ -114,7 +135,7 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
      */
     public getIncludedBuildConfigs(): BuildConfigItem[] {
         const result: BuildConfigItem[] = [];
-        this._projects.forEach((project) => {
+        this.projects.forEach((project) => {
             this.collectAllProject(project, result);
         });
 
@@ -132,16 +153,19 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         });
     }
 
-    /**
-     * @return - all included resources for remote run.
-     */
-    public getInclResources(): CvsLocalResource[] {
-        const result: CvsLocalResource[] = [];
-        this._resources.forEach((resource) => {
+    public getCheckInInfoWithIncludedResources(): CheckInInfo {
+        const result: CheckInInfo = this.checkInInfo;
+        if (!result) {
+            return undefined;
+        }
+        const includedResources: CvsLocalResource[] = [];
+        const localResources: CvsLocalResource[] = this.checkInInfo.cvsLocalResources;
+        localResources.forEach((resource) => {
             if (resource.isIncluded) {
-                result.push(resource);
+                includedResources.push(resource);
             }
         });
+        result.cvsLocalResources = includedResources;
         return result;
     }
 }

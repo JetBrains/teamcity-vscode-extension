@@ -37,6 +37,7 @@ import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
+import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
 
 @injectable()
 export class CommandHolderImpl implements CommandHolder {
@@ -110,13 +111,11 @@ export class CommandHolderImpl implements CommandHolder {
         return signedIn;
     }
 
-    private lastRequestedCheckInInfo: CheckInInfo;
     public async selectFilesForRemoteRun() {
         Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
         const cvsProvider = await this.getCvsSupportProvider();
-        this.lastRequestedCheckInInfo = await cvsProvider.getRequiredCheckInInfo();
-        DataProviderManager.setExplorerContentAndRefresh(this.lastRequestedCheckInInfo.cvsLocalResources);
-        DataProviderManager.refresh();
+        const selectFilesForRemoteRun: Command = new SelectFilesForRemoteRun(cvsProvider);
+        selectFilesForRemoteRun.exec();
     }
 
     public async getSuitableConfigs(): Promise<void> {
@@ -126,7 +125,7 @@ export class CommandHolderImpl implements CommandHolder {
             //If there are no credentials, log already contains message about the problem
             return;
         }
-        const getSuitableConfigs: Command = new GetSuitableConfigs(this.lastRequestedCheckInInfo, cvsProvider, this.remoteBuildServer, this.xmlParser);
+        const getSuitableConfigs: Command = new GetSuitableConfigs(cvsProvider, this.remoteBuildServer, this.xmlParser);
         return getSuitableConfigs.exec();
     }
 
@@ -138,20 +137,19 @@ export class CommandHolderImpl implements CommandHolder {
             return;
         }
         const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
+        const checkInInfo: CheckInInfo = DataProviderManager.getCheckInInfoWithIncludedResources();
         if (includedBuildConfigs === undefined || includedBuildConfigs.length === 0) {
             MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: no selected build configs. Try to execute the 'GitRemote run' command");
             return;
         }
-        DataProviderManager.setExplorerContentAndRefresh([]);
-        DataProviderManager.refresh();
+        DataProviderManager.resetExplorerContentAndRefresh();
         const cvsProvider = await this.getCvsSupportProvider();
         const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: remote run is ok");
             try {
-
-                await cvsProvider.requestForPostCommit(this.lastRequestedCheckInInfo);
+                await cvsProvider.requestForPostCommit(checkInInfo);
             } catch (err) {
                 throw err;
             }
