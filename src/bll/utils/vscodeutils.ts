@@ -57,7 +57,7 @@ export class VsCodeUtils {
         }
 
         builds.forEach((build) => {
-            if (build.id === -1) {
+            if (!build || build.id === -1) {
                 return;
             }
             let buildStatus: string;
