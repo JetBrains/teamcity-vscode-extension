@@ -2,7 +2,6 @@
 
 import {
     CancellationToken,
-    Command,
     commands,
     Disposable,
     Event,
@@ -36,8 +35,9 @@ export class DataProviderManager {
         }
     }
 
-    public static setExplorerContent(content: CvsLocalResource[] | ProjectItem[]): void {
+    public static setExplorerContentAndRefresh(content: CvsLocalResource[] | ProjectItem[]): void {
         this._dataProvider.setExplorerContent(content);
+        DataProviderManager.refresh();
     }
 
     public static refresh(): void {
