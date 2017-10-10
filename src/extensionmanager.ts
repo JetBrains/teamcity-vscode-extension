@@ -6,5 +6,4 @@ import {CommandHolder} from "./commandholder";
 export interface ExtensionManager extends Disposable {
     commandHolder: CommandHolder;
     cleanUp(): void;
-    executeSignIn(): Promise<void>;
 }

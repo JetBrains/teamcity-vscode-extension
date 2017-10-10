@@ -17,7 +17,6 @@ import {
 } from "vscode";
 import {Logger} from "./bll/utils/logger";
 import {XmlParser} from "./bll/utils/xmlparser";
-import {VsCodeUtils} from "./bll/utils/vscodeutils";
 import {RemoteLogin} from "./dal/remotelogin";
 import {PatchSender} from "./bll/remoterun/patchsender";
 import {MessageConstants} from "./bll/utils/MessageConstants";
@@ -25,7 +24,6 @@ import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {Credentials} from "./bll/credentialsstore/credentials";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
 import {CvsSupportProvider} from "./dal/cvsprovider";
-import {MessageManager} from "./view/messagemanager";
 import {CvsSupportProviderFactory} from "./bll/remoterun/cvsproviderfactory";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
@@ -66,14 +64,9 @@ export class CommandHolderImpl implements CommandHolder {
         this.cvsSupportProviderFactory = cvsSupportProviderFactory;
     }
 
-    public async signIn(): Promise<boolean> {
-        try {
-            const signIn: Command = new SignIn(this.remoteLogin, this.credentialsStore, this.settings, this.output);
-            await signIn.exec();
-        } catch (err) {
-            return false;
-        }
-        return true;
+    public async signIn(): Promise<void> {
+        const signIn: Command = new SignIn(this.remoteLogin, this.credentialsStore, this.settings, this.output);
+        return signIn.exec();
     }
 
     public async selectFilesForRemoteRun() {
@@ -85,22 +78,14 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async getSuitableConfigs(): Promise<void> {
         const cvsProvider = await this.getCvsSupportProvider();
-        const credentials: Credentials = await this.tryGetCredentials();
-        if (credentials === undefined) {
-            //If there are no credentials, log already contains message about the problem
-            return;
-        }
+        await this.tryGetCredentials();
         const getSuitableConfigs: Command = new GetSuitableConfigs(cvsProvider, this.remoteBuildServer, this.xmlParser);
         return getSuitableConfigs.exec();
     }
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        const credentials: Credentials = await this.tryGetCredentials();
-        if (!credentials) {
-            Logger.logWarning("CommandHolderImpl#remoteRunWithChosenConfigs: credentials absent. Try to sign in again");
-            return;
-        }
+        await this.tryGetCredentials();
         const cvsProvider = await this.getCvsSupportProvider();
         const remoteRunCommand: Command = new RemoteRun(cvsProvider, this.patchSender);
         return remoteRunCommand.exec();
@@ -117,9 +102,8 @@ export class CommandHolderImpl implements CommandHolder {
             await this.signIn();
             credentials = this.credentialsStore.getCredential();
             if (!credentials) {
-                MessageManager.showErrorMessage(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
                 Logger.logWarning("CommandHolderImpl#tryGetCredentials: An attempt to get credentials failed");
-                return undefined;
+                return Promise.reject(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
             }
         }
         Logger.logInfo("CommandHolderImpl#tryGetCredentials: success");

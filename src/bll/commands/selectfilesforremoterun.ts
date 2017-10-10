@@ -1,4 +1,5 @@
 "use strict";
+
 import {Logger} from "../utils/logger";
 import {DataProviderManager} from "../../view/dataprovidermanager";
 import {CvsSupportProvider} from "../../dal/cvsprovider";

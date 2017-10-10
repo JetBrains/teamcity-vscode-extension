@@ -36,10 +36,6 @@ export class ExtensionManagerImpl implements ExtensionManager {
         TeamCityStatusBarItem.init(this._disposables);
     }
 
-    public async executeSignIn(): Promise<void> {
-        await this._commandHolder.signIn();
-    }
-
     public cleanUp(): void {
         this.credentialsStore.removeCredential();
         TeamCityStatusBarItem.setLoggedOut();

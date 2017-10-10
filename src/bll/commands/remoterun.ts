@@ -23,24 +23,19 @@ export class RemoteRun implements Command {
         Logger.logInfo("RemoteRun#exec: starts");
         const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
         const checkInInfo: CheckInInfo = DataProviderManager.getCheckInInfoWithIncludedResources();
-        if (!includedBuildConfigs === undefined || includedBuildConfigs.length === 0) {
+        if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
             MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
-            Logger.logWarning("RemoteRun#exec: no selected build configs. Try to execute the 'GitRemote run' command");
+            Logger.logWarning("RemoteRun#exec: " + MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             return;
         }
-
         DataProviderManager.resetExplorerContentAndRefresh();
         const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, this.cvsProvider);
         if (remoteRunResult) {
             Logger.logInfo("RemoteRun#exec: remote run is ok");
-            try {
-                await this.cvsProvider.requestForPostCommit(checkInInfo);
-            } catch (err) {
-                throw err;
-            }
+            return this.cvsProvider.requestForPostCommit(checkInInfo);
         } else {
             Logger.logWarning("RemoteRun#exec: something went wrong during remote run");
+            return Promise.reject("Something went wrong during remote run");
         }
-        Logger.logInfo("RemoteRun#exec: end");
     }
 }

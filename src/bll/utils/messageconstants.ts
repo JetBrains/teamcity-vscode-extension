@@ -5,7 +5,7 @@ export class MessageConstants {
     static readonly PROVIDE_PASSWORD: string = "Provide the password for username.";
     static readonly PROVIDE_URL: string = "Provide the URL for TeamCity server.";
     static readonly NO_CREDENTIALS_RUN_SIGNIN: string = "You are not connected to a TeamCity server. Please run the 'teamcity SignIn' command.";
-    static readonly NO_CONFIGS_RUN_REMOTERUN: string = "No selected build configs. Please execute the 'GitRemote run' command.";
+    static readonly NO_CONFIGS_RUN_REMOTERUN: string = "no selected build configs. Try to execute the 'Find Suitable Builds' command first";
     static readonly NO_TCC_UTIL: string = "Not found tcc.jar. Please reinstall teamcity extension.";
     static readonly SUCCESSFULLY_SIGNEDIN: string = "You are successfully signed in to the TeamCity server.";
     static readonly STATUS_CODE_401: string = "Unauthorized. Check your authentication credentials and try again.";
@@ -18,4 +18,5 @@ export class MessageConstants {
     static readonly DO_NOT_SHOW_AGAIN = "Don't show again";
     static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
+    static readonly USER_ABORTED_THE_OPERATION = "User aborted the operation.";
 }
