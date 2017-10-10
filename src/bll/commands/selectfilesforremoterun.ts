@@ -7,7 +7,7 @@ import {CheckInInfo} from "../remoterun/checkininfo";
 
 export class SelectFilesForRemoteRun implements Command {
 
-    private readonly cvsProvider;
+    private readonly cvsProvider: CvsSupportProvider;
     public constructor(cvsProvider: CvsSupportProvider) {
         this.cvsProvider = cvsProvider;
     }

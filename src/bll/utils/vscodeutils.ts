@@ -87,7 +87,7 @@ export class VsCodeUtils {
      */
     public static formatErrorMessage(err): string {
         if (!err || !err.message) {
-            return "";
+            return err || "";
         }
         let formattedMsg: string = err.message;
         if (err.stderr) {
