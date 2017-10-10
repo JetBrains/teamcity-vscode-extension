@@ -113,7 +113,7 @@ suite("Notification Watcher Implementation", () => {
 
     function getCredentialsStoreMock(credentials: Credentials): CredentialsStoreImpl {
         const mockedCredentialsStore:CredentialsStoreImpl = tsMockito.mock(CredentialsStoreImpl);
-        tsMockito.when(mockedCredentialsStore.getCredential()).thenReturn(credentials);
+        tsMockito.when(mockedCredentialsStore.getCredentialsSilently()).thenReturn(credentials);
         return tsMockito.instance(mockedCredentialsStore);
     }
 

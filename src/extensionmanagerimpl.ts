@@ -37,7 +37,7 @@ export class ExtensionManagerImpl implements ExtensionManager {
     }
 
     public cleanUp(): void {
-        this.credentialsStore.removeCredential();
+        this.credentialsStore.removeCredentials();
         TeamCityStatusBarItem.setLoggedOut();
     }
 

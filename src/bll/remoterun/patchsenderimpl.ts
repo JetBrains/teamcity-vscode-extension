@@ -21,19 +21,23 @@ export class CustomPatchSender implements PatchSender {
     private readonly webLinks: WebLinks;
     private readonly patchManager: PatchManager;
     private readonly xmlParser: XmlParser;
+    private readonly credentialsStore: CredentialsStore;
 
     constructor(@inject(TYPES.WebLinks) webLinks: WebLinks,
                 @inject(TYPES.PatchManager) patchManager: PatchManager,
-                @inject(TYPES.XmlParser) xmlParser: XmlParser) {
+                @inject(TYPES.XmlParser) xmlParser: XmlParser,
+                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
         this.webLinks = webLinks;
         this.patchManager = patchManager;
         this.xmlParser = xmlParser;
+        this.credentialsStore = credentialsStore;
     }
 
     /**
      * @returns true in case of success, otherwise false.
      */
     public async remoteRun(configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean> {
+        await this.checkCredentialsExistence();
         const patchAbsPath: string = await this.patchManager.preparePatch(cvsProvider);
         const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
         try {
@@ -49,8 +53,12 @@ export class CustomPatchSender implements PatchSender {
             }
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
-            return false;
+            return Promise.reject(VsCodeUtils.formatErrorMessage(err));
         }
+    }
+
+    private async checkCredentialsExistence(): Promise<void> {
+        await this.credentialsStore.tryGetCredentials();
     }
 
     /**

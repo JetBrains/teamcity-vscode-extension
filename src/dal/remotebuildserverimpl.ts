@@ -19,19 +19,19 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
         this.credentialsStore = credentialsStore;
     }
 
-    private createAndInitClient(): any {
-        const credentials: Credentials = this.credentialsStore.getCredential();
+    private async createAndInitClient(): Promise<any> {
+        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
         if (credentials) {
             const client = xmlrpc.createClient({url: credentials.serverURL + "/RPC2", cookies: true});
             client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentials.sessionId);
-            return client;
+            return Promise.resolve(client);
         } else {
             throw new Error("User is logged out");
         }
     }
 
-    private getUserId(): any {
-        const credentials = this.credentialsStore.getCredential();
+    private async getUserId(): Promise<any> {
+        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
         if (credentials) {
             return credentials.userId;
         } else {
@@ -44,8 +44,8 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
      * @return SummeryDataProxy object
      */
     public async getGZippedSummary(): Promise<Uint8Array[]> {
-        const client = this.createAndInitClient();
-        const userId: string = this.getUserId();
+        const client: any = await this.createAndInitClient();
+        const userId: string = await this.getUserId();
         return new Promise<Uint8Array[]>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data) => {
                 /* tslint:disable:no-null-keyword */
@@ -62,8 +62,8 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
     /**
      * @return - number of event for existing subscriptions.
      */
-    getTotalNumberOfEvents(serializedSubscription: string): Promise<number> {
-        const client = this.createAndInitClient();
+    public async getTotalNumberOfEvents(serializedSubscription: string): Promise<number> {
+        const client: any = await this.createAndInitClient();
         return new Promise<number>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getTotalNumberOfEvents", [serializedSubscription], (err, data) => {
                 if (err || !data) {
@@ -80,8 +80,8 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
      * @param filesFromPatch - Changed file paths in particular format. The information is required to create request for suitableBuildConfigIds.
      * @return - array of all suitable Build Config Ids.
      */
-    getSuitableConfigurations(filesFromPatch: string[]): Promise<string[]> {
-        const client = this.createAndInitClient();
+    public async getSuitableConfigurations(filesFromPatch: string[]): Promise<string[]> {
+        const client: any = await this.createAndInitClient();
         const changedFiles: string[] = [];
         //Sometimes filePaths contain incorrect backslash symbols.
         filesFromPatch.forEach((row) => {
@@ -105,8 +105,8 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
      * about build configurations (including projectNames and buildConfigurationName). The information is required to create label for BuildConfig.
      * @return - array of buildXml
      */
-    getRelatedBuilds(suitableConfigurations: string[]): Promise<string[]> {
-        const client = this.createAndInitClient();
+    public async getRelatedBuilds(suitableConfigurations: string[]): Promise<string[]> {
+        const client: any = await this.createAndInitClient();
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("RemoteBuildServer2.getRelatedProjects", [suitableConfigurations], (err, buildXmlArray) => {
                 if (err || !buildXmlArray) {

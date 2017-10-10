@@ -78,14 +78,12 @@ export class CommandHolderImpl implements CommandHolder {
 
     public async getSuitableConfigs(): Promise<void> {
         const cvsProvider = await this.getCvsSupportProvider();
-        await this.tryGetCredentials();
         const getSuitableConfigs: Command = new GetSuitableConfigs(cvsProvider, this.remoteBuildServer, this.xmlParser);
         return getSuitableConfigs.exec();
     }
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        await this.tryGetCredentials();
         const cvsProvider = await this.getCvsSupportProvider();
         const remoteRunCommand: Command = new RemoteRun(cvsProvider, this.patchSender);
         return remoteRunCommand.exec();
@@ -93,21 +91,6 @@ export class CommandHolderImpl implements CommandHolder {
 
     public showOutput(): void {
         this.output.show();
-    }
-
-    private async tryGetCredentials(): Promise<Credentials> {
-        let credentials: Credentials = this.credentialsStore.getCredential();
-        if (!credentials) {
-            Logger.logInfo("CommandHolderImpl#tryGetCredentials: credentials is undefined. An attempt to get them");
-            await this.signIn();
-            credentials = this.credentialsStore.getCredential();
-            if (!credentials) {
-                Logger.logWarning("CommandHolderImpl#tryGetCredentials: An attempt to get credentials failed");
-                return Promise.reject(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
-            }
-        }
-        Logger.logInfo("CommandHolderImpl#tryGetCredentials: success");
-        return credentials;
     }
 
     private async getCvsSupportProvider(): Promise<CvsSupportProvider> {

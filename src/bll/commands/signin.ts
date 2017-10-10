@@ -31,7 +31,7 @@ export class SignIn implements Command {
         let credentials: Credentials = await this.tryGetCredentialsFromKeytar();
         credentials = credentials || await this.requestTypingCredentials();
         if (credentials) {
-            this.credentialsStore.setCredential(credentials);
+            this.credentialsStore.setCredentials(credentials);
             this.storeLastUserCredentials(credentials);
             Logger.logInfo("SignIn#exec: success.");
             return this.greetUser(credentials);

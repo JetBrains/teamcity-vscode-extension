@@ -3,7 +3,8 @@
 import {Credentials} from "./credentials";
 
 export interface CredentialsStore {
-    setCredential(credentials: Credentials): void;
-    getCredential(): Credentials;
-    removeCredential(): void;
+    setCredentials(credentials: Credentials): void;
+    tryGetCredentials(): Promise<Credentials>;
+    getCredentialsSilently(): Credentials;
+    removeCredentials(): void;
 }

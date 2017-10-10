@@ -83,7 +83,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     }
 
     private async processNewChangesIfRequired(): Promise<void> {
-        const credentials: Credentials = this.credentialStore.getCredential();
+        const credentials: Credentials = this.credentialStore.getCredentialsSilently();
         if (!credentials) {
             return;
         }
@@ -96,13 +96,13 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     }
 
     private isNotTheSameUser(): boolean {
-        const currentCredentials: Credentials = this.credentialStore.getCredential();
+        const currentCredentials: Credentials = this.credentialStore.getCredentialsSilently();
         return !currentCredentials || !currentCredentials.equals(this.storedCredentials);
     }
 
     private async waitAndGetCredentials(): Promise<Credentials> {
         while (this.shouldNotBeDisposed) {
-            const credentials: Credentials = this.credentialStore.getCredential();
+            const credentials: Credentials = this.credentialStore.getCredentialsSilently();
             if (credentials) {
                 Logger.logInfo(`NotificationWatcherImpl#waitAndGetCredentials: user ${credentials.userId} is logged in.`);
                 return credentials;
@@ -145,7 +145,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     }
 
     private async displayChangesToOutput(changes: Change[]): Promise<void> {
-        const credentials: Credentials = this.credentialStore.getCredential();
+        const credentials: Credentials = this.credentialStore.getCredentialsSilently();
         if (!changes || !credentials) {
             Logger.logWarning(`NotificationWatcher#displayChangesToOutput: changes or user credentials absent`);
             return;
