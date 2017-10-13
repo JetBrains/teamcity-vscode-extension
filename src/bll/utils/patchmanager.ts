@@ -9,7 +9,7 @@ import {VsCodeUtils} from "./vscodeutils";
 import {CvsFileStatusCode} from "./constants";
 import {AsyncWriteStream} from "../../dal/asyncwritestream";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
-import {CheckInInfo} from "../remoterun/checkininfo";
+import {CheckInInfo} from "../entities/checkininfo";
 import {CvsLocalResource} from "../entities/cvslocalresource";
 import {MappingFileContent} from "../remoterun/mappingfilecontent";
 import {ReadableSet} from "./readableset";

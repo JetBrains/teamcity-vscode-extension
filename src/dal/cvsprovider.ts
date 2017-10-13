@@ -1,6 +1,6 @@
 "use strict";
 
-import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {CheckInInfo} from "../bll/entities/checkininfo";
 import {CvsProviderTypes} from "../bll/utils/constants";
 import {ReadableSet} from "../bll/utils/readableset";
 
@@ -33,4 +33,6 @@ export interface CvsSupportProvider {
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
     getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> | undefined;
+
+    getRootPath(): string;
 }

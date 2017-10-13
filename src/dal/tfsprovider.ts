@@ -9,7 +9,7 @@ import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
 import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
-import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {CheckInInfo} from "../bll/entities/checkininfo";
 import {injectable} from "inversify";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
@@ -79,12 +79,8 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
         await this.fillInServerPaths(cvsLocalResources);
-        return {
-            cvsLocalResources: cvsLocalResources,
-            message: commitMessage,
-            serverItems: serverItems,
-            workItemIds: workItemIds
-        };
+        const cvsProvider: CvsSupportProvider = this;
+        return new CheckInInfo(commitMessage, cvsLocalResources, cvsProvider, serverItems, workItemIds);
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
@@ -307,6 +303,10 @@ export class TfvcSupportProvider implements CvsSupportProvider {
             Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message} with error: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
         return ids;
+    }
+
+    public getRootPath(): string {
+        return this.workspaceRootPath;
     }
 }
 

@@ -19,49 +19,52 @@ import {
 import {ProjectItem} from "../bll/entities/projectitem";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
-import {CheckInInfo} from "../bll/remoterun/checkininfo";
-import {isNullOrUndefined} from "util";
+import {CheckInInfo} from "../bll/entities/checkininfo";
 
 export class DataProviderManager {
-    private static _dataProvider: TeamCityTreeDataProvider;
+    private static dataProvider: TeamCityTreeDataProvider;
+    private static checkInArray: CheckInInfo[] = [];
 
     public static init(disposables: Disposable[]): void {
-        if (DataProviderManager._dataProvider !== undefined) {
+        if (DataProviderManager.dataProvider !== undefined) {
             return;
         }
-        DataProviderManager._dataProvider = new TeamCityTreeDataProvider();
+        DataProviderManager.dataProvider = new TeamCityTreeDataProvider();
         if (disposables) {
-            disposables.push(window.registerTreeDataProvider("teamcityExplorer", DataProviderManager._dataProvider));
+            disposables.push(window.registerTreeDataProvider("teamcityExplorer", DataProviderManager.dataProvider));
         } else {
-            window.registerTreeDataProvider("teamcityExplorer", DataProviderManager._dataProvider);
+            window.registerTreeDataProvider("teamcityExplorer", DataProviderManager.dataProvider);
         }
     }
 
-    public static storeCheckInInfo(content: CheckInInfo): void {
-        this._dataProvider.storeCheckInInfo(content);
+    public static storeCheckInArray(checkInArray: CheckInInfo[]): void {
+        this.checkInArray = checkInArray;
+    }
+
+    public static getStoredCheckInArray(): CheckInInfo[] {
+        return this.checkInArray;
     }
 
     public static resetExplorerContentAndRefresh(): void {
-        this._dataProvider.setExplorerContent(undefined);
-        this._dataProvider.setExplorerContent([]);
-        this._dataProvider.refresh();
+        this.dataProvider.setExplorerContent([]);
+        DataProviderManager.refresh();
     }
 
-    public static setExplorerContentAndRefresh(content: CheckInInfo | ProjectItem[]): void {
-        this._dataProvider.setExplorerContent(content);
+    public static setExplorerContentAndRefresh(content: CheckInInfo[] | ProjectItem[]): void {
+        this.dataProvider.setExplorerContent(content);
         DataProviderManager.refresh();
     }
 
     public static refresh(): void {
-        this._dataProvider.refresh();
+        this.dataProvider.refresh();
     }
 
-    public static getCheckInInfoWithIncludedResources() {
-        return this._dataProvider.getCheckInInfoWithIncludedResources();
+    public static getCheckInArraysWithIncludedResources() {
+        return this.dataProvider.getCheckInArraysWithIncludedResources();
     }
 
     public static getIncludedBuildConfigs() {
-        return this._dataProvider.getIncludedBuildConfigs();
+        return this.dataProvider.getIncludedBuildConfigs();
     }
 }
 
@@ -69,7 +72,7 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
     private projects: ProjectItem[] = [];
-    private checkInInfo: CheckInInfo;
+    private checkInArray: CheckInInfo[] = [];
 
     public refresh(config?: BuildConfigItem): void {
         if (!config) {
@@ -79,24 +82,24 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         this._onDidChangeTreeData.fire();
     }
 
-    public setExplorerContent(content: CheckInInfo | ProjectItem[], shouldReset: boolean = true) {
-        if (!content) {
+    public setExplorerContent(content: CheckInInfo[] | ProjectItem[], shouldReset: boolean = true) {
+        if (!content && content.length === 0) {
             this.projects = [];
-            this.checkInInfo = undefined;
+            this.checkInArray = [];
             return;
         }
-        if (content instanceof Array) {
+        if (content[0] instanceof ProjectItem) {
             this.resetCheckInInfoIfRequired(shouldReset);
-            this.projects = content;
+            this.projects = <ProjectItem[]>content;
         } else {
             this.resetProjectsIfRequired(shouldReset);
-            this.checkInInfo = <CheckInInfo>content;
+            this.checkInArray = <CheckInInfo[]>content;
         }
     }
 
     private resetCheckInInfoIfRequired(shouldReset: boolean) {
         if (shouldReset) {
-            this.checkInInfo = undefined;
+            this.checkInArray = undefined;
         }
     }
 
@@ -106,7 +109,7 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         }
     }
 
-    public storeCheckInInfo(content: CheckInInfo) {
+    public storeCheckInInfo(content: CheckInInfo[]) {
         const shouldReset = false;
         this.setExplorerContent(content, shouldReset);
     }
@@ -121,11 +124,13 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
      */
     public getChildren(element?: TreeItem): TreeItem[] | Thenable<TreeItem[]> {
         if (!element && (!this.projects || this.projects.length === 0)) {
-            return this.checkInInfo ? this.checkInInfo.cvsLocalResources : [];
+            return this.checkInArray;
         } else if (!element) {
             return this.projects;
         } else if (element instanceof ProjectItem) {
             return element.children;
+        } else if (element instanceof CheckInInfo) {
+            return element.cvsLocalResources;
         }
         return [];
     }
@@ -153,13 +158,18 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
         });
     }
 
-    public getCheckInInfoWithIncludedResources(): CheckInInfo {
-        const result: CheckInInfo = this.checkInInfo;
-        if (!result) {
-            return undefined;
-        }
+    public getCheckInArraysWithIncludedResources(): CheckInInfo[] {
+        const result: CheckInInfo[] = [];
+        this.checkInArray.forEach((checkInInfo) => {
+            result.push(this.getCheckInInfoWithIncludedResources(checkInInfo));
+        });
+        return result;
+    }
+
+    private getCheckInInfoWithIncludedResources(checkInInfo: CheckInInfo): CheckInInfo {
+        const result: CheckInInfo = checkInInfo;
         const includedResources: CvsLocalResource[] = [];
-        const localResources: CvsLocalResource[] = this.checkInInfo.cvsLocalResources;
+        const localResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
         localResources.forEach((resource) => {
             if (resource.isIncluded) {
                 includedResources.push(resource);

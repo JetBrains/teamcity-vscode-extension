@@ -8,9 +8,9 @@ import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
+import {QuickPickItem, QuickPickOptions, scm, window, workspace, WorkspaceFolder, Uri} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvslocalresource";
-import {CheckInInfo} from "../bll/remoterun/checkininfo";
+import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
 import {injectable} from "inversify";
 import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
@@ -26,22 +26,23 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     private gitPath: string;
     private workspaceRootPath: string;
+    private workspaceRootPathAsUri: Uri;
     private _isActive: boolean = false;
 
-    constructor() {
+    constructor(rootPath: Uri) {
+        this.workspaceRootPathAsUri = rootPath;
+        this.workspaceRootPath = rootPath.fsPath;
+    }
+
+    public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
+        const instance: GitSupportProvider = new GitSupportProvider(workspaceRootPath);
         const pathFinder: Finder = new GitPathFinder();
-        pathFinder.find().then((gitPath) => {
-            const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
-            isActiveValidator.validate().then(() => {
-                this.gitPath = gitPath;
-                this.workspaceRootPath = workspace.rootPath;
-                this._isActive = true;
-            }).catch((err) => {
-                Logger.logError(VsCodeUtils.formatErrorMessage(err));
-            });
-        }).catch((err) => {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
-        });
+        const gitPath: string = await pathFinder.find();
+        const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
+        await isActiveValidator.validate();
+        instance.gitPath = gitPath;
+        instance._isActive = true;
+        return instance;
     }
 
     public get isActive(): boolean {
@@ -77,12 +78,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         const cvsLocalResource: CvsLocalResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         await this.fillInServerPaths(cvsLocalResource);
-        return {
-            cvsLocalResources: cvsLocalResource,
-            message: commitMessage,
-            serverItems: [],
-            workItemIds: []
-        };
+
+        const cvsProvider: CvsSupportProvider = this;
+        return new CheckInInfo(commitMessage, cvsLocalResource, cvsProvider);
     }
 
     private getCommitMessage(): string {
@@ -339,6 +337,10 @@ export class GitSupportProvider implements CvsSupportProvider {
             }
             throw err;
         }
+    }
+
+    public getRootPath(): string {
+        return this.workspaceRootPathAsUri.path;
     }
 }
 

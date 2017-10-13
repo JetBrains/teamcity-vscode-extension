@@ -2,7 +2,7 @@
 
 import {Logger} from "../utils/logger";
 import {PatchSender} from "./patchsender";
-import {CheckInInfo} from "./checkininfo";
+import {CheckInInfo} from "../entities/checkininfo";
 import {WebLinks} from "../../dal/weblinks";
 import {XmlParser} from "../utils/xmlparser";
 import {QueuedBuild} from "../utils/queuedbuild";

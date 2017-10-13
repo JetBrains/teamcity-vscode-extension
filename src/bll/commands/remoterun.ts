@@ -3,7 +3,7 @@
 import {Logger} from "../utils/logger";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {DataProviderManager} from "../../view/dataprovidermanager";
-import {CheckInInfo} from "../remoterun/checkininfo";
+import {CheckInInfo} from "../entities/checkininfo";
 import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
@@ -22,7 +22,8 @@ export class RemoteRun implements Command {
     public async exec(): Promise<void> {
         Logger.logInfo("RemoteRun#exec: starts");
         const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
-        const checkInInfo: CheckInInfo = DataProviderManager.getCheckInInfoWithIncludedResources();
+        //TODO: process correct logic here
+        const checkInInfo: CheckInInfo = DataProviderManager.getStoredCheckInArray()[0];
         if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
             MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             Logger.logWarning("RemoteRun#exec: " + MessageConstants.NO_CONFIGS_RUN_REMOTERUN);

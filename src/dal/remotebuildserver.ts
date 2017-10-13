@@ -1,7 +1,5 @@
 "use strict";
 
-import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
-
 export interface RemoteBuildServer {
 
     getGZippedSummary(): Promise<Uint8Array[]>;

@@ -123,5 +123,6 @@ export const TYPES = {
     XmlParser: Symbol("XmlParser"),
     GitProvider: Symbol("GitProvider"),
     TfvcProvider: Symbol("TfvcProvider"),
-    CvsProviderFactory: Symbol("CvsProviderFactory")
+    CvsProviderFactory: Symbol("CvsProviderFactory"),
+    ProviderProxy: Symbol("CvsProviderProxy")
 };
