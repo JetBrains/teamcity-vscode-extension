@@ -3,7 +3,6 @@
 import {CvsSupportProvider} from "./cvsprovider";
 import {CvsProviderTypes} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {ReadableSet} from "../bll/utils/readableset";
 import {Uri, workspace} from "vscode";
 import {GitSupportProvider} from "./gitprovider";
 import {TfvcSupportProvider} from "./tfsprovider";
@@ -91,12 +90,13 @@ export class CvsProviderProxy {
         return result;
     }
 
-    requestForPostCommit(checkInInfo: CheckInInfo) {
-        return undefined;
+    public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
+        if (checkInArray) {
+            for (let i = 0; i < checkInArray.length; i++) {
+                const checkInInfo: CheckInInfo = checkInArray[i];
+                const provider: CvsSupportProvider = this.actialProviders[i];
+                await provider.requestForPostCommit(checkInInfo);
+            }
+        }
     }
-
-    getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> | any {
-        return undefined;
-    }
-
 }

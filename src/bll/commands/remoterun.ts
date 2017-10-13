@@ -6,15 +6,15 @@ import {DataProviderManager} from "../../view/dataprovidermanager";
 import {CheckInInfo} from "../entities/checkininfo";
 import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";
-import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {PatchSender} from "../remoterun/patchsender";
+import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 
 export class RemoteRun implements Command {
 
-    private readonly cvsProvider: CvsSupportProvider;
+    private readonly cvsProvider: CvsProviderProxy;
     private readonly patchSender: PatchSender;
 
-    public constructor(cvsProvider: CvsSupportProvider, patchSender: PatchSender) {
+    public constructor(cvsProvider: CvsProviderProxy, patchSender: PatchSender) {
         this.cvsProvider = cvsProvider;
         this.patchSender = patchSender;
     }
@@ -22,18 +22,17 @@ export class RemoteRun implements Command {
     public async exec(): Promise<void> {
         Logger.logInfo("RemoteRun#exec: starts");
         const includedBuildConfigs: BuildConfigItem[] = DataProviderManager.getIncludedBuildConfigs();
-        //TODO: process correct logic here
-        const checkInInfo: CheckInInfo = DataProviderManager.getStoredCheckInArray()[0];
+        const checkInArray: CheckInInfo[] = DataProviderManager.getStoredCheckInArray();
         if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
             MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             Logger.logWarning("RemoteRun#exec: " + MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             return;
         }
         DataProviderManager.resetExplorerContentAndRefresh();
-        const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, this.cvsProvider);
+        const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, checkInArray);
         if (remoteRunResult) {
             Logger.logInfo("RemoteRun#exec: remote run is ok");
-            return this.cvsProvider.requestForPostCommit(checkInInfo);
+            return this.cvsProvider.requestForPostCommit(checkInArray);
         } else {
             Logger.logWarning("RemoteRun#exec: something went wrong during remote run");
             return Promise.reject("Something went wrong during remote run");

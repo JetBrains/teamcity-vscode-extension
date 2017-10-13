@@ -1,15 +1,13 @@
 "use strict";
 
 import {PatchSender} from "./patchsender";
-import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {BuildConfigItem} from "../entities/buildconfigitem";
-import {CredentialsStore} from "../credentialsstore/credentialsstore";
+import {CheckInInfo} from "../entities/checkininfo";
 
 export interface PatchSender {
 
     /**
      * @returns true in case of success, otherwise false.
      */
-    /* async */
-    remoteRun(configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean>;
+    remoteRun(configs: BuildConfigItem[], checkInInfo: CheckInInfo[]): Promise<boolean>;
 }

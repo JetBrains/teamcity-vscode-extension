@@ -18,84 +18,115 @@ const temp = require("temp").track();
 
 @injectable()
 export class PatchManager {
-    static _cvsProvider: any;
 
-    /**
-     * This method uses PatchBuilder to write all required info into the patch file
-     * @param cvsProvider - CvsProvider object
-     * @param staged - patch content will be taken from staged area
-     * @return Promise<string> - absPath of the patch
-     */
-    public async preparePatch(cvsProvider: CvsSupportProvider, staged: boolean = true): Promise<string> {
-        const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
-        PatchManager._cvsProvider = cvsProvider;
-        const changedFilesNames: CvsLocalResource[] = checkInInfo.cvsLocalResources;
-        if (!changedFilesNames) {
+    public async preparePatch(checkInArray: CheckInInfo[]): Promise<string> {
+        if (!checkInArray && checkInArray.length === 0) {
             return;
         }
         const patchBuilder: PatchBuilder = new PatchBuilder();
         await patchBuilder.init();
-        //It's impossible to use forEach loop with await calls
-        for (let i: number = 0; i < changedFilesNames.length; i++) {
-            const absPath: string = changedFilesNames[i].fileAbsPath;
-            const status: CvsFileStatusCode = changedFilesNames[i].status;
-            const fileExist: boolean = await fs_async.exists(absPath);
-            const teamcityFileName: string = changedFilesNames[i].serverFilePath;
-            let fileReadStream: ReadableSet | undefined;
-            //When fileReadStream !== undefined we should use the stream.
-            try {
-                fileReadStream = staged ? await cvsProvider.getStagedFileContentStream(absPath) : undefined;
-            } catch (err) {
-                //An error message should be already logged at the #showFile
-                Logger.logError("PatchManager#preparePatch: an error occurs during getting showFile stream - use a file content from the file system");
-            }
-            switch (status) {
-                //TODO: Implement replaced status code
-                case CvsFileStatusCode.ADDED : {
-                    if (!fileReadStream && fileExist) {
-                        await patchBuilder.addAddedFile(teamcityFileName, absPath);
-                    } else if (fileReadStream) {
-                        await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
-                    } //TODO: add logs if not
-                    break;
-                }
-                case CvsFileStatusCode.DELETED : {
-                    await patchBuilder.addDeletedFile(teamcityFileName);
-                    break;
-                }
-                case CvsFileStatusCode.MODIFIED : {
-                    if (!fileReadStream && fileExist) {
-                        await patchBuilder.addReplacedFile(teamcityFileName, absPath);
-                    } else if (fileReadStream) {
-                        await patchBuilder.addReplacedStreamedFile(teamcityFileName, fileReadStream);
-                    } //TODO: add logs if not
-                    break;
-                }
-                case CvsFileStatusCode.RENAMED : {
-                    const prevTcFileName: string =  changedFilesNames[i].prevServerFilePath;
-                    await patchBuilder.addDeletedFile(prevTcFileName);
-                    if (fileExist) {
-                        if (!fileReadStream && fileExist) {
-                            await patchBuilder.addAddedFile(teamcityFileName, absPath);
-                        } else if (fileReadStream) {
-                            await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
-                        } //TODO: add logs if not
-                    }
-                    break;
-                }
-                default : {
-                    if (!fileReadStream && fileExist) {
-                        await patchBuilder.addReplacedFile(teamcityFileName, absPath);
-                    } else if (fileReadStream) {
-                        await patchBuilder.addReplacedStreamedFile(teamcityFileName, fileReadStream);
-                    } else {
-                        await patchBuilder.addDeletedFile(teamcityFileName);
-                    }
-                    break;
-                }
-            }
+        for (let i = 0; i < checkInArray.length; i++) {
+            const checkInInfo = checkInArray[i];
+            await this.appendCheckInInfo(patchBuilder, checkInInfo);
         }
         return patchBuilder.finishPatching();
+    }
+
+    private async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo, staged: boolean = true): Promise<void> {
+        const cvsProvider = checkInInfo.cvsProvider;
+        const changedFilesNames: CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        for (let i: number = 0; i < changedFilesNames.length; i++) {
+            await this.appendLocalResource(patchBuilder, changedFilesNames[i], cvsProvider, staged);
+        }
+    }
+
+    private async appendLocalResource(patchBuilder: PatchBuilder, localResource: CvsLocalResource, cvsProvider: CvsSupportProvider, staged): Promise<void> {
+        const status: CvsFileStatusCode = localResource.status;
+        switch (status) {
+            case CvsFileStatusCode.ADDED : {
+                await this.appendAddedFile(patchBuilder, localResource, cvsProvider, staged);
+                break;
+            }
+            case CvsFileStatusCode.DELETED : {
+                await this.appendDeletedFile(patchBuilder, localResource);
+                break;
+            }
+            case CvsFileStatusCode.MODIFIED : {
+                await this.appendModifiedFile(patchBuilder, localResource, cvsProvider, staged);
+                break;
+            }
+            case CvsFileStatusCode.RENAMED : {
+                await this.appendReplacedFile(patchBuilder, localResource, cvsProvider, staged);
+                break;
+            }
+            default : {
+                await this.appendDefaultFile(patchBuilder, localResource, cvsProvider, staged);
+                break;
+            }
+        }
+    }
+
+    private async appendAddedFile(patchBuilder: PatchBuilder, localResource: CvsLocalResource, cvsProvider: CvsSupportProvider, staged) {
+        const absPath: string = localResource.fileAbsPath;
+        const fileExist: boolean = await fs_async.exists(absPath);
+        const teamcityFileName: string = localResource.serverFilePath;
+        if (staged) {
+            const fileReadStream: ReadableSet = await this.tryGetStagedFileReadStream(cvsProvider, localResource);
+            await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
+        } else if (fileExist) {
+            await patchBuilder.appendAddedFile(teamcityFileName, absPath);
+        } else {
+            Logger.logError("File not exists either in the staged area either on the disk.");
+        }
+    }
+
+    private async tryGetStagedFileReadStream(cvsProvider: CvsSupportProvider, localResource: CvsLocalResource) {
+        const absPath: string = localResource.fileAbsPath;
+        try {
+            return await cvsProvider.getStagedFileContentStream(absPath);
+        } catch (err) {
+            Logger.logError("PatchManager#tryGetStagedFileReadStream: an error occurs during getting showFile stream - use a file content from the file system");
+            return undefined;
+        }
+    }
+
+    private async appendReplacedFile(patchBuilder: PatchBuilder, localResource: CvsLocalResource, cvsProvider: CvsSupportProvider, staged) {
+        const prevTcFileName: string = localResource.prevServerFilePath;
+        await patchBuilder.addDeletedFile(prevTcFileName);
+        await this.appendAddedFile(patchBuilder, localResource, cvsProvider, staged);
+    }
+
+    private async appendModifiedFile(patchBuilder: PatchBuilder, localResource: CvsLocalResource, cvsProvider: CvsSupportProvider, staged) {
+        const absPath: string = localResource.fileAbsPath;
+        const fileExist: boolean = await fs_async.exists(absPath);
+        const teamcityFileName: string = localResource.serverFilePath;
+        if (staged) {
+            const fileReadStream: ReadableSet = await this.tryGetStagedFileReadStream(cvsProvider, localResource);
+            await patchBuilder.addReplacedStreamedFile(teamcityFileName, fileReadStream);
+        } else if (fileExist) {
+            await patchBuilder.addReplacedFile(teamcityFileName, absPath);
+        } else {
+            Logger.logError("File not exists either in the staged area either on the disk.");
+        }
+    }
+
+    private async appendDeletedFile(patchBuilder: PatchBuilder, localResource: CvsLocalResource) {
+        const teamcityFileName: string = localResource.serverFilePath;
+        await patchBuilder.addDeletedFile(teamcityFileName);
+    }
+
+    private async appendDefaultFile(patchBuilder: PatchBuilder, localResource: CvsLocalResource, cvsProvider: CvsSupportProvider, staged) {
+        const absPath: string = localResource.fileAbsPath;
+        const fileExist: boolean = await fs_async.exists(absPath);
+        const teamcityFileName: string = localResource.serverFilePath;
+        if (staged) {
+            const fileReadStream: ReadableSet = await this.tryGetStagedFileReadStream(cvsProvider, localResource);
+            await patchBuilder.addAddedStreamedFile(teamcityFileName, fileReadStream);
+        } else if (fileExist) {
+            await patchBuilder.appendAddedFile(teamcityFileName, absPath);
+        } else {
+            await patchBuilder.addDeletedFile(teamcityFileName);
+        }
     }
 
     public static async applyPatch(patchAbsPath: string, mappingFileContent: MappingFileContent): Promise<string> {
@@ -193,7 +224,7 @@ class PatchBuilder {
      * @param tcFileName - fileName at the TeamCity format
      * @param absLocalPath - absolute path to the file in the system
      */
-    public async addAddedFile(tcFileName: string, absLocalPath: string): Promise<void> {
+    public async appendAddedFile(tcFileName: string, absLocalPath: string): Promise<void> {
         return this.addFile(tcFileName, absLocalPath, PatchBuilder.CREATE_PREFIX);
     }
 
@@ -259,7 +290,7 @@ class PatchBuilder {
     }
 
     /**
-     * @Deprecated - use addDeletedFile/addAddedFile instead
+     * @Deprecated - use addDeletedFile/appendAddedFile instead
      * This method adds to the patch a renamed file
      * @param tcFileName - fileName at the TeamCity format
      * @param prevTcFileName - previous pileName at the TeamCity format

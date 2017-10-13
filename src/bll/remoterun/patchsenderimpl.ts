@@ -8,7 +8,6 @@ import {XmlParser} from "../utils/xmlparser";
 import {QueuedBuild} from "../utils/queuedbuild";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {PatchManager} from "../utils/patchmanager";
-import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {MessageManager} from "../../view/messagemanager";
 import {ChangeListStatus, TYPES} from "../utils/constants";
 import {BuildConfigItem} from "../entities/buildconfigitem";
@@ -36,12 +35,12 @@ export class CustomPatchSender implements PatchSender {
     /**
      * @returns true in case of success, otherwise false.
      */
-    public async remoteRun(configs: BuildConfigItem[], cvsProvider: CvsSupportProvider): Promise<boolean> {
+    public async remoteRun(configs: BuildConfigItem[], checkInArray: CheckInInfo[]): Promise<boolean> {
         await this.checkCredentialsExistence();
-        const patchAbsPath: string = await this.patchManager.preparePatch(cvsProvider);
-        const checkInInfo: CheckInInfo = await cvsProvider.getRequiredCheckInInfo();
+        const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         try {
-            const changeListId = await this.webLinks.uploadChanges(patchAbsPath, checkInInfo.message);
+            const message: string = "";
+            const changeListId = await this.webLinks.uploadChanges(patchAbsPath, message);
             const queuedBuilds: QueuedBuild[] = await this.triggerChangeList(changeListId, configs);
             const changeListStatus: ChangeListStatus = await this.waitChangeStatusAppearance(queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
