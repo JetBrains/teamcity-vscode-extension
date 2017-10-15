@@ -18,7 +18,7 @@ import {
 } from "vscode";
 import {ProjectItem} from "../bll/entities/projectitem";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
-import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 
 export class DataProviderManager {

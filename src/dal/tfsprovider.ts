@@ -8,13 +8,17 @@ import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
 import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
-import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {injectable} from "inversify";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
 import {Validator} from "../bll/cvsutils/validator";
 import {TfvcIsActiveValidator} from "../bll/cvsutils/tfvcisactivevalidator";
+import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
+import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
+import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
+import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 
 @injectable()
 export class TfvcSupportProvider implements CvsSupportProvider {
@@ -137,7 +141,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
-    public getStagedFileContentStream(fileAbsPath: string): undefined {
+    public getStagedFileContentStream(cvsResource: CvsLocalResource): undefined {
         return undefined;
     }
 
@@ -184,32 +188,27 @@ export class TfvcSupportProvider implements CvsSupportProvider {
                 match = parseBriefDiffRegExp.exec(tfsDiffResult);
                 continue;
             }
-
-            let status: CvsFileStatusCode;
             const changeType: string = match[1].trim();
             const fileAbsPath: string = path.join(match[2].trim(), ".");
             let prevFileAbsPath: string = undefined;
+            const relativePath: string = path.relative(tfsInfo.projectLocalPath, fileAbsPath);
             if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
-                status = CvsFileStatusCode.DELETED;
+                localResources.push(new DeletedCvsResource(fileAbsPath, relativePath));
             } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
                 || changeType.indexOf(TfsChangeType.BRANCH) !== -1
                 || changeType.indexOf(TfsChangeType.UNDELETE) !== -1) {
                 //undelete means restore items that were previously deleted
-                status = CvsFileStatusCode.ADDED;
+                localResources.push(new AddedCvsResource(fileAbsPath, relativePath));
             } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
                 prevFileAbsPath = await this.getPrevFileNameIfExist(fileAbsPath);
                 if (prevFileAbsPath === fileAbsPath
                     && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-                    status = CvsFileStatusCode.MODIFIED;
+                    localResources.push(new ModifiedCvsResource(fileAbsPath, relativePath));
                 } else if (prevFileAbsPath) {
-                    status = CvsFileStatusCode.RENAMED;
+                    localResources.push(new ReplacedCvsResource(fileAbsPath, relativePath, prevFileAbsPath));
                 }
             } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-                status = CvsFileStatusCode.MODIFIED;
-            }
-
-            if (status) {
-                localResources.push(new CvsLocalResource(status, fileAbsPath, path.relative(tfsInfo.projectLocalPath, fileAbsPath) /*label*/, prevFileAbsPath));
+                localResources.push(new ModifiedCvsResource(fileAbsPath, relativePath));
             }
 
             match = parseBriefDiffRegExp.exec(tfsDiffResult);
@@ -307,6 +306,10 @@ export class TfvcSupportProvider implements CvsSupportProvider {
 
     public getRootPath(): string {
         return this.workspaceRootPath;
+    }
+
+    public allowStaging(): boolean {
+        return false;
     }
 }
 

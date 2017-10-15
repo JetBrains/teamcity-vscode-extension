@@ -1,7 +1,7 @@
 "use strict";
 
 import * as path from "path";
-import {CvsLocalResource} from "./cvslocalresource";
+import {CvsLocalResource} from "./cvsresources/cvslocalresource";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {TreeItemCollapsibleState, TreeItem, Uri, Command} from "vscode";
 

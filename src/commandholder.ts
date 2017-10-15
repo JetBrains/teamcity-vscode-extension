@@ -79,7 +79,7 @@ export class CommandHolder {
 
     public async remoteRunWithChosenConfigs() {
         Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        const cvsProvider = undefined;
+        const cvsProvider =  this.providerProxy;
         const remoteRunCommand: Command = new RemoteRun(cvsProvider, this.patchSender);
         return remoteRunCommand.exec();
     }

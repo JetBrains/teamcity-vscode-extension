@@ -3,13 +3,14 @@
 import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
+import * as fs_async from "async-file";
 import {Logger} from "../bll/utils/logger";
-import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
+import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {QuickPickItem, QuickPickOptions, scm, window, workspace, WorkspaceFolder, Uri} from "vscode";
-import {CvsLocalResource} from "../bll/entities/cvslocalresource";
+import {QuickPickItem, QuickPickOptions, scm, Uri, window, workspace, WorkspaceFolder} from "vscode";
+import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
 import {injectable} from "inversify";
@@ -17,6 +18,10 @@ import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
 import {Validator} from "../bll/cvsutils/validator";
 import {GitIsActiveValidator} from "../bll/cvsutils/gitisactivevalidator";
+import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
+import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
+import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
+import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 
 /**
  * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath.
@@ -155,9 +160,10 @@ export class GitSupportProvider implements CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
-    public async getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> {
+    public async getStagedFileContentStream(cvsResource: CvsLocalResource): Promise<ReadableSet> {
+        const fileAbsPath: string = cvsResource.fileAbsPath;
         const gitPath: string = this.gitPath;
-        const relPath = path.relative(this.workspaceRootPath, fileAbsPath).replace(/\\/g, "/");
+        const relPath = path.relative(this.workspaceRootPath, cvsResource.fileAbsPath).replace(/\\/g, "/");
         const spawnArgs: string[] = [`-C`, `${this.workspaceRootPath}`, `show`, `:${relPath}`];
         const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
         let streamLength: number = 0;
@@ -206,7 +212,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         const porcelainStatusRows: string = porcelainStatusResult.stdout.toString("utf8").replace(/\s*$/, "");
         const porcelainGitRegExp: RegExp = /^([MADRC]).\s(.*)$/;
         const renamedGitRegExp: RegExp = /^(.*)->(.*)$/;
-        porcelainStatusRows.split("\n").forEach((relativePath) => {
+        const porcelainStatusRowsArray: string[] = porcelainStatusRows.split("\n");
+        for (let i = 0; i < porcelainStatusRowsArray.length; i++) {
+            const relativePath = porcelainStatusRowsArray[i];
             const parsedPorcelain: string[] = porcelainGitRegExp.exec(relativePath);
             if (!parsedPorcelain || parsedPorcelain.length !== 3) {
                 return;
@@ -214,19 +222,21 @@ export class GitSupportProvider implements CvsSupportProvider {
             const fileStat: string = parsedPorcelain[1].trim();
             const fileRelativePath: string = parsedPorcelain[2].trim();
             let fileAbsPath: string = path.join(this.workspaceRootPath, parsedPorcelain[2].trim());
-            let status: CvsFileStatusCode;
             let prevFileAbsPath: string;
+            if (!fileAbsPath) {
+                return;
+            }
             switch (fileStat) {
                 case "M": {
-                    status = CvsFileStatusCode.MODIFIED;
+                    localResources.push(new ModifiedCvsResource(fileAbsPath, fileRelativePath));
                     break;
                 }
                 case "A": {
-                    status = CvsFileStatusCode.ADDED;
+                    localResources.push(new AddedCvsResource(fileAbsPath, fileRelativePath));
                     break;
                 }
                 case "D": {
-                    status = CvsFileStatusCode.DELETED;
+                    localResources.push(new DeletedCvsResource(fileAbsPath, fileRelativePath));
                     break;
                 }
                 case "R": {
@@ -234,7 +244,7 @@ export class GitSupportProvider implements CvsSupportProvider {
                     if (parsedRenamed && parsedRenamed.length === 3) {
                         prevFileAbsPath = path.join(parsedRenamed[1].trim(), ".");
                         fileAbsPath = path.join(this.workspaceRootPath, parsedRenamed[2].trim());
-                        status = CvsFileStatusCode.RENAMED;
+                        localResources.push(new ReplacedCvsResource(fileAbsPath, fileRelativePath, prevFileAbsPath));
                     }
                     break;
                 }
@@ -242,16 +252,20 @@ export class GitSupportProvider implements CvsSupportProvider {
                     const parsedCopied: string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
                     if (parsedCopied && parsedCopied.length === 3) {
                         fileAbsPath = path.join(this.workspaceRootPath, parsedCopied[2].trim());
-                        status = CvsFileStatusCode.ADDED;
+                        localResources.push(new AddedCvsResource(fileAbsPath, fileRelativePath));
                     }
                     break;
                 }
+                default: {
+                    const fileExists: boolean = await fs_async.exists(fileAbsPath);
+                    if (fileExists) {
+                        localResources.push(new ModifiedCvsResource(fileAbsPath, fileRelativePath));
+                    } else {
+                        localResources.push(new DeletedCvsResource(fileAbsPath, fileRelativePath));
+                    }
+                }
             }
-            if (status && fileAbsPath) {
-                localResources.push(new CvsLocalResource(status, fileAbsPath, fileRelativePath /*label*/, prevFileAbsPath));
-            }
-
-        });
+        }
         Logger.logDebug(`GitSupportProvider#getLocalResources: ${localResources.length} changed resources was detected`);
         return localResources;
     }
@@ -341,6 +355,10 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     public getRootPath(): string {
         return this.workspaceRootPathAsUri.path;
+    }
+
+    public allowStaging(): boolean {
+        return true;
     }
 }
 

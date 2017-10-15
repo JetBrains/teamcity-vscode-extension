@@ -16,7 +16,6 @@ export class SelectFilesForRemoteRun implements Command {
     public async exec(): Promise<void> {
         Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
         const checkInInfo: CheckInInfo[] = await this.cvsProvider.getRequiredCheckInInfo();
-        //TODO: process correct logic here
         DataProviderManager.setExplorerContentAndRefresh(checkInInfo);
     }
 }

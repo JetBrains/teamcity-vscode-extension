@@ -3,6 +3,7 @@
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {CvsProviderTypes} from "../bll/utils/constants";
 import {ReadableSet} from "../bll/utils/readableset";
+import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 
 export interface CvsSupportProvider {
 
@@ -32,7 +33,9 @@ export interface CvsSupportProvider {
      * If they are not the same this method @returns ReadStream with content of the specified file.
      * Otherwise this method @returns undefined and we can use a content of the file from the file system.
      */
-    getStagedFileContentStream(fileAbsPath: string): Promise<ReadableSet> | undefined;
+    getStagedFileContentStream(fileAbsPath: CvsLocalResource): Promise<ReadableSet> | undefined;
 
     getRootPath(): string;
+
+    allowStaging(): boolean;
 }
