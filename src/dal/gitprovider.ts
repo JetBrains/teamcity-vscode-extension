@@ -13,7 +13,6 @@ import {QuickPickItem, QuickPickOptions, scm, Uri, window, workspace, WorkspaceF
 import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
-import {injectable} from "inversify";
 import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
 import {Validator} from "../bll/cvsutils/validator";
@@ -23,18 +22,13 @@ import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 
-/**
- * This implementation of CvsSupportProvider uses git command line. So git should be in the user classpath.
- */
-@injectable()
 export class GitSupportProvider implements CvsSupportProvider {
 
     private gitPath: string;
     private workspaceRootPath: string;
     private workspaceRootPathAsUri: Uri;
-    private _isActive: boolean = false;
 
-    constructor(rootPath: Uri) {
+    private constructor(rootPath: Uri) {
         this.workspaceRootPathAsUri = rootPath;
         this.workspaceRootPath = rootPath.fsPath;
     }
@@ -46,12 +40,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
         await isActiveValidator.validate();
         instance.gitPath = gitPath;
-        instance._isActive = true;
         return instance;
-    }
-
-    public get isActive(): boolean {
-        return this._isActive;
     }
 
     public get cvsType(): CvsProviderTypes {

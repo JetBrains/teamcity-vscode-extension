@@ -8,7 +8,6 @@ import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 export interface CvsSupportProvider {
 
     cvsType: CvsProviderTypes;
-    isActive: boolean;
     /**
      * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
      */

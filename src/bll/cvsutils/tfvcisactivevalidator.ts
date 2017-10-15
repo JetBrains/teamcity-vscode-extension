@@ -18,7 +18,6 @@ export class TfvcIsActiveValidator implements Validator {
     public async validate(): Promise<void> {
         const path = this._path;
         await this.checkIsTfsRepository(path);
-        await this.checkChangedFilesPresence(path);
     }
 
     private async checkIsTfsRepository(path: string): Promise<void> {

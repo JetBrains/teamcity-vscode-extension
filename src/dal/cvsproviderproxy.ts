@@ -14,12 +14,12 @@ import {VsCodeUtils} from "../bll/utils/vscodeutils";
 export class CvsProviderProxy {
     cvsType: CvsProviderTypes;
     isActive: boolean;
-    private actialProviders: CvsSupportProvider[] = [];
+    private actualProviders: CvsSupportProvider[] = [];
 
     constructor() {
         const rootPaths: Uri[] = this.collectAllRootPaths();
         this.detectCvsProviders(rootPaths).then((detectedCvsProviders) => {
-            this.actialProviders = detectedCvsProviders;
+            this.actualProviders = detectedCvsProviders;
         });
     }
 
@@ -52,10 +52,8 @@ export class CvsProviderProxy {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
         }
         try {
-            const tfvcProvider: TfvcSupportProvider = new TfvcSupportProvider();
-            if (tfvcProvider.isActive) {
-                detectedCvsProviders.push(tfvcProvider);
-            }
+            const tfvcProvider: CvsSupportProvider = await TfvcSupportProvider.tryActivateInPath(rootPath);
+            detectedCvsProviders.push(tfvcProvider);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
         }
@@ -69,7 +67,7 @@ export class CvsProviderProxy {
         }
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = this.actialProviders[i];
+            const provider: CvsSupportProvider = this.actualProviders[i];
             const formattedFileNamesFromOneProvider = await provider.getFormattedFileNames(checkInInfo);
             formattedFileNamesFromOneProvider.forEach((fileName) => formattedFileNames.push(fileName));
         }
@@ -78,8 +76,8 @@ export class CvsProviderProxy {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo[]> {
         const result: CheckInInfo[] = [];
-        for (let i = 0; i < this.actialProviders.length; i++) {
-            const provider: CvsSupportProvider = this.actialProviders[i];
+        for (let i = 0; i < this.actualProviders.length; i++) {
+            const provider: CvsSupportProvider = this.actualProviders[i];
             try {
                 const checkInInfo: CheckInInfo = await provider.getRequiredCheckInInfo();
                 result.push(checkInInfo);
@@ -94,7 +92,7 @@ export class CvsProviderProxy {
         if (checkInArray) {
             for (let i = 0; i < checkInArray.length; i++) {
                 const checkInInfo: CheckInInfo = checkInArray[i];
-                const provider: CvsSupportProvider = this.actialProviders[i];
+                const provider: CvsSupportProvider = this.actualProviders[i];
                 await provider.requestForPostCommit(checkInInfo);
             }
         }

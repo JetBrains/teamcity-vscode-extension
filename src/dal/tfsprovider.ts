@@ -6,11 +6,10 @@ import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
-import {CvsFileStatusCode, CvsProviderTypes} from "../bll/utils/constants";
-import {QuickPickItem, QuickPickOptions, scm, window, workspace} from "vscode";
+import {CvsProviderTypes} from "../bll/utils/constants";
+import {QuickPickItem, QuickPickOptions, scm, Uri, window, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {injectable} from "inversify";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
 import {Validator} from "../bll/cvsutils/validator";
@@ -20,34 +19,27 @@ import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 
-@injectable()
 export class TfvcSupportProvider implements CvsSupportProvider {
     private workspaceRootPath: string;
+    private workspaceRootPathAsUri: Uri;
     private tfsInfo: TfsWorkFoldInfo;
     private tfPath: string;
-    private _isActive: boolean = false;
 
-    constructor() {
-        const pathFinder: Finder = new TfvcPathFinder();
-        pathFinder.find().then((tfPath) => {
-            const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
-            isActiveValidator.validate().then(() => {
-                this.tfPath = tfPath;
-                this.workspaceRootPath = workspace.rootPath;
-                this.getTfsInfo(tfPath, workspace.rootPath).then((tfsInfo) => {
-                    this.tfsInfo = tfsInfo;
-                    this._isActive = true;
-                });
-            }).catch((err) => {
-                Logger.logError(VsCodeUtils.formatErrorMessage(err));
-            });
-        }).catch((err) => {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
-        });
+    private constructor(rootPath: Uri) {
+        this.workspaceRootPathAsUri = rootPath;
+        this.workspaceRootPath = rootPath.fsPath;
     }
 
-    public get isActive(): boolean {
-        return this._isActive;
+    public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
+        const instance: TfvcSupportProvider = new TfvcSupportProvider(workspaceRootPath);
+        const pathFinder: Finder = new TfvcPathFinder();
+        const tfPath: string = await pathFinder.find();
+        const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
+        await isActiveValidator.validate();
+        const tfsInfo: TfsWorkFoldInfo = await instance.getTfsInfo(tfPath, instance.workspaceRootPath);
+        instance.tfPath = tfPath;
+        instance.tfsInfo = tfsInfo;
+        return instance;
     }
 
     public get cvsType(): CvsProviderTypes {
@@ -78,7 +70,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
      */
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
-        const commitMessage: string = scm.inputBox.value;
+        const commitMessage: string = "";
         const workItemIds: number[] = TfvcSupportProvider.getWorkItemIdsFromMessage(commitMessage);
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
@@ -226,7 +218,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         try {
             const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
             const parseHistoryRegExp: RegExp = /(\$.*)$/;
-            const historyCommand: string = `"${this.tfPath}" history /noprompt /format:detailed /stopafter:1 ${fileAbsPath}`;
+            const historyCommand: string = `"${this.tfPath}" history /format:detailed /stopafter:1 ${fileAbsPath}`;
             const historyCommandOut = await cp.exec(historyCommand);
             const tfsHistoryResultArray: string[] = historyCommandOut.stdout.toString("utf8").trim().split("\n");
             /*

@@ -27,6 +27,9 @@ export class GetSuitableConfigs implements Command {
         Logger.logInfo("GetSuitableConfigs#exec: starts");
         try {
             const checkInArray: CheckInInfo[] = await this.getCheckInArray();
+            if (!checkInArray || checkInArray.length === 0) {
+                return;
+            }
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
             DataProviderManager.setExplorerContentAndRefresh(projects);
             DataProviderManager.storeCheckInArray(checkInArray);
