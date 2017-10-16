@@ -1,9 +1,9 @@
 "use strict";
 
-import {SubscriptionEvent} from "./subscriptionevent";
+import {Serializable} from "./serializable";
 import {TrackerEventType} from "../utils/constants";
 
-export abstract class KeyValueSubscriptionEvent implements SubscriptionEvent {
+export abstract class KeyValueSubscriptionEvent implements Serializable {
     private readonly _key: string;
     private readonly _value: string;
     private readonly _type: TrackerEventType;

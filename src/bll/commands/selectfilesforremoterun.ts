@@ -2,7 +2,6 @@
 
 import {Logger} from "../utils/logger";
 import {DataProviderManager} from "../../view/dataprovidermanager";
-import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 

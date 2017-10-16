@@ -4,11 +4,11 @@ import {UserEvent} from "./userevent";
 import {Serializable} from "./serializable";
 import {ProjectEvent} from "./projectevent";
 import {TrackerEventType} from "../utils/constants";
-import {SubscriptionEvent} from "./subscriptionevent";
+import {KeyValueSubscriptionEvent} from "./KeyValueSubscriptionEvent";
 import {Summary} from "../entities/summary";
 
 export class ModificationSubscription implements Serializable {
-    private readonly myEvents: SubscriptionEvent[] = [];
+    private readonly myEvents: KeyValueSubscriptionEvent[] = [];
 
     public serialize(): string {
         const stringBuilder: string[] = [];
@@ -18,7 +18,7 @@ export class ModificationSubscription implements Serializable {
         return stringBuilder.join("");
     }
 
-    private addEvent(evt: SubscriptionEvent): void {
+    private addEvent(evt: KeyValueSubscriptionEvent): void {
         this.myEvents.push(evt);
     }
 
