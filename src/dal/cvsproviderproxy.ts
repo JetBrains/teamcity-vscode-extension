@@ -89,12 +89,20 @@ export class CvsProviderProxy {
     }
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
-        if (checkInArray) {
-            for (let i = 0; i < checkInArray.length; i++) {
-                const checkInInfo: CheckInInfo = checkInArray[i];
-                const provider: CvsSupportProvider = this.actualProviders[i];
-                await provider.requestForPostCommit(checkInInfo);
-            }
+        for (let i = 0; i < checkInArray.length; i++) {
+            const checkInInfo: CheckInInfo = checkInArray[i];
+            await this.postCommitOfCheckInInfo(checkInInfo);
         }
+    }
+
+    private async postCommitOfCheckInInfo(checkInInfo: CheckInInfo): Promise<void> {
+        if (this.isNotEpmty(checkInInfo)) {
+            const provider: CvsSupportProvider = checkInInfo.cvsProvider;
+            await provider.requestForPostCommit(checkInInfo);
+        }
+    }
+
+    private isNotEpmty(checkInInfo: CheckInInfo): boolean {
+        return checkInInfo && checkInInfo.cvsLocalResources && checkInInfo.cvsLocalResources.length > 0;
     }
 }
