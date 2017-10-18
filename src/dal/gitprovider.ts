@@ -9,7 +9,7 @@ import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {QuickPickItem, QuickPickOptions, scm, Uri, window, workspace, WorkspaceFolder} from "vscode";
+import {QuickPickItem, QuickPickOptions, scm, Uri, workspace, WorkspaceFolder} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
@@ -97,51 +97,6 @@ export class GitSupportProvider implements CvsSupportProvider {
                 localResource.prevServerFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
             }
         });
-    }
-
-    /**
-     * Commit all staged/changed (at the moment of a post-commit) files with new content.
-     * Should user changes them since build config run, it works incorrect.
-     * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
-     */
-    public async requestForPostCommit(checkInInfo: CheckInInfo): Promise<void> {
-        const choices: QuickPickItem[] = [];
-        const GIT_COMMIT_PUSH_INTRO_MESSAGE = "Would you like to commit/push your changes?";
-        const NO_LABEL: string = "No, thank you";
-        const COMMIT_LABEL: string = "Commit (without Push)";
-        const COMMIT_AND_PUSH_LABEL: string = "Commit and Push";
-        choices.push({label: NO_LABEL, description: undefined});
-        choices.push({label: COMMIT_LABEL, description: undefined});
-        const remotes: GitRemote[] = await this.getRemotes();
-        //Ask to push only when it's possible
-        if (remotes && remotes.length > 0) {
-            choices.push({label: COMMIT_AND_PUSH_LABEL, description: undefined});
-        }
-
-        const options: QuickPickOptions = {
-            ignoreFocusOut: true,
-            matchOnDescription: false,
-            placeHolder: GIT_COMMIT_PUSH_INTRO_MESSAGE
-        };
-        const nextGitOperation: QuickPickItem = await window.showQuickPick(choices, options);
-        Logger.logDebug(`GitSupportProvider#requestForPostCommit: nextGitOperation is ${nextGitOperation ? nextGitOperation.label : "undefined"}}`);
-        if (nextGitOperation === undefined) {
-            //Do nothing
-        } else if (nextGitOperation.label === COMMIT_LABEL) {
-            try {
-                await this.commit(checkInInfo);
-            } catch (err) {
-                throw new Error(`(teamcity) An error occurrs during processing commit. Please try manually`);
-            }
-        } else if (nextGitOperation.label === COMMIT_AND_PUSH_LABEL) {
-            try {
-                await this.commit(checkInInfo);
-                const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
-                await cp_promise.exec(pushCommand);
-            } catch (err) {
-                throw new Error(`(teamcity) An error occurrs during processing commit/push. Please try manually`);
-            }
-        }
     }
 
     /**
@@ -320,7 +275,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 
-    private async commit(checkInInfo: CheckInInfo): Promise<void> {
+    public async commit(checkInInfo: CheckInInfo): Promise<void> {
         const commitCommandBuilder: string[] = [];
         commitCommandBuilder.push(`"${this.gitPath}" -C "${this.workspaceRootPath}" commit -m "${checkInInfo.message}" --quiet --allow-empty-message`);
         checkInInfo.cvsLocalResources.forEach((cvsLocalResource) => {
@@ -340,6 +295,12 @@ export class GitSupportProvider implements CvsSupportProvider {
             }
             throw err;
         }
+    }
+
+    public async commitAndPush(checkInInfo: CheckInInfo): Promise<void> {
+        await this.commit(checkInInfo);
+        const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
+        await cp_promise.exec(pushCommand);
     }
 
     public getRootPath(): string {

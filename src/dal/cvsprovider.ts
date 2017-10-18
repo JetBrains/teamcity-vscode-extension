@@ -21,11 +21,14 @@ export interface CvsSupportProvider {
     getRequiredCheckInInfo(): Promise<CheckInInfo>;
 
     /**
-     * Commit all staged/changed (at the moment of a post-commit) files with new content.
-     * Should user changes them since build config run, it works incorrect.
-     * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
+     * WARNING: Should user changes them since build config run, it works incorrect.
      */
-    requestForPostCommit(checkInInfo: CheckInInfo);
+    commit(checkInInfo: CheckInInfo);
+
+    /**
+     * WARNING: Should user changes them since build config run, it works incorrect.
+     */
+    commitAndPush(checkInInfo: CheckInInfo);
 
     /**
      * For some CVSes staged files and files at the file system aren't the same.

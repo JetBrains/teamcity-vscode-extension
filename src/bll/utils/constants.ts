@@ -126,3 +126,9 @@ export const TYPES = {
     CvsProviderFactory: Symbol("CvsProviderFactory"),
     ProviderProxy: Symbol("CvsProviderProxy")
 };
+
+export enum CvsOperation {
+    DoNothing = "No, thank you.",
+    DoCommitChanges = "Commit changes",
+    DoCommitAndPushChanges = "Commit and Push (if possible) changes"
+}

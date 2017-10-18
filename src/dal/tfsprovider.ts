@@ -7,7 +7,7 @@ import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {CvsProviderTypes} from "../bll/utils/constants";
-import {QuickPickItem, QuickPickOptions, scm, Uri, window, workspace} from "vscode";
+import {QuickPickItem, QuickPickOptions, scm, Uri, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
@@ -93,39 +93,23 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         });
     }
 
-    /**
-     * Commit all staged/changed (at the moment of a post-commit) files with new content.
-     * Should user changes them since build config run, it works incorrect.
-     * (Only for git) This functionality would work incorrect if user stages additional files since build config run.
-     */
-    public async requestForPostCommit(checkInInfo: CheckInInfo) {
-        const choices: QuickPickItem[] = [];
-        const TFS_COMMIT_PUSH_INTRO_MESSAGE = "Would you like to commit your changes?";
-        const NO_LABEL: string = "No, thank you";
-        const YES_LABEL: string = "Yes";
-        choices.push({label: NO_LABEL, description: undefined});
-        choices.push({label: YES_LABEL, description: undefined});
-        const options: QuickPickOptions = {
-            ignoreFocusOut: true,
-            matchOnDescription: false,
-            placeHolder: TFS_COMMIT_PUSH_INTRO_MESSAGE
-        };
-        const nextTfsOperation: QuickPickItem = await window.showQuickPick(choices, options);
-        Logger.logDebug(`TfsSupportProvider#requestForPostCommit: user picked ${nextTfsOperation ? nextTfsOperation.label : "nothing"}`);
-        if (nextTfsOperation !== undefined && nextTfsOperation.label === YES_LABEL) {
-            const checkInCommandPrefix = `"${this.tfPath}" checkIn /comment:"${checkInInfo.message}" /noprompt `;
-            const checkInCommandSB: string[] = [];
-            checkInCommandSB.push(checkInCommandPrefix);
-            checkInInfo.cvsLocalResources.forEach((localResource) => {
-                checkInCommandSB.push(`"${localResource.fileAbsPath}" `);
-            });
-            try {
-                await cp.exec(checkInCommandSB.join(""));
-            } catch (err) {
-                Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
-                throw new Error("Caught an exception during attempt to commit");
-            }
+    public async commit(checkInInfo: CheckInInfo) {
+        const checkInCommandPrefix = `"${this.tfPath}" checkIn /comment:"${checkInInfo.message}" /noprompt `;
+        const checkInCommandSB: string[] = [];
+        checkInCommandSB.push(checkInCommandPrefix);
+        checkInInfo.cvsLocalResources.forEach((localResource) => {
+            checkInCommandSB.push(`"${localResource.fileAbsPath}" `);
+        });
+        try {
+            await cp.exec(checkInCommandSB.join(""));
+        } catch (err) {
+            Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
+            throw new Error("Caught an exception during attempt to commit");
         }
+    }
+
+    public async commitAndPush(checkInInfo: CheckInInfo) {
+        return this.commit(checkInInfo);
     }
 
     /**

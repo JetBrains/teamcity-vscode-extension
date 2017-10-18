@@ -10,9 +10,11 @@ import {VsCodeUtils} from "../utils/vscodeutils";
 import {PatchManager} from "../utils/patchmanager";
 import {MessageManager} from "../../view/messagemanager";
 import {ChangeListStatus, TYPES} from "../utils/constants";
+import {MessageConstants} from "../utils/messageconstants";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
+import {window} from "vscode";
 
 @injectable()
 export class CustomPatchSender implements PatchSender {
@@ -39,8 +41,9 @@ export class CustomPatchSender implements PatchSender {
         await this.checkCredentialsExistence();
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         try {
-            const message: string = "";
-            const changeListId = await this.webLinks.uploadChanges(patchAbsPath, message);
+            const commitMessage: string = await this.requestForCommitMessageIfRequired(checkInArray);
+            this.fillCommitMessage(checkInArray, commitMessage);
+            const changeListId = await this.webLinks.uploadChanges(patchAbsPath, commitMessage);
             const queuedBuilds: QueuedBuild[] = await this.triggerChangeList(changeListId, configs);
             const changeListStatus: ChangeListStatus = await this.waitChangeStatusAppearance(queuedBuilds);
             if (changeListStatus === ChangeListStatus.CHECKED) {
@@ -58,6 +61,22 @@ export class CustomPatchSender implements PatchSender {
 
     private async checkCredentialsExistence(): Promise<void> {
         await this.credentialsStore.tryGetCredentials();
+    }
+
+    private async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {
+        let commitMessage: string;
+        if (checkInArray.length > 0) {
+            commitMessage = await window.showInputBox({
+                prompt: MessageConstants.PROVIDE_MESSAGE_FOR_REMOTE_RUN
+            });
+        }
+        return commitMessage || "";
+    }
+
+    private fillCommitMessage(checkInArray: CheckInInfo[], commitMessage: string) {
+        checkInArray.forEach((checkInInfo) => {
+            checkInInfo.message = commitMessage;
+        });
     }
 
     /**
