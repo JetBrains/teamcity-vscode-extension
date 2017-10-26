@@ -46,19 +46,6 @@ suite("Git Is Active Validator", () => {
             done();
         });
     });
-
-    test("should handle there are no staged files", function (done) {
-        const gitPath: string = "git";
-        const childProcessMock = new ValidateGitChildProcessMock(true, true, false);
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, childProcessMock);
-        gitIsActiveValidator.validate().then(() => {
-                done("There should not be staged files");
-            }
-        ).catch((err: Error) => {
-            assert.equal(err.message, "There are no staged files in git");
-            done();
-        });
-    });
 });
 
 class ValidateGitChildProcessMock implements AsyncChildProcess {

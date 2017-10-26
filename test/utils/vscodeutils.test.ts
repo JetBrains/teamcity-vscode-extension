@@ -30,11 +30,6 @@ suite("VSCodeUtils", () => {
         assert.equal(VsCodeUtils.formatErrorMessage(err), errMsg + " " + stderr);
     });
 
-    test("should verify formatErrorMessage with incorrect arg", function () {
-        const errMsg: string = "I am not an error";
-        assert.equal(VsCodeUtils.formatErrorMessage(errMsg), "");
-    });
-
     test("should verify uniqBy method", function () {
         const obj1: TestObject = {a: "a1", b: "b1"};
         const obj2: TestObject = {a: "a2", b: "b2"};

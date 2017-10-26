@@ -28,21 +28,6 @@ suite("Tfvc Is Active Validator", () => {
             }
         });
     });
-
-    test("should handle \"tf\" with valid params", function (done) {
-        const tfvcPath: string = "tf";
-        const childProcessMock = new ValidateGitChildProcessMock(true, false);
-        const tfvcIsActiveValidator: TfvcIsActiveValidator = new TfvcIsActiveValidator(tfvcPath, childProcessMock);
-        tfvcIsActiveValidator.validate().then(() => {
-            done("Should not be staged files here");
-        }).catch((err: Error) => {
-            if (err.message, "There are no changed files in tfvs") {
-                done();
-            } else {
-                done("unexpected error message");
-            }
-        });
-    });
 });
 
 class ValidateGitChildProcessMock implements AsyncChildProcess {
