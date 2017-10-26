@@ -161,7 +161,6 @@ export class Build {
             !buildObj.build.buildType[0] ||
             !buildObj.build.buildType[0].$) {
 
-            Logger.logDebug(`BuildItemProxy#projectName: build name is not reachable. default: undefined`);
             return undefined;
         }
         return buildObj.build.buildType[0].$.name;

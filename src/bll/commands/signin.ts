@@ -65,6 +65,7 @@ export class SignIn implements Command {
         } catch (err) {
             throw Error("Keytar is unsupported");
         }
+        return keytar;
     }
 
     private async validateAndGenerateUserCredentials(serverUrl: string, user: string, password: string): Promise<Credentials> {

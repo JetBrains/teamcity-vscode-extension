@@ -43,7 +43,6 @@ export class CredentialsStoreImpl implements CredentialsStore {
                 return Promise.reject(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
             }
         }
-        Logger.logInfo("CredentialsStoreImpl#tryGetCredentials: success");
         return Promise.resolve<Credentials>(credentials);
     }
 
