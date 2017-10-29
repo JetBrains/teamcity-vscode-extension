@@ -7,9 +7,8 @@ import {TreeItemCollapsibleState, TreeItem, Uri, Command} from "vscode";
 
 export class CheckInInfo extends TreeItem {
 
-    constructor(message: string, cvsLocalResources: CvsLocalResource[], cvsProvider: CvsSupportProvider, serverItems: string[] = [],  workItemIds: number[] = []) {
+    constructor(cvsLocalResources: CvsLocalResource[], cvsProvider: CvsSupportProvider, serverItems: string[] = [],  workItemIds: number[] = []) {
         super(cvsProvider.getRootPath(), TreeItemCollapsibleState.Collapsed);
-        this.message = message;
         this.cvsLocalResources = cvsLocalResources;
         this.serverItems = serverItems;
         this.workItemIds = workItemIds;

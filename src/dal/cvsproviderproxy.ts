@@ -122,7 +122,7 @@ export class CvsProviderProxy {
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo: CheckInInfo = checkInArray[i];
             const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-            if (provider.cvsType === CvsProviderTypes.Git) {
+            if (provider instanceof GitSupportProvider) {
                 return true;
             }
         }

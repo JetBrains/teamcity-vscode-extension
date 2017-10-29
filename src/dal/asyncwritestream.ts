@@ -27,15 +27,6 @@ export class AsyncWriteStream implements Disposable {
         });
     }
 
-    public async writeFile(fileAbsPath: string): Promise<{}> {
-        Logger.logDebug(`AsyncWriteStream#writeFile: file path: ${fileAbsPath}`);
-        const stats: fs.Stats = fs.statSync(fileAbsPath);
-        const fileSizeInBytes: number = stats.size;
-        Logger.logDebug(`AsyncWriteStream#writeFile: file size in bytes: ${fileSizeInBytes}`);
-        const readStream: stream.Readable = fs.createReadStream(fileAbsPath);
-        return this.writeStreamedFile({stream: readStream, length: fileSizeInBytes});
-    }
-
     public async writeStreamedFile(readableSet: ReadableSet): Promise<{}> {
         const fileSizeInBytes: number = readableSet.length;
         Logger.logDebug(`AsyncWriteStream#writeStreamedFile: file size in bytes: ${fileSizeInBytes}`);

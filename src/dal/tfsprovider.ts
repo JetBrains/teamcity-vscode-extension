@@ -42,10 +42,6 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return instance;
     }
 
-    public get cvsType(): CvsProviderTypes {
-        return CvsProviderTypes.Tfs;
-    }
-
     /**
      * There are two allowed tfs file path formats:
      * * File path format : http[s]://<server-path>:<server-port>/$foo/bar
@@ -70,13 +66,11 @@ export class TfvcSupportProvider implements CvsSupportProvider {
      */
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
-        const commitMessage: string = "";
-        const workItemIds: number[] = TfvcSupportProvider.getWorkItemIdsFromMessage(commitMessage);
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
         await this.fillInServerPaths(cvsLocalResources);
         const cvsProvider: CvsSupportProvider = this;
-        return new CheckInInfo(commitMessage, cvsLocalResources, cvsProvider, serverItems, workItemIds);
+        return new CheckInInfo(cvsLocalResources, cvsProvider, serverItems);
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {

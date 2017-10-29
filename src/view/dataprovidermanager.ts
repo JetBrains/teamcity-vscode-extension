@@ -159,6 +159,9 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     }
 
     public getCheckInArraysWithIncludedResources(): CheckInInfo[] {
+        if (!this.checkInArray) {
+            return [];
+        }
         const result: CheckInInfo[] = [];
         this.checkInArray.forEach((checkInInfo) => {
             result.push(this.getCheckInInfoWithIncludedResources(checkInInfo));

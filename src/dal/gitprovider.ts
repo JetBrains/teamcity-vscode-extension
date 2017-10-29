@@ -3,9 +3,7 @@
 import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
-import * as fs_async from "async-file";
 import {Logger} from "../bll/utils/logger";
-import {CvsProviderTypes} from "../bll/utils/constants";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
@@ -43,14 +41,6 @@ export class GitSupportProvider implements CvsSupportProvider {
         return instance;
     }
 
-    public get cvsType(): CvsProviderTypes {
-        return CvsProviderTypes.Git;
-    }
-
-    /**
-     * Fill TeamCity Server Paths and
-     * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
-     */
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
         const cvsLocalResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
         const formattedChangedFiles = [];
@@ -60,35 +50,21 @@ export class GitSupportProvider implements CvsSupportProvider {
         return formattedChangedFiles;
     }
 
-    /**
-     * This method provides required info for provisioning remote run and post-commit execution.
-     * (Only for git) In case of git there are no workItemIds
-     * @return CheckInInfo object
-     */
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
-
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
-        const commitMessage: string = this.getCommitMessage();
         const cvsLocalResource: CvsLocalResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         await this.fillInServerPaths(cvsLocalResource);
 
         const cvsProvider: CvsSupportProvider = this;
-        return new CheckInInfo(commitMessage, cvsLocalResource, cvsProvider);
-    }
-
-    private getCommitMessage(): string {
-        if (!scm || !scm.inputBox) {
-            return "";
-        }
-        return scm.inputBox.value;
+        return new CheckInInfo(cvsLocalResource, cvsProvider);
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
-        const lastRevHash = await this.getLastRevision(remoteBranch);
+        const lastRevHash = await this.getLastCompatibleMergeBaseRevision(remoteBranch);
         cvsLocalResources.forEach((localResource) => {
             const relativePath: string = localResource.fileAbsPath.replace(this.workspaceRootPath, "");
             localResource.serverFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
@@ -99,124 +75,6 @@ export class GitSupportProvider implements CvsSupportProvider {
         });
     }
 
-    /**
-     * For some CVSes staged files and files at the file system aren't the same.
-     * If they are not the same this method @returns ReadStream with content of the specified file.
-     * Otherwise this method @returns undefined and we can use a content of the file from the file system.
-     */
-    public async getStagedFileContentStream(cvsResource: CvsLocalResource): Promise<ReadableSet> {
-        const fileAbsPath: string = cvsResource.fileAbsPath;
-        const gitPath: string = this.gitPath;
-        const relPath = path.relative(this.workspaceRootPath, cvsResource.fileAbsPath).replace(/\\/g, "/");
-        const spawnArgs: string[] = [`-C`, `${this.workspaceRootPath}`, `show`, `:${relPath}`];
-        const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
-        let streamLength: number = 0;
-        return new Promise<ReadableSet>((resolve, reject) => {
-            showFileStream.on("end", () => {
-                Logger.logDebug(`GitSupportProvider#getStagedFileContentStream: stream for counting bytes of ${fileAbsPath} has ended. Total size is ${streamLength}`);
-                // Get ReadStream for reading file content
-                const showFileStream: stream.Readable = cp.spawn(`${gitPath}`, spawnArgs).stdout;
-                resolve({stream: showFileStream, length: streamLength});
-            });
-            showFileStream.on("close", () => {
-                Logger.logError(`GitSupportProvider#getStagedFileContentStream: Stream was closed before it ended`);
-                reject("GitSupportProvider#getStagedFileContentStream: Stream was closed before it ended");
-            });
-            showFileStream.on("error", function (err) {
-                Logger.logError(`GitSupportProvider#getStagedFileContentStream: stream for counting bytes of ${fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
-                reject(err);
-            });
-            showFileStream.on("data", function (chunk) {
-                streamLength += chunk.length;
-            });
-        });
-    }
-
-    /**
-     * This method uses git "diff" command to get absolute paths of staged files and theirs changeTypes.
-     * @return absolute paths of staged files and theirs changeTypes or [] if request was failed.
-     */
-    private async getLocalResources(): Promise<CvsLocalResource[]> {
-        const localResources: CvsLocalResource[] = [];
-        let porcelainStatusResult: any;
-
-        try {
-            const getPorcelainStatusCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" status --porcelain`;
-            porcelainStatusResult = await cp_promise.exec(getPorcelainStatusCommand);
-        } catch (err) {
-            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
-            return [];
-        }
-
-        if (!porcelainStatusResult || !porcelainStatusResult.stdout) {
-            Logger.logDebug(`GitSupportProvider#getLocalResources: git status didn't find staged files`);
-            return [];
-        }
-        //We should trim only end of the line, first space chars are meaningful
-        const porcelainStatusRows: string = porcelainStatusResult.stdout.toString("utf8").replace(/\s*$/, "");
-        const porcelainGitRegExp: RegExp = /^([MADRC]).\s(.*)$/;
-        const renamedGitRegExp: RegExp = /^(.*)->(.*)$/;
-        const porcelainStatusRowsArray: string[] = porcelainStatusRows.split("\n");
-        for (let i = 0; i < porcelainStatusRowsArray.length; i++) {
-            const relativePath = porcelainStatusRowsArray[i];
-            const parsedPorcelain: string[] = porcelainGitRegExp.exec(relativePath);
-            if (!parsedPorcelain || parsedPorcelain.length !== 3) {
-                return;
-            }
-            const fileStat: string = parsedPorcelain[1].trim();
-            const fileRelativePath: string = parsedPorcelain[2].trim();
-            let fileAbsPath: string = path.join(this.workspaceRootPath, parsedPorcelain[2].trim());
-            let prevFileAbsPath: string;
-            if (!fileAbsPath) {
-                return;
-            }
-            switch (fileStat) {
-                case "M": {
-                    localResources.push(new ModifiedCvsResource(fileAbsPath, fileRelativePath));
-                    break;
-                }
-                case "A": {
-                    localResources.push(new AddedCvsResource(fileAbsPath, fileRelativePath));
-                    break;
-                }
-                case "D": {
-                    localResources.push(new DeletedCvsResource(fileAbsPath, fileRelativePath));
-                    break;
-                }
-                case "R": {
-                    const parsedRenamed: string[] | null = renamedGitRegExp.exec(fileAbsPath);
-                    if (parsedRenamed && parsedRenamed.length === 3) {
-                        prevFileAbsPath = path.join(parsedRenamed[1].trim(), ".");
-                        fileAbsPath = path.join(this.workspaceRootPath, parsedRenamed[2].trim());
-                        localResources.push(new ReplacedCvsResource(fileAbsPath, fileRelativePath, prevFileAbsPath));
-                    }
-                    break;
-                }
-                case "C": {
-                    const parsedCopied: string[] | null = renamedGitRegExp.exec(parsedPorcelain[2]);
-                    if (parsedCopied && parsedCopied.length === 3) {
-                        fileAbsPath = path.join(this.workspaceRootPath, parsedCopied[2].trim());
-                        localResources.push(new AddedCvsResource(fileAbsPath, fileRelativePath));
-                    }
-                    break;
-                }
-                default: {
-                    const fileExists: boolean = await fs_async.exists(fileAbsPath);
-                    if (fileExists) {
-                        localResources.push(new ModifiedCvsResource(fileAbsPath, fileRelativePath));
-                    } else {
-                        localResources.push(new DeletedCvsResource(fileAbsPath, fileRelativePath));
-                    }
-                }
-            }
-        }
-        Logger.logDebug(`GitSupportProvider#getLocalResources: ${localResources.length} changed resources was detected`);
-        return localResources;
-    }
-
-    /**
-     * This method uses the "git branch -vv" command
-     */
     private async getRemoteBrunch(): Promise<string> {
         const getRemoteBranchCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" rev-parse --abbrev-ref --symbolic-full-name @{u}`;
         const prom = await cp_promise.exec(getRemoteBranchCommand);
@@ -230,24 +88,6 @@ export class GitSupportProvider implements CvsSupportProvider {
         return remoteBranch;
     }
 
-    /**
-     * IT IS NOT THE LATEST REVISION IN THE LOCAL REPO. This method returns the last compatible revision by the "git merge-base" command.
-     */
-    private async getLastRevision(remoteBranch): Promise<string> {
-        const getLastRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
-        const prom = await cp_promise.exec(getLastRevCommand);
-        const lastRevHash: string = prom.stdout;
-        if (lastRevHash === undefined || lastRevHash.length === 0) {
-            Logger.logError(`GitSupportProvider#getLastRevision: revision of last commit wasn't determined`);
-            throw new Error("Revision of last commit wasn't determined.");
-        }
-        Logger.logDebug(`GitSupportProvider#getLastRevision: last merge-based revision is ${lastRevHash}`);
-        return lastRevHash.trim();
-    }
-
-    /**
-     * This method uses the "git rev-list" command.
-     */
     private async getFirstMonthRev(): Promise<string> {
         const date: Date = new Date();
         const getFirstMonthRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
@@ -262,17 +102,164 @@ export class GitSupportProvider implements CvsSupportProvider {
         return firstRevHash;
     }
 
-    private async getRemotes(): Promise<GitRemote[]> {
-        const getRemotesCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" remote --verbose`;
-        const getRemotesOutput = await cp_promise.exec(getRemotesCommand);
-        const regex = /^([^\s]+)\s+([^\s]+)\s/;
-        const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
-            .filter((b) => !!b)
-            .map((line) => regex.exec(line))
-            .filter((g) => !!g)
-            .map((groups: RegExpExecArray) => ({name: groups[1], url: groups[2]}));
+    private async getLastCompatibleMergeBaseRevision(remoteBranch): Promise<string> {
+        const getLastRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
+        const prom = await cp_promise.exec(getLastRevCommand);
+        const lastRevHash: string = prom.stdout;
+        if (lastRevHash === undefined || lastRevHash.length === 0) {
+            Logger.logError(`GitSupportProvider#getLastCompatibleMergeBaseRevision: revision of last commit wasn't determined`);
+            throw new Error("Revision of last commit wasn't determined.");
+        }
+        Logger.logDebug(`GitSupportProvider#getLastCompatibleMergeBaseRevision: last merge-based revision is ${lastRevHash}`);
+        return lastRevHash.trim();
+    }
 
-        return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
+    public async getStagedFileContentStream(cvsResource: CvsLocalResource): Promise<ReadableSet> {
+        const streamLength: number = await this.getStagedFileContentLength(cvsResource);
+        const relativePath = this.getNormalizedRelativePath(cvsResource);
+
+        const showFileStreamCommandOptions: string[] = [`-C`, `${this.workspaceRootPath}`, `show`, `:${relativePath}`];
+        const showFileStream: stream.Readable = cp.spawn(`${this.gitPath}`, showFileStreamCommandOptions).stdout;
+
+        return {stream: showFileStream, length: streamLength};
+    }
+
+    private async getStagedFileContentLength(cvsResource: CvsLocalResource): Promise<number> {
+        const relativePath = this.getNormalizedRelativePath(cvsResource);
+        const showFileStreamCommandOptions: string[] = [`-C`, `${this.workspaceRootPath}`, `show`, `:${relativePath}`];
+        const showFileStream: stream.Readable = cp.spawn(`${this.gitPath}`, showFileStreamCommandOptions).stdout;
+        let streamLength: number = 0;
+        return new Promise<number>((resolve, reject) => {
+            showFileStream.on("end", () => {
+                Logger.logDebug(`GitSupportProvider#getStagedFileContentLength: stream for counting ` +
+                    `bytes of ${cvsResource.fileAbsPath} has ended. Total size is ${streamLength}`);
+                resolve(streamLength);
+            });
+            showFileStream.on("close", () => {
+                Logger.logError(`GitSupportProvider#getStagedFileContentLength: Stream was closed before it ended`);
+                reject("GitSupportProvider#getStagedFileContentLength: Stream was closed before it ended");
+            });
+            showFileStream.on("error", function (err) {
+                Logger.logError(`GitSupportProvider#getStagedFileContentLength: stream for counting ` +
+                    `bytes of ${cvsResource.fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
+                reject(err);
+            });
+            showFileStream.on("data", function (chunk) {
+                streamLength += chunk.length;
+            });
+        });
+    }
+
+    private getNormalizedRelativePath(cvsResource: CvsLocalResource) {
+        const notNormalizedRelativePath: string = path.relative(this.workspaceRootPath, cvsResource.fileAbsPath);
+        return notNormalizedRelativePath.replace(/\\/g, "/");
+    }
+
+    private async getLocalResources(): Promise<CvsLocalResource[]> {
+        const resources: CvsLocalResource[] = [];
+        const statusRows: string [] = await this.tryGetPorcelainStatusRows();
+
+        for (let i = 0; i < statusRows.length; i++) {
+            const statusRow = statusRows[i];
+            await this.tryParseAndAddStatusRow(statusRow, resources);
+        }
+        Logger.logDebug(`GitSupportProvider#getLocalResources: ${resources.length} changed resources was detected`);
+        return resources;
+    }
+
+    private async tryParseAndAddStatusRow(statusRow: string, resources: CvsLocalResource[]): Promise<boolean> {
+        try {
+            const resource: CvsLocalResource = await this.getCvsResourceByStatusRow(statusRow);
+            resources.push(resource);
+            return true;
+        } catch (err) {
+            Logger.logWarning(`[GitSupportProvider::tryParseAndAddStatusRow] The status raw ${statusRow} was not ` +
+                `parsed with error: ${err}`);
+            return false;
+        }
+    }
+
+
+    private async tryGetPorcelainStatusRows(): Promise<string[]> {
+        try {
+            return await this.getPorcelainStatusRows();
+        } catch (err) {
+            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
+            return [];
+        }
+    }
+
+    private async getPorcelainStatusRows(): Promise<string[]> {
+        const END_SPACES_REGEXP: RegExp = /\s*$/;
+        let porcelainStatusResult: any;
+        const getPorcelainStatusRowsCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" status --porcelain`;
+        porcelainStatusResult = await cp_promise.exec(getPorcelainStatusRowsCommand);
+        if (!porcelainStatusResult || !porcelainStatusResult.stdout) {
+            throw new Error(`Git status haven't found any staged files`);
+        }
+        return porcelainStatusResult.stdout
+            .toString("utf8")
+            .replace(END_SPACES_REGEXP, "")
+            .split("\n");
+    }
+
+    private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsLocalResource> {
+
+        const parsedStatusRow: GitParsedStatusRow = await this.parseStatusRow(statusRow);
+        const relativePath = parsedStatusRow.relativePath;
+
+        switch (parsedStatusRow.status) {
+            case "M": {
+                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
+                return new ModifiedCvsResource(fileAbsPath, relativePath);
+            }
+            case "A": {
+                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
+                return new AddedCvsResource(fileAbsPath, relativePath);
+            }
+            case "D": {
+                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
+                return new DeletedCvsResource(fileAbsPath, relativePath);
+            }
+            case "R": {
+                const replacedPath = this.parseReplacedPath(relativePath);
+                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
+                const prevFileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.prevRelativePath);
+                return new ReplacedCvsResource(fileAbsPath, replacedPath.relativePath, prevFileAbsPath);
+            }
+            case "C": {
+                const replacedPath = this.parseReplacedPath(relativePath);
+                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
+                return new AddedCvsResource(fileAbsPath, replacedPath.relativePath);
+            }
+            default: {
+                throw new Error(`Resource status for status row ${statusRow} is '${parsedStatusRow.status}' and not recognised`);
+            }
+        }
+    }
+
+    private parseStatusRow(statusRow: string): GitParsedStatusRow {
+        const porcelainStatusGitRegExp: RegExp = /^([MADRC]).\s(.*)$/;
+        const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
+        if (!parsedPorcelain || parsedPorcelain.length !== 3) {
+            throw new Error(`Incorrect number of parsed arguments in the status row ${statusRow}`);
+        }
+        return {
+            status: parsedPorcelain[1].trim(),
+            relativePath: parsedPorcelain[2].trim()
+        };
+    }
+
+    private parseReplacedPath(unparsedPath: string): GitReplacedPath {
+        const replacedPathRegExp: RegExp = /^(.*)->(.*)$/;
+        const parsedReplacedPath: string[] = replacedPathRegExp.exec(unparsedPath);
+        if (!parsedReplacedPath || parsedReplacedPath.length !== 3) {
+            throw new Error(`Incorrect number of parsed arguments in the replaced path ${unparsedPath}`);
+        }
+        return {
+            relativePath: parsedReplacedPath[2].trim(),
+            prevRelativePath: parsedReplacedPath[1].trim()
+        };
     }
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {
@@ -299,8 +286,30 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     public async commitAndPush(checkInInfo: CheckInInfo): Promise<void> {
         await this.commit(checkInInfo);
-        const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
-        await cp_promise.exec(pushCommand);
+        if (await this.remotesExist()) {
+            const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
+            await cp_promise.exec(pushCommand);
+        } else {
+            Logger.logWarning("[GitSupportProvider::commitAndPush] there are no remotes to push into");
+        }
+    }
+
+    private async remotesExist(): Promise<boolean> {
+        const gitRemotes: GitRemote[] = await this.getRemotes();
+        return gitRemotes && gitRemotes.length > 0;
+    }
+
+    private async getRemotes(): Promise<GitRemote[]> {
+        const getRemotesCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" remote --verbose`;
+        const getRemotesOutput = await cp_promise.exec(getRemotesCommand);
+        const regex = /^([^\s]+)\s+([^\s]+)\s/;
+        const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
+            .filter((b) => !!b)
+            .map((line) => regex.exec(line))
+            .filter((g) => !!g)
+            .map((groups: RegExpExecArray) => ({name: groups[1], url: groups[2]}));
+
+        return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 
     public getRootPath(): string {
@@ -315,4 +324,14 @@ export class GitSupportProvider implements CvsSupportProvider {
 interface GitRemote {
     name: string;
     url: string;
+}
+
+interface GitParsedStatusRow {
+    status: string;
+    relativePath: string;
+}
+
+interface GitReplacedPath {
+    relativePath: string;
+    prevRelativePath: string;
 }
