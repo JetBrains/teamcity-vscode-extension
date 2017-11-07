@@ -77,7 +77,6 @@ export class Change {
             !changeObj.myTypeToInstanceMap[0].entry[0].Build ||
             !changeObj.myTypeToInstanceMap[0].entry[0].Build[0] ||
             !changeObj.myTypeToInstanceMap[0].entry[0].Build[0].id) {
-            Logger.logDebug(`ChangeItemProxy#constructor: builds is not reachable`);
             return [];
         }
         const builds: Build[] = [];

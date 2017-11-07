@@ -6,7 +6,6 @@ import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
-import {CvsProviderTypes} from "../bll/utils/constants";
 import {QuickPickItem, QuickPickOptions, scm, Uri, workspace} from "vscode";
 import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
@@ -36,7 +35,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         const tfPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
         await isActiveValidator.validate();
-        const tfsInfo: TfsWorkFoldInfo = await instance.getTfsInfo(tfPath, instance.workspaceRootPath);
+        const tfsInfo: TfsWorkFoldInfo = await instance.getTfsWorkFoldInfo(tfPath, instance.workspaceRootPath);
         instance.tfPath = tfPath;
         instance.tfsInfo = tfsInfo;
         return instance;
@@ -59,11 +58,6 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return formatFileNames;
     }
 
-    /**
-     * This method provides required info for provisioning remote run and post-commit execution.
-     * (Only for git) In case of git there are no workItemIds
-     * @return CheckInInfo object
-     */
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
@@ -106,18 +100,10 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return this.commit(checkInInfo);
     }
 
-    /**
-     * For some Cvs staged files and files at the file system aren't the same.
-     * If they are not the same this method @returns ReadStream with content of the specified file.
-     * Otherwise this method @returns undefined and we can use a content of the file from the file system.
-     */
     public getStagedFileContentStream(cvsResource: CvsLocalResource): undefined {
         return undefined;
     }
 
-    /**
-     * This method requests absPaths of changed files and replaces localProjectPath by $/projectName
-     */
     private async getServerItems(cvsLocalResources: CvsLocalResource[]): Promise<string[]> {
         const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         const serverItems: string[] = [];
@@ -128,15 +114,8 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return serverItems;
     }
 
-    /**
-     * It's using "tf diff" command, to get required info about changed files.
-     */
     private async getLocalResources(): Promise<CvsLocalResource[]> {
-        const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
-        /*
-         List of all possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
-         const parseBriefDiffRegexp : RegExp = /^(add|delete|edit|rename):\s(.*)$/mg;
-         */
+        //All possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
         const parseBriefDiffRegExp: RegExp = /^(.*)?:\s(.*)$/mg;
         const localResources: CvsLocalResource[] = [];
         const briefDiffCommand: string = `"${this.tfPath}" diff /noprompt /format:brief /recursive "${this.workspaceRootPath}"`;
@@ -148,50 +127,58 @@ export class TfvcSupportProvider implements CvsSupportProvider {
             Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${VsCodeUtils.formatErrorMessage(err)}`);
             return [];
         }
-        let match = parseBriefDiffRegExp.exec(tfsDiffResult);
-        while (match) {
-            /*
-             It looks for lines at the format: /^(changeType): (fileAbsPath)$/
-             !!! There are incompatible lines at the format: /^(fileAbsPath): files differ$/
-             */
-            if (match.length !== 3 || match[2] === "files differ") {
-                match = parseBriefDiffRegExp.exec(tfsDiffResult);
-                continue;
+        while (true) {
+            const match: string[] = parseBriefDiffRegExp.exec(tfsDiffResult);
+            if (!match) {
+                break;
             }
-            const changeType: string = match[1].trim();
-            const fileAbsPath: string = path.join(match[2].trim(), ".");
-            let prevFileAbsPath: string = undefined;
-            const relativePath: string = path.relative(tfsInfo.projectLocalPath, fileAbsPath);
-            if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
-                localResources.push(new DeletedCvsResource(fileAbsPath, relativePath));
-            } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
-                || changeType.indexOf(TfsChangeType.BRANCH) !== -1
-                || changeType.indexOf(TfsChangeType.UNDELETE) !== -1) {
-                //undelete means restore items that were previously deleted
-                localResources.push(new AddedCvsResource(fileAbsPath, relativePath));
-            } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
-                prevFileAbsPath = await this.getPrevFileNameIfExist(fileAbsPath);
-                if (prevFileAbsPath === fileAbsPath
-                    && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-                    localResources.push(new ModifiedCvsResource(fileAbsPath, relativePath));
-                } else if (prevFileAbsPath) {
-                    localResources.push(new ReplacedCvsResource(fileAbsPath, relativePath, prevFileAbsPath));
-                }
-            } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-                localResources.push(new ModifiedCvsResource(fileAbsPath, relativePath));
+            if (this.isInCorrectFormat(match)) {
+                const changeType: string = match[1].trim();
+                const fileAbsPath: string = match[2].trim();
+                await this.tryPushCvsResource(localResources, changeType, fileAbsPath);
             }
-
-            match = parseBriefDiffRegExp.exec(tfsDiffResult);
         }
-        Logger.logDebug(`TfsSupportProvider#getAbsPaths: ${localResources.length} changed resources was detected`);
+        Logger.logDebug(`TfsSupportProvider#getLocalResources: ${localResources.length} changed resources was detected`);
         return localResources;
     }
 
-    /**
-     * This method uses command "history" to determine previous absPath of the file if it was renamed
-     * @param fileAbsPath - current absPath of the file
-     * @return previous absPath when it was successfully determined otherwise undefined
-     */
+    private isInCorrectFormat(match: string[]): boolean {
+        return match.length === 3 && match[2] !== "files differ";
+    }
+
+    private async tryPushCvsResource(resources: CvsLocalResource[], changeType: string, fileAbsPath: string): Promise<void> {
+        try {
+            const resource: CvsLocalResource = await this.getCvsResource(changeType, fileAbsPath);
+            resources.push(resource);
+        } catch (err) {
+            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+        }
+    }
+
+    private async getCvsResource(changeType: string, fileAbsPath: string): Promise<CvsLocalResource> {
+        const relativePath: string = path.relative(this.tfsInfo.projectLocalPath, fileAbsPath);
+        let resource: CvsLocalResource;
+        if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
+            resource = new DeletedCvsResource(fileAbsPath, relativePath);
+        } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
+            || changeType.indexOf(TfsChangeType.BRANCH) !== -1
+            || changeType.indexOf(TfsChangeType.UNDELETE) !== -1) {
+            //undelete means restore items that were previously deleted
+            resource = new AddedCvsResource(fileAbsPath, relativePath);
+        } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
+            const prevFileAbsPath = await this.getPrevFileNameIfExist(fileAbsPath);
+            if (prevFileAbsPath === fileAbsPath
+                && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
+                resource = new ModifiedCvsResource(fileAbsPath, relativePath);
+            } else if (prevFileAbsPath) {
+                resource = new ReplacedCvsResource(fileAbsPath, relativePath, prevFileAbsPath);
+            }
+        } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
+            resource = new ModifiedCvsResource(fileAbsPath, relativePath);
+        }
+        return resource;
+    }
+
     private async getPrevFileNameIfExist(fileAbsPath: string): Promise<string> {
         try {
             const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
@@ -199,10 +186,6 @@ export class TfvcSupportProvider implements CvsSupportProvider {
             const historyCommand: string = `"${this.tfPath}" history /format:detailed /stopafter:1 ${fileAbsPath}`;
             const historyCommandOut = await cp.exec(historyCommand);
             const tfsHistoryResultArray: string[] = historyCommandOut.stdout.toString("utf8").trim().split("\n");
-            /*
-             The last row of the history command output should be at the format:
-             /^ (previous operation with file)\s+(previous remoteFileName started with $)$/
-             */
             const lastHistoryRow = tfsHistoryResultArray[tfsHistoryResultArray.length - 1];
             const parsedLastHistoryRow: string[] = parseHistoryRegExp.exec(lastHistoryRow);
             if (parsedLastHistoryRow && parsedLastHistoryRow.length === 2) {
@@ -217,16 +200,13 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         }
     }
 
-    /**
-     * This method returns some information about tfs repo by executing "tf workfold" command.
-     */
-    private async getTfsInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
-        const parseWorkfoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
+    private async getTfsWorkFoldInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
+        const parseWorkFoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
         const getLocalRepoInfoCommand: string = `"${tfPath}" workfold "${workspaceRootPath}"`;
         try {
             const out = await cp.exec(getLocalRepoInfoCommand);
-            const tfsWorkfoldResult: string = out.stdout.toString("utf8").trim();
-            const match = parseWorkfoldRegexp.exec(tfsWorkfoldResult);
+            const tfsWorkFoldResult: string = out.stdout.toString("utf8").trim();
+            const match = parseWorkFoldRegexp.exec(tfsWorkFoldResult);
             const repositoryUrl: string = match[1];
             const purl: url.Url = url.parse(repositoryUrl);
             if (purl) {
