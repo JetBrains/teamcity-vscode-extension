@@ -7,7 +7,7 @@ import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {QuickPickItem, QuickPickOptions, scm, Uri, workspace} from "vscode";
-import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
+import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
 import {Finder} from "../bll/cvsutils/finder";
@@ -18,7 +18,7 @@ import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 
-export class TfvcSupportProvider implements CvsSupportProvider {
+export class TfvcProvider implements CvsSupportProvider {
     private workspaceRootPath: string;
     private workspaceRootPathAsUri: Uri;
     private tfsInfo: TfsWorkFoldInfo;
@@ -30,7 +30,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
     }
 
     public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
-        const instance: TfvcSupportProvider = new TfvcSupportProvider(workspaceRootPath);
+        const instance: TfvcProvider = new TfvcProvider(workspaceRootPath);
         const pathFinder: Finder = new TfvcPathFinder();
         const tfPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
@@ -50,7 +50,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
      */
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
         const formatFileNames: string[] = [];
-        const cvsResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
         cvsResources.forEach((localResource) => {
             formatFileNames.push(localResource.serverFilePath);
         });
@@ -60,14 +60,14 @@ export class TfvcSupportProvider implements CvsSupportProvider {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
-        const cvsLocalResources: CvsLocalResource[] = await this.getLocalResources();
+        const cvsLocalResources: CvsResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
         await this.fillInServerPaths(cvsLocalResources);
         const cvsProvider: CvsSupportProvider = this;
         return new CheckInInfo(cvsLocalResources, cvsProvider, serverItems);
     }
 
-    private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
+    private async fillInServerPaths(cvsLocalResources: CvsResource[]): Promise<void> {
         const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         cvsLocalResources.forEach((localResource) => {
             const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
@@ -100,11 +100,11 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return this.commit(checkInInfo);
     }
 
-    public getStagedFileContentStream(cvsResource: CvsLocalResource): undefined {
+    public getStagedFileContentStream(cvsResource: CvsResource): undefined {
         return undefined;
     }
 
-    private async getServerItems(cvsLocalResources: CvsLocalResource[]): Promise<string[]> {
+    private async getServerItems(cvsLocalResources: CvsResource[]): Promise<string[]> {
         const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
         const serverItems: string[] = [];
         cvsLocalResources.forEach((localResource) => {
@@ -114,10 +114,10 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return serverItems;
     }
 
-    private async getLocalResources(): Promise<CvsLocalResource[]> {
+    private async getLocalResources(): Promise<CvsResource[]> {
         //All possible status codes: add|branch|delete|edit|lock|merge|rename|source rename|undelete
         const parseBriefDiffRegExp: RegExp = /^(.*)?:\s(.*)$/mg;
-        const localResources: CvsLocalResource[] = [];
+        const localResources: CvsResource[] = [];
         const briefDiffCommand: string = `"${this.tfPath}" diff /noprompt /format:brief /recursive "${this.workspaceRootPath}"`;
         let tfsDiffResult: string;
         try {
@@ -146,18 +146,18 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         return match.length === 3 && match[2] !== "files differ";
     }
 
-    private async tryPushCvsResource(resources: CvsLocalResource[], changeType: string, fileAbsPath: string): Promise<void> {
+    private async tryPushCvsResource(resources: CvsResource[], changeType: string, fileAbsPath: string): Promise<void> {
         try {
-            const resource: CvsLocalResource = await this.getCvsResource(changeType, fileAbsPath);
+            const resource: CvsResource = await this.getCvsResource(changeType, fileAbsPath);
             resources.push(resource);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
         }
     }
 
-    private async getCvsResource(changeType: string, fileAbsPath: string): Promise<CvsLocalResource> {
+    private async getCvsResource(changeType: string, fileAbsPath: string): Promise<CvsResource> {
         const relativePath: string = path.relative(this.tfsInfo.projectLocalPath, fileAbsPath);
-        let resource: CvsLocalResource;
+        let resource: CvsResource;
         if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
             resource = new DeletedCvsResource(fileAbsPath, relativePath);
         } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
@@ -238,7 +238,7 @@ export class TfvcSupportProvider implements CvsSupportProvider {
         try {
             const matches: string[] = message ? message.match(/#(\d+)/gm) : [];
             if (!matches) {
-                Logger.logDebug("TfvcSupportProvider#getWorkItemIdsFromMessage: no one work item was found");
+                Logger.logDebug("TfvcProvider#getWorkItemIdsFromMessage: no one work item was found");
                 return [];
             }
             for (let i: number = 0; i < matches.length; i++) {

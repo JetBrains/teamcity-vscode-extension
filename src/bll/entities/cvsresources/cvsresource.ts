@@ -10,7 +10,7 @@ import {Logger} from "../../utils/logger";
 import * as fs from "fs";
 import * as stream from "stream";
 
-export abstract class CvsLocalResource extends LeaveSelectableItem {
+export abstract class CvsResource extends LeaveSelectableItem {
     status: CvsFileStatusCode;
     fileAbsPath: string;
     serverFilePath?: string;

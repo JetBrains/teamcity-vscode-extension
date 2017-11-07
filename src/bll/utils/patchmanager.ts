@@ -7,7 +7,7 @@ import {VsCodeUtils} from "./vscodeutils";
 import {AsyncWriteStream} from "../../dal/asyncwritestream";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {CheckInInfo} from "../entities/checkininfo";
-import {CvsLocalResource} from "../entities/cvsresources/cvslocalresource";
+import {CvsResource} from "../entities/cvsresources/cvsresource";
 import {ReadableSet} from "./readableset";
 import {injectable} from "inversify";
 import {ReplacedCvsResource} from "../entities/cvsresources/replacedcvsresource";
@@ -32,9 +32,9 @@ export class PatchManager {
 
     private async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo): Promise<void> {
         const cvsProvider = checkInInfo.cvsProvider;
-        const cvsResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
         for (let i: number = 0; i < cvsResources.length; i++) {
-            const cvsResource: CvsLocalResource = cvsResources[i];
+            const cvsResource: CvsResource = cvsResources[i];
             await patchBuilder.appendCvsResource(cvsProvider, cvsResource);
         }
     }
@@ -66,7 +66,7 @@ class PatchBuilder {
         });
     }
 
-    public async appendCvsResource(cvsProvider: CvsSupportProvider, cvsResource: CvsLocalResource): Promise<void> {
+    public async appendCvsResource(cvsProvider: CvsSupportProvider, cvsResource: CvsResource): Promise<void> {
         await this.appendHeaderForResource(cvsResource);
         await this.appendResourceContent(cvsProvider, cvsResource);
 
@@ -75,12 +75,12 @@ class PatchBuilder {
         }
     }
 
-    private async appendHeaderForResource(cvsResource: CvsLocalResource): Promise<void> {
+    private async appendHeaderForResource(cvsResource: CvsResource): Promise<void> {
         const header: Buffer = cvsResource.getHeaderForPatch();
         await this.writeSteam.write(header);
     }
 
-    private async appendResourceContent(cvsProvider: CvsSupportProvider, cvsResource: CvsLocalResource): Promise<void> {
+    private async appendResourceContent(cvsProvider: CvsSupportProvider, cvsResource: CvsResource): Promise<void> {
         if (cvsResource instanceof DeletedCvsResource) {
             return;
         }
@@ -95,9 +95,9 @@ class PatchBuilder {
         }
     }
 
-    private async appendReplacedFileAsRemoved(cvsProvider: CvsSupportProvider, cvsResource: CvsLocalResource) {
+    private async appendReplacedFileAsRemoved(cvsProvider: CvsSupportProvider, cvsResource: CvsResource) {
         const label: string = "";
-        const removedResource: CvsLocalResource = new DeletedCvsResource(cvsResource.prevFileAbsPath, label);
+        const removedResource: CvsResource = new DeletedCvsResource(cvsResource.prevFileAbsPath, label);
         removedResource.serverFilePath = cvsResource.prevServerFilePath;
         return this.appendCvsResource(cvsProvider, removedResource);
     }

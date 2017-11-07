@@ -1,13 +1,13 @@
 "use strict";
 
 import * as path from "path";
-import {CvsLocalResource} from "./cvsresources/cvslocalresource";
+import {CvsResource} from "./cvsresources/cvsresource";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {TreeItemCollapsibleState, TreeItem, Uri, Command} from "vscode";
 
 export class CheckInInfo extends TreeItem {
 
-    constructor(cvsLocalResources: CvsLocalResource[], cvsProvider: CvsSupportProvider, serverItems: string[] = [],  workItemIds: number[] = []) {
+    constructor(cvsLocalResources: CvsResource[], cvsProvider: CvsSupportProvider, serverItems: string[] = [], workItemIds: number[] = []) {
         super(cvsProvider.getRootPath(), TreeItemCollapsibleState.Collapsed);
         this.cvsLocalResources = cvsLocalResources;
         this.serverItems = serverItems;
@@ -16,7 +16,7 @@ export class CheckInInfo extends TreeItem {
     }
 
     message: string;
-    cvsLocalResources: CvsLocalResource[];
+    cvsLocalResources: CvsResource[];
     serverItems: string[];
     workItemIds: number[];
     cvsProvider: CvsSupportProvider;

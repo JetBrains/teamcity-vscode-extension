@@ -8,7 +8,7 @@ import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
 import {QuickPickItem, QuickPickOptions, scm, Uri, workspace, WorkspaceFolder} from "vscode";
-import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
+import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
 import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
@@ -20,7 +20,7 @@ import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 
-export class GitSupportProvider implements CvsSupportProvider {
+export class GitProvider implements CvsSupportProvider {
 
     private gitPath: string;
     private workspaceRootPath: string;
@@ -32,7 +32,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
-        const instance: GitSupportProvider = new GitSupportProvider(workspaceRootPath);
+        const instance: GitProvider = new GitProvider(workspaceRootPath);
         const pathFinder: Finder = new GitPathFinder();
         const gitPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
@@ -42,7 +42,7 @@ export class GitSupportProvider implements CvsSupportProvider {
     }
 
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
-        const cvsLocalResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        const cvsLocalResources: CvsResource[] = checkInInfo.cvsLocalResources;
         const formattedChangedFiles = [];
         cvsLocalResources.forEach((localResource) => {
             formattedChangedFiles.push(localResource.serverFilePath);
@@ -52,7 +52,7 @@ export class GitSupportProvider implements CvsSupportProvider {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
-        const cvsLocalResource: CvsLocalResource[] = await this.getLocalResources();
+        const cvsLocalResource: CvsResource[] = await this.getLocalResources();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
         await this.fillInServerPaths(cvsLocalResource);
 
@@ -60,7 +60,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return new CheckInInfo(cvsLocalResource, cvsProvider);
     }
 
-    private async fillInServerPaths(cvsLocalResources: CvsLocalResource[]): Promise<void> {
+    private async fillInServerPaths(cvsLocalResources: CvsResource[]): Promise<void> {
         const remoteBranch = await this.getRemoteBrunch();
         let firstMonthRevHash = await this.getFirstMonthRev();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";
@@ -114,7 +114,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return lastRevHash.trim();
     }
 
-    public async getStagedFileContentStream(cvsResource: CvsLocalResource): Promise<ReadableSet> {
+    public async getStagedFileContentStream(cvsResource: CvsResource): Promise<ReadableSet> {
         const streamLength: number = await this.getStagedFileContentLength(cvsResource);
         const relativePath = this.getNormalizedRelativePath(cvsResource);
 
@@ -124,7 +124,7 @@ export class GitSupportProvider implements CvsSupportProvider {
         return {stream: showFileStream, length: streamLength};
     }
 
-    private async getStagedFileContentLength(cvsResource: CvsLocalResource): Promise<number> {
+    private async getStagedFileContentLength(cvsResource: CvsResource): Promise<number> {
         const relativePath = this.getNormalizedRelativePath(cvsResource);
         const showFileStreamCommandOptions: string[] = [`-C`, `${this.workspaceRootPath}`, `show`, `:${relativePath}`];
         const showFileStream: stream.Readable = cp.spawn(`${this.gitPath}`, showFileStreamCommandOptions).stdout;
@@ -137,7 +137,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             });
             showFileStream.on("close", () => {
                 Logger.logError(`GitSupportProvider#getStagedFileContentLength: Stream was closed before it ended`);
-                reject("GitSupportProvider#getStagedFileContentLength: Stream was closed before it ended");
+                reject("GitProvider#getStagedFileContentLength: Stream was closed before it ended");
             });
             showFileStream.on("error", function (err) {
                 Logger.logError(`GitSupportProvider#getStagedFileContentLength: stream for counting ` +
@@ -150,13 +150,13 @@ export class GitSupportProvider implements CvsSupportProvider {
         });
     }
 
-    private getNormalizedRelativePath(cvsResource: CvsLocalResource) {
+    private getNormalizedRelativePath(cvsResource: CvsResource) {
         const notNormalizedRelativePath: string = path.relative(this.workspaceRootPath, cvsResource.fileAbsPath);
         return notNormalizedRelativePath.replace(/\\/g, "/");
     }
 
-    private async getLocalResources(): Promise<CvsLocalResource[]> {
-        const resources: CvsLocalResource[] = [];
+    private async getLocalResources(): Promise<CvsResource[]> {
+        const resources: CvsResource[] = [];
         const statusRows: string [] = await this.tryGetPorcelainStatusRows();
 
         for (let i = 0; i < statusRows.length; i++) {
@@ -167,9 +167,9 @@ export class GitSupportProvider implements CvsSupportProvider {
         return resources;
     }
 
-    private async tryParseAndAddStatusRow(statusRow: string, resources: CvsLocalResource[]): Promise<boolean> {
+    private async tryParseAndAddStatusRow(statusRow: string, resources: CvsResource[]): Promise<boolean> {
         try {
-            const resource: CvsLocalResource = await this.getCvsResourceByStatusRow(statusRow);
+            const resource: CvsResource = await this.getCvsResourceByStatusRow(statusRow);
             resources.push(resource);
             return true;
         } catch (err) {
@@ -203,7 +203,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             .split("\n");
     }
 
-    private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsLocalResource> {
+    private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsResource> {
 
         const parsedStatusRow: GitParsedStatusRow = await this.parseStatusRow(statusRow);
         const relativePath = parsedStatusRow.relativePath;
@@ -290,7 +290,7 @@ export class GitSupportProvider implements CvsSupportProvider {
             const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
             await cp_promise.exec(pushCommand);
         } else {
-            Logger.logWarning("[GitSupportProvider::commitAndPush] there are no remotes to push into");
+            Logger.logWarning("[GitProvider::commitAndPush] there are no remotes to push into");
         }
     }
 

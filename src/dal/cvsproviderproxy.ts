@@ -4,8 +4,8 @@ import {CvsSupportProvider} from "./cvsprovider";
 import {CvsOperation, CvsProviderTypes} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {QuickPickItem, QuickPickOptions, Uri, window, workspace} from "vscode";
-import {GitSupportProvider} from "./gitprovider";
-import {TfvcSupportProvider} from "./tfsprovider";
+import {GitProvider} from "./gitprovider";
+import {TfvcProvider} from "./tfsprovider";
 import {injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
@@ -45,13 +45,13 @@ export class CvsProviderProxy {
     private async detectCvsProviderInParticularDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const detectedCvsProviders: CvsSupportProvider[] = [];
         try {
-            const gitProvider: CvsSupportProvider = await GitSupportProvider.tryActivateInPath(rootPath);
+            const gitProvider: CvsSupportProvider = await GitProvider.tryActivateInPath(rootPath);
             detectedCvsProviders.push(gitProvider);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
         }
         try {
-            const tfvcProvider: CvsSupportProvider = await TfvcSupportProvider.tryActivateInPath(rootPath);
+            const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
             detectedCvsProviders.push(tfvcProvider);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
@@ -122,7 +122,7 @@ export class CvsProviderProxy {
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo: CheckInInfo = checkInArray[i];
             const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-            if (provider instanceof GitSupportProvider) {
+            if (provider instanceof GitProvider) {
                 return true;
             }
         }

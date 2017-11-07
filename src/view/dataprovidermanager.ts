@@ -18,7 +18,7 @@ import {
 } from "vscode";
 import {ProjectItem} from "../bll/entities/projectitem";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
-import {CvsLocalResource} from "../bll/entities/cvsresources/cvslocalresource";
+import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 
 export class DataProviderManager {
@@ -171,8 +171,8 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
 
     private getCheckInInfoWithIncludedResources(checkInInfo: CheckInInfo): CheckInInfo {
         const result: CheckInInfo = checkInInfo;
-        const includedResources: CvsLocalResource[] = [];
-        const localResources: CvsLocalResource[] = checkInInfo.cvsLocalResources;
+        const includedResources: CvsResource[] = [];
+        const localResources: CvsResource[] = checkInInfo.cvsLocalResources;
         localResources.forEach((resource) => {
             if (resource.isIncluded) {
                 includedResources.push(resource);
