@@ -5,13 +5,16 @@ import {Credentials} from "../credentialsstore/credentials";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {MessageConstants} from "../utils/messageconstants";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
-import {MessageItem, window} from "vscode";
+import {MessageItem, window, commands} from "vscode";
 import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../utils/constants";
 
+@injectable()
 export class SignIn implements Command {
 
     private remoteLogin: RemoteLogin;
@@ -19,11 +22,14 @@ export class SignIn implements Command {
     private settings: Settings;
     private output: Output;
 
-    public constructor(remoteLogin: RemoteLogin, credentialsStore: CredentialsStore, settings: Settings, output: Output) {
+    public constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
+                       @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
+                       @inject(TYPES.Output) output: Output,
+                       @inject(TYPES.Settings) settings: Settings) {
         this.remoteLogin = remoteLogin;
         this.credentialsStore = credentialsStore;
-        this.settings = settings;
         this.output = output;
+        this.settings = settings;
     }
 
     public async exec(): Promise<void> {

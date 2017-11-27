@@ -47,8 +47,8 @@ export class CredentialsStoreImpl implements CredentialsStore {
     }
 
     private async signIn(): Promise<void> {
-        const signIn: Command = new SignIn(this.remoteLogin, this, this.settings, this.output);
-        return signIn.exec();
+        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings);
+        return signInCommand.exec();
     }
 
     public getCredentialsSilently(): Credentials {

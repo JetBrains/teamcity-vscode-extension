@@ -8,13 +8,17 @@ import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";
 import {PatchSender} from "../remoterun/patchsender";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
+import {injectable, inject} from "inversify";
+import {TYPES} from "../utils/constants";
 
+@injectable()
 export class RemoteRun implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
     private readonly patchSender: PatchSender;
 
-    public constructor(cvsProvider: CvsProviderProxy, patchSender: PatchSender) {
+    public constructor(@inject(TYPES.ProviderProxy) cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.PatchSender) patchSender: PatchSender) {
         this.cvsProvider = cvsProvider;
         this.patchSender = patchSender;
     }

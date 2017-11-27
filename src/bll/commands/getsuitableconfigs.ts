@@ -1,5 +1,6 @@
 "use strict";
 
+import {commands} from "vscode";
 import {Logger} from "../utils/logger";
 import {DataProviderManager} from "../../view/dataprovidermanager";
 import {ProjectItem} from "../entities/projectitem";
@@ -10,14 +11,19 @@ import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
+import {injectable, inject} from "inversify";
+import {TYPES} from "../utils/constants";
 
+@injectable()
 export class GetSuitableConfigs implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
 
-    public constructor(cvsProvider: CvsProviderProxy, remoteBuildServer: RemoteBuildServer, xmlParser: XmlParser) {
+    public constructor(@inject(TYPES.ProviderProxy) cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
+                       @inject(TYPES.XmlParser) xmlParser: XmlParser) {
         this.cvsProvider = cvsProvider;
         this.remoteBuildServer = remoteBuildServer;
         this.xmlParser = xmlParser;
@@ -31,6 +37,7 @@ export class GetSuitableConfigs implements Command {
                 return;
             }
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
+            commands.executeCommand("setContext", "teamcity-select-files-for-remote-run", false);
             DataProviderManager.setExplorerContentAndRefresh(projects);
             DataProviderManager.storeCheckInArray(checkInArray);
         } catch (err) {

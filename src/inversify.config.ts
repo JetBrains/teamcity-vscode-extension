@@ -27,6 +27,10 @@ import {Output} from "./view/output";
 import {PatchManager} from "./bll/utils/patchmanager";
 import {XmlParser} from "./bll/utils/xmlparser";
 import {CvsProviderProxy} from "./dal/cvsproviderproxy";
+import {SignIn} from "./bll/commands/signin";
+import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
+import { GetSuitableConfigs } from "./bll/commands/getsuitableconfigs";
+import { RemoteRun } from "./bll/commands/remoterun";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -44,3 +48,7 @@ myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
 myContainer.bind<XmlParser>(TYPES.XmlParser).to(XmlParser).inSingletonScope();
 myContainer.bind<CvsProviderProxy>(TYPES.ProviderProxy).to(CvsProviderProxy).inSingletonScope();
+myContainer.bind<SignIn>(TYPES.SignIn).to(SignIn).inSingletonScope();
+myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(SelectFilesForRemoteRun).inSingletonScope();
+myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
+myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
