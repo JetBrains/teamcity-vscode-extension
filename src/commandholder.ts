@@ -1,87 +1,65 @@
 "use strict";
 
-import {
-    Disposable,
-    extensions,
-    MessageItem,
-    OutputChannel,
-    QuickDiffProvider,
-    QuickPickItem,
-    QuickPickOptions,
-    scm,
-    SourceControlInputBox,
-    SourceControlResourceState,
-    workspace,
-    WorkspaceEdit
-} from "vscode";
-import {Logger} from "./bll/utils/logger";
-import {XmlParser} from "./bll/utils/xmlparser";
-import {RemoteLogin} from "./dal/remotelogin";
-import {PatchSender} from "./bll/remoterun/patchsender";
-import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
-import {RemoteBuildServer} from "./dal/remotebuildserver";
-import {Settings} from "./bll/entities/settings";
 import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
+import {ProviderManager} from "./view/providermanager";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
-import {RemoteRun} from "./bll/commands/remoterun";
 import {SignIn} from "./bll/commands/signin";
-import {CvsProviderProxy} from "./dal/cvsproviderproxy";
+import {RemoteRun} from "./bll/commands/remoterun";
+import {SignOut} from "./bll/commands/signout";
 
 @injectable()
 export class CommandHolder {
-    private remoteLogin: RemoteLogin;
-    private remoteBuildServer: RemoteBuildServer;
-    private credentialsStore: CredentialsStore;
-    private output: Output;
-    private patchSender: PatchSender;
-    private settings: Settings;
-    private xmlParser: XmlParser;
-    private providerProxy: CvsProviderProxy;
 
-    constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
-                @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
-                @inject(TYPES.PatchSender) patchSender: PatchSender,
-                @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
-                @inject(TYPES.Output) output: Output,
-                @inject(TYPES.Settings) settings: Settings,
-                @inject(TYPES.XmlParser) xmlParser: XmlParser,
-                @inject(TYPES.ProviderProxy) providerProxy: CvsProviderProxy) {
-        this.remoteLogin = remoteLogin;
-        this.remoteBuildServer = remoteBuildServer;
-        this.patchSender = patchSender;
-        this.credentialsStore = credentialsStore;
+    private output: Output;
+    private _signIn: SignIn;
+    private _signOut: SignOut;
+    private _selectFilesForRemoteRun: SelectFilesForRemoteRun;
+    private _getSuitableConfigs: GetSuitableConfigs;
+    private _remoteRun: RemoteRun;
+    private providerManager: ProviderManager;
+
+    constructor(@inject(TYPES.Output) output: Output,
+                @inject(TYPES.SignIn) signInCommand: SignIn,
+                @inject(TYPES.SignOut) signOutCommand: SignOut,
+                @inject(TYPES.SelectFilesForRemoteRun) selectFilesForRemoteRun: SelectFilesForRemoteRun,
+                @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
+                @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
+                @inject(TYPES.ProviderManager)providerManager: ProviderManager) {
         this.output = output;
-        this.settings = settings;
-        this.xmlParser = xmlParser;
-        this.providerProxy = providerProxy;
+        this._signIn = signInCommand;
+        this._signOut = signOutCommand;
+        this._selectFilesForRemoteRun = selectFilesForRemoteRun;
+        this._getSuitableConfigs = getSuitableConfigs;
+        this._remoteRun = remoteRun;
+        this.providerManager = providerManager;
     }
 
     public async signIn(): Promise<void> {
-        const signIn: Command = new SignIn(this.remoteLogin, this.credentialsStore, this.settings, this.output);
-        return signIn.exec();
+        await this._signIn.exec();
+        this.providerManager.showEmptyDataProvider();
     }
 
-    public async selectFilesForRemoteRun() {
-        Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
-        const cvsProvider: CvsProviderProxy = this.providerProxy;
-        const selectFilesForRemoteRun: Command = new SelectFilesForRemoteRun(cvsProvider);
-        selectFilesForRemoteRun.exec();
+    public async signOut(): Promise<void> {
+        await this._signOut.exec();
+        this.providerManager.hideProviders();
+    }
+
+    public async selectFilesForRemoteRun(): Promise<void> {
+        await this._selectFilesForRemoteRun.exec();
+        this.providerManager.showResourceProvider();
     }
 
     public async getSuitableConfigs(): Promise<void> {
-        const cvsProvider = this.providerProxy;
-        const getSuitableConfigs: Command = new GetSuitableConfigs(cvsProvider, this.remoteBuildServer, this.xmlParser);
-        return getSuitableConfigs.exec();
+        await this._getSuitableConfigs.exec();
+        this.providerManager.showBuildProvider();
     }
 
-    public async remoteRunWithChosenConfigs() {
-        Logger.logInfo("CommandHolderImpl#remoteRunWithChosenConfigs: starts");
-        const cvsProvider =  this.providerProxy;
-        const remoteRunCommand: Command = new RemoteRun(cvsProvider, this.patchSender);
-        return remoteRunCommand.exec();
+    public async remoteRunWithChosenConfigs(): Promise<void> {
+        this.providerManager.showEmptyDataProvider();
+        await this._remoteRun.exec();
     }
 
     public showOutput(): void {

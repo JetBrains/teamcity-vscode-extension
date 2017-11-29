@@ -31,9 +31,9 @@ export class DataProviderManager {
         }
         DataProviderManager.dataProvider = new TeamCityTreeDataProvider();
         if (disposables) {
-            disposables.push(window.registerTreeDataProvider("teamcityExplorer", DataProviderManager.dataProvider));
+            disposables.push(window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider));
         } else {
-            window.registerTreeDataProvider("teamcityExplorer", DataProviderManager.dataProvider);
+            window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider);
         }
     }
 

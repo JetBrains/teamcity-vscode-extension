@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
     // The commands have been defined in the package.json file
     // The commandId parameters must match the command fields in package.json
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNIN_COMMAND_NAME, () => extensionManager.commandHolder.signIn()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNOUT_COMMAND_NAME, () => extensionManager.cleanUp()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNOUT_COMMAND_NAME, () => extensionManager.commandHolder.signOut()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_COMMAND_NAME, () => extensionManager.commandHolder.getSuitableConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.remoteRunWithChosenConfigs()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));

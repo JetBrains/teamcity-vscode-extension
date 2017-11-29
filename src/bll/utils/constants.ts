@@ -124,7 +124,13 @@ export const TYPES = {
     GitProvider: Symbol("GitProvider"),
     TfvcProvider: Symbol("TfvcProvider"),
     CvsProviderFactory: Symbol("CvsProviderFactory"),
-    ProviderProxy: Symbol("CvsProviderProxy")
+    ProviderProxy: Symbol("CvsProviderProxy"),
+    SignIn: Symbol("SignIn"),
+    SignOut: Symbol("SignOut"),
+    SelectFilesForRemoteRun: Symbol("SelectFilesForRemoteRun"),
+    GetSuitableConfigs: Symbol("GetSuitableConfigs"),
+    RemoteRun: Symbol("RemoteRun"),
+    ProviderManager: Symbol("ProviderManager"),
 };
 
 export enum CvsOperation {

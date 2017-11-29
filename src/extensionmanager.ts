@@ -10,7 +10,8 @@ import {DataProviderManager} from "./view/dataprovidermanager";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
-import {Disposable, ExtensionContext, OutputChannel, StatusBarAlignment, StatusBarItem, workspace} from "vscode";
+import {Disposable, ExtensionContext, OutputChannel, StatusBarAlignment, StatusBarItem, workspace, commands} from "vscode";
+import {ProviderManager} from "./view/providermanager";
 
 @injectable()
 export class ExtensionManager {
@@ -35,13 +36,8 @@ export class ExtensionManager {
         TeamCityStatusBarItem.init(this._disposables);
     }
 
-    public cleanUp(): void {
-        this.credentialsStore.removeCredentials();
-        TeamCityStatusBarItem.setLoggedOut();
-    }
-
     public dispose(): void {
-        this.cleanUp();
+        this.commandHolder.signOut();
         this._disposables.forEach((disposable) => disposable.dispose());
     }
 
