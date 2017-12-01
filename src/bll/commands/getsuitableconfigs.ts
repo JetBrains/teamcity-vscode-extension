@@ -15,6 +15,7 @@ import {TYPES} from "../utils/constants";
 import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
 
+
 @injectable()
 export class GetSuitableConfigs implements Command {
 

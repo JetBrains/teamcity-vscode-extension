@@ -36,6 +36,7 @@ import {SignOut} from "./bll/commands/signout";
 import {ResourceProvider} from "./view/dataproviders/resourceprovider";
 import {BuildProvider} from "./view/dataproviders/buildprovider";
 
+
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
 myContainer.bind<Output>(TYPES.Output).to(TeamCityOutput).inSingletonScope();
