@@ -55,11 +55,13 @@ export class CommandHolder {
 
     public async selectFilesForRemoteRun(): Promise<void> {
         await this._selectFilesForRemoteRun.exec();
+        this.providerManager.refreshAll();
         this.providerManager.showResourceProvider();
     }
 
     public async getSuitableConfigs(): Promise<void> {
         await this._getSuitableConfigs.exec();
+        this.providerManager.refreshAll();
         this.providerManager.showBuildProvider();
     }
 

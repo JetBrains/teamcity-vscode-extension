@@ -41,12 +41,30 @@
         }
       },
       {
+        "command": "teamcity.refreshSelectedFilesForRemoteRun",
+        "title": "Remote Run. Refresh Files For Remote Run",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
         "command": "teamcity.findSuitableBuildConfigurations",
         "title": "Remote Run. Find Suitable Build Configurations",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/findsuitable.png",
           "dark": "resources/icons/light/findsuitable.png"
+        }
+      },
+      {
+        "command": "teamcity.refreshSuitableBuildConfigurations",
+        "title": "Remote Run. Refresh Suitable Build Configurations",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
         }
       },
       {
@@ -91,24 +109,59 @@
           "group": "navigation@1"
         },
         {
+          "command": "teamcity.signIn",
+          "when": "view == teamcityEmptyExplorer",
+          "group": "@1"
+        },
+        {
           "command": "teamcity.selectFilesForRemoteRun",
+          "when": "view == teamcityEmptyExplorer",
+          "group": "@2"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == teamcityEmptyExplorer",
+          "group": "@3"
+        },
+        {
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
           "when": "view == teamcityResourceExplorer",
           "group": "navigation@1"
         },
         {
           "command": "teamcity.findSuitableBuildConfigurations",
           "when": "view == teamcityResourceExplorer",
-          "group": "navigation@1"
+          "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.signIn",
+          "when": "view == teamcityResourceExplorer",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
+          "when": "view == teamcityResourceExplorer",
+          "group": "@2"
         },
         {
           "command": "teamcity.findSuitableBuildConfigurations",
+          "when": "view == teamcityResourceExplorer",
+          "group": "@2"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == teamcityResourceExplorer",
+          "group": "@3"
+        },
+        {
+          "command": "teamcity.refreshSuitableBuildConfigurations",
           "when": "view == teamcityBuildsExplorer",
           "group": "navigation@1"
         },
         {
           "command": "teamcity.remoteRun",
           "when": "view == teamcityBuildsExplorer",
-          "group": "navigation@1"
+          "group": "navigation@2"
         },
         {
           "command": "teamcity.signIn",
@@ -116,12 +169,12 @@
           "group": "@1"
         },
         {
-          "command": "teamcity.selectFilesForRemoteRun",
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
           "when": "view == teamcityBuildsExplorer",
           "group": "@2"
         },
         {
-          "command": "teamcity.findSuitableBuildConfigurations",
+          "command": "teamcity.refreshSuitableBuildConfigurations",
           "when": "view == teamcityBuildsExplorer",
           "group": "@2"
         },
