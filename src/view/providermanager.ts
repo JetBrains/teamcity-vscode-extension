@@ -1,24 +1,30 @@
 "use strict";
 
-import {commands} from "vscode";
+import {commands, Disposable, window} from "vscode";
 import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
 import {DataProvider} from "./dataproviders/dataprovider";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
 import {ResourceProvider} from "./dataproviders/resourceprovider";
 import {BuildProvider} from "./dataproviders/buildprovider";
+import {TYPES} from "../bll/utils/constants";
 
 @injectable()
-export class ProviderManager {
+export class ProviderManager implements Disposable {
+
     private shownDataProvider: DataProvider;
     private readonly emptyDataProvider: EmptyDataProvider;
     private readonly resourcesProvider: ResourceProvider;
     private readonly buildsProvider: BuildProvider;
+    private readonly toDispose: Disposable[] = [];
 
-    constructor() {
+    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider) {
         this.emptyDataProvider = new EmptyDataProvider();
-        this.resourcesProvider = new ResourceProvider();
+        this.resourcesProvider = resourceProvider;
         this.buildsProvider = new BuildProvider();
         this.hideProviders();
+        if (resourceProvider) {
+            this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourceProvider));
+        }
     }
 
     public hideProviders(): void {
@@ -43,6 +49,18 @@ export class ProviderManager {
 
     public getShownDataProvider(): DataProviderEnum {
         return this.shownDataProvider ? this.shownDataProvider.getType() : undefined;
+    }
+
+    public refreshAll() {
+        if (this.resourcesProvider) {
+            this.resourcesProvider.refreshTreePresentation();
+        }
+    }
+
+    public dispose() {
+        this.toDispose.forEach((toDispose) => {
+            toDispose.dispose();
+        });
     }
 }
 

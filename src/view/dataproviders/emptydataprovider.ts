@@ -6,7 +6,7 @@ import { DataProviderEnum } from "../providermanager";
 
 export class EmptyDataProvider extends DataProvider {
 
-    reset(): void {
+    resetTreeContent(): void {
         throw new Error("Unsupported operation");
     }
 
@@ -18,12 +18,12 @@ export class EmptyDataProvider extends DataProvider {
         throw new Error("Unsupported operation");
     }
 
-    refreshContent(): void {
+    refreshTreePresentation(): void {
         throw new Error("Unsupported operation");
     }
 
-	onDidChangeTreeData?: Event<TreeItem | undefined | null>;
-        
+    onDidChangeTreeData?: Event<TreeItem | undefined | null>;
+
     getTreeItem(element: TreeItem): TreeItem | Thenable<TreeItem> {
         return undefined;
     }
@@ -36,4 +36,3 @@ export class EmptyDataProvider extends DataProvider {
         return DataProviderEnum.EmptyDataProvider;
     }
 }
-

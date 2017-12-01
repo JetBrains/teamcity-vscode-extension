@@ -6,7 +6,7 @@ import {DataProviderEnum} from "../providermanager";
 
 export class BuildProvider extends DataProvider {
 
-    reset(): void {
+    resetTreeContent(): void {
         throw new Error("Unsupported operation");
     }
 
@@ -18,7 +18,7 @@ export class BuildProvider extends DataProvider {
         throw new Error("Unsupported operation");
     }
 
-    refreshContent(): void {
+    refreshTreePresentation(): void {
         throw new Error("Unsupported operation");
     }
 
@@ -36,4 +36,3 @@ export class BuildProvider extends DataProvider {
         return DataProviderEnum.BuildsProvider;
     }
 }
-

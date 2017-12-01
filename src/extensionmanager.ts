@@ -10,7 +10,15 @@ import {DataProviderManager} from "./view/dataprovidermanager";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
-import {Disposable, ExtensionContext, OutputChannel, StatusBarAlignment, StatusBarItem, workspace, commands} from "vscode";
+import {
+    Disposable,
+    ExtensionContext,
+    OutputChannel,
+    StatusBarAlignment,
+    StatusBarItem,
+    workspace,
+    commands
+} from "vscode";
 import {ProviderManager} from "./view/providermanager";
 
 @injectable()
@@ -19,12 +27,14 @@ export class ExtensionManager {
     private readonly _commandHolder: CommandHolder;
     private _notificationWatcher: NotificationWatcher;
     private readonly _disposables: Disposable[] = [];
+    private readonly providerManager: ProviderManager;
 
     constructor(@inject(TYPES.Settings) settings: Settings,
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
                 @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher,
-                @inject(TYPES.Output) output: Output) {
+                @inject(TYPES.Output) output: Output,
+                @inject(TYPES.ProviderManager) providerManager: ProviderManager) {
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._notificationWatcher = notificationWatcher;
@@ -34,6 +44,12 @@ export class ExtensionManager {
         DataProviderManager.init(this._disposables);
         this.initLogger(settings.loggingLevel, workspace.rootPath);
         TeamCityStatusBarItem.init(this._disposables);
+        this._disposables.push(providerManager);
+        this.providerManager = providerManager;
+    }
+
+    public refreshAllProviders() {
+        this.providerManager.refreshAll();
     }
 
     public dispose(): void {

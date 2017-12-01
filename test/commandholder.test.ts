@@ -9,15 +9,16 @@ import {GetSuitableConfigs} from "../src/bll/commands/getsuitableconfigs";
 import {RemoteRun} from "../src/bll/commands/remoterun";
 import {SignIn} from "../src/bll/commands/signin";
 import {SignOut} from "../src/bll/commands/signout";
+import {ResourceProvider} from "../src/view/dataproviders/resourceprovider";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
         assert.isUndefined(dp.getShownDataProvider());
-        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp);
 
+        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp);
         ch.signIn().then(() => {
             tsMockito.verify(mockedSignIn.exec()).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
@@ -31,7 +32,7 @@ suite("DataProviders", () => {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         tsMockito.when(mockedSignIn.exec()).thenThrow(new Error("Any Exception"));
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
         assert.isUndefined(dp.getShownDataProvider());
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp);
 
@@ -47,7 +48,7 @@ suite("DataProviders", () => {
     test("should verify signOut success", function (done) {
         const mockedSignOut: SignOut = tsMockito.mock(SignOut);
         const signOutSpy: SignOut = tsMockito.instance(mockedSignOut);
-        const dp = new ProviderManager();
+        const dp = prepareProviderManager();
         dp.showResourceProvider();
         assert.notEqual(dp.getShownDataProvider, undefined);
         const ch = new CommandHolder(undefined, undefined, signOutSpy, undefined, undefined, undefined, dp);
@@ -64,7 +65,7 @@ suite("DataProviders", () => {
     test("should verify selectFilesForRemoteRun success", function (done) {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
-        const dp = new ProviderManager();
+        const dp = prepareProviderManager();
         dp.showEmptyDataProvider();
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
         const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, dp);
@@ -82,7 +83,7 @@ suite("DataProviders", () => {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
         tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
         dp.showEmptyDataProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, dp);
 
@@ -98,7 +99,7 @@ suite("DataProviders", () => {
     test("should verify getSuitableConfigs success", function (done) {
         const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
         const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
 
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, getSuitableConfigsSpy, undefined, dp);
         ch.getSuitableConfigs().then(() => {
@@ -114,8 +115,8 @@ suite("DataProviders", () => {
         const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
         tsMockito.when(mockedGetSuitableConfigs.exec()).thenThrow(new Error("Any Exception"));
         const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
-        const dp = new ProviderManager();
-        dp.showResourceProvider()
+        const dp = prepareProviderManager();
+        dp.showResourceProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, getSuitableConfigsSpy, undefined, dp);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
 
@@ -131,7 +132,7 @@ suite("DataProviders", () => {
     test("should verify remoteRun success", function (done) {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
         dp.showBuildProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, dp);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
@@ -149,7 +150,7 @@ suite("DataProviders", () => {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
         tsMockito.when(mockedRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = new ProviderManager();
+        const dp = new ProviderManager(null);
         dp.showBuildProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, dp);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
@@ -162,4 +163,8 @@ suite("DataProviders", () => {
             done();
         });
     });
+
+    function prepareProviderManager(): ProviderManager {
+        return new ProviderManager(new ResourceProvider())
+    }
 });

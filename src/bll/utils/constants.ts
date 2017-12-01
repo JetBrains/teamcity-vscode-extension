@@ -131,6 +131,7 @@ export const TYPES = {
     GetSuitableConfigs: Symbol("GetSuitableConfigs"),
     RemoteRun: Symbol("RemoteRun"),
     ProviderManager: Symbol("ProviderManager"),
+    ResourceProvider: Symbol("ResourceProvider"),
 };
 
 export enum CvsOperation {

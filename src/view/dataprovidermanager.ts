@@ -74,11 +74,7 @@ class TeamCityTreeDataProvider implements TreeDataProvider<TreeItem> {
     private projects: ProjectItem[] = [];
     private checkInArray: CheckInInfo[] = [];
 
-    public refresh(config?: BuildConfigItem): void {
-        if (!config) {
-            this._onDidChangeTreeData.fire();
-            return;
-        }
+    public refresh(): void {
         this._onDidChangeTreeData.fire();
     }
 

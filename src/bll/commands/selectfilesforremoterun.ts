@@ -7,20 +7,23 @@ import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
+import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
 
 @injectable()
 export class SelectFilesForRemoteRun implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
+    private readonly resourceProvider: ResourceProvider;
 
-    public constructor(@inject(TYPES.ProviderProxy) providerProxy: CvsProviderProxy) {
+    public constructor(@inject(TYPES.ProviderProxy) providerProxy: CvsProviderProxy,
+                       @inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider) {
         this.cvsProvider = providerProxy;
+        this.resourceProvider = resourceProvider;
     }
 
     public async exec(): Promise<void> {
-        Logger.logInfo("CommandHolderImpl#selectFilesForRemoteRun: starts");
+        Logger.logInfo("SelectFilesForRemoteRun#exec: start");
         const checkInInfo: CheckInInfo[] = await this.cvsProvider.getRequiredCheckInInfo();
-        commands.executeCommand("setContext", "teamcity-select-files-for-remote-run", true);
-        DataProviderManager.setExplorerContentAndRefresh(checkInInfo);
+        this.resourceProvider.setContent(checkInInfo);
     }
 }
