@@ -8,7 +8,6 @@ import {myContainer} from "./inversify.config";
 import {ProjectItem} from "./bll/entities/projectitem";
 import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/leaveselectableitem";
-import {DataProviderManager} from "./view/dataprovidermanager";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -28,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE, (project: ProjectItem) => {
         project.changeCollapsibleState();
-        DataProviderManager.refresh();
+        extensionManager.refreshAllProviders();
     }));
     context.subscriptions.push(extensionManager);
 }

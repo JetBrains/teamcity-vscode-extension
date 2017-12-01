@@ -2,7 +2,6 @@
 
 import {commands} from "vscode";
 import {Logger} from "../utils/logger";
-import {DataProviderManager} from "../../view/dataprovidermanager";
 import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";

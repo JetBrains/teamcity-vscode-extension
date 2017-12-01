@@ -47,7 +47,6 @@ export class ProviderManager implements Disposable {
     public showBuildProvider(): void {
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
-        this.refreshAll();
     }
 
     public getShownDataProvider(): DataProviderEnum {

@@ -2,7 +2,6 @@
 
 import {commands} from "vscode";
 import {Logger} from "../utils/logger";
-import {DataProviderManager} from "../../view/dataprovidermanager";
 import {ProjectItem} from "../entities/projectitem";
 import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";

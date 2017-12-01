@@ -6,7 +6,6 @@ import {inject, injectable} from "inversify";
 import {CommandHolder} from "./commandholder";
 import {Settings} from "./bll/entities/settings";
 import {Output} from "./view/output";
-import {DataProviderManager} from "./view/dataprovidermanager";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
@@ -41,7 +40,6 @@ export class ExtensionManager {
         notificationWatcher.activate();
         this._disposables.push(notificationWatcher);
         this._disposables.push(output);
-        DataProviderManager.init(this._disposables);
         this.initLogger(settings.loggingLevel, workspace.rootPath);
         TeamCityStatusBarItem.init(this._disposables);
         this._disposables.push(providerManager);
