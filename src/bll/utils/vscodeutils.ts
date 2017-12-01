@@ -24,13 +24,14 @@ export class VsCodeUtils {
 
     public static gzip2Xml(gzip: Uint8Array[]): string {
         Logger.logDebug(`VsCodeUtils#gzip2Str: starts unzipping gzip`);
+        const STEP: number = 100000;
         const buffer: string[] = [];
         // Pako magic
         const inflatedGzip: Uint16Array = pako.inflate(gzip);
         // Convert gzipped byteArray back to ascii string:
-        for (let i: number = 0; i < inflatedGzip.byteLength; i = i + 200000) {
+        for (let i: number = 0; i < inflatedGzip.byteLength; i = i + STEP) {
             /*RangeError: Maximum call stack size exceeded when i is between 250000 and 260000*/
-            const topIndex = Math.min(i + 200000, inflatedGzip.byteLength);
+            const topIndex = Math.min(i + STEP, inflatedGzip.byteLength);
             /* tslint:disable:no-null-keyword */
             buffer.push(String.fromCharCode.apply(null, new Uint16Array(inflatedGzip.slice(i, topIndex))));
             /* tslint:enable:no-null-keyword */

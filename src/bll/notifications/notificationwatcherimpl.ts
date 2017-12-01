@@ -56,7 +56,11 @@ export class NotificationWatcherImpl implements NotificationWatcher {
 
     public async activate(): Promise<void> {
         Logger.logInfo("NotificationWatcherImpl#activate: NW was activated");
-        await this.reinitWatcherMutableResources();
+        try {
+            await this.reinitWatcherMutableResources();
+        } catch (err) {
+            Logger.logError(`NotificationWatcherImpl#activate: an error occurs: ${err}.`);
+        }
         while (this.shouldNotBeDisposed) {
             try {
                 await this.processNewChangesIfRequired();
