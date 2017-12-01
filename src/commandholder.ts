@@ -9,6 +9,7 @@ import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
 import {SignIn} from "./bll/commands/signin";
 import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
+import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 
 @injectable()
 export class CommandHolder {
@@ -20,6 +21,7 @@ export class CommandHolder {
     private _getSuitableConfigs: GetSuitableConfigs;
     private _remoteRun: RemoteRun;
     private providerManager: ProviderManager;
+    private credentialsStore: CredentialsStore;
 
     constructor(@inject(TYPES.Output) output: Output,
                 @inject(TYPES.SignIn) signInCommand: SignIn,
@@ -27,7 +29,8 @@ export class CommandHolder {
                 @inject(TYPES.SelectFilesForRemoteRun) selectFilesForRemoteRun: SelectFilesForRemoteRun,
                 @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
                 @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
-                @inject(TYPES.ProviderManager)providerManager: ProviderManager) {
+                @inject(TYPES.ProviderManager) providerManager: ProviderManager,
+                @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore) {
         this.output = output;
         this._signIn = signInCommand;
         this._signOut = signOutCommand;
@@ -35,11 +38,14 @@ export class CommandHolder {
         this._getSuitableConfigs = getSuitableConfigs;
         this._remoteRun = remoteRun;
         this.providerManager = providerManager;
+        this.credentialsStore = credentialsStore;
     }
 
     public async signIn(): Promise<void> {
         await this._signIn.exec();
-        this.providerManager.showEmptyDataProvider();
+        if (this.credentialsStore.getCredentialsSilently()) {
+            this.providerManager.showEmptyDataProvider();
+        }
     }
 
     public async signOut(): Promise<void> {
@@ -58,7 +64,6 @@ export class CommandHolder {
     }
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
-        this.providerManager.showEmptyDataProvider();
         await this._remoteRun.exec();
     }
 

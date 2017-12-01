@@ -190,4 +190,5 @@ export class SignIn implements Command {
             await this.settings.setShowSignInWelcome(false);
         }
     }
+
 }

@@ -45,7 +45,7 @@ export class RemoteRun implements Command {
         }
         this.resourceProvider.resetTreeContent();
         this.buildProvider.resetTreeContent();
-        this.providerManager.hideProviders();
+        this.providerManager.showEmptyDataProvider();
         const remoteRunResult: boolean = await this.patchSender.remoteRun(includedBuildConfigs, checkInArray);
         if (remoteRunResult) {
             Logger.logInfo("RemoteRun#exec: remote run is ok");

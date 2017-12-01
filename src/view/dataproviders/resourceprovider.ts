@@ -43,7 +43,7 @@ export class ResourceProvider extends DataProvider {
             this.checkInArray.forEach((checkInInfo: CheckInInfo) => {
                 const checkInInfoToPush = this.getCheckInInfoWithIncludedResources(checkInInfo);
                 if (checkInInfoToPush.cvsLocalResources.length !== 0) {
-                    result.push(this.getCheckInInfoWithIncludedResources(checkInInfoToPush));
+                    result.push(checkInInfoToPush);
                 }
             });
         }
@@ -51,7 +51,6 @@ export class ResourceProvider extends DataProvider {
     }
 
     private getCheckInInfoWithIncludedResources(checkInInfo: CheckInInfo): CheckInInfo {
-        const result: CheckInInfo = checkInInfo;
         const includedResources: CvsResource[] = [];
         const localResources: CvsResource[] = checkInInfo.cvsLocalResources;
         localResources.forEach((resource: CvsResource) => {
@@ -59,8 +58,7 @@ export class ResourceProvider extends DataProvider {
                 includedResources.push(resource);
             }
         });
-        result.cvsLocalResources = includedResources;
-        return result;
+        return new CheckInInfo(includedResources, checkInInfo.cvsProvider, checkInInfo.serverItems, checkInInfo.workItemIds);
     }
 
     getType(): DataProviderEnum {
