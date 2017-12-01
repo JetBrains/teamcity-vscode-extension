@@ -26,15 +26,15 @@ export class DataProviderManager {
     private static checkInArray: CheckInInfo[] = [];
 
     public static init(disposables: Disposable[]): void {
-        if (DataProviderManager.dataProvider !== undefined) {
-            return;
-        }
-        DataProviderManager.dataProvider = new TeamCityTreeDataProvider();
-        if (disposables) {
-            disposables.push(window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider));
-        } else {
-            window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider);
-        }
+        // if (DataProviderManager.dataProvider !== undefined) {
+        //     return;
+        // }
+        // DataProviderManager.dataProvider = new TeamCityTreeDataProvider();
+        // if (disposables) {
+        //     disposables.push(window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider));
+        // } else {
+        //     window.registerTreeDataProvider("teamcityBuildsExplorer", DataProviderManager.dataProvider);
+        // }
     }
 
     public static storeCheckInArray(checkInArray: CheckInInfo[]): void {

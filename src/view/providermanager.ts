@@ -17,13 +17,15 @@ export class ProviderManager implements Disposable {
     private readonly buildsProvider: BuildProvider;
     private readonly toDispose: Disposable[] = [];
 
-    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider) {
+    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
+                @inject(TYPES.BuildProvider) buildProvider: BuildProvider) {
         this.emptyDataProvider = new EmptyDataProvider();
         this.resourcesProvider = resourceProvider;
-        this.buildsProvider = new BuildProvider();
+        this.buildsProvider = buildProvider;
         this.hideProviders();
-        if (resourceProvider) {
+        if (resourceProvider && buildProvider) {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourceProvider));
+            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildProvider));
         }
     }
 
@@ -45,6 +47,7 @@ export class ProviderManager implements Disposable {
     public showBuildProvider(): void {
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
+        this.refreshAll();
     }
 
     public getShownDataProvider(): DataProviderEnum {
@@ -54,6 +57,7 @@ export class ProviderManager implements Disposable {
     public refreshAll() {
         if (this.resourcesProvider) {
             this.resourcesProvider.refreshTreePresentation();
+            this.buildsProvider.refreshTreePresentation();
         }
     }
 

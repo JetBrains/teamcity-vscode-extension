@@ -13,18 +13,26 @@ import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
+import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
+import {BuildProvider} from "../../view/dataproviders/buildprovider";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
+    private readonly resourceProvider: ResourceProvider;
+    private readonly buildProvider: BuildProvider;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
 
-    public constructor(@inject(TYPES.ProviderProxy) cvsProvider: CvsProviderProxy,
+    public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
+                       @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) xmlParser: XmlParser) {
         this.cvsProvider = cvsProvider;
+        this.resourceProvider = resourceProvider;
+        this.buildProvider = buildProvider;
         this.remoteBuildServer = remoteBuildServer;
         this.xmlParser = xmlParser;
     }
@@ -33,13 +41,8 @@ export class GetSuitableConfigs implements Command {
         Logger.logInfo("GetSuitableConfigs#exec: starts");
         try {
             const checkInArray: CheckInInfo[] = await this.getCheckInArray();
-            if (!checkInArray || checkInArray.length === 0) {
-                return;
-            }
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
-            commands.executeCommand("setContext", "teamcity-select-files-for-remote-run", false);
-            DataProviderManager.setExplorerContentAndRefresh(projects);
-            DataProviderManager.storeCheckInArray(checkInArray);
+            this.buildProvider.setContent(projects);
         } catch (err) {
             Logger.logError(VsCodeUtils.formatErrorMessage(err));
             return Promise.reject(VsCodeUtils.formatErrorMessage(err));
@@ -49,11 +52,12 @@ export class GetSuitableConfigs implements Command {
     }
 
     private async getCheckInArray(): Promise<CheckInInfo[]> {
-        let checkInArray: CheckInInfo[] = DataProviderManager.getCheckInArraysWithIncludedResources();
-        if (!checkInArray || checkInArray.length === 0) {
-            checkInArray = await this.cvsProvider.getRequiredCheckInInfo();
+        const selectedResources: CheckInInfo[] = this.resourceProvider.getSelectedContent();
+        if (!selectedResources || selectedResources.length === 0) {
+            throw new Error("Please, choose at least one changed resource");
+        } else {
+            return selectedResources;
         }
-        return checkInArray;
     }
 
     private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<ProjectItem[]> {

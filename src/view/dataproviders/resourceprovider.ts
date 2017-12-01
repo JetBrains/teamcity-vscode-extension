@@ -47,10 +47,6 @@ export class ResourceProvider extends DataProvider {
                 }
             });
         }
-
-        if (result.length === 0) {
-            throw new Error("Please, choose at least one changed resource");
-        }
         return result;
     }
 

@@ -34,6 +34,7 @@ import { RemoteRun } from "./bll/commands/remoterun";
 import {ProviderManager} from "./view/providermanager";
 import {SignOut} from "./bll/commands/signout";
 import {ResourceProvider} from "./view/dataproviders/resourceprovider";
+import {BuildProvider} from "./view/dataproviders/buildprovider";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -50,7 +51,7 @@ myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDaoImpl);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
 myContainer.bind<XmlParser>(TYPES.XmlParser).to(XmlParser).inSingletonScope();
-myContainer.bind<CvsProviderProxy>(TYPES.ProviderProxy).to(CvsProviderProxy).inSingletonScope();
+myContainer.bind<CvsProviderProxy>(TYPES.CvsProviderProxy).to(CvsProviderProxy).inSingletonScope();
 myContainer.bind<SignIn>(TYPES.SignIn).to(SignIn).inSingletonScope();
 myContainer.bind<SignOut>(TYPES.SignOut).to(SignOut).inSingletonScope();
 myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(SelectFilesForRemoteRun).inSingletonScope();
@@ -58,3 +59,4 @@ myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableCon
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<ResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
+myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();

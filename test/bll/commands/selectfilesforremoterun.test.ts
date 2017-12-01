@@ -1,12 +1,13 @@
 "use strict";
+
 import {SelectFilesForRemoteRun} from "../../../src/bll/commands/selectfilesforremoterun";
 import * as tsMockito from "ts-mockito";
+import {anything} from "ts-mockito";
 import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
 import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
-import {anything} from "ts-mockito";
 
 suite("Select Files For Remote Run", () => {
-    test("should verify command", function (done) {
+    test("should verify we request data from cvsproviders and put it to rhe resource provider", function (done) {
         const mockedProviderProxy: CvsProviderProxy = tsMockito.mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
         const mockedResourceProvider: ResourceProvider = tsMockito.mock(ResourceProvider);

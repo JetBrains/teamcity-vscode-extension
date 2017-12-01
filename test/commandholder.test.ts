@@ -10,12 +10,13 @@ import {RemoteRun} from "../src/bll/commands/remoterun";
 import {SignIn} from "../src/bll/commands/signin";
 import {SignOut} from "../src/bll/commands/signout";
 import {ResourceProvider} from "../src/view/dataproviders/resourceprovider";
+import {BuildProvider} from "../src/view/dataproviders/buildprovider";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
         assert.isUndefined(dp.getShownDataProvider());
 
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp);
@@ -32,7 +33,7 @@ suite("DataProviders", () => {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         tsMockito.when(mockedSignIn.exec()).thenThrow(new Error("Any Exception"));
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
         assert.isUndefined(dp.getShownDataProvider());
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp);
 
@@ -83,7 +84,7 @@ suite("DataProviders", () => {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
         tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
         dp.showEmptyDataProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, dp);
 
@@ -99,7 +100,7 @@ suite("DataProviders", () => {
     test("should verify getSuitableConfigs success", function (done) {
         const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
         const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
 
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, getSuitableConfigsSpy, undefined, dp);
         ch.getSuitableConfigs().then(() => {
@@ -132,7 +133,7 @@ suite("DataProviders", () => {
     test("should verify remoteRun success", function (done) {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
         dp.showBuildProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, dp);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
@@ -150,7 +151,7 @@ suite("DataProviders", () => {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
         tsMockito.when(mockedRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = new ProviderManager(null);
+        const dp = new ProviderManager(undefined, undefined);
         dp.showBuildProvider();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, dp);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
@@ -165,6 +166,6 @@ suite("DataProviders", () => {
     });
 
     function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ResourceProvider())
+        return new ProviderManager(new ResourceProvider(), new BuildProvider())
     }
 });
