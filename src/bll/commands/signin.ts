@@ -5,7 +5,7 @@ import {Credentials} from "../credentialsstore/credentials";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {MessageConstants} from "../utils/messageconstants";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
-import {MessageItem, window, commands} from "vscode";
+import {commands, MessageItem, window} from "vscode";
 import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
@@ -13,6 +13,7 @@ import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
+import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
 
 @injectable()
 export class SignIn implements Command {
@@ -21,21 +22,28 @@ export class SignIn implements Command {
     private credentialsStore: CredentialsStore;
     private settings: Settings;
     private output: Output;
+    private persistentStorageManager: PersistentStorageManager;
 
     public constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                        @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                        @inject(TYPES.Output) output: Output,
-                       @inject(TYPES.Settings) settings: Settings) {
+                       @inject(TYPES.Settings) settings: Settings,
+                       @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager) {
         this.remoteLogin = remoteLogin;
         this.credentialsStore = credentialsStore;
         this.output = output;
         this.settings = settings;
+        this.persistentStorageManager = persistentStorageManager;
     }
 
-    public async exec(): Promise<void> {
+    public async exec(fromPersistentStore: boolean = false): Promise<void> {
         Logger.logInfo("SignIn#exec: starts.");
-        let credentials: Credentials = await this.tryGetCredentialsFromKeytar();
-        credentials = credentials || await this.requestTypingCredentials();
+        let credentials: Credentials;
+        if (!fromPersistentStore) {
+            credentials = await this.requestTypingCredentials();
+        } else if (this.settings.shouldStoreCredentials()) {
+            credentials = await this.tryGetCredentialsFromPersistence();
+        }
         if (credentials) {
             this.credentialsStore.setCredentials(credentials);
             this.storeLastUserCredentials(credentials);
@@ -45,33 +53,20 @@ export class SignIn implements Command {
         Logger.logWarning("SignIn#exec: operation was aborted by user");
     }
 
-    private async tryGetCredentialsFromKeytar(): Promise<Credentials> {
-        let credentials: Credentials = undefined;
+    private async tryGetCredentialsFromPersistence(): Promise<Credentials> {
+        let credentials: Credentials;
         try {
-            credentials = await this.getCredentialsFromKeytar();
+            credentials = await this.getCredentialsFromPersistence();
         } catch (err) {
-            Logger.logInfo(`SignIn#tryGetCredentialsFromKeytar: keytar doesn't contains a valid credentials`);
+            Logger.logWarning(`[SignIn::tryGetCredentialsFromPersistence] failed to get credentials from persistence ` +
+                `with error: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
-        return Promise.resolve<Credentials>(credentials);
+        return credentials;
     }
 
-    private async getCredentialsFromKeytar(): Promise<Credentials> {
-        const keytar = this.tryGetKeyTarModule();
-        Logger.logDebug(`SignIn#getCredentialsFromKeytar: keytar is supported. Credentials will be stored.`);
-        const serverUrl = await keytar.getPassword("teamcity", "serverurl");
-        const user = await keytar.getPassword("teamcity", "username");
-        const password = await keytar.getPassword("teamcity", "password");
-        return this.validateAndGenerateUserCredentials(serverUrl, user, password);
-    }
-
-    private tryGetKeyTarModule(): any {
-        let keytar: any;
-        try {
-            keytar = require("keytar");
-        } catch (err) {
-            throw Error("Keytar is unsupported");
-        }
-        return keytar;
+    private async getCredentialsFromPersistence(): Promise<Credentials> {
+        const creds: Credentials = await this.persistentStorageManager.getCredentials();
+        return creds ? this.validateAndGenerateUserCredentials(creds.serverURL, creds.user, creds.password) : undefined;
     }
 
     private async validateAndGenerateUserCredentials(serverUrl: string, user: string, password: string): Promise<Credentials> {
@@ -164,11 +159,7 @@ export class SignIn implements Command {
         await this.settings.setLastUrl(credentials.serverURL);
         await this.settings.setLastUsername(credentials.user);
         try {
-            const keytar = require("keytar");
-            Logger.logDebug(`CommandHolder#storeLastUserCredentials: keytar is supported. Credentials will be stored.`);
-            keytar.setPassword("teamcity", "serverurl", credentials.serverURL);
-            keytar.setPassword("teamcity", "username", credentials.user);
-            keytar.setPassword("teamcity", "password", credentials.password);
+            await this.persistentStorageManager.setCredential(credentials.serverURL, credentials.user, credentials.password);
         } catch (err) {
             Logger.logError(`CommandHolder#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }

@@ -10,6 +10,7 @@ import {SignIn} from "../commands/signin";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
+import {PersistentStorageManager} from "./persistentstoragemanager";
 
 @injectable()
 export class CredentialsStoreImpl implements CredentialsStore {
@@ -17,13 +18,16 @@ export class CredentialsStoreImpl implements CredentialsStore {
     private remoteLogin: RemoteLogin;
     private output: Output;
     private settings: Settings;
+    private persistentStorageManager: PersistentStorageManager;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.Output) output: Output,
-                @inject(TYPES.Settings) settings: Settings) {
+                @inject(TYPES.Settings) settings: Settings,
+                @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager) {
         this.remoteLogin = remoteLogin;
         this.output = output;
         this.settings = settings;
+        this.persistentStorageManager = persistentStorageManager;
     }
 
     private _credentials: Credentials;
@@ -47,7 +51,7 @@ export class CredentialsStoreImpl implements CredentialsStore {
     }
 
     private async signIn(): Promise<void> {
-        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings);
+        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings, this.persistentStorageManager);
         return signInCommand.exec();
     }
 

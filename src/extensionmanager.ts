@@ -11,6 +11,7 @@ import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {Disposable, ExtensionContext, OutputChannel, StatusBarAlignment, StatusBarItem, workspace} from "vscode";
+import {PersistentStorageManager} from "./bll/credentialsstore/persistentstoragemanager";
 
 @injectable()
 export class ExtensionManager {
@@ -33,6 +34,7 @@ export class ExtensionManager {
         DataProviderManager.init(this._disposables);
         this.initLogger(settings.loggingLevel, workspace.rootPath);
         TeamCityStatusBarItem.init(this._disposables);
+        this.trySignInWithPersistentStorage();
     }
 
     public cleanUp(): void {
@@ -61,5 +63,9 @@ export class ExtensionManager {
         } else {
             Logger.logWarning(`Folder not opened!`);
         }
+    }
+
+    private trySignInWithPersistentStorage() {
+        this.commandHolder.signIn.exec(true);
     }
 }

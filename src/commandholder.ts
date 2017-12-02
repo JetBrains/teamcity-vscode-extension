@@ -29,7 +29,7 @@ export class CommandHolder {
         this._remoteRun = remoteRun;
     }
 
-    public get signIn(): Command {
+    public get signIn(): SignIn {
         return this._signIn;
     }
 

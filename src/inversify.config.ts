@@ -29,8 +29,9 @@ import {XmlParser} from "./bll/utils/xmlparser";
 import {CvsProviderProxy} from "./dal/cvsproviderproxy";
 import {SignIn} from "./bll/commands/signin";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
-import { GetSuitableConfigs } from "./bll/commands/getsuitableconfigs";
-import { RemoteRun } from "./bll/commands/remoterun";
+import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
+import {RemoteRun} from "./bll/commands/remoterun";
+import {PersistentStorageManager} from "./bll/credentialsstore/persistentstoragemanager";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -52,3 +53,4 @@ myContainer.bind<SignIn>(TYPES.SignIn).to(SignIn).inSingletonScope();
 myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(SelectFilesForRemoteRun).inSingletonScope();
 myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
+myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager).to(PersistentStorageManager).inSingletonScope();
