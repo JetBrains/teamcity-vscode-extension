@@ -33,7 +33,7 @@ import { GetSuitableConfigs } from "./bll/commands/getsuitableconfigs";
 import { RemoteRun } from "./bll/commands/remoterun";
 import {ProviderManager} from "./view/providermanager";
 import {SignOut} from "./bll/commands/signout";
-import {ResourceProvider} from "./view/dataproviders/resourceprovider";
+import {ChangesProvider} from "./view/dataproviders/resourceprovider";
 import {BuildProvider} from "./view/dataproviders/buildprovider";
 
 export const myContainer = new Container();
@@ -58,5 +58,5 @@ myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(Sele
 myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
-myContainer.bind<ResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
+myContainer.bind<ChangesProvider>(TYPES.ResourceProvider).to(ChangesProvider).inSingletonScope();
 myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();

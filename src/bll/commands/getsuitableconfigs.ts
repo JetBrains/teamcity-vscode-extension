@@ -12,20 +12,20 @@ import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
-import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
+import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
-    private readonly resourceProvider: ResourceProvider;
+    private readonly resourceProvider: ChangesProvider;
     private readonly buildProvider: BuildProvider;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
-                       @inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
+                       @inject(TYPES.ResourceProvider) resourceProvider: ChangesProvider,
                        @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) xmlParser: XmlParser) {

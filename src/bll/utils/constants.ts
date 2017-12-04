@@ -133,7 +133,7 @@ export const TYPES = {
     GetSuitableConfigs: Symbol("GetSuitableConfigs"),
     RemoteRun: Symbol("RemoteRun"),
     ProviderManager: Symbol("ProviderManager"),
-    ResourceProvider: Symbol("ResourceProvider"),
+    ResourceProvider: Symbol("ChangesProvider"),
     BuildProvider: Symbol("BuildProvider")
 };
 

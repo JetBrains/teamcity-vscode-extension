@@ -1,13 +1,11 @@
 "use strict";
 
 import {assert} from "chai";
-import * as tsMockito from "ts-mockito";
-import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
+import {anything, instance, mock, when} from "ts-mockito";
 import {DataProviderEnum} from "../../../src/view/providermanager";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {CvsSupportProvider} from "../../../src/dal/cvsprovider";
 import {GitProvider} from "../../../src/dal/gitprovider";
-import {anything, instance, mock, when} from "ts-mockito";
 import {CvsResource} from "../../../src/bll/entities/cvsresources/cvsresource";
 import {AddedCvsResource} from "../../../src/bll/entities/cvsresources/addedcvsresource";
 import {BuildConfigItem} from "../../../src/bll/entities/buildconfigitem";

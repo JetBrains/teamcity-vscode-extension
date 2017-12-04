@@ -4,7 +4,7 @@ import {GetSuitableConfigs} from "../../../src/bll/commands/getsuitableconfigs";
 import * as tsMockito from "ts-mockito";
 import {anything, mock, verify, when} from "ts-mockito";
 import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
-import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
+import {ChangesProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
 import {RemoteBuildServerImpl} from "../../../src/dal/remotebuildserverimpl";
 import {XmlParser} from "../../../src/bll/utils/xmlparser";
@@ -21,9 +21,9 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
-        const mockedResourceProvider: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const mockedResourceProvider: ChangesProvider = tsMockito.mock(ChangesProvider);
         when(mockedResourceProvider.getSelectedContent()).thenReturn([checkInInfoSpy, checkInInfoSpy]);
-        const resourceProviderSpy: ResourceProvider = tsMockito.instance(mockedResourceProvider);
+        const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
 
@@ -43,15 +43,15 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
-        const mockedResourceProvider: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const mockedResourceProvider: ChangesProvider = tsMockito.mock(ChangesProvider);
         when(mockedResourceProvider.getSelectedContent()).thenReturn([]);
-        const resourceProviderSpy: ResourceProvider = tsMockito.instance(mockedResourceProvider);
+        const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
         testableCommand.exec().then(() => {
             done("An exception was expected");
-        }).catch((err) => {
+        }).catch(() => {
             done();
         });
     });
@@ -65,9 +65,9 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
-        const mockedResourceProvider: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const mockedResourceProvider: ChangesProvider = tsMockito.mock(ChangesProvider);
         when(mockedResourceProvider.getSelectedContent()).thenReturn([checkInInfoSpy, checkInInfoSpy]);
-        const resourceProviderSpy: ResourceProvider = tsMockito.instance(mockedResourceProvider);
+        const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
@@ -89,9 +89,9 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
-        const mockedResourceProvider: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const mockedResourceProvider: ChangesProvider = tsMockito.mock(ChangesProvider);
         when(mockedResourceProvider.getSelectedContent()).thenReturn([checkInInfoSpy, checkInInfoSpy]);
-        const resourceProviderSpy: ResourceProvider = tsMockito.instance(mockedResourceProvider);
+        const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = tsMockito.mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);

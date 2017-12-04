@@ -4,7 +4,7 @@ import {commands, Disposable, window} from "vscode";
 import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
 import {DataProvider} from "./dataproviders/dataprovider";
 import {inject, injectable} from "inversify";
-import {ResourceProvider} from "./dataproviders/resourceprovider";
+import {ChangesProvider} from "./dataproviders/resourceprovider";
 import {BuildProvider} from "./dataproviders/buildprovider";
 import {TYPES} from "../bll/utils/constants";
 
@@ -13,11 +13,11 @@ export class ProviderManager implements Disposable {
 
     private shownDataProvider: DataProvider;
     private readonly emptyDataProvider: EmptyDataProvider;
-    private readonly resourcesProvider: ResourceProvider;
+    private readonly resourcesProvider: ChangesProvider;
     private readonly buildsProvider: BuildProvider;
     private readonly toDispose: Disposable[] = [];
 
-    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
+    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ChangesProvider,
                 @inject(TYPES.BuildProvider) buildProvider: BuildProvider) {
         this.emptyDataProvider = new EmptyDataProvider();
         this.resourcesProvider = resourceProvider;

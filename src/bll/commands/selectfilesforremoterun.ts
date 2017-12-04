@@ -6,16 +6,16 @@ import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
-import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
+import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 
 @injectable()
 export class SelectFilesForRemoteRun implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
-    private readonly resourceProvider: ResourceProvider;
+    private readonly resourceProvider: ChangesProvider;
 
     public constructor(@inject(TYPES.CvsProviderProxy) providerProxy: CvsProviderProxy,
-                       @inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider) {
+                       @inject(TYPES.ResourceProvider) resourceProvider: ChangesProvider) {
         this.cvsProvider = providerProxy;
         this.resourceProvider = resourceProvider;
     }

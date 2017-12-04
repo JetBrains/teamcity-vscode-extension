@@ -9,7 +9,7 @@ import {GetSuitableConfigs} from "../src/bll/commands/getsuitableconfigs";
 import {RemoteRun} from "../src/bll/commands/remoterun";
 import {SignIn} from "../src/bll/commands/signin";
 import {SignOut} from "../src/bll/commands/signout";
-import {ResourceProvider} from "../src/view/dataproviders/resourceprovider";
+import {ChangesProvider} from "../src/view/dataproviders/resourceprovider";
 import {BuildProvider} from "../src/view/dataproviders/buildprovider";
 import { CredentialsStore } from "../src/bll/credentialsstore/credentialsstore";
 import { CredentialsStoreImpl } from "../src/bll/credentialsstore/credentialsstoreimpl";
@@ -48,7 +48,7 @@ suite("DataProviders", () => {
 
         ch.signIn().then(() => {
             done("Expected an exception");
-        }).catch((err) => {
+        }).catch(() => {
             tsMockito.verify(mockedSignIn.exec()).called();
             assert.isUndefined(dp.getShownDataProvider(), "DataProviders should be hidden");
             done();
@@ -167,7 +167,7 @@ suite("DataProviders", () => {
 
         ch.remoteRunWithChosenConfigs().then(() => {
             done("An exception was expected");
-        }).catch((err) => {
+        }).catch(() => {
             tsMockito.verify(mockedRemoteRun.exec()).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
@@ -175,6 +175,6 @@ suite("DataProviders", () => {
     });
 
     function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ResourceProvider(), new BuildProvider());
+        return new ProviderManager(new ChangesProvider(), new BuildProvider());
     }
 });

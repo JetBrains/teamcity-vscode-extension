@@ -9,7 +9,7 @@ import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 import {Logger} from "../../bll/utils/logger";
 
 @injectable()
-export class ResourceProvider extends DataProvider {
+export class ChangesProvider extends DataProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 
