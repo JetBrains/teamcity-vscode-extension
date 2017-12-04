@@ -35,6 +35,10 @@ import {PersistentStorageManager} from "./bll/credentialsstore/persistentstorage
 import {WinPersistentCredentialsStore} from "./bll/credentialsstore/win32/win-credstore";
 import {WindowsCredentialStoreApi} from "./bll/credentialsstore/win32/win-credstore-api";
 import {OsProxy} from "./bll/moduleproxies/osproxy";
+import {ProviderManager} from "./view/providermanager";
+import {SignOut} from "./bll/commands/signout";
+import {ChangesProvider} from "./view/dataproviders/resourceprovider";
+import {BuildProvider} from "./view/dataproviders/buildprovider";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -51,8 +55,9 @@ myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDaoImpl);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDaoImpl);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
 myContainer.bind<XmlParser>(TYPES.XmlParser).to(XmlParser).inSingletonScope();
-myContainer.bind<CvsProviderProxy>(TYPES.ProviderProxy).to(CvsProviderProxy).inSingletonScope();
+myContainer.bind<CvsProviderProxy>(TYPES.CvsProviderProxy).to(CvsProviderProxy).inSingletonScope();
 myContainer.bind<SignIn>(TYPES.SignIn).to(SignIn).inSingletonScope();
+myContainer.bind<SignOut>(TYPES.SignOut).to(SignOut).inSingletonScope();
 myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(SelectFilesForRemoteRun).inSingletonScope();
 myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
@@ -60,3 +65,6 @@ myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager).to(Pe
 myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi).to(WindowsCredentialStoreApi).inSingletonScope();
 myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore).to(WinPersistentCredentialsStore).inSingletonScope();
 myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
+myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
+myContainer.bind<ChangesProvider>(TYPES.ResourceProvider).to(ChangesProvider).inSingletonScope();
+myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();

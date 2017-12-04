@@ -10,7 +10,6 @@ import {
     ExtensionContext,
     ProviderResult,
     TextDocumentContentProvider,
-    TreeDataProvider,
     TreeItem,
     TreeItemCollapsibleState,
     Uri,

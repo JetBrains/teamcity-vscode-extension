@@ -7,8 +7,7 @@ import {Constants, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
 import {ProjectItem} from "./bll/entities/projectitem";
 import {ExtensionManager} from "./extensionmanager";
-import {BuildConfigItem} from "./bll/entities/buildconfigitem";
-import {DataProviderManager} from "./view/dataprovidermanager";
+import {LeaveSelectableItem} from "./bll/entities/leaveselectableitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -16,19 +15,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     // The commands have been defined in the package.json file
     // The commandId parameters must match the command fields in package.json
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNIN_COMMAND_NAME, () => extensionManager.commandHolder.signIn.exec()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNOUT_COMMAND_NAME, () => extensionManager.cleanUp()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_COMMAND_NAME, () => extensionManager.commandHolder.getSuitableConfigs.exec()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.remoteRunWithChosenConfigs.exec()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun.exec()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNIN_COMMAND_NAME, () => extensionManager.commandHolder.signIn()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.SIGNOUT_COMMAND_NAME, () => extensionManager.commandHolder.signOut()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.FIND_SUITABLE_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.getSuitableConfigs()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.REFRESH_SUITABLE_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.getSuitableConfigs()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.remoteRunWithChosenConfigs()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.REFRESH_SELECTED_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_OUTPUT_COMMAND_NAME, () => extensionManager.commandHolder.showOutput()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (config: BuildConfigItem) => {
-        config.changeState();
-        DataProviderManager.refresh();
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {
+        item.changeState();
+        extensionManager.refreshAllProviders();
     }));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE, (project: ProjectItem) => {
         project.changeCollapsibleState();
-        DataProviderManager.refresh();
+        extensionManager.refreshAllProviders();
     }));
     context.subscriptions.push(extensionManager);
 }
