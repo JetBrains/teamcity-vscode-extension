@@ -40,9 +40,10 @@ export class SignIn implements Command {
             this.credentialsStore.setCredentials(credentials);
             this.storeLastUserCredentials(credentials);
             Logger.logInfo("SignIn#exec: success.");
-            return this.greetUser(credentials);
+            this.greetUser(credentials);
+        } else {
+            Logger.logWarning("SignIn#exec: operation was aborted by user");
         }
-        Logger.logWarning("SignIn#exec: operation was aborted by user");
     }
 
     private async tryGetCredentialsFromKeytar(): Promise<Credentials> {
@@ -178,7 +179,7 @@ export class SignIn implements Command {
         this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
         TeamCityStatusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         if (this.settings.showSignInWelcome) {
-            return this.showWelcomeMessage();
+            await this.showWelcomeMessage();
         }
     }
 
@@ -186,7 +187,8 @@ export class SignIn implements Command {
         const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
         const chosenItem: MessageItem = await MessageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
-            return this.settings.setShowSignInWelcome(false);
+            await this.settings.setShowSignInWelcome(false);
         }
     }
+
 }

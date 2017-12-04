@@ -21,8 +21,10 @@ export class Constants {
 
     public static readonly SIGNIN_COMMAND_NAME = "teamcity.signIn";
     public static readonly SIGNOUT_COMMAND_NAME = "teamcity.signOut";
-    public static readonly REMOTE_RUN_COMMAND_NAME = "teamcity.findSuitableBuildConfigurations";
+    public static readonly FIND_SUITABLE_CONFIGS_COMMAND_NAME = "teamcity.findSuitableBuildConfigurations";
+    public static readonly REFRESH_SUITABLE_CONFIGS_COMMAND_NAME = "teamcity.refreshSuitableBuildConfigurations";
     public static readonly SELECT_FILES_COMMAND_NAME = "teamcity.selectFilesForRemoteRun";
+    public static readonly REFRESH_SELECTED_FILES_COMMAND_NAME = "teamcity.refreshSelectedFilesForRemoteRun";
     public static readonly SHOW_OUTPUT_COMMAND_NAME = "teamcity.showOutput";
     public static readonly CHANGE_CONFIG_STATE = "changeConfigState";
     public static readonly CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
@@ -124,11 +126,15 @@ export const TYPES = {
     GitProvider: Symbol("GitProvider"),
     TfvcProvider: Symbol("TfvcProvider"),
     CvsProviderFactory: Symbol("CvsProviderFactory"),
-    ProviderProxy: Symbol("CvsProviderProxy"),
+    CvsProviderProxy: Symbol("CvsProviderProxy"),
     SignIn: Symbol("SignIn"),
+    SignOut: Symbol("SignOut"),
     SelectFilesForRemoteRun: Symbol("SelectFilesForRemoteRun"),
     GetSuitableConfigs: Symbol("GetSuitableConfigs"),
-    RemoteRun: Symbol("RemoteRun")
+    RemoteRun: Symbol("RemoteRun"),
+    ProviderManager: Symbol("ProviderManager"),
+    ResourceProvider: Symbol("ChangesProvider"),
+    BuildProvider: Symbol("BuildProvider")
 };
 
 export enum CvsOperation {
