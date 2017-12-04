@@ -130,7 +130,10 @@ export const TYPES = {
     SelectFilesForRemoteRun: Symbol("SelectFilesForRemoteRun"),
     GetSuitableConfigs: Symbol("GetSuitableConfigs"),
     RemoteRun: Symbol("RemoteRun"),
-    PersistentStorageManager: Symbol("PersistentStorageManager")
+    PersistentStorageManager: Symbol("PersistentStorageManager"),
+    WinPersistentCredentialsStore: Symbol("WinPersistentCredentialsStore"),
+    WindowsCredentialStoreApi: Symbol("WindowsCredentialStoreApi"),
+    OsProxy: Symbol("OsProxy")
 };
 
 export enum CvsOperation {

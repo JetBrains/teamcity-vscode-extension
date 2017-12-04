@@ -32,6 +32,9 @@ import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {RemoteRun} from "./bll/commands/remoterun";
 import {PersistentStorageManager} from "./bll/credentialsstore/persistentstoragemanager";
+import {WinPersistentCredentialsStore} from "./bll/credentialsstore/win32/win-credstore";
+import {WindowsCredentialStoreApi} from "./bll/credentialsstore/win32/win-credstore-api";
+import {OsProxy} from "./bll/moduleproxies/osproxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -54,3 +57,6 @@ myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(Sele
 myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
 myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager).to(PersistentStorageManager).inSingletonScope();
+myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi).to(WindowsCredentialStoreApi).inSingletonScope();
+myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore).to(WinPersistentCredentialsStore).inSingletonScope();
+myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);

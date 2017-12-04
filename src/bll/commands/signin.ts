@@ -94,16 +94,16 @@ export class SignIn implements Command {
         let username: string;
         let password: string;
         try {
-            serverUrl = await this.requestServerUrl(defaultURL);
-            username = await this.requestUsername(defaultUsername, serverUrl);
-            password = await this.requestPassword(username);
+            serverUrl = await SignIn.requestServerUrl(defaultURL);
+            username = await SignIn.requestUsername(defaultUsername, serverUrl);
+            password = await SignIn.requestPassword(username);
         } catch (err) {
             return Promise.resolve(undefined);
         }
         return this.validateAndGenerateUserCredentials(serverUrl, username, password);
     }
 
-    private async requestServerUrl(defaultURL: string): Promise<string> {
+    private static async requestServerUrl(defaultURL: string): Promise<string> {
         let serverUrl: string = await window.showInputBox({
             value: defaultURL || "",
             prompt: MessageConstants.PROVIDE_URL,
@@ -119,11 +119,11 @@ export class SignIn implements Command {
         }
     }
 
-    private removeSlashInTheEndIfExists(serverUrl: string): string {
+    private static removeSlashInTheEndIfExists(serverUrl: string): string {
         return serverUrl.replace(/\/$/, "");
     }
 
-    private async requestUsername(defaultUsername: string, serverUrl: string): Promise<string> {
+    private static async requestUsername(defaultUsername: string, serverUrl: string): Promise<string> {
         const userName: string = await window.showInputBox({
             value: defaultUsername || "",
             prompt: MessageConstants.PROVIDE_USERNAME + " ( URL: " + serverUrl + " )",
@@ -138,7 +138,7 @@ export class SignIn implements Command {
         }
     }
 
-    private async requestPassword(username: string): Promise<string> {
+    private static async requestPassword(username: string): Promise<string> {
         const password: string = await window.showInputBox({
             prompt: MessageConstants.PROVIDE_PASSWORD + " ( username: " + username + " )",
             placeHolder: "",
@@ -159,9 +159,9 @@ export class SignIn implements Command {
         await this.settings.setLastUrl(credentials.serverURL);
         await this.settings.setLastUsername(credentials.user);
         try {
-            await this.persistentStorageManager.setCredential(credentials.serverURL, credentials.user, credentials.password);
+            await this.persistentStorageManager.setCredentials(credentials.serverURL, credentials.user, credentials.password);
         } catch (err) {
-            Logger.logError(`CommandHolder#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`SignIn#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }
     }
 

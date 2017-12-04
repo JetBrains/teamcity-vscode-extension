@@ -6,6 +6,4 @@ export interface PersistentStorage {
     getCredentials(): Promise<Credentials>;
     setCredentials(url: string, username: string, password: any): Promise<void>;
     removeCredentials(): Promise<void>;
-    getCredentialsByName(username: string): Promise<Credentials>;
-    removeCredentialsByName(username: string): Promise<void>;
 }

@@ -1,21 +1,25 @@
 "use strict";
 
-import * as os from "os";
 import {WindowsCredentialStoreApi} from "./win32/win-credstore-api";
 import {PersistentStorage} from "./persistentstorage";
 import {Credentials} from "./credentials";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../utils/constants";
+import {Os} from "../moduleinterfaces/os";
 
 @injectable()
-export class PersistentStorageManager {
+export class PersistentStorageManager implements PersistentStorage {
 
     private credentialsStore: PersistentStorage;
 
-    public constructor() {
+    public constructor(@inject(TYPES.WindowsCredentialStoreApi) windowsCredentialsStoreApi: WindowsCredentialStoreApi,
+                       @inject(TYPES.WindowsCredentialStoreApi) linuxCredentialsStoreApi: PersistentStorage,
+                       @inject(TYPES.WindowsCredentialStoreApi) macCredentialsStoreApi: PersistentStorage,
+                       @inject(TYPES.OsProxy) os: Os) {
 
         switch (os.platform()) {
             case "win32":
-                this.credentialsStore = new WindowsCredentialStoreApi();
+                this.credentialsStore = windowsCredentialsStoreApi;
                 break;
             case "darwin":
                 throw new Error("Not supported operation.");
@@ -31,9 +35,9 @@ export class PersistentStorageManager {
         return this.credentialsStore.getCredentials();
     }
 
-    public async setCredential(url: string, username: string, password: any): Promise<void> {
+    public async setCredentials(url: string, username: string, password: any): Promise<void> {
         const cred: Credentials = await this.getCredentials();
-        if (!cred) {
+        if (cred) {
             await this.removeCredentials();
         }
         await this.credentialsStore.setCredentials(url, username, password);

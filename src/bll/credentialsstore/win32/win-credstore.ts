@@ -1,6 +1,7 @@
 "use strict";
 
 import {Stream} from "stream";
+import {injectable} from "inversify";
 const _ = require("underscore");
 const childProcess = require("child_process");
 const es = require("event-stream");
@@ -9,21 +10,22 @@ const path = require("path");
 const parser = require("./win-credstore-parser");
 const credExePath = path.join(__dirname, "../bin/win32/creds.exe");
 
+@injectable()
 export class WinPersistentCredentialsStore {
-    private static targetNamePrefix: string = "";
+    private targetNamePrefix: string = "";
 
-    public static setPrefix(prefix: string) {
+    public setPrefix(prefix: string) {
         this.targetNamePrefix = prefix;
     }
 
-    public static ensurePrefix(targetName) {
+    public ensurePrefix(targetName) {
         if (targetName.slice(this.targetNamePrefix.length) !== this.targetNamePrefix) {
             targetName = this.targetNamePrefix + targetName;
         }
         return targetName;
     }
 
-    public static removePrefix(targetName) {
+    public removePrefix(targetName) {
         return targetName.slice(this.targetNamePrefix.length);
     }
 
@@ -36,12 +38,12 @@ export class WinPersistentCredentialsStore {
      *
      * @return {Stream} object mode stream of credentials.
      */
-    public static list(): Stream {
+    public list(): Stream {
         const credsProcess = childProcess.spawn(credExePath, ["-s", "-g", "-t", this.targetNamePrefix + "*"]);
         return credsProcess.stdout
             .pipe(parser())
             .pipe(es.mapSync((cred) => {
-                cred.targetName = WinPersistentCredentialsStore.removePrefix(cred.targetName);
+                cred.targetName = this.removePrefix(cred.targetName);
                 return cred;
             }));
     }
@@ -53,7 +55,7 @@ export class WinPersistentCredentialsStore {
      * @param {function (err, credential)} callback callback function that receives
      *                                              returned credential.
      */
-    public static get(targetName, callback) {
+    public get(targetName, callback) {
         const args = [
             "-s",
             "-t", this.ensurePrefix(targetName)
@@ -93,7 +95,7 @@ export class WinPersistentCredentialsStore {
      * @param {Buffer|String} credential the credential
      * @param {Function(err)} callback completion callback
      */
-    public static set(targetName, credential, callback) {
+    public set(targetName, credential, callback) {
         if (_.isString(credential)) {
             credential = new Buffer(credential, "utf8");
         }
@@ -117,7 +119,7 @@ export class WinPersistentCredentialsStore {
      *                            starting with that prefix
      * @param {Function(err)} callback completion callback
      */
-    public static remove(targetName, callback) {
+    public remove(targetName, callback) {
         const args = [
             "-d",
             "-t", this.ensurePrefix(targetName)
