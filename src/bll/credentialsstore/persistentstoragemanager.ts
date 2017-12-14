@@ -1,6 +1,7 @@
 "use strict";
 
 import {WindowsCredentialStoreApi} from "./win32/win-credstore-api";
+import {LinuxFileApi} from "./linux/linux-file-api";
 import {PersistentStorage} from "./persistentstorage";
 import {Credentials} from "./credentials";
 import {inject, injectable} from "inversify";
@@ -13,7 +14,7 @@ export class PersistentStorageManager implements PersistentStorage {
     private credentialsStore: PersistentStorage;
 
     public constructor(@inject(TYPES.WindowsCredentialStoreApi) windowsCredentialsStoreApi: WindowsCredentialStoreApi,
-                       @inject(TYPES.WindowsCredentialStoreApi) linuxCredentialsStoreApi: PersistentStorage,
+                       @inject(TYPES.LinuxFileApi) linuxFileApi: LinuxFileApi,
                        @inject(TYPES.WindowsCredentialStoreApi) macCredentialsStoreApi: PersistentStorage,
                        @inject(TYPES.OsProxy) os: Os) {
 
@@ -27,7 +28,8 @@ export class PersistentStorageManager implements PersistentStorage {
             case "linux":
             default:
                 /* tslint:enable:no-switch-case-fall-through */
-                throw new Error("Not supported operation.");
+                this.credentialsStore = linuxFileApi;
+                break;
         }
     }
 

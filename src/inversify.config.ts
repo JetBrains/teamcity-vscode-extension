@@ -34,6 +34,7 @@ import {RemoteRun} from "./bll/commands/remoterun";
 import {PersistentStorageManager} from "./bll/credentialsstore/persistentstoragemanager";
 import {WinPersistentCredentialsStore} from "./bll/credentialsstore/win32/win-credstore";
 import {WindowsCredentialStoreApi} from "./bll/credentialsstore/win32/win-credstore-api";
+import {LinuxFileApi} from "./bll/credentialsstore/linux/linux-file-api";
 import {OsProxy} from "./bll/moduleproxies/osproxy";
 import {ProviderManager} from "./view/providermanager";
 import {SignOut} from "./bll/commands/signout";
@@ -63,6 +64,7 @@ myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableCon
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
 myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager).to(PersistentStorageManager).inSingletonScope();
 myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi).to(WindowsCredentialStoreApi).inSingletonScope();
+myContainer.bind<LinuxFileApi>(TYPES.LinuxFileApi).to(LinuxFileApi).inSingletonScope();
 myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore).to(WinPersistentCredentialsStore).inSingletonScope();
 myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();

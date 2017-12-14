@@ -139,7 +139,8 @@ export const TYPES = {
     OsProxy: Symbol("OsProxy"),
     ProviderManager: Symbol("ProviderManager"),
     ResourceProvider: Symbol("ChangesProvider"),
-    BuildProvider: Symbol("BuildProvider")
+    BuildProvider: Symbol("BuildProvider"),
+    LinuxFileApi: Symbol("LinuxFileApi")
 };
 
 export enum CvsOperation {
