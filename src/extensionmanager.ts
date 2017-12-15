@@ -53,7 +53,6 @@ export class ExtensionManager {
     }
 
     public dispose(): void {
-        this.commandHolder.signOut();
         this._disposables.forEach((disposable) => disposable.dispose());
     }
 
