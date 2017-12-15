@@ -51,7 +51,8 @@ export class LinuxFileApi implements PersistentStorage {
         const newEntry = {
             username: username,
             password: password,
-            url: url
+            url: url,
+            service: LinuxFileApi.SERVICE_PREFIX
         };
 
         await this.fileTokenStorage.addEntries([newEntry], existingEntries);
@@ -64,7 +65,7 @@ export class LinuxFileApi implements PersistentStorage {
     }
 
     private createCredential(credentials: any) : Credentials {
-        return new Credentials(credentials.service, credentials.username, credentials.password, undefined, undefined);
+        return new Credentials(credentials.url, credentials.username, credentials.password, undefined, undefined);
     }
 
     private async loadTeamCityCredentials(): Promise<any> {
