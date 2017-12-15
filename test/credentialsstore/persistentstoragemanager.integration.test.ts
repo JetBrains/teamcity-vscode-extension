@@ -7,14 +7,16 @@ import {PersistentStorageManager} from "../../src/bll/credentialsstore/persisten
 import {TestSettings} from "../testsettings";
 import {WindowsCredentialStoreApi} from "../../src/bll/credentialsstore/win32/win-credstore-api";
 import {WinPersistentCredentialsStore} from "../../src/bll/credentialsstore/win32/win-credstore";
+import {LinuxFileApi} from "../../src/bll/credentialsstore/linux/linux-file-api";
 
 suite("PersistentStorageManager - integration test", function () {
 
     test("should verify store, get, remove credentials for our add-in. Platform specific", async function () {
         try {
             const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore();
+            const linuxFileApi: LinuxFileApi = new LinuxFileApi();
             const winStoreApi = new WindowsCredentialStoreApi(winPersistentCredentialsStore);
-            const credentialManager: PersistentStorageManager = new PersistentStorageManager(winStoreApi, undefined, undefined, os);
+            const credentialManager: PersistentStorageManager = new PersistentStorageManager(winStoreApi, linuxFileApi, undefined, os);
             rewriteMyReleasePrefix(winPersistentCredentialsStore);
             await credentialManager.setCredentials(TestSettings.url, TestSettings.account, TestSettings.password);
             let credInfo: Credentials = await credentialManager.getCredentials();
@@ -25,7 +27,7 @@ suite("PersistentStorageManager - integration test", function () {
             credInfo = await credentialManager.getCredentials();
             assert.isUndefined(credInfo);
         } catch (err) {
-            console.log(err);
+            Promise.reject(err);
         }
     });
 

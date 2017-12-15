@@ -2,7 +2,7 @@
 
 import {assert} from "chai";
 import {TrackerEventType} from "../../src/bll/utils/constants";
-import {UserEvent} from "../../src/bll/notifications/UserEvent";
+import {UserEvent} from "../../src/bll/notifications/userevent";
 
 suite("UserEvent", () => {
     test("should verify constructor", function () {
