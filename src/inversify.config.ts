@@ -40,6 +40,8 @@ import {ProviderManager} from "./view/providermanager";
 import {SignOut} from "./bll/commands/signout";
 import {ChangesProvider} from "./view/dataproviders/resourceprovider";
 import {BuildProvider} from "./view/dataproviders/buildprovider";
+import {OsxKeychainApi} from "./bll/credentialsstore/osx/osx-keychain-api";
+import {OsxKeychain} from "./bll/credentialsstore/osx/osx-keychain-access";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -70,3 +72,5 @@ myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<ChangesProvider>(TYPES.ResourceProvider).to(ChangesProvider).inSingletonScope();
 myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();
+myContainer.bind<OsxKeychainApi>(TYPES.OsxKeychainApi).to(OsxKeychainApi).inSingletonScope();
+myContainer.bind<OsxKeychain>(TYPES.OsxKeychain).to(OsxKeychain).inSingletonScope();

@@ -7,6 +7,7 @@ import {Credentials} from "./credentials";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {Os} from "../moduleinterfaces/os";
+import {OsxKeychainApi} from "./osx/osx-keychain-api";
 
 @injectable()
 export class PersistentStorageManager implements PersistentStorage {
@@ -15,7 +16,7 @@ export class PersistentStorageManager implements PersistentStorage {
 
     public constructor(@inject(TYPES.WindowsCredentialStoreApi) windowsCredentialsStoreApi: WindowsCredentialStoreApi,
                        @inject(TYPES.LinuxFileApi) linuxFileApi: LinuxFileApi,
-                       @inject(TYPES.WindowsCredentialStoreApi) macCredentialsStoreApi: PersistentStorage,
+                       @inject(TYPES.OsxKeychainApi) osxKeychainApi: OsxKeychainApi,
                        @inject(TYPES.OsProxy) os: Os) {
 
         switch (os.platform()) {
@@ -23,7 +24,7 @@ export class PersistentStorageManager implements PersistentStorage {
                 this.credentialsStore = windowsCredentialsStoreApi;
                 break;
             case "darwin":
-                throw new Error("Not supported operation.");
+                this.credentialsStore = osxKeychainApi;
             /* tslint:disable:no-switch-case-fall-through */
             case "linux":
             default:
