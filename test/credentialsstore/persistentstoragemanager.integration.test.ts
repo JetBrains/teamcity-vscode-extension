@@ -12,12 +12,14 @@ import {FileTokenStorage} from "../../src/bll/credentialsstore/linux/file-token-
 import * as path from "path";
 import {OsxKeychainApi} from "../../src/bll/credentialsstore/osx/osx-keychain-api";
 import {OsxKeychain} from "../../src/bll/credentialsstore/osx/osx-keychain-access";
+import {WinCredStoreParsingStreamWrapper} from "../../src/bll/credentialsstore/win32/win-credstore-parser";
 
 suite("PersistentStorageManager - integration test", function () {
 
     test("should verify store, get, remove credentials for our add-in. Platform specific", async function () {
         try {
-            const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore();
+            const winParseWrapper: WinCredStoreParsingStreamWrapper = new WinCredStoreParsingStreamWrapper();
+            const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore(winParseWrapper);
             const fileTokenStorage: FileTokenStorage = new FileTokenStorage();
             const defaultFilename: string = "secrets.json";
             const defaultFolder: string = ".secrets";

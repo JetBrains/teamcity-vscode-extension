@@ -43,6 +43,7 @@ import {BuildProvider} from "./view/dataproviders/buildprovider";
 import {OsxKeychainApi} from "./bll/credentialsstore/osx/osx-keychain-api";
 import {OsxKeychain} from "./bll/credentialsstore/osx/osx-keychain-access";
 import {FileTokenStorage} from "./bll/credentialsstore/linux/file-token-storage";
+import {WinCredStoreParsingStreamWrapper} from "./bll/credentialsstore/win32/win-credstore-parser";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -76,3 +77,4 @@ myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSinglet
 myContainer.bind<OsxKeychainApi>(TYPES.OsxKeychainApi).to(OsxKeychainApi).inSingletonScope();
 myContainer.bind<OsxKeychain>(TYPES.OsxKeychain).to(OsxKeychain).inSingletonScope();
 myContainer.bind<FileTokenStorage>(TYPES.FileTokenStorage).to(FileTokenStorage).inSingletonScope();
+myContainer.bind<WinCredStoreParsingStreamWrapper>(TYPES.WinCredStoreParsingStreamWrapper).to(WinCredStoreParsingStreamWrapper).inSingletonScope();

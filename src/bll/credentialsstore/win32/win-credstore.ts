@@ -1,16 +1,22 @@
 "use strict";
 
 import {Stream} from "stream";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
+import {WinCredStoreParsingStream, WinCredStoreParsingStreamWrapper} from "./win-credstore-parser";
+import {TYPES} from "../../utils/constants";
 const childProcess = require("child_process");
 const es = require("event-stream");
 const path = require("path");
-const parser = require("./win-credstore-parser");
 const credExePath = path.join(__dirname, "../bin/win32/creds.exe");
 
 @injectable()
 export class WinPersistentCredentialsStore {
     private targetNamePrefix: string = "";
+    private parser: WinCredStoreParsingStream;
+
+    public constructor(@inject(TYPES.WinCredStoreParsingStreamWrapper) wrapper: WinCredStoreParsingStreamWrapper) {
+        this.parser = wrapper.parser;
+    }
 
     public setPrefix(prefix: string): void {
         this.targetNamePrefix = prefix;
@@ -30,42 +36,11 @@ export class WinPersistentCredentialsStore {
     public getCredentialsListStream(): Stream {
         const credsProcess = childProcess.spawn(credExePath, ["-s", "-g", "-t", this.targetNamePrefix + "*"]);
         return credsProcess.stdout
-            .pipe(parser())
+            .pipe(this.parser)
             .pipe(es.mapSync((cred) => {
                 cred.targetName = this.removePrefix(cred.targetName);
                 return cred;
             }));
-    }
-
-    public get(targetName: string): Promise<string> {
-        const args = [
-            "-s",
-            "-t", this.ensurePrefix(targetName)
-        ];
-
-        const credsProcess = childProcess.spawn(credExePath, args);
-        let result = undefined;
-        const errors = [];
-
-        credsProcess.stdout.pipe(parser())
-            .on("data", function (credential) {
-                result = credential;
-                result.targetName = this.removePrefix(result.targetName);
-            });
-
-        credsProcess.stderr.pipe(es.split())
-            .on("data", (line) => {
-                errors.push(line);
-            });
-        return new Promise<string>((resolve, reject) => {
-            credsProcess.on("exit", (code) => {
-                if (code === 0) {
-                    resolve(result);
-                } else {
-                    reject("Getting credential failed, exit code " + code + ": " + errors.join(", "));
-                }
-            });
-        });
     }
 
     public set(targetName: string, password: string): Promise<void> {

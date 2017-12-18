@@ -143,7 +143,8 @@ export const TYPES = {
     ProviderManager: Symbol("ProviderManager"),
     ResourceProvider: Symbol("ChangesProvider"),
     BuildProvider: Symbol("BuildProvider"),
-    LinuxFileApi: Symbol("LinuxFileApi")
+    LinuxFileApi: Symbol("LinuxFileApi"),
+    WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper")
 };
 
 export enum CvsOperation {
