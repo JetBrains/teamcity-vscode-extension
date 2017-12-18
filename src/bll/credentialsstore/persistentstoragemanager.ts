@@ -25,6 +25,7 @@ export class PersistentStorageManager implements PersistentStorage {
                 break;
             case "darwin":
                 this.credentialsStore = osxKeychainApi;
+                break;
             /* tslint:disable:no-switch-case-fall-through */
             case "linux":
             default:

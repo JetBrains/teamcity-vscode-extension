@@ -33,14 +33,15 @@ export class OsxKeychainApi implements PersistentStorage {
                 "The first will be taken.");
         }
 
-        if (!credentials) {
+        if (credentials) {
             const password: string = await this.getPasswordFromKeyChain(credentials);
             return new Credentials(credentials.serverURL, credentials.user, password, undefined, undefined);
         }
     }
 
     private getPasswordFromKeyChain(credentials: Credentials): Promise<string> {
-        return this.osxKeychain.getPasswordForUser(credentials.user);
+        const targetName: string = OsxKeychainApi.createTargetName(credentials.serverURL, credentials.user);
+        return this.osxKeychain.getPasswordForUser(targetName);
     }
 
     public setCredentials(url: string, username: string, password: string): Promise<void> {
@@ -92,8 +93,8 @@ export class OsxKeychainApi implements PersistentStorage {
         });
     }
 
-    private static createCredentialsWithoutPassword(cred: any): Credentials {
-        const segments: Array<string> = cred.targetName.split(OsxKeychainApi.separator);
+    private static createCredentialsWithoutPassword(targetName: string): Credentials {
+        const segments: Array<string> = targetName.split(OsxKeychainApi.separator);
         const url: string = segments[0];
         const username: string = segments[1];
         return new Credentials(url, username, undefined, undefined, undefined);

@@ -30,10 +30,10 @@ export class OsxKeychain {
             .pipe(new parser.ParsingStream());
     }
 
-    public getPasswordForUser(userName): Promise<string> {
+    public getPasswordForUser(targetName: string): Promise<string> {
         const args = [
             "find-generic-password",
-            "-a", userName,
+            "-a", targetName,
             "-s", this.targetNamePrefix,
             "-g"
         ];
