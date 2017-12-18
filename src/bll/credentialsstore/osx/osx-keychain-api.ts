@@ -2,13 +2,13 @@
 
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
-import {PersistentStorage} from "../persistentstorage";
 import {OsxKeychain} from "./osx-keychain-access";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
+import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
-export class OsxKeychainApi implements PersistentStorage {
+export class OsxKeychainApi implements CredentialsStore {
     private prefix: string = "teamcity_vscode:";
     private static separator: string = "|";
 
@@ -44,9 +44,9 @@ export class OsxKeychainApi implements PersistentStorage {
         return this.osxKeychain.getPasswordForUser(targetName);
     }
 
-    public setCredentials(url: string, username: string, password: string): Promise<void> {
-        const targetName: string = OsxKeychainApi.createTargetName(url, username);
-        return this.osxKeychain.set(targetName, "", password);
+    public setCredentials(credentials: Credentials): Promise<void> {
+        const targetName: string = OsxKeychainApi.createTargetName(credentials.serverURL, credentials.user);
+        return this.osxKeychain.set(targetName, "", credentials.password);
     }
 
     public async removeCredentials(): Promise<void> {
@@ -103,5 +103,9 @@ export class OsxKeychainApi implements PersistentStorage {
 
     private static createTargetName(url: string, username: string): string {
         return url + OsxKeychainApi.separator + username;
+    }
+
+    getCredentialsSilently(): Credentials {
+        throw new Error("Method not supported.");
     }
 }

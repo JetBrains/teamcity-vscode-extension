@@ -53,10 +53,10 @@ suite("PersistentStorageManager", function () {
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
         when(windowsCredentialStoreApiMock.getCredentials()).thenReturn(new Promise((r) => {r(undefined); }));
-        credentialManager.setCredentials(TestSettings.url, TestSettings.account, TestSettings.password).then(() => {
+        credentialManager.setCredentials(TestSettings.credentials).then(() => {
             verify(windowsCredentialStoreApiMock.getCredentials()).called();
             verify(windowsCredentialStoreApiMock.removeCredentials()).never();
-            verify(windowsCredentialStoreApiMock.setCredentials(TestSettings.url, TestSettings.account, TestSettings.password)).called();
+            verify(windowsCredentialStoreApiMock.setCredentials(TestSettings.credentials)).called();
             done();
         }).catch((err) => {
             done("!" + err);
@@ -71,10 +71,10 @@ suite("PersistentStorageManager", function () {
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
         when(windowsCredentialStoreApiMock.getCredentials()).thenReturn(new Promise((r) => {r(testCreds); }));
-        credentialManager.setCredentials(TestSettings.url, TestSettings.account, TestSettings.password).then(() => {
+        credentialManager.setCredentials(TestSettings.credentials).then(() => {
             verify(windowsCredentialStoreApiMock.getCredentials()).called();
             verify(windowsCredentialStoreApiMock.removeCredentials()).called();
-            verify(windowsCredentialStoreApiMock.setCredentials(TestSettings.url, TestSettings.account, TestSettings.password)).called();
+            verify(windowsCredentialStoreApiMock.setCredentials(TestSettings.credentials)).called();
             done();
         }).catch((err) => {
             done("!" + err);

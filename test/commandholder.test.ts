@@ -12,7 +12,7 @@ import {SignOut} from "../src/bll/commands/signout";
 import {ChangesProvider} from "../src/view/dataproviders/resourceprovider";
 import {BuildProvider} from "../src/view/dataproviders/buildprovider";
 import { CredentialsStore } from "../src/bll/credentialsstore/credentialsstore";
-import { CredentialsStoreImpl } from "../src/bll/credentialsstore/credentialsstoreimpl";
+import { InMemoryCredentialsStore } from "../src/bll/credentialsstore/inmemorycredentialsstore";
 import { when, anything } from "ts-mockito";
 import { Credentials } from "../src/bll/credentialsstore/credentials";
 import { debug } from "vscode";
@@ -22,7 +22,7 @@ suite("DataProviders", () => {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
 
-        const credentialsStoreMock: CredentialsStore = tsMockito.mock(CredentialsStoreImpl);
+        const credentialsStoreMock: CredentialsStore = tsMockito.mock(InMemoryCredentialsStore);
         when(credentialsStoreMock.getCredentialsSilently()).thenReturn(new Credentials("server", "user", "password", "userId", "sessionId"));
         const credentialsStoreSpy: CredentialsStore = tsMockito.instance(credentialsStoreMock);
 

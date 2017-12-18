@@ -2,17 +2,16 @@
 
 import {WindowsCredentialStoreApi} from "./win32/win-credstore-api";
 import {LinuxFileApi} from "./linux/linux-file-api";
-import {PersistentStorage} from "./persistentstorage";
 import {Credentials} from "./credentials";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {Os} from "../moduleinterfaces/os";
 import {OsxKeychainApi} from "./osx/osx-keychain-api";
+import {CredentialsStore} from "./credentialsstore";
 
 @injectable()
-export class PersistentStorageManager implements PersistentStorage {
-
-    private credentialsStore: PersistentStorage;
+export class PersistentStorageManager implements CredentialsStore {
+    private credentialsStore: CredentialsStore;
 
     public constructor(@inject(TYPES.WindowsCredentialStoreApi) windowsCredentialsStoreApi: WindowsCredentialStoreApi,
                        @inject(TYPES.LinuxFileApi) linuxFileApi: LinuxFileApi,
@@ -39,16 +38,19 @@ export class PersistentStorageManager implements PersistentStorage {
         return this.credentialsStore.getCredentials();
     }
 
-    public async setCredentials(url: string, username: string, password: any): Promise<void> {
+    public async setCredentials(credentials: Credentials): Promise<void> {
         const cred: Credentials = await this.getCredentials();
         if (cred) {
             await this.removeCredentials();
         }
-        await this.credentialsStore.setCredentials(url, username, password);
+        await this.credentialsStore.setCredentials(credentials);
     }
 
     public removeCredentials(): Promise<void> {
         return this.credentialsStore.removeCredentials();
     }
 
+    getCredentialsSilently(): Credentials {
+        throw new Error("Method not supported.");
+    }
 }

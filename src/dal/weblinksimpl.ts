@@ -26,7 +26,7 @@ export class WebLinksImpl implements WebLinks {
         if (!buildConfig) {
             return undefined;
         }
-        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
+        const credentials: Credentials = await this.credentialsStore.getCredentials();
         const url: string = `${credentials.serverURL}/app/rest/buildQueue`;
         const data = `
             <build personal="true">
@@ -54,7 +54,7 @@ export class WebLinksImpl implements WebLinks {
     }
 
     async uploadChanges(patchAbsPath: string, message: string): Promise<string> {
-        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
+        const credentials: Credentials = await this.credentialsStore.getCredentials();
         const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?userId=${credentials.userId}&description=${message}&commitType=0`;
         return new Promise<string>((resolve, reject) => {
             fs.createReadStream(patchAbsPath).pipe(request.post(patchDestinationUrl, (err, httpResponse, body) => {
@@ -70,7 +70,7 @@ export class WebLinksImpl implements WebLinks {
         if (buildId === undefined || buildId === -1 || buildId === "-1") {
             return undefined;
         }
-        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
+        const credentials: Credentials = await this.credentialsStore.getCredentials();
         const url = `${credentials.serverURL}/app/rest/buildQueue/${buildId}`;
         return new Promise<string>((resolve, reject) => {
             request.get(url, function (err, response, body) {

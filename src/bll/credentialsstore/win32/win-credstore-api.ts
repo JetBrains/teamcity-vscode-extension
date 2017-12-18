@@ -2,13 +2,13 @@
 
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
-import {PersistentStorage} from "../persistentstorage";
 import {WinPersistentCredentialsStore} from "./win-credstore";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
+import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
-export class WindowsCredentialStoreApi implements PersistentStorage {
+export class WindowsCredentialStoreApi implements CredentialsStore {
     private static separator: string = "|";
     public static SERVICE_PREFIX = "teamcity_vscode:";
     private winPersistentCredentialsStore: WinPersistentCredentialsStore;
@@ -31,10 +31,10 @@ export class WindowsCredentialStoreApi implements PersistentStorage {
         return credentials;
     }
 
-    public setCredentials(url: string, username: string, password: any): Promise<void> {
-        const targetName: string = WindowsCredentialStoreApi.createTargetName(url, username);
+    public setCredentials(credentials: Credentials): Promise<void> {
+        const targetName: string = WindowsCredentialStoreApi.createTargetName(credentials.serverURL, credentials.user);
         return new Promise((resolve, reject) => {
-            this.winPersistentCredentialsStore.set(targetName, password, function (err) {
+            this.winPersistentCredentialsStore.set(targetName, credentials.password, function (err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -94,5 +94,9 @@ export class WindowsCredentialStoreApi implements PersistentStorage {
                 reject(error);
             });
         });
+    }
+
+    getCredentialsSilently(): Credentials {
+        throw new Error("Method not supported.");
     }
 }

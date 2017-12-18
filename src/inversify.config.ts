@@ -5,7 +5,7 @@ import {TYPES} from "./bll/utils/constants";
 import {Settings} from "./bll/entities/settings";
 import {SettingsImpl} from "./bll/entities/settingsimpl";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
-import {CredentialsStoreImpl} from "./bll/credentialsstore/credentialsstoreimpl";
+import {InMemoryCredentialsStore} from "./bll/credentialsstore/inmemorycredentialsstore";
 import {ExtensionManager} from "./extensionmanager";
 import {CommandHolder} from "./commandholder";
 import {NotificationWatcherImpl} from "./bll/notifications/notificationwatcherimpl";
@@ -47,7 +47,7 @@ import {FileTokenStorage} from "./bll/credentialsstore/linux/file-token-storage"
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
 myContainer.bind<Output>(TYPES.Output).to(TeamCityOutput).inSingletonScope();
-myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(CredentialsStoreImpl).inSingletonScope();
+myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(InMemoryCredentialsStore).inSingletonScope();
 myContainer.bind<ExtensionManager>(TYPES.ExtensionManager).to(ExtensionManager);
 myContainer.bind<CommandHolder>(TYPES.CommandHolder).to(CommandHolder);
 myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(NotificationWatcherImpl);

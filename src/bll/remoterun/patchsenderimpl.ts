@@ -60,7 +60,7 @@ export class CustomPatchSender implements PatchSender {
     }
 
     private async checkCredentialsExistence(): Promise<void> {
-        await this.credentialsStore.tryGetCredentials();
+        await this.credentialsStore.getCredentials();
     }
 
     private async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {

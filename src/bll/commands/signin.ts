@@ -162,7 +162,7 @@ export class SignIn implements Command {
         await this.settings.setLastUrl(credentials.serverURL);
         await this.settings.setLastUsername(credentials.user);
         try {
-            await this.persistentStorageManager.setCredentials(credentials.serverURL, credentials.user, credentials.password);
+            await this.persistentStorageManager.setCredentials(credentials);
         } catch (err) {
             Logger.logError(`SignIn#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
         }

@@ -20,7 +20,7 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
     }
 
     private async createAndInitClient(): Promise<any> {
-        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
+        const credentials: Credentials = await this.credentialsStore.getCredentials();
         if (credentials) {
             const client = xmlrpc.createClient({url: credentials.serverURL + "/RPC2", cookies: true});
             client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentials.sessionId);
@@ -31,7 +31,7 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
     }
 
     private async getUserId(): Promise<any> {
-        const credentials: Credentials = await this.credentialsStore.tryGetCredentials();
+        const credentials: Credentials = await this.credentialsStore.getCredentials();
         if (credentials) {
             return credentials.userId;
         } else {

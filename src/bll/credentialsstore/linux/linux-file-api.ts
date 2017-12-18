@@ -5,13 +5,13 @@ import {FileTokenStorage} from "./file-token-storage";
 import * as os from "os";
 import * as path from "path";
 import {Credentials} from "../credentials";
-import {PersistentStorage} from "../persistentstorage";
 import {Logger} from "../../utils/logger";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
+import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
-export class LinuxFileApi implements PersistentStorage {
+export class LinuxFileApi implements CredentialsStore {
     private fileTokenStorage: FileTokenStorage;
     public static readonly SERVICE_PREFIX = "teamcity_vscode:";
     private defaultFilename: string = "secrets.json";
@@ -39,13 +39,13 @@ export class LinuxFileApi implements PersistentStorage {
         return credentials;
     }
 
-    public async setCredentials(url: string, username: string, password: string): Promise<void> {
+    public async setCredentials(credentials: Credentials): Promise<void> {
         const existingEntries = await this.loadCredentialsExceptTeamCity();
 
         const newEntry = {
-            username: username,
-            password: password,
-            url: url,
+            username: credentials.user,
+            password: credentials.password,
+            url: credentials.serverURL,
             service: LinuxFileApi.SERVICE_PREFIX
         };
 
@@ -86,5 +86,9 @@ export class LinuxFileApi implements PersistentStorage {
         });
 
         return userEntries;
+    }
+
+    getCredentialsSilently(): Credentials {
+        throw new Error("Method not supported.");
     }
 }

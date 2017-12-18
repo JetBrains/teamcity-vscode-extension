@@ -13,7 +13,7 @@ import {Output} from "../../view/output";
 import {PersistentStorageManager} from "./persistentstoragemanager";
 
 @injectable()
-export class CredentialsStoreImpl implements CredentialsStore {
+export class InMemoryCredentialsStore implements CredentialsStore {
 
     private remoteLogin: RemoteLogin;
     private output: Output;
@@ -30,20 +30,20 @@ export class CredentialsStoreImpl implements CredentialsStore {
         this.persistentStorageManager = persistentStorageManager;
     }
 
-    private _credentials: Credentials;
+    private credentials: Credentials;
 
-    public setCredentials(credentials: Credentials): void {
-        this._credentials = credentials;
+    public async setCredentials(credentials: Credentials): Promise<void> {
+        this.credentials = credentials;
     }
 
-    public async tryGetCredentials(): Promise<Credentials> {
+    public async getCredentials(): Promise<Credentials> {
         let credentials: Credentials = this.getCredentialsSilently();
         if (!credentials) {
-            Logger.logInfo("CredentialsStoreImpl#tryGetCredentials: credentials is undefined. An attempt to get them");
+            Logger.logInfo("InMemoryCredentialsStore#getCredentials: credentials is undefined. An attempt to get them");
             await this.signIn();
             credentials = this.getCredentialsSilently();
             if (!credentials) {
-                Logger.logWarning("CredentialsStoreImpl#tryGetCredentials: An attempt to get credentials failed");
+                Logger.logWarning("InMemoryCredentialsStore#getCredentials: An attempt to get credentials failed");
                 return Promise.reject(MessageConstants.NO_CREDENTIALS_RUN_SIGNIN);
             }
         }
@@ -56,13 +56,13 @@ export class CredentialsStoreImpl implements CredentialsStore {
     }
 
     public getCredentialsSilently(): Credentials {
-        return this._credentials;
+        return this.credentials;
     }
 
-    public removeCredentials(): void {
-        if (this._credentials) {
-            Logger.logInfo(`The credentials for ${this._credentials.user} will be deleted from the CredentialsStore`);
-            this._credentials = undefined;
+    public async removeCredentials(): Promise<void> {
+        if (this.credentials) {
+            Logger.logInfo(`The credentials for ${this.credentials.user} will be deleted from the CredentialsStore`);
+            this.credentials = undefined;
         }
     }
 
