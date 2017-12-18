@@ -33,33 +33,18 @@ export class WindowsCredentialStoreApi implements CredentialsStore {
 
     public setCredentials(credentials: Credentials): Promise<void> {
         const targetName: string = WindowsCredentialStoreApi.createTargetName(credentials.serverURL, credentials.user);
-        return new Promise((resolve, reject) => {
-            this.winPersistentCredentialsStore.set(targetName, credentials.password, function (err) {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(undefined);
-                }
-            });
-        });
+        return this.winPersistentCredentialsStore.set(targetName, credentials.password);
     }
 
-    // On Windows, "*" will delete all matching credentials in one go
-    public removeCredentials(): Promise<void> {
-        const maskFileToRemove: string = "*";
-        return new Promise((resolve, reject) => {
-            this.winPersistentCredentialsStore.remove(maskFileToRemove, function (err) {
-                if (err) {
-                    if (this.isCredentialsNotFoundCode()) {
-                        resolve(undefined);
-                    } else {
-                        reject(err);
-                    }
-                } else {
-                    resolve(undefined);
-                }
-            });
-        });
+    public async removeCredentials(): Promise<void> {
+        const removeAllCredentialsWithPrefixMask: string = "*";
+        try {
+            await this.winPersistentCredentialsStore.remove(removeAllCredentialsWithPrefixMask);
+        } catch (err) {
+            if (!WindowsCredentialStoreApi.isCredentialsNotFoundCode(err)) {
+                throw err;
+            }
+        }
     }
 
     private static isCredentialsNotFoundCode(err: any): boolean {
@@ -82,7 +67,7 @@ export class WindowsCredentialStoreApi implements CredentialsStore {
     private listCredentials(): Promise<Array<any>> {
         const credentials: Array<any> = [];
         return new Promise((resolve, reject) => {
-            const stream = this.winPersistentCredentialsStore.list();
+            const stream = this.winPersistentCredentialsStore.getCredentialsListStream();
             stream.on("data", (cred) => {
                 credentials.push(cred);
             });
