@@ -36,8 +36,8 @@
         "title": "Remote Run. Select Files For Remote Run",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/remoterun.png",
-          "dark": "resources/icons/light/remoterun.png"
+          "light": "resources/icons/light/remoterun.svg",
+          "dark": "resources/icons/dark/remoterun.svg"
         }
       },
       {
@@ -54,8 +54,8 @@
         "title": "Remote Run. Find Suitable Build Configurations",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/findsuitable.png",
-          "dark": "resources/icons/light/findsuitable.png"
+          "light": "resources/icons/light/findsuitable.svg",
+          "dark": "resources/icons/dark/findsuitable.svg"
         }
       },
       {
@@ -72,8 +72,8 @@
         "title": "Remote Run. Run With Chosen Build Configurations",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/remoterun.png",
-          "dark": "resources/icons/light/remoterun.png"
+          "light": "resources/icons/light/remoterun.svg",
+          "dark": "resources/icons/dark/remoterun.svg"
         }
       },
       {
