@@ -1,21 +1,14 @@
 "use strict";
 
-import { FileTokenStorage } from "./file-token-storage";
+import {FileTokenStorage} from "./file-token-storage";
 
 import * as os from "os";
 import * as path from "path";
 import {Credentials} from "../credentials";
 import {PersistentStorage} from "../persistentstorage";
 import {Logger} from "../../utils/logger";
-import {injectable} from "inversify";
-
-/*
-    Provides the ICredentialStore API on top of file-based storage.
-    Does not support any kind of 'prefix' of the credential (since its
-    storage mechanism is not shared with either Windows or OSX).
-
-    User must provide a custom folder and custom file name for storage.
- */
+import {injectable, inject} from "inversify";
+import {TYPES} from "../../utils/constants";
 
 @injectable()
 export class LinuxFileApi implements PersistentStorage {
@@ -24,28 +17,29 @@ export class LinuxFileApi implements PersistentStorage {
     private defaultFilename: string = "secrets.json";
     private defaultFolder: string = ".secrets";
 
-    constructor() {
+    constructor(@inject(TYPES.FileTokenStorage) fileTokenStorage: FileTokenStorage) {
         const folder = this.defaultFolder;
         const filename = this.defaultFilename;
-        this.fileTokenStorage = new FileTokenStorage(path.join(path.join(os.homedir(), folder, filename)));
+        this.fileTokenStorage = fileTokenStorage;
+        this.fileTokenStorage.setFilename(path.join(path.join(os.homedir(), folder, filename)));
     }
 
-    public async getCredentials() : Promise<Credentials> {
+    public async getCredentials(): Promise<Credentials> {
         let credentials: Credentials;
         const entries = await this.loadTeamCityCredentials();
 
         if (entries.length > 0) {
-            credentials = this.createCredential(entries[0]);
+            credentials = this.createCredentials(entries[0]);
         }
 
         if (entries.length > 1) {
             Logger.logWarning("[LinuxFileApi::getCredentials] there are more then one suitable credentials for the user! " +
-            "The first will be taken.");
+                "The first will be taken.");
         }
         return credentials;
     }
 
-    public async setCredentials(url: string, username: string, password: string) : Promise<void> {
+    public async setCredentials(url: string, username: string, password: string): Promise<void> {
         const existingEntries = await this.loadCredentialsExceptTeamCity();
 
         const newEntry = {
@@ -58,13 +52,13 @@ export class LinuxFileApi implements PersistentStorage {
         await this.fileTokenStorage.addEntries([newEntry], existingEntries);
     }
 
-    public async removeCredentials() : Promise<void> {
+    public async removeCredentials(): Promise<void> {
         const existingEntries = await this.loadCredentialsExceptTeamCity();
 
         await this.fileTokenStorage.removeEntries(existingEntries);
     }
 
-    private createCredential(credentials: any) : Credentials {
+    private createCredentials(credentials: any): Credentials {
         return new Credentials(credentials.url, credentials.username, credentials.password, undefined, undefined);
     }
 

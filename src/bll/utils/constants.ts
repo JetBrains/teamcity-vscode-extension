@@ -137,6 +137,7 @@ export const TYPES = {
     WinPersistentCredentialsStore: Symbol("WinPersistentCredentialsStore"),
     WindowsCredentialStoreApi: Symbol("WindowsCredentialStoreApi"),
     OsxKeychainApi: Symbol("OsxKeychainApi"),
+    FileTokenStorage: Symbol("FileTokenStorage"),
     OsProxy: Symbol("OsProxy"),
     OsxKeychain: Symbol("OsxKeychain"),
     ProviderManager: Symbol("ProviderManager"),

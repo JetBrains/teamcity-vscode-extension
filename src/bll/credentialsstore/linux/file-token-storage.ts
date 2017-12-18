@@ -2,17 +2,13 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import {injectable} from "inversify";
 
-/*
-    Provides storage of credentials in a file on the local file system.
-    Does not support any kind of 'prefix' of the credential (since this
-    storage mechanism is not shared with either Windows or OSX).  The
-    file is secured as RW for the owner of the process.
- */
+@injectable()
 export class FileTokenStorage {
     private filename: string;
 
-    constructor(filename: string) {
+    public setFilename(filename: string) {
         this.filename = filename;
     }
 
