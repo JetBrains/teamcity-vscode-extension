@@ -55,15 +55,16 @@ export class OsxKeychainApi implements PersistentStorage {
         if (credentialsList && credentialsList.length > 0) {
             for (let i = 0; i < credentialsList.length; i++) {
                 const credentials: Credentials = credentialsList[i];
-                await this.removeCredentialByName(credentials.user);
+                const targetName: string = OsxKeychainApi.createTargetName(credentials.serverURL, credentials.user);
+                await this.removeCredentialByName(targetName);
             }
         }
     }
 
-    public async removeCredentialByName(username: string): Promise<void> {
+    public async removeCredentialByName(targetName: string): Promise<void> {
         const description = "";
         try {
-            await this.osxKeychain.remove(username, description);
+            await this.osxKeychain.remove(targetName, description);
         } catch (err) {
             const CREDENTIALS_NOT_FOUND_CODE = 44;
             if (err.code && err.code !== CREDENTIALS_NOT_FOUND_CODE) {
