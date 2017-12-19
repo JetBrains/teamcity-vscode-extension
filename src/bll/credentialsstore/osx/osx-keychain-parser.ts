@@ -6,14 +6,8 @@ import {injectable} from "inversify";
 
 @injectable()
 export class OsxSecurityParsingStreamWrapper {
-    private readonly instance: OsxSecurityParsingStream;
-
-    constructor() {
-        this.instance = new OsxSecurityParsingStream();
-    }
-
-    public get parser(): OsxSecurityParsingStream {
-        return this.instance;
+    public parser(): OsxSecurityParsingStream {
+        return new OsxSecurityParsingStream();
     }
 }
 
@@ -41,7 +35,7 @@ export class OsxSecurityParsingStream extends (Transform as { new(): any; }) {
             return;
         }
         chunkData.split("\n").forEach((line) => {
-            this.processNextLine(line);    
+            this.processNextLine(line);
         });
 
         callback();
@@ -70,7 +64,7 @@ export class OsxSecurityParsingStream extends (Transform as { new(): any; }) {
 
     private getInitialKeychainValue(line: string): string {
         let keychain: string;
-        let match = this.rootFieldMask.exec(line);
+        const match = this.rootFieldMask.exec(line);
         if (match && match[1] === "keychain") {
             keychain = match[2];
         }
@@ -83,7 +77,7 @@ export class OsxSecurityParsingStream extends (Transform as { new(): any; }) {
     }
 
     private collectMetaInfo(line: string): void {
-        let match = this.rootFieldMask.exec(line);
+        const match = this.rootFieldMask.exec(line);
         if (match) {
             this.currentEntry[match[1]] = match[2];
         }

@@ -11,7 +11,7 @@ export class OsxKeychain {
 
     private readonly securityPath: string = "/usr/bin/security";
     private targetNamePrefix: string = "";
-    private parser: OsxSecurityParsingStream;
+    private parser: () => OsxSecurityParsingStream;
 
     public constructor(@inject(TYPES.OsxSecurityParsingStreamWrapper) wrapper: OsxSecurityParsingStreamWrapper) {
         this.parser = wrapper.parser;
@@ -32,7 +32,7 @@ export class OsxKeychain {
             .pipe(es.mapSync(function (line) {
                 return line.replace(/\\134/g, "\\");
             }))
-            .pipe(this.parser);
+            .pipe(this.parser());
     }
 
     public getPasswordForUser(targetName: string): Promise<string> {
