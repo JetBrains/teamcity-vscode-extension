@@ -144,7 +144,8 @@ export const TYPES = {
     ResourceProvider: Symbol("ChangesProvider"),
     BuildProvider: Symbol("BuildProvider"),
     LinuxFileApi: Symbol("LinuxFileApi"),
-    WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper")
+    WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper"),
+    OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper"),
 };
 
 export enum CvsOperation {

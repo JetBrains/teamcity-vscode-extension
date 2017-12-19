@@ -10,16 +10,15 @@ import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {
+    commands,
     Disposable,
     ExtensionContext,
     OutputChannel,
     StatusBarAlignment,
     StatusBarItem,
-    workspace,
-    commands
+    workspace
 } from "vscode";
 import {ProviderManager} from "./view/providermanager";
-import {PersistentStorageManager} from "./bll/credentialsstore/persistentstoragemanager";
 
 @injectable()
 export class ExtensionManager {

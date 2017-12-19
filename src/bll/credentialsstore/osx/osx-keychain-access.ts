@@ -1,15 +1,21 @@
 "use strict";
 
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
+import {OsxSecurityParsingStream, OsxSecurityParsingStreamWrapper} from "./osx-keychain-parser";
+import {TYPES} from "../../utils/constants";
 const childProcess = require("child_process");
 const es = require("event-stream");
-const parser = require("./osx-keychain-parser");
 
 @injectable()
 export class OsxKeychain {
 
     private readonly securityPath: string = "/usr/bin/security";
     private targetNamePrefix: string = "";
+    private parser: OsxSecurityParsingStream;
+
+    public constructor(@inject(TYPES.OsxSecurityParsingStreamWrapper) wrapper: OsxSecurityParsingStreamWrapper) {
+        this.parser = wrapper.parser;
+    }
 
     public setPrefix(prefix: string) {
         this.targetNamePrefix = prefix;
@@ -21,13 +27,12 @@ export class OsxKeychain {
 
     public getCredentialsWithoutPasswordsListStream() {
         const securityProcess = childProcess.spawn(this.securityPath, ["dump-keychain"]);
-
         return securityProcess.stdout
             .pipe(es.split())
             .pipe(es.mapSync(function (line) {
                 return line.replace(/\\134/g, "\\");
             }))
-            .pipe(new parser.ParsingStream());
+            .pipe(this.parser);
     }
 
     public getPasswordForUser(targetName: string): Promise<string> {

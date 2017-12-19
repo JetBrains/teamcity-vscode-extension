@@ -13,6 +13,7 @@ import * as path from "path";
 import {OsxKeychainApi} from "../../src/bll/credentialsstore/osx/osx-keychain-api";
 import {OsxKeychain} from "../../src/bll/credentialsstore/osx/osx-keychain-access";
 import {WinCredStoreParsingStreamWrapper} from "../../src/bll/credentialsstore/win32/win-credstore-parser";
+import {OsxSecurityParsingStreamWrapper} from "../../src/bll/credentialsstore/osx/osx-keychain-parser";
 
 suite("PersistentStorageManager - integration test", function () {
 
@@ -26,8 +27,8 @@ suite("PersistentStorageManager - integration test", function () {
             fileTokenStorage.setFilename(path.join(os.homedir(), defaultFolder, defaultFilename));
             const linuxFileApi: LinuxFileApi = new LinuxFileApi(fileTokenStorage);
             const winStoreApi = new WindowsCredentialStoreApi(winPersistentCredentialsStore);
-
-            const osxKeychain: OsxKeychain = new OsxKeychain();
+            const osxParseWrapper: OsxSecurityParsingStreamWrapper = new OsxSecurityParsingStreamWrapper();
+            const osxKeychain: OsxKeychain = new OsxKeychain(osxParseWrapper);
             osxKeychain.setPrefix(TestSettings.persistentCredentialsPrefix);
             const osxKeychainApi: OsxKeychainApi = new OsxKeychainApi(osxKeychain);
             const credentialManager: PersistentStorageManager = new PersistentStorageManager(winStoreApi, linuxFileApi, osxKeychainApi, os);
