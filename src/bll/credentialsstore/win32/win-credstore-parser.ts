@@ -6,14 +6,8 @@ import {injectable} from "inversify";
 
 @injectable()
 export class WinCredStoreParsingStreamWrapper {
-    private readonly instance: WinCredStoreParsingStream;
-
-    constructor() {
-        this.instance = new WinCredStoreParsingStream();
-    }
-
-    public get parser(): WinCredStoreParsingStream {
-        return this.instance;
+    public parser(): WinCredStoreParsingStream {
+        return new WinCredStoreParsingStream();
     }
 }
 
@@ -67,7 +61,7 @@ export class WinCredStoreParsingStream extends (Transform as { new(): any; }) {
         return parts.join("");
     }
 
-    public _flush(callback) {
+    public _final(callback) {
         if (this.currentEntry) {
             this.push(this.currentEntry);
             this.currentEntry = undefined;
