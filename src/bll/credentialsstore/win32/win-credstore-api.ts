@@ -9,7 +9,7 @@ import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
 export class WindowsCredentialStoreApi implements CredentialsStore {
-    private static separator: string = "|";
+    public static separator: string = "|";
     public static SERVICE_PREFIX = "teamcity_vscode:";
     private winPersistentCredentialsStore: WinPersistentCredentialsStore;
 
