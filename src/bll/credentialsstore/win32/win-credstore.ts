@@ -4,12 +4,11 @@ import {Stream} from "stream";
 import {inject, injectable} from "inversify";
 import {WinCredStoreParsingStream, WinCredStoreParsingStreamWrapper} from "./win-credstore-parser";
 import {TYPES} from "../../utils/constants";
+import * as childProcessPromise from "child-process-promise";
 const childProcess = require("child_process");
 const es = require("event-stream");
 const path = require("path");
 const credExePath = path.join(__dirname, "../bin/win32/creds.exe");
-import * as cp_module from "child-process-promise";
-import {Logger} from "../../utils/logger";
 
 @injectable()
 export class WinPersistentCredentialsStore {
@@ -52,7 +51,7 @@ export class WinPersistentCredentialsStore {
             "-t", this.ensurePrefix(targetName),
             "-p", passwordBuffer.toString("hex")
         ];
-        return cp_module.execFile(credExePath, args);
+        return childProcessPromise.execFile(credExePath, args);
     }
 
     public remove(targetName): Promise<void> {
@@ -64,13 +63,6 @@ export class WinPersistentCredentialsStore {
         if (targetName.slice(-1) === "*") {
             args.push("-g");
         }
-        return new Promise<void>((resolve, reject) => {
-            childProcess.execFile(credExePath, args, (err) => {
-                if (err) {
-                    reject(err);
-                }
-                resolve();
-            });
-        });
+        return childProcessPromise.execFile(credExePath, args);
     }
 }

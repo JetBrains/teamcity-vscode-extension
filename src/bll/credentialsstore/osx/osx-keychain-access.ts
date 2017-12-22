@@ -3,6 +3,7 @@
 import {inject, injectable} from "inversify";
 import {OsxSecurityParsingStream, OsxSecurityParsingStreamWrapper} from "./osx-keychain-parser";
 import {TYPES} from "../../utils/constants";
+import * as childProcessPromise from "child-process-promise";
 const childProcess = require("child_process");
 const es = require("event-stream");
 
@@ -21,10 +22,6 @@ export class OsxKeychain {
         this.targetNamePrefix = prefix;
     }
 
-    public removePrefix(targetName) {
-        return targetName.slice(this.targetNamePrefix.length);
-    }
-
     public getCredentialsWithoutPasswordsListStream() {
         const securityProcess = childProcess.spawn(this.securityPath, ["dump-keychain"]);
         return securityProcess.stdout
@@ -35,26 +32,20 @@ export class OsxKeychain {
             .pipe(this.parser());
     }
 
-    public getPasswordForUser(targetName: string): Promise<string> {
+    public async getPasswordForUser(targetName: string): Promise<string> {
         const args = [
             "find-generic-password",
             "-a", targetName,
             "-s", this.targetNamePrefix,
             "-g"
         ];
-        return new Promise<string>((resolve, reject) => {
-            childProcess.execFile(this.securityPath, args, (err, stdout, stderr) => {
-                if (err) {
-                    reject(err);
-                }
-                const match = /^password: (?:0x[0-9A-F]+ {2})?"(.*)"$/m.exec(stderr);
-                if (match) {
-                    const password = match[1].replace(/\\134/g, "\\");
-                    return resolve(password);
-                }
-                reject("Password is in invalid format");
-            });
-        });
+        const childProcess = await childProcessPromise.execFile(this.securityPath, args);
+        const match = /^password: (?:0x[0-9A-F]+ {2})?"(.*)"$/m.exec(childProcess.stderr);
+        if (!match) {
+            throw new Error("Password is in invalid format");
+
+        }
+        return match[1].replace(/\\134/g, "\\");
     }
 
     public set(userName, description, password): Promise<void> {
@@ -67,14 +58,7 @@ export class OsxKeychain {
             "-U"
         ];
 
-        return new Promise<void>((resolve, reject) => {
-            childProcess.execFile(this.securityPath, args, (err, stdout, stderr) => {
-                if (err) {
-                    return reject(new Error("Could not add password to keychain: " + stderr));
-                }
-                resolve();
-            });
-        });
+        return childProcessPromise.execFile(this.securityPath, args);
     }
 
     public remove(userName, description): Promise<void> {
@@ -86,14 +70,6 @@ export class OsxKeychain {
             args = args.concat(["-D", description]);
         }
 
-        return new Promise<void>((resolve, reject) => {
-            childProcess.execFile(this.securityPath, args, (err) => {
-                if (err) {
-                    reject(err);
-                }
-
-                resolve();
-            });
-        });
+        return childProcessPromise.execFile(this.securityPath, args);
     }
 }
