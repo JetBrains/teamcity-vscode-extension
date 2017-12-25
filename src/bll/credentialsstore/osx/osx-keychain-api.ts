@@ -9,14 +9,14 @@ import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
 export class OsxKeychainApi implements CredentialsStore {
-    private prefix: string = "teamcity_vscode:";
-    private static separator: string = "|";
+    public static prefix: string = "teamcity_vscode:";
+    public static separator: string = "|";
 
     private osxKeychain: OsxKeychain;
 
     constructor(@inject(TYPES.OsxKeychain) osxKeychain: OsxKeychain) {
         this.osxKeychain = osxKeychain;
-        this.osxKeychain.setPrefix(this.prefix);
+        this.osxKeychain.setPrefix(OsxKeychainApi.prefix);
 
     }
 
@@ -78,7 +78,7 @@ export class OsxKeychainApi implements CredentialsStore {
 
         const stream = this.osxKeychain.getCredentialsWithoutPasswordsListStream();
         stream.on("data", (cred) => {
-            if (cred.svce && cred.svce.indexOf(this.prefix) === 0) {
+            if (cred.svce && cred.svce.indexOf(OsxKeychainApi.prefix) === 0) {
                 const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
                 credentialsList.push(credentials);
             }

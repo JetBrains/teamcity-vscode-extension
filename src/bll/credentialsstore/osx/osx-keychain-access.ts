@@ -48,10 +48,10 @@ export class OsxKeychain {
         return match[1].replace(/\\134/g, "\\");
     }
 
-    public set(userName, description, password): Promise<void> {
+    public set(targetName, description, password): Promise<void> {
         const args = [
             "add-generic-password",
-            "-a", userName,
+            "-a", targetName,
             "-D", description,
             "-s", this.targetNamePrefix,
             "-w", password,
@@ -61,10 +61,10 @@ export class OsxKeychain {
         return childProcessPromise.execFile(this.securityPath, args);
     }
 
-    public remove(userName, description): Promise<void> {
+    public remove(targetName, description): Promise<void> {
         let args = ["delete-generic-password"];
-        if (userName) {
-            args = args.concat(["-a", userName]);
+        if (targetName) {
+            args = args.concat(["-a", targetName]);
         }
         if (description) {
             args = args.concat(["-D", description]);
