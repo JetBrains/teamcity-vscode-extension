@@ -12,16 +12,17 @@ import {SignOut} from "../src/bll/commands/signout";
 import {ChangesProvider} from "../src/view/dataproviders/resourceprovider";
 import {BuildProvider} from "../src/view/dataproviders/buildprovider";
 import { CredentialsStore } from "../src/bll/credentialsstore/credentialsstore";
-import { CredentialsStoreImpl } from "../src/bll/credentialsstore/credentialsstoreimpl";
-import { when } from "ts-mockito";
+import { InMemoryCredentialsStore } from "../src/bll/credentialsstore/inmemorycredentialsstore";
+import { when, anything } from "ts-mockito";
 import { Credentials } from "../src/bll/credentialsstore/credentials";
+import { debug } from "vscode";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
 
-        const credentialsStoreMock: CredentialsStore = tsMockito.mock(CredentialsStoreImpl);
+        const credentialsStoreMock: CredentialsStore = tsMockito.mock(InMemoryCredentialsStore);
         when(credentialsStoreMock.getCredentialsSilently()).thenReturn(new Credentials("server", "user", "password", "userId", "sessionId"));
         const credentialsStoreSpy: CredentialsStore = tsMockito.instance(credentialsStoreMock);
 
@@ -30,7 +31,7 @@ suite("DataProviders", () => {
 
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, dp, credentialsStoreSpy);
         ch.signIn().then(() => {
-            tsMockito.verify(mockedSignIn.exec()).called();
+            tsMockito.verify(mockedSignIn.exec(false)).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
         }).catch((err) => {
@@ -40,7 +41,7 @@ suite("DataProviders", () => {
 
     test("should verify signIn failed", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
-        tsMockito.when(mockedSignIn.exec()).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedSignIn.exec(false)).thenThrow(new Error("Any Exception"));
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
         const dp = prepareProviderManager();
         assert.isUndefined(dp.getShownDataProvider());
@@ -49,9 +50,11 @@ suite("DataProviders", () => {
         ch.signIn().then(() => {
             done("Expected an exception");
         }).catch(() => {
-            tsMockito.verify(mockedSignIn.exec()).called();
+            tsMockito.verify(mockedSignIn.exec(false)).called();
             assert.isUndefined(dp.getShownDataProvider(), "DataProviders should be hidden");
             done();
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -149,7 +152,6 @@ suite("DataProviders", () => {
 
         ch.remoteRunWithChosenConfigs().then(() => {
             tsMockito.verify(mockedRemoteRun.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
         }).catch((err) => {
             done(err);
@@ -169,8 +171,9 @@ suite("DataProviders", () => {
             done("An exception was expected");
         }).catch(() => {
             tsMockito.verify(mockedRemoteRun.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
+        }).catch((err) => {
+            done(err);
         });
     });
 

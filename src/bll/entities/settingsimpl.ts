@@ -11,12 +11,14 @@ export class SettingsImpl implements Settings {
     private _showSignInWelcome: boolean;
     private _lastUrl: string;
     private _lastUsername: string;
+    private _shouldStoreCredentials: boolean;
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._lastUrl = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
         this._lastUsername = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_NAME, "");
+        this._shouldStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_STORE_CREDENTIALS, false);
     }
 
     private static async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
@@ -53,6 +55,10 @@ export class SettingsImpl implements Settings {
 
     public getLastUsername(): string {
         return this._lastUsername;
+    }
+
+    public shouldStoreCredentials(): boolean {
+        return this._shouldStoreCredentials;
     }
 
     public async setLastUrl(url: string): Promise<void> {

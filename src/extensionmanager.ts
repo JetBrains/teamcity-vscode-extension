@@ -10,13 +10,13 @@ import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {
+    commands,
     Disposable,
     ExtensionContext,
     OutputChannel,
     StatusBarAlignment,
     StatusBarItem,
-    workspace,
-    commands
+    workspace
 } from "vscode";
 import {ProviderManager} from "./view/providermanager";
 
@@ -44,6 +44,7 @@ export class ExtensionManager {
         TeamCityStatusBarItem.init(this._disposables);
         this._disposables.push(providerManager);
         this.providerManager = providerManager;
+        this.trySignInWithPersistentStorage();
     }
 
     public refreshAllProviders() {
@@ -51,7 +52,6 @@ export class ExtensionManager {
     }
 
     public dispose(): void {
-        this.commandHolder.signOut();
         this._disposables.forEach((disposable) => disposable.dispose());
     }
 
@@ -71,5 +71,9 @@ export class ExtensionManager {
         } else {
             Logger.logWarning(`Folder not opened!`);
         }
+    }
+
+    private trySignInWithPersistentStorage() {
+        this.commandHolder.signIn(true);
     }
 }

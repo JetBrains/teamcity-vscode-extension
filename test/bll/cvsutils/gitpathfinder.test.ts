@@ -1,6 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
+import * as path from "path";
 import {Process} from "../../../src/bll/moduleinterfaces/process";
 import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
 import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
@@ -16,7 +17,9 @@ suite("Git Path Finder", () => {
                 assert.equal(gitPath, "git");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" path for linux", function (done) {
@@ -27,7 +30,9 @@ suite("Git Path Finder", () => {
                 assert.equal(gitPath, "git");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" path for macOS", function (done) {
@@ -38,7 +43,9 @@ suite("Git Path Finder", () => {
                 assert.equal(gitPath, "git");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" in the \"ProgramFiles/Git/cmd\" for win32", function (done) {
@@ -46,10 +53,12 @@ suite("Git Path Finder", () => {
         const childProcessMock = new GitInProgramFilesFolderChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, "ProgramFilesPath\\Git\\cmd\\git.exe");
+                assert.equal(gitPath, path.join("ProgramFilesPath", "Git", "cmd", "git.exe"));
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" in the \"PortableGitFolder\" for win32", function (done) {
@@ -58,10 +67,12 @@ suite("Git Path Finder", () => {
         const fsMock = new ReadPortableGitFolderFsMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, "LOCALAPPDATAPath\\GitHub\\PortableGitFolder\\cmd\\git.exe");
+                assert.equal(gitPath, path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe"));
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" is not installed for win32", function (done) {
@@ -73,7 +84,9 @@ suite("Git Path Finder", () => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" is not installed for linux", function (done) {
@@ -84,7 +97,9 @@ suite("Git Path Finder", () => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" is not installed for darwin", function (done) {
@@ -95,7 +110,9 @@ suite("Git Path Finder", () => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux with xcode-select installed", function (done) {
@@ -107,7 +124,9 @@ suite("Git Path Finder", () => {
                 assert.equal(gitPath, "/usr/bin/git");
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux without xcode-select installed", function (done) {
@@ -119,7 +138,9 @@ suite("Git Path Finder", () => {
                 assert.equal(err.message, MessageConstants.GIT_PATH_IS_NOT_FOUND);
                 done();
             }
-        );
+        ).catch((err) => {
+            done(err);
+        });
     });
 
 });
@@ -182,7 +203,8 @@ class GitInProgramFilesFolderChildProcessMock implements AsyncChildProcess {
     }
 
     handleGinInProgramFiles(arg: string): Promise<any> {
-        if (arg === "\"ProgramFilesPath\\Git\\cmd\\git.exe\" --version") {
+        const expectedPath = `"${path.join("ProgramFilesPath", "Git", "cmd", "git.exe")}" --version`;
+        if (arg === expectedPath) {
             const gitVersion = "git version 2.13.2.windows.1";
             const mockObject = {
                 stdout: gitVersion
@@ -204,7 +226,8 @@ class GitInGitHubFolderChildProcessMock implements AsyncChildProcess {
     }
 
     handleGinInProgramFiles(arg: string): Promise<any> {
-        if (arg === "\"LOCALAPPDATAPath\\GitHub\\PortableGitFolder\\cmd\\git.exe\" --version") {
+        const expectedPath = `"${path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe")}" --version`;
+        if (arg === expectedPath) {
             const gitVersion = "git version 2.13.2.windows.1";
             const mockObject = {
                 stdout: gitVersion

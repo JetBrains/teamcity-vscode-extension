@@ -4,6 +4,7 @@
         "target": "es6",
         "outDir": "out",
         "lib": ["es6"],
+        "allowJs": true,
         "sourceMap": true,
         "rootDir": ".",
         "experimentalDecorators": true,

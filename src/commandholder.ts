@@ -41,8 +41,8 @@ export class CommandHolder {
         this.credentialsStore = credentialsStore;
     }
 
-    public async signIn(): Promise<void> {
-        await this._signIn.exec();
+    public async signIn(fromPersistentStore: boolean = false): Promise<void> {
+        await this._signIn.exec(fromPersistentStore);
         if (this.credentialsStore.getCredentialsSilently()) {
             this.providerManager.showEmptyDataProvider();
         }
@@ -66,7 +66,7 @@ export class CommandHolder {
     }
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
-        await this._remoteRun.exec();
+        return this._remoteRun.exec();
     }
 
     public showOutput(): void {

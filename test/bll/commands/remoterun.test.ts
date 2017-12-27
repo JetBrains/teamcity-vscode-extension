@@ -88,7 +88,7 @@ suite("Select Files For Remote Run", () => {
         testableCommand.exec().then(() => {
             tsMockito.verify(buildProviderMock.resetTreeContent()).called();
             tsMockito.verify(resourceProviderMock.resetTreeContent()).called();
-            tsMockito.verify(providerManagerMock.hideProviders()).called();
+            tsMockito.verify(providerManagerMock.showEmptyDataProvider()).called();
             done();
         }).catch((err) => {
             done("There is no reason for error: " + err);

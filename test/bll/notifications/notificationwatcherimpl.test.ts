@@ -6,7 +6,7 @@ import {Summary} from "../../../src/bll/entities/summary";
 import {Build} from "../../../src/bll/entities/build";
 import {Change} from "../../../src/bll/entities/change";
 import {Credentials} from "../../../src/bll/credentialsstore/credentials";
-import {CredentialsStoreImpl} from "../../../src/bll/credentialsstore/credentialsstoreimpl";
+import {InMemoryCredentialsStore} from "../../../src/bll/credentialsstore/inmemorycredentialsstore";
 import {NotificationWatcherImpl} from "../../../src/bll/notifications/notificationwatcherimpl";
 import {SummaryDaoImpl} from "../../../src/dal/summarydaoimpl";
 import {BuildDaoImpl} from "../../../src/dal/builddaoimpl";
@@ -21,7 +21,7 @@ suite("Notification Watcher Implementation", () => {
         const summaryDaoImpl: SummaryDaoImpl = getPermanentSummaryDaoMock();
         const buildDaoImpl: BuildDaoImpl = getBuildDaoMock();
         const credentials: Credentials = undefined;
-        const credentialsStore: CredentialsStoreImpl = getCredentialsStoreMock(credentials);
+        const credentialsStore: InMemoryCredentialsStore = getCredentialsStoreMock(credentials);
         const teamCityOutput: TeamCityOutput = getOutputMock();
         const watcher: NotificationWatcherImpl = new NotificationWatcherImpl(remoteBuildServerImpl, summaryDaoImpl, buildDaoImpl, credentialsStore, teamCityOutput);
 
@@ -37,7 +37,7 @@ suite("Notification Watcher Implementation", () => {
         const remoteBuildServerImpl: RemoteBuildServerImpl = getRemoteBuildServerWithSameEventCounter();
         const buildDaoImpl: BuildDaoImpl = getBuildDaoMock();
         const credentials: Credentials = new Credentials("URL", "user", "password", "userId", "sessionId");
-        const credentialsStore: CredentialsStoreImpl = getCredentialsStoreMock(credentials);
+        const credentialsStore: InMemoryCredentialsStore = getCredentialsStoreMock(credentials);
         const teamCityOutput: TeamCityOutput = getOutputMock();
 
         const mockedSummaryDaoImpl: SummaryDaoImpl = tsMockito.mock(SummaryDaoImpl);
@@ -58,7 +58,7 @@ suite("Notification Watcher Implementation", () => {
         const summaryDaoImpl: SummaryDaoImpl = getPermanentSummaryDaoMock();
         const buildDaoImpl: BuildDaoImpl = getBuildDaoMock();
         const credentials: Credentials = new Credentials("URL", "user", "password", "userId", "sessionId");
-        const credentialsStore: CredentialsStoreImpl = getCredentialsStoreMock(credentials);
+        const credentialsStore: InMemoryCredentialsStore = getCredentialsStoreMock(credentials);
         const teamCityOutput: TeamCityOutput = getOutputMock();
 
         const watcher: NotificationWatcherImpl = new NotificationWatcherImpl(remoteBuildServerImpl, summaryDaoImpl, buildDaoImpl, credentialsStore, teamCityOutput);
@@ -75,7 +75,7 @@ suite("Notification Watcher Implementation", () => {
         const mutableRemoteBuildServerImpl: RemoteBuildServerImpl = getRemoteBuildServerWithNewEventCounter();
         const mutableSummaryDaoImpl: SummaryDaoImpl = getMutableSummaryDaoMock();
         const credentials: Credentials = new Credentials("URL", "user", "password", "userId", "sessionId");
-        const credentialsStore: CredentialsStoreImpl = getCredentialsStoreMock(credentials);
+        const credentialsStore: InMemoryCredentialsStore = getCredentialsStoreMock(credentials);
         const teamCityOutput: TeamCityOutput = getOutputMock();
 
         const mockedBuildDaoImpl: BuildDaoImpl = tsMockito.mock(BuildDaoImpl);
@@ -97,7 +97,7 @@ suite("Notification Watcher Implementation", () => {
         const mutableSummaryDaoImpl: SummaryDaoImpl = getMutableSummaryDaoMock();
         const buildDaoImpl: BuildDaoImpl = getBuildDaoMock();
         const credentials: Credentials = new Credentials("URL", "user", "password", "userId", "sessionId");
-        const credentialsStore: CredentialsStoreImpl = getCredentialsStoreMock(credentials);
+        const credentialsStore: InMemoryCredentialsStore = getCredentialsStoreMock(credentials);
         const mockedOutputImpl: TeamCityOutput = tsMockito.mock(TeamCityOutput);
         const teamCityOutputSpy: TeamCityOutput = tsMockito.instance(mockedOutputImpl);
 
@@ -111,8 +111,8 @@ suite("Notification Watcher Implementation", () => {
         });
     });
 
-    function getCredentialsStoreMock(credentials: Credentials): CredentialsStoreImpl {
-        const mockedCredentialsStore:CredentialsStoreImpl = tsMockito.mock(CredentialsStoreImpl);
+    function getCredentialsStoreMock(credentials: Credentials): InMemoryCredentialsStore {
+        const mockedCredentialsStore:InMemoryCredentialsStore = tsMockito.mock(InMemoryCredentialsStore);
         tsMockito.when(mockedCredentialsStore.getCredentialsSilently()).thenReturn(credentials);
         return tsMockito.instance(mockedCredentialsStore);
     }
