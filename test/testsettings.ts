@@ -50,6 +50,24 @@ export class TestSettings {
             acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2};
     }
 
+    public static get linuxCredentials(): any {
+        return {
+            service: OsxKeychainApi.prefix,
+            url: TestSettings.url,
+            username: TestSettings.account,
+            password: TestSettings.password
+        };
+    }
+
+    public static get otherLinuxCredentials(): any {
+        return {
+            service: OsxKeychainApi.prefix,
+            url: TestSettings.url + 2,
+            username: TestSettings.account + 2,
+            password: TestSettings.password + 2
+        };
+    }
+
     public static get persistentCredentialsPrefix(): string {
         return "test_teamcity_vsaddin:";
     }
