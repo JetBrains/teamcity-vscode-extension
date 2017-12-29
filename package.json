@@ -220,10 +220,14 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "tsc -p ./",
+    "vscode:prepublish": "npm run publishbuild",
     "compile": "tsc -watch -p ./",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
+    "test": "node ./node_modules/vscode/bin/test",
+    "publishbuild": "gulp publishbuild",
+    "package": "vsce package",
+    "unit-test": "mocha **/unit-test/**/*.test.js -u tdd",
+    "unit-test-ci": "npm run unit-test -- --reporter mocha-teamcity-reporter"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.32",
@@ -242,7 +246,9 @@
     "gulp-tslint": "^7.1.0",
     "gulp-typescript": "^3.1.4",
     "gulp-util": "^3.0.7",
-    "del": "^2.2.0"
+    "vsce": "^1.35.0",
+    "del": "^2.2.0",
+    "mocha": "^3.2.0"
   },
   "dependencies": {
     "async-file": "^2.0.2",
