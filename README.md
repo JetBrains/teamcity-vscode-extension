@@ -1,4 +1,4 @@
-# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](assets/project-incubator-brightgreen.png))](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](assets/project-incubator-brightgreen.png)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
 This extension allows you to connect to TeamCity Server and run personal builds on TeamCity server without leaving Visual Studio Code.
 
@@ -10,9 +10,9 @@ If you are planning on using the extension with Git, ensure your Git version is 
 Once you have a local TFVC workspace available, you must configure the TFVC support in Visual Studio Code. You can find that information (including demo videos) in the [TFVC documentation](https://github.com/microsoft/vsts-vscode/blob/master/TFVC_README.md).
 
 ## Installation
-First, you will need to install [Visual Studio Code](https://code.visualstudio.com/download) `1.12.0` or later.
+First, you will need to install [Visual Studio Code](https://code.visualstudio.com/download) `1.17.0` or later.
 
-To install the extension with the latest version of Visual Studio Code (version `1.13.1` is the latest as of this writing), bring up the Visual Studio Code Command Palette (`F1`), type `Install from VSIX` and choose the `tc.vsix` file in the opened dialoge box. Restart Visual Studio Code. 
+To install the extension with the latest version of Visual Studio Code (version `1.19.1` is the latest as of this writing), download the last pre-released version of the TeamCity extension from [corresponding page](https://github.com/JetBrains/teamcity-vscode-extension/releases), bring up the Visual Studio Code Command Palette (`F1`), type `Install from VSIX` and choose the `teamcity-vscode-extension-***.vsix` file in the opened dialoge box. Restart Visual Studio Code. 
 
 Alternatively, you can also install using the VS Code ```--install-extension``` command line switch providing the path to the .vsix: 
 ```
@@ -21,10 +21,13 @@ code --install-extension myextension.vsix
 ## Authentication
 When you are connecting to TeamCity Server, you will only need your TeamCity server credentials (domain name, account name and password).
 ![Sign in command](assets/tc-signin-command.png)
-To sign in to your account, run the `teamcity signin` command. You will be prompted to enter your credentials. When you do, it will be stored securely if possible on your computer and used to connect to Team City server, otherwise only domain name and account name will be stored at the vscode global settings.
+To sign in to your account, run the `teamcity signin` command. You will be prompted to enter your credentials. When you do and the authorization on the TeamCity server was successful, your credentials will be stored securely on your local macine if the `teamcity.credentials.persistent` setting option is setted as `true`, otherwise only domain name and account name will be stored at the vscode global settings.
 
 **Note:** In order for the extension to be activated, a repository *folder* must be opened. The extension
 won't be activated if only a single *file* in the repository is opened.
+
+## Credentials Storage
+When you run the `teamcity signin` command and the `teamcity.credentials.persistent` setting option is setted as `true`, the credentials that you provide will be stored securely on your computer. On Windows, your credentials wil be stored by Windows Credential Manager. On macOS, your credentials will be stored in the Keychain. On Linux, your credentials will be stored in a file on your local file system in a subdirectory of your home folder. That file is created only with RW rights for the user running Visual Studio Code.
 
 ## Commands
 The extension provides several commands for interacting with Team City API. 
@@ -39,8 +42,7 @@ In the Command Palette (`F1`), type `TeamTity` and choose a command.
 
 * `TeamCity: Signin` – This command is used for signing in to a TeamCity server. When required credentials are provided they are send to TeamCity server 
 to validate them and get internal user information. If validation is passed, it will be stored securely if possible on user
-computer and used to connect to Team City server. If secure storaging is not possible only domain name and account name will be stored at 
-the vscode global settings.
+computer and used to connect to Team City server.
 
 * `TeamCity: Signout` – This command is used for siggning out from a TeamCity server. 
 
