@@ -2,18 +2,18 @@
 
 import {assert} from "chai";
 import * as os from "os";
-import {Credentials} from "../../src/bll/credentialsstore/credentials";
-import {PersistentStorageManager} from "../../src/bll/credentialsstore/persistentstoragemanager";
-import {TestSettings} from "../testsettings";
-import {WindowsCredentialStoreApi} from "../../src/bll/credentialsstore/win32/win-credstore-api";
-import {WinPersistentCredentialsStore} from "../../src/bll/credentialsstore/win32/win-credstore";
-import {LinuxFileApi} from "../../src/bll/credentialsstore/linux/linux-file-api";
-import {FileTokenStorage} from "../../src/bll/credentialsstore/linux/file-token-storage";
+import {Credentials} from "../../../src/bll/credentialsstore/credentials";
+import {PersistentStorageManager} from "../../../src/bll/credentialsstore/persistentstoragemanager";
+import {TestSettings} from "../../testsettings";
+import {WindowsCredentialStoreApi} from "../../../src/bll/credentialsstore/win32/win-credstore-api";
+import {WinPersistentCredentialsStore} from "../../../src/bll/credentialsstore/win32/win-credstore";
+import {LinuxFileApi} from "../../../src/bll/credentialsstore/linux/linux-file-api";
+import {FileTokenStorage} from "../../../src/bll/credentialsstore/linux/file-token-storage";
 import * as path from "path";
-import {OsxKeychainApi} from "../../src/bll/credentialsstore/osx/osx-keychain-api";
-import {OsxKeychain} from "../../src/bll/credentialsstore/osx/osx-keychain-access";
-import {WinCredStoreParsingStreamWrapper} from "../../src/bll/credentialsstore/win32/win-credstore-parser";
-import {OsxSecurityParsingStreamWrapper} from "../../src/bll/credentialsstore/osx/osx-keychain-parser";
+import {OsxKeychainApi} from "../../../src/bll/credentialsstore/osx/osx-keychain-api";
+import {OsxKeychain} from "../../../src/bll/credentialsstore/osx/osx-keychain-access";
+import {WinCredStoreParsingStreamWrapper} from "../../../src/bll/credentialsstore/win32/win-credstore-parser";
+import {OsxSecurityParsingStreamWrapper} from "../../../src/bll/credentialsstore/osx/osx-keychain-parser";
 
 suite("PersistentStorageManager - integration test", function () {
 

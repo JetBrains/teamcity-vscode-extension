@@ -1,7 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
-import {Credentials} from "../../src/bll/credentialsstore/credentials";
+import {Credentials} from "../../../src/bll/credentialsstore/credentials";
 
 suite("Credential", () => {
     test("should verify constructor", function () {

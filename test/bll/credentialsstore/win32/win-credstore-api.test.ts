@@ -1,12 +1,12 @@
 "use strict";
 
 import {anything, instance, mock, verify, when} from "ts-mockito";
-import {WinPersistentCredentialsStore} from "../../../src/bll/credentialsstore/win32/win-credstore";
-import {WindowsCredentialStoreApi} from "../../../src/bll/credentialsstore/win32/win-credstore-api";
+import {WinPersistentCredentialsStore} from "../../../../src/bll/credentialsstore/win32/win-credstore";
+import {WindowsCredentialStoreApi} from "../../../../src/bll/credentialsstore/win32/win-credstore-api";
 import * as stream from "stream";
-import {TestSettings} from "../../testsettings";
+import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";
-import {WinCredStoreParsingStream} from "../../../src/bll/credentialsstore/win32/win-credstore-parser";
+import {WinCredStoreParsingStream} from "../../../../src/bll/credentialsstore/win32/win-credstore-parser";
 
 suite("WindowsCredentialStoreApi", () => {
     test("should verify constructor", function () {

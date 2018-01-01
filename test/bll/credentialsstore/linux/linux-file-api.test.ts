@@ -1,10 +1,10 @@
 "use strict";
 
 import {anything, instance, mock, verify, when} from "ts-mockito";
-import {TestSettings} from "../../testsettings";
+import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";
-import {FileTokenStorage} from "../../../src/bll/credentialsstore/linux/file-token-storage";
-import {LinuxFileApi} from "../../../src/bll/credentialsstore/linux/linux-file-api";
+import {FileTokenStorage} from "../../../../src/bll/credentialsstore/linux/file-token-storage";
+import {LinuxFileApi} from "../../../../src/bll/credentialsstore/linux/linux-file-api";
 
 suite("LinuxFileApi", () => {
     test("should verify constructor", function () {

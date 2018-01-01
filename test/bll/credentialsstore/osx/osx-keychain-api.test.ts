@@ -2,11 +2,11 @@
 
 import {anything, instance, mock, verify, when} from "ts-mockito";
 import * as stream from "stream";
-import {TestSettings} from "../../testsettings";
+import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";
-import {OsxKeychainApi} from "../../../src/bll/credentialsstore/osx/osx-keychain-api";
-import {OsxKeychain} from "../../../src/bll/credentialsstore/osx/osx-keychain-access";
-import {OsxSecurityParsingStream} from "../../../src/bll/credentialsstore/osx/osx-keychain-parser";
+import {OsxKeychainApi} from "../../../../src/bll/credentialsstore/osx/osx-keychain-api";
+import {OsxKeychain} from "../../../../src/bll/credentialsstore/osx/osx-keychain-access";
+import {OsxSecurityParsingStream} from "../../../../src/bll/credentialsstore/osx/osx-keychain-parser";
 
 suite("OsxKeychainApi", () => {
     test("should verify constructor", function () {

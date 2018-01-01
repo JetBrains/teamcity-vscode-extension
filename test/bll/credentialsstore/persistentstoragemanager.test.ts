@@ -1,13 +1,13 @@
 "use strict";
 
 import {assert} from "chai";
-import {PersistentStorageManager} from "../../src/bll/credentialsstore/persistentstoragemanager";
-import {TestSettings} from "../testsettings";
+import {PersistentStorageManager} from "../../../src/bll/credentialsstore/persistentstoragemanager";
+import {TestSettings} from "../../testsettings";
 import {instance, mock, verify, when} from "ts-mockito";
-import {WindowsCredentialStoreApi} from "../../src/bll/credentialsstore/win32/win-credstore-api";
-import {OsProxy} from "../../src/bll/moduleproxies/osproxy";
-import {Os} from "../../src/bll/moduleinterfaces/os";
-import {Credentials} from "../../src/bll/credentialsstore/credentials";
+import {WindowsCredentialStoreApi} from "../../../src/bll/credentialsstore/win32/win-credstore-api";
+import {OsProxy} from "../../../src/bll/moduleproxies/osproxy";
+import {Os} from "../../../src/bll/moduleinterfaces/os";
+import {Credentials} from "../../../src/bll/credentialsstore/credentials";
 
 suite("PersistentStorageManager", function () {
 
