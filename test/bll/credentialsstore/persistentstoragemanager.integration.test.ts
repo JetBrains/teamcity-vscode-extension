@@ -14,6 +14,8 @@ import {OsxKeychainApi} from "../../../src/bll/credentialsstore/osx/osx-keychain
 import {OsxKeychain} from "../../../src/bll/credentialsstore/osx/osx-keychain-access";
 import {WinCredStoreParsingStreamWrapper} from "../../../src/bll/credentialsstore/win32/win-credstore-parser";
 import {OsxSecurityParsingStreamWrapper} from "../../../src/bll/credentialsstore/osx/osx-keychain-parser";
+import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
+import {PathProxy} from "../../../src/bll/moduleproxies/path-proxy";
 
 suite("PersistentStorageManager - integration test", function () {
 
@@ -21,7 +23,7 @@ suite("PersistentStorageManager - integration test", function () {
         try {
             const winParseWrapper: WinCredStoreParsingStreamWrapper = new WinCredStoreParsingStreamWrapper();
             const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore(winParseWrapper);
-            const fileTokenStorage: FileTokenStorage = new FileTokenStorage();
+            const fileTokenStorage: FileTokenStorage = new FileTokenStorage(new FsProxy(), new PathProxy());
             const defaultFilename: string = "secrets.json";
             const defaultFolder: string = ".secrets";
             fileTokenStorage.setFilename(path.join(os.homedir(), defaultFolder, defaultFilename));
@@ -42,7 +44,7 @@ suite("PersistentStorageManager - integration test", function () {
             credInfo = await credentialManager.getCredentials();
             assert.isUndefined(credInfo);
         } catch (err) {
-            Promise.reject(err);
+            return Promise.reject(err);
         }
     });
 

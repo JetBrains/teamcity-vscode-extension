@@ -45,6 +45,8 @@ import {OsxKeychain} from "./bll/credentialsstore/osx/osx-keychain-access";
 import {FileTokenStorage} from "./bll/credentialsstore/linux/file-token-storage";
 import {WinCredStoreParsingStreamWrapper} from "./bll/credentialsstore/win32/win-credstore-parser";
 import {OsxSecurityParsingStreamWrapper} from "./bll/credentialsstore/osx/osx-keychain-parser";
+import {FsProxy} from "./bll/moduleproxies/fs-proxy";
+import {PathProxy} from "./bll/moduleproxies/path-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -72,6 +74,8 @@ myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi).to(
 myContainer.bind<LinuxFileApi>(TYPES.LinuxFileApi).to(LinuxFileApi).inSingletonScope();
 myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore).to(WinPersistentCredentialsStore).inSingletonScope();
 myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
+myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy);
+myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy);
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<ChangesProvider>(TYPES.ResourceProvider).to(ChangesProvider).inSingletonScope();
 myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();

@@ -55,7 +55,7 @@ export class LinuxFileApi implements CredentialsStore {
     public async removeCredentials(): Promise<void> {
         const existingEntries = await this.loadCredentialsExceptTeamCity();
 
-        await this.fileTokenStorage.removeEntries(existingEntries);
+        await this.fileTokenStorage.keepEntries(existingEntries);
     }
 
     private createCredentials(credentials: any): Credentials {
@@ -71,7 +71,7 @@ export class LinuxFileApi implements CredentialsStore {
     }
 
     private async loadCredentials(isTeamCityEntries: boolean) {
-        const allEntries = this.fileTokenStorage.loadEntries();
+        const allEntries: any[] = await this.fileTokenStorage.loadEntries();
         if (!allEntries || allEntries.length === 0) {
             return [];
         }

@@ -1,12 +1,21 @@
 "use strict";
 
-import * as fs from "fs";
-import * as path from "path";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../../utils/constants";
+import {FsProxy} from "../../moduleproxies/fs-proxy";
+import {PathProxy} from "../../moduleproxies/path-proxy";
 
 @injectable()
 export class FileTokenStorage {
     private filename: string;
+    private fs: FsProxy;
+    private path: PathProxy;
+
+    constructor(@inject(TYPES.FsProxy) fs: FsProxy,
+                @inject(TYPES.FsProxy) path: PathProxy) {
+        this.fs = fs;
+        this.path = path;
+    }
 
     public setFilename(filename: string) {
         this.filename = filename;
@@ -21,51 +30,41 @@ export class FileTokenStorage {
         return this.saveEntries([]);
     }
 
-    public loadEntries(): any[] {
-        let entries: Array<any> = [];
-        let err: any;
+    public loadEntries(): Promise<any[]> {
+        return this.tryLoadEntries();
+    }
 
+    private async tryLoadEntries(): Promise<any[]> {
         try {
-            const content: string = fs.readFileSync(this.filename, {encoding: "utf8", flag: "r"});
-            entries = JSON.parse(content);
-            return entries;
+            const content: string = await this.fs.readFileAsync(this.filename, {encoding: "utf8", flag: "r"});
+            return JSON.parse(content);
         } catch (ex) {
             if (ex.code !== "ENOENT") {
-                err = ex;
-                throw new Error(err);
-            } else {
-                // If it is ENOENT (the file doesn't exist or can't be found)
-                // Return an empty array (no items yet)
-                return [];
+                throw new Error(ex);
             }
+            return [];
         }
     }
 
-    public removeEntries(entriesToKeep: Array<any> /*, entriesToRemove?: Array<any>*/): Promise<void> {
+    public keepEntries(entriesToKeep: Array<any>): Promise<void> {
         return this.saveEntries(entriesToKeep);
     }
 
-    private saveEntries(entries: Array<any>) : Promise<void> {
-        const writeOptions = {
+    private async saveEntries(entries: Array<any>) : Promise<void> {
+        const RW_GRANT_FOR_OWNER_ONLY: number = 384;
+        await this.createFolderIfNotExist();
+        return this.fs.writeFileAsync(this.filename, JSON.stringify(entries), {
             encoding: "utf8",
-            mode: 384, // Permission 0600 - owner read/write, nobody else has access
+            mode: RW_GRANT_FOR_OWNER_ONLY,
             flag: "w"
-        };
-
-        // If the path we want to store in doesn't exist, create it
-        const folder: string = path.dirname(this.filename);
-        if (!fs.existsSync(folder)) {
-            fs.mkdirSync(folder);
-        }
-
-        return new Promise<void>((resolve, reject) => {
-            fs.writeFile(this.filename, JSON.stringify(entries), writeOptions, (err) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(undefined);
-                }
-            });
         });
+    }
+
+    private async createFolderIfNotExist(): Promise<void> {
+        const folder: string = this.path.dirname(this.filename);
+        const isFolderExist: boolean = await this.fs.existsAsync(folder);
+        if (!isFolderExist) {
+            await this.fs.mkdirAsync(folder);
+        }
     }
 }

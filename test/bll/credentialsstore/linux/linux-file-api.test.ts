@@ -16,7 +16,10 @@ suite("LinuxFileApi", () => {
 
     test("should verify getCredentials without any accounts", function (done) {
         const fileTokenStorageMock: FileTokenStorage = mock(FileTokenStorage);
-        when(fileTokenStorageMock.loadEntries()).thenReturn([]);
+        const resultPromise: Promise<any[]> = new Promise((resolve) => {
+            resolve([]);
+        });
+        when(fileTokenStorageMock.loadEntries()).thenReturn(resultPromise);
         const fileTokenStorageSpy = instance(fileTokenStorageMock);
 
         const credStore: LinuxFileApi = new LinuxFileApi(fileTokenStorageSpy);
@@ -30,7 +33,10 @@ suite("LinuxFileApi", () => {
 
     test("should verify getCredentials with one account", function (done) {
         const fileTokenStorageMock: FileTokenStorage = mock(FileTokenStorage);
-        when(fileTokenStorageMock.loadEntries()).thenReturn([TestSettings.linuxCredentials]);
+        const resultPromise: Promise<any[]> = new Promise((resolve) => {
+            resolve([TestSettings.linuxCredentialsObj]);
+        });
+        when(fileTokenStorageMock.loadEntries()).thenReturn(resultPromise);
         const fileTokenStorageSpy = instance(fileTokenStorageMock);
         const credStore: LinuxFileApi = new LinuxFileApi(fileTokenStorageSpy);
         credStore.getCredentials().then((cred) => {
@@ -45,7 +51,10 @@ suite("LinuxFileApi", () => {
 
     test("should verify getCredentials with more then one account", function (done) {
         const fileTokenStorageMock: FileTokenStorage = mock(FileTokenStorage);
-        when(fileTokenStorageMock.loadEntries()).thenReturn([TestSettings.otherLinuxCredentials, TestSettings.linuxCredentials]);
+        const resultPromise: Promise<any[]> = new Promise((resolve) => {
+            resolve([TestSettings.otherLinuxCredentials, TestSettings.linuxCredentialsObj]);
+        });
+        when(fileTokenStorageMock.loadEntries()).thenReturn(resultPromise);
         const fileTokenStorageSpy = instance(fileTokenStorageMock);
         const credStore: LinuxFileApi = new LinuxFileApi(fileTokenStorageSpy);
         credStore.getCredentials().then((cred) => {
@@ -71,7 +80,7 @@ suite("LinuxFileApi", () => {
         const fileTokenStorageSpy = instance(fileTokenStorageMock);
         const credStore: LinuxFileApi = new LinuxFileApi(fileTokenStorageSpy);
         await credStore.removeCredentials();
-        verify(fileTokenStorageMock.removeEntries(anything())).called();
+        verify(fileTokenStorageMock.keepEntries(anything())).called();
     });
 
 });
