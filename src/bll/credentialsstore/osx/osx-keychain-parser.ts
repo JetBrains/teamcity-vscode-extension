@@ -1,7 +1,6 @@
 "use strict";
 
-const stream = require("readable-stream");
-const Transform = stream.Transform;
+import {Transform} from "readable-stream";
 import {injectable} from "inversify";
 
 @injectable()

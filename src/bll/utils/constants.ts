@@ -141,6 +141,7 @@ export const TYPES = {
     OsProxy: Symbol("OsProxy"),
     FsProxy: Symbol("FsProxy"),
     PathProxy: Symbol("PathProxy"),
+    CpProxy: Symbol("CpProxy"),
     OsxKeychain: Symbol("OsxKeychain"),
     ProviderManager: Symbol("ProviderManager"),
     ResourceProvider: Symbol("ChangesProvider"),

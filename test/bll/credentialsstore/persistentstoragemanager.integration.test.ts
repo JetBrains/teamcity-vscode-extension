@@ -16,13 +16,14 @@ import {WinCredStoreParsingStreamWrapper} from "../../../src/bll/credentialsstor
 import {OsxSecurityParsingStreamWrapper} from "../../../src/bll/credentialsstore/osx/osx-keychain-parser";
 import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
 import {PathProxy} from "../../../src/bll/moduleproxies/path-proxy";
+import {CpProxy} from "../../../src/bll/moduleproxies/cp-proxy";
 
 suite("PersistentStorageManager - integration test", function () {
 
     test("should verify store, get, remove credentials for our add-in. Platform specific", async function () {
         try {
             const winParseWrapper: WinCredStoreParsingStreamWrapper = new WinCredStoreParsingStreamWrapper();
-            const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore(winParseWrapper);
+            const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore(winParseWrapper, new CpProxy());
             const fileTokenStorage: FileTokenStorage = new FileTokenStorage(new FsProxy(), new PathProxy());
             const defaultFilename: string = "secrets.json";
             const defaultFolder: string = ".secrets";
@@ -30,7 +31,7 @@ suite("PersistentStorageManager - integration test", function () {
             const linuxFileApi: LinuxFileApi = new LinuxFileApi(fileTokenStorage);
             const winStoreApi = new WindowsCredentialStoreApi(winPersistentCredentialsStore);
             const osxParseWrapper: OsxSecurityParsingStreamWrapper = new OsxSecurityParsingStreamWrapper();
-            const osxKeychain: OsxKeychain = new OsxKeychain(osxParseWrapper);
+            const osxKeychain: OsxKeychain = new OsxKeychain(osxParseWrapper, new CpProxy());
             osxKeychain.setPrefix(TestSettings.persistentCredentialsPrefix);
             const osxKeychainApi: OsxKeychainApi = new OsxKeychainApi(osxKeychain);
             const credentialManager: PersistentStorageManager = new PersistentStorageManager(winStoreApi, linuxFileApi, osxKeychainApi, os);

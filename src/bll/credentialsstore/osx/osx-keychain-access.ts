@@ -3,9 +3,8 @@
 import {inject, injectable} from "inversify";
 import {OsxSecurityParsingStream, OsxSecurityParsingStreamWrapper} from "./osx-keychain-parser";
 import {TYPES} from "../../utils/constants";
-import * as childProcessPromise from "child-process-promise";
-const childProcess = require("child_process");
-const es = require("event-stream");
+import {CpProxy} from "../../moduleproxies/cp-proxy";
+import {split, mapSync} from "event-stream";
 
 @injectable()
 export class OsxKeychain {
@@ -13,9 +12,12 @@ export class OsxKeychain {
     private readonly securityPath: string = "/usr/bin/security";
     private targetNamePrefix: string = "";
     private parser: () => OsxSecurityParsingStream;
+    private cp: CpProxy;
 
-    public constructor(@inject(TYPES.OsxSecurityParsingStreamWrapper) wrapper: OsxSecurityParsingStreamWrapper) {
+    public constructor(@inject(TYPES.OsxSecurityParsingStreamWrapper) wrapper: OsxSecurityParsingStreamWrapper,
+                       @inject(TYPES.CpProxy) cp: CpProxy) {
         this.parser = wrapper.parser;
+        this.cp = cp;
     }
 
     public setPrefix(prefix: string) {
@@ -23,10 +25,10 @@ export class OsxKeychain {
     }
 
     public getCredentialsWithoutPasswordsListStream() {
-        const securityProcess = childProcess.spawn(this.securityPath, ["dump-keychain"]);
+        const securityProcess = this.cp.spawn(this.securityPath, ["dump-keychain"]);
         return securityProcess.stdout
-            .pipe(es.split())
-            .pipe(es.mapSync(function (line) {
+            .pipe(split())
+            .pipe(mapSync(function (line) {
                 return line.replace(/\\134/g, "\\");
             }))
             .pipe(this.parser());
@@ -39,12 +41,12 @@ export class OsxKeychain {
             "-s", this.targetNamePrefix,
             "-g"
         ];
-        const childProcess = await childProcessPromise.execFile(this.securityPath, args);
+        const childProcess = await this.cp.execFileAsync(this.securityPath, args);
         const match = /^password: (?:0x[0-9A-F]+ {2})?"(.*)"$/m.exec(childProcess.stderr);
         if (!match) {
             throw new Error("Password is in invalid format");
-
         }
+
         return match[1].replace(/\\134/g, "\\");
     }
 
@@ -57,8 +59,7 @@ export class OsxKeychain {
             "-w", password,
             "-U"
         ];
-
-        return childProcessPromise.execFile(this.securityPath, args);
+        return this.cp.execFileAsync(this.securityPath, args);
     }
 
     public remove(targetName, description): Promise<void> {
@@ -69,7 +70,6 @@ export class OsxKeychain {
         if (description) {
             args = args.concat(["-D", description]);
         }
-
-        return childProcessPromise.execFile(this.securityPath, args);
+        return this.cp.execFileAsync(this.securityPath, args);
     }
 }

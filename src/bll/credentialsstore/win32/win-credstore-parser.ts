@@ -1,7 +1,6 @@
 "use strict";
 
-const stream = require("readable-stream");
-const Transform = stream.Transform;
+import {Transform} from "readable-stream";
 import {injectable} from "inversify";
 
 @injectable()
@@ -36,8 +35,7 @@ export class WinCredStoreParsingStream extends (Transform as { new(): any; }) {
                 const match = WinCredStoreParsingStream.parseInputFieldsRegExp.exec(line);
                 if (match) {
                     const key = WinCredStoreParsingStream.separateWordsToCamelCase(match[1]);
-                    const value = match[2];
-                    this.currentEntry[key] = value;
+                    this.currentEntry[key] = match[2];
                 }
             });
         }

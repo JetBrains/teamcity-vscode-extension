@@ -47,6 +47,7 @@ import {WinCredStoreParsingStreamWrapper} from "./bll/credentialsstore/win32/win
 import {OsxSecurityParsingStreamWrapper} from "./bll/credentialsstore/osx/osx-keychain-parser";
 import {FsProxy} from "./bll/moduleproxies/fs-proxy";
 import {PathProxy} from "./bll/moduleproxies/path-proxy";
+import {CpProxy} from "./bll/moduleproxies/cp-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -76,6 +77,7 @@ myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsSt
 myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
 myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy);
 myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy);
+myContainer.bind<CpProxy>(TYPES.CpProxy).to(CpProxy);
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<ChangesProvider>(TYPES.ResourceProvider).to(ChangesProvider).inSingletonScope();
 myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();

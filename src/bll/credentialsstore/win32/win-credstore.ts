@@ -4,19 +4,21 @@ import {Stream} from "stream";
 import {inject, injectable} from "inversify";
 import {WinCredStoreParsingStream, WinCredStoreParsingStreamWrapper} from "./win-credstore-parser";
 import {TYPES} from "../../utils/constants";
-import * as childProcessPromise from "child-process-promise";
-const childProcess = require("child_process");
-const es = require("event-stream");
-const path = require("path");
-const credExePath = path.join(__dirname, "../bin/win32/creds.exe");
+import {CpProxy} from "../../moduleproxies/cp-proxy";
+import {mapSync} from "event-stream";
+import {join} from "path";
+const credExePath = join(__dirname, "../bin/win32/creds.exe");
 
 @injectable()
 export class WinPersistentCredentialsStore {
     private targetNamePrefix: string = "";
     private parser: () => WinCredStoreParsingStream;
+    private cp: CpProxy;
 
-    public constructor(@inject(TYPES.WinCredStoreParsingStreamWrapper) wrapper: WinCredStoreParsingStreamWrapper) {
+    public constructor(@inject(TYPES.WinCredStoreParsingStreamWrapper) wrapper: WinCredStoreParsingStreamWrapper,
+                       @inject(TYPES.CpProxy) cp: CpProxy) {
         this.parser = wrapper.parser;
+        this.cp = cp;
     }
 
     public setPrefix(prefix: string): void {
@@ -35,10 +37,10 @@ export class WinPersistentCredentialsStore {
     }
 
     public getCredentialsListStream(): Stream {
-        const credsProcess = childProcess.spawn(credExePath, ["-s", "-g", "-t", this.targetNamePrefix + "*"]);
+        const credsProcess = this.cp.spawn(credExePath, ["-s", "-g", "-t", this.targetNamePrefix + "*"]);
         return credsProcess.stdout
             .pipe(this.parser())
-            .pipe(es.mapSync((cred) => {
+            .pipe(mapSync((cred) => {
                 cred.targetName = this.removePrefix(cred.targetName);
                 return cred;
             }));
@@ -51,7 +53,7 @@ export class WinPersistentCredentialsStore {
             "-t", this.ensurePrefix(targetName),
             "-p", passwordBuffer.toString("hex")
         ];
-        return childProcessPromise.execFile(credExePath, args);
+        return this.cp.execFileAsync(credExePath, args);
     }
 
     public remove(targetName): Promise<void> {
@@ -59,10 +61,9 @@ export class WinPersistentCredentialsStore {
             "-d",
             "-t", this.ensurePrefix(targetName)
         ];
-
         if (targetName.slice(-1) === "*") {
             args.push("-g");
         }
-        return childProcessPromise.execFile(credExePath, args);
+        return this.cp.execFileAsync(credExePath, args);
     }
 }
