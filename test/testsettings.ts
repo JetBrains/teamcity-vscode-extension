@@ -3,6 +3,7 @@
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {WindowsCredentialStoreApi} from "../src/bll/credentialsstore/win32/win-credstore-api";
 import {OsxKeychainApi} from "../src/bll/credentialsstore/osx/osx-keychain-api";
+import {LinuxFileApi} from "../src/bll/credentialsstore/linux/linux-file-api";
 
 export class TestSettings {
 
@@ -50,13 +51,17 @@ export class TestSettings {
             acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2};
     }
 
-    public static get linuxCredentials(): any {
+    public static get linuxCredentialsObj(): any {
         return {
-            service: OsxKeychainApi.prefix,
+            service: LinuxFileApi.SERVICE_PREFIX,
             url: TestSettings.url,
             username: TestSettings.account,
             password: TestSettings.password
         };
+    }
+
+    public static get linuxCredentialsString(): any {
+        return JSON.stringify([TestSettings.linuxCredentialsObj]);
     }
 
     public static get otherLinuxCredentials(): any {
