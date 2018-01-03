@@ -85,6 +85,16 @@ export class TestSettings {
         return this.osxStorageExample;
     }
 
+    public static get winCredentialsExample(): string {
+        return this.winStorageExample;
+    }
+
+    private static readonly winStorageExample = "Target Name: test_teamcity_vsaddin:http://test_url|test_username\n" +
+        "win-credstore-parser.ts:27\n" +
+        "Type: Generic\n" +
+        "User Name: creds.exe\n" +
+        "Credential: 746573745f70617373776f7264";
+
     private static readonly osxStorageExample = "keychain: \"/Users/jetbrains/Library/Keychains/login.keychain-db\"\n" +
         "version: 512\n" +
         "class: \"genp\"\n" +

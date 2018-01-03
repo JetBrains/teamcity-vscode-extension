@@ -25,17 +25,6 @@ export class WinPersistentCredentialsStore {
         this.targetNamePrefix = prefix;
     }
 
-    public ensurePrefix(targetName: string): string {
-        if (targetName.slice(this.targetNamePrefix.length) !== this.targetNamePrefix) {
-            targetName = this.targetNamePrefix + targetName;
-        }
-        return targetName;
-    }
-
-    public removePrefix(targetName): string {
-        return targetName.slice(this.targetNamePrefix.length);
-    }
-
     public getCredentialsListStream(): Stream {
         const credsProcess = this.cp.spawn(credExePath, ["-s", "-g", "-t", this.targetNamePrefix + "*"]);
         return credsProcess.stdout
@@ -46,6 +35,10 @@ export class WinPersistentCredentialsStore {
             }));
     }
 
+    private removePrefix(targetName): string {
+        return targetName.slice(this.targetNamePrefix.length);
+    }
+
     public async set(targetName: string, password: string): Promise<void> {
         const passwordBuffer: Buffer = new Buffer(password, "utf8");
         const args = [
@@ -54,6 +47,13 @@ export class WinPersistentCredentialsStore {
             "-p", passwordBuffer.toString("hex")
         ];
         return this.cp.execFileAsync(credExePath, args);
+    }
+
+    private ensurePrefix(targetName: string): string {
+        if (targetName.slice(this.targetNamePrefix.length) !== this.targetNamePrefix) {
+            targetName = this.targetNamePrefix + targetName;
+        }
+        return targetName;
     }
 
     public remove(targetName): Promise<void> {

@@ -24,7 +24,6 @@ export class WinCredStoreParsingStream extends (Transform as { new(): any; }) {
 
     public _transform(chunk, encoding, callback) {
         const lines = chunk.toString();
-
         if (!lines) {
             callback();
         }
