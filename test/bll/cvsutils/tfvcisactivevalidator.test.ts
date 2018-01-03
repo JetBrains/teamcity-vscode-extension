@@ -1,4 +1,5 @@
 "use strict";
+
 import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
 import {TfvcIsActiveValidator} from "../../../src/bll/cvsutils/tfvcisactivevalidator";
 
@@ -21,7 +22,7 @@ suite("Tfvc Is Active Validator", () => {
         tfvcIsActiveValidator.validate().then(() => {
             done("Should not be tfvc repo");
         }).catch((err: Error) => {
-            if (err.message, "Tfs repository was not determined") {
+            if (err.message === "Tfs repository was not determined") {
                 done();
             } else {
                 done("unexpected error message");

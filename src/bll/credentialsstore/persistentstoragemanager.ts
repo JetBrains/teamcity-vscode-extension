@@ -5,9 +5,9 @@ import {LinuxFileApi} from "./linux/linux-file-api";
 import {Credentials} from "./credentials";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
-import {Os} from "../moduleinterfaces/os";
 import {OsxKeychainApi} from "./osx/osx-keychain-api";
 import {CredentialsStore} from "./credentialsstore";
+import {OsProxy} from "../moduleproxies/os-proxy";
 
 @injectable()
 export class PersistentStorageManager implements CredentialsStore {
@@ -16,7 +16,7 @@ export class PersistentStorageManager implements CredentialsStore {
     public constructor(@inject(TYPES.WindowsCredentialStoreApi) windowsCredentialsStoreApi: WindowsCredentialStoreApi,
                        @inject(TYPES.LinuxFileApi) linuxFileApi: LinuxFileApi,
                        @inject(TYPES.OsxKeychainApi) osxKeychainApi: OsxKeychainApi,
-                       @inject(TYPES.OsProxy) os: Os) {
+                       @inject(TYPES.OsProxy) os: OsProxy) {
 
         switch (os.platform()) {
             case "win32":

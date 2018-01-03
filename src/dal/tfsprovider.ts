@@ -6,7 +6,7 @@ import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
-import {QuickPickItem, QuickPickOptions, scm, Uri, workspace} from "vscode";
+import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
@@ -17,6 +17,8 @@ import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresourc
 import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
+import {OsProxy} from "../bll/moduleproxies/os-proxy";
+import {CpProxy} from "../bll/moduleproxies/cp-proxy";
 
 export class TfvcProvider implements CvsSupportProvider {
     private workspaceRootPath: string;
@@ -31,7 +33,7 @@ export class TfvcProvider implements CvsSupportProvider {
 
     public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
         const instance: TfvcProvider = new TfvcProvider(workspaceRootPath);
-        const pathFinder: Finder = new TfvcPathFinder();
+        const pathFinder: Finder = new TfvcPathFinder(new CpProxy(), new OsProxy());
         const tfPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
         await isActiveValidator.validate();

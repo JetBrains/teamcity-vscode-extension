@@ -35,7 +35,7 @@ import {PersistentStorageManager} from "./bll/credentialsstore/persistentstorage
 import {WinPersistentCredentialsStore} from "./bll/credentialsstore/win32/win-credstore";
 import {WindowsCredentialStoreApi} from "./bll/credentialsstore/win32/win-credstore-api";
 import {LinuxFileApi} from "./bll/credentialsstore/linux/linux-file-api";
-import {OsProxy} from "./bll/moduleproxies/osproxy";
+import {OsProxy} from "./bll/moduleproxies/os-proxy";
 import {ProviderManager} from "./view/providermanager";
 import {SignOut} from "./bll/commands/signout";
 import {ChangesProvider} from "./view/dataproviders/resourceprovider";

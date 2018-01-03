@@ -16,4 +16,8 @@ export class CpProxy {
         return cp_async.execFile(file, args);
     }
 
+    public execAsync(path: string): Promise<any> {
+        return cp_async.exec(path);
+    }
+
 }

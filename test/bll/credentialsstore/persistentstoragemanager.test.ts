@@ -5,8 +5,7 @@ import {PersistentStorageManager} from "../../../src/bll/credentialsstore/persis
 import {TestSettings} from "../../testsettings";
 import {instance, mock, verify, when} from "ts-mockito";
 import {WindowsCredentialStoreApi} from "../../../src/bll/credentialsstore/win32/win-credstore-api";
-import {OsProxy} from "../../../src/bll/moduleproxies/osproxy";
-import {Os} from "../../../src/bll/moduleinterfaces/os";
+import {OsProxy} from "../../../src/bll/moduleproxies/os-proxy";
 import {Credentials} from "../../../src/bll/credentialsstore/credentials";
 
 suite("PersistentStorageManager", function () {
@@ -16,7 +15,7 @@ suite("PersistentStorageManager", function () {
     test("should verify constructor sets correct storage api provider for win32", function (done) {
         const windowsCredentialStoreApiMock: WindowsCredentialStoreApi = mock(WindowsCredentialStoreApi);
         const windowsCredentialStoreApiSpy: WindowsCredentialStoreApi = instance(windowsCredentialStoreApiMock);
-        const osMock: Os = mock(OsProxy);
+        const osMock: OsProxy = mock(OsProxy);
         when(osMock.platform()).thenReturn(TestSettings.win32Platform);
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
@@ -31,7 +30,7 @@ suite("PersistentStorageManager", function () {
     test("should verify getCredentials for win32", function (done) {
         const windowsCredentialStoreApiMock: WindowsCredentialStoreApi = mock(WindowsCredentialStoreApi);
         const windowsCredentialStoreApiSpy: WindowsCredentialStoreApi = instance(windowsCredentialStoreApiMock);
-        const osMock: Os = mock(OsProxy);
+        const osMock: OsProxy = mock(OsProxy);
         when(osMock.platform()).thenReturn(TestSettings.win32Platform);
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
@@ -48,7 +47,7 @@ suite("PersistentStorageManager", function () {
     test("should verify setCredentials for win32 when there wasn't any before", function (done) {
         const windowsCredentialStoreApiMock: WindowsCredentialStoreApi = mock(WindowsCredentialStoreApi);
         const windowsCredentialStoreApiSpy: WindowsCredentialStoreApi = instance(windowsCredentialStoreApiMock);
-        const osMock: Os = mock(OsProxy);
+        const osMock: OsProxy = mock(OsProxy);
         when(osMock.platform()).thenReturn(TestSettings.win32Platform);
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
@@ -66,7 +65,7 @@ suite("PersistentStorageManager", function () {
     test("should verify setCredentials for win32 when there was one already", function (done) {
         const windowsCredentialStoreApiMock: WindowsCredentialStoreApi = mock(WindowsCredentialStoreApi);
         const windowsCredentialStoreApiSpy: WindowsCredentialStoreApi = instance(windowsCredentialStoreApiMock);
-        const osMock: Os = mock(OsProxy);
+        const osMock: OsProxy = mock(OsProxy);
         when(osMock.platform()).thenReturn(TestSettings.win32Platform);
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);
@@ -84,7 +83,7 @@ suite("PersistentStorageManager", function () {
     test("should verify removeCredentials for win32", function () {
         const windowsCredentialStoreApiMock: WindowsCredentialStoreApi = mock(WindowsCredentialStoreApi);
         const windowsCredentialStoreApiSpy: WindowsCredentialStoreApi = instance(windowsCredentialStoreApiMock);
-        const osMock: Os = mock(OsProxy);
+        const osMock: OsProxy = mock(OsProxy);
         when(osMock.platform()).thenReturn(TestSettings.win32Platform);
         const osSpy: OsProxy = instance(osMock);
         const credentialManager: PersistentStorageManager = new PersistentStorageManager(windowsCredentialStoreApiSpy, undefined, undefined, osSpy);

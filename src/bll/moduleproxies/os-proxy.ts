@@ -1,11 +1,10 @@
 "use strict";
 
 import * as os from "os";
-import {Os} from "../moduleinterfaces/os";
 import {injectable} from "inversify";
 
 @injectable()
-export class OsProxy implements Os {
+export class OsProxy {
 
     platform(): NodeJS.Platform {
         return os.platform();

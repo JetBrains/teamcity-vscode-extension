@@ -1,21 +1,19 @@
 "use strict";
 
-import * as os_module from "os";
 import {Finder} from "./finder";
 import {workspace} from "vscode";
-import {Os} from "../moduleinterfaces/os";
 import {Constants} from "../utils/constants";
-import * as cp_module from "child-process-promise";
-import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
+import {OsProxy} from "../moduleproxies/os-proxy";
+import {CpProxy} from "../moduleproxies/cp-proxy";
 
 export class TfvcPathFinder implements Finder {
 
-    private readonly _os: Os;
-    private readonly _childProcess: AsyncChildProcess;
+    private readonly cp: CpProxy;
+    private readonly os: OsProxy;
 
-    constructor(childProcessMock?: AsyncChildProcess, osMock?: Os) {
-        this._os = osMock || os_module;
-        this._childProcess = childProcessMock || cp_module;
+    constructor(cp: CpProxy, os: OsProxy) {
+        this.os = os;
+        this.cp = cp;
     }
 
     public async find(): Promise<string> {
@@ -43,18 +41,18 @@ export class TfvcPathFinder implements Finder {
 
     private replaceLeadingTildeForUnixLikePlatforms(location: string): string {
         if (location && location.startsWith("~/") && this.isUnixLikePlatform()) {
-            return location.replace(/^~(\/)/, `${this._os.homedir()}$1`);
+            return location.replace(/^~(\/)/, `${this.os.homedir()}$1`);
         } else {
             return location;
         }
     }
 
     private isUnixLikePlatform(): boolean {
-        return this._os.platform() === "darwin" || this._os.platform() === "linux";
+        return this.os.platform() === "darwin" || this.os.platform() === "linux";
     }
 
     private async checkPath(path: string): Promise<string> {
-        const promiseResult = await this._childProcess.exec(`"${path}"`);
+        const promiseResult = await this.cp.execAsync(`"${path}"`);
         const tfCommandResult: string = promiseResult.stdout.toString("utf8").trim();
         if (!tfCommandResult) {
             return Promise.reject<string>(undefined);
