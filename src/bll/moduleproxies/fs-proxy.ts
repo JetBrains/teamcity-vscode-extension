@@ -40,4 +40,9 @@ export class FsProxy {
     }): fs.ReadStream {
         return fs.createReadStream(path, options);
     }
+
+    public getFileSize(fileName: string): number {
+        const stats = fs.statSync(fileName);
+        return stats.size;
+    }
 }

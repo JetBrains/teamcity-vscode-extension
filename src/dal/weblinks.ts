@@ -61,7 +61,8 @@ export class WebLinks {
         const options = {
             url: patchDestinationUrl,
             headers: {
-                "Authorization": WebLinks.generateAuthorizationHeader(credentials)
+                "Authorization": WebLinks.generateAuthorizationHeader(credentials),
+                "content-length": this.fsProxy.getFileSize(patchAbsPath)
             }
         };
 

@@ -10,6 +10,8 @@ import * as stream from "stream";
 import * as Assert from "assert";
 import {WebLinks} from "../../src/dal/weblinks";
 
+const EXPECTED_CONTENT_LENGTH = 239;
+
 suite("WebLinksImpl", () => {
     test("should verify uploadChanges", function (done) {
         setupServer(done);
@@ -21,6 +23,7 @@ suite("WebLinksImpl", () => {
         const readable: any = new stream.Readable();
         const fsProxyMock = mock(FsProxy);
         when(fsProxyMock.createReadStream(anyString())).thenReturn(readable);
+        when(fsProxyMock.getFileSize(anyString())).thenReturn(EXPECTED_CONTENT_LENGTH);
         const fsProxySpy = instance(fsProxyMock);
         //tslint:disable-next-line: no-null-keyword
         readable.push(null);
@@ -40,6 +43,7 @@ function setupServer(done: any): void {
         try {
             res.end();
             Assert.equal(req.headers["authorization"], TestSettings.basicAuthHeader);
+            Assert.equal(req.headers["content-length"], EXPECTED_CONTENT_LENGTH);
             done();
         } catch (err) {
             done(err);
