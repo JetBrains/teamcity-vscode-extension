@@ -90,10 +90,6 @@ export class TestSettings {
         return "win32";
     }
 
-    public static get osxCredentialsExample(): string {
-        return this.osxStorageExample;
-    }
-
     public static get winCredentialsExample(): string {
         return this.winStorageExample;
     }
@@ -103,25 +99,4 @@ export class TestSettings {
         "Type: Generic\n" +
         "User Name: creds.exe\n" +
         "Credential: 746573745f70617373776f7264";
-
-    private static readonly osxStorageExample = "keychain: \"/Users/jetbrains/Library/Keychains/login.keychain-db\"\n" +
-        "version: 512\n" +
-        "class: \"genp\"\n" +
-        "attributes:\n" +
-        "    0x00000007 <blob>=\"teamcity_vscode:\"\n" +
-        "    0x00000008 <blob>=<NULL>\n" +
-        "    \"acct\"<blob>=\"http://localhost:8111|rugpanov\"\n" +
-        "    \"cdat\"<timedate>=0x32303137313232323038353932315A00  \"20171222085921Z\\000\"\n" +
-        "    \"crtr\"<uint32>=<NULL>\n" +
-        "    \"cusi\"<sint32>=<NULL>\n" +
-        "    \"desc\"<blob>=<NULL>\n" +
-        "    \"gena\"<blob>=<NULL>\n" +
-        "    \"icmt\"<blob>=<NULL>\n" +
-        "    \"invi\"<sint32>=<NULL>\n" +
-        "    \"mdat\"<timedate>=0x32303137313232323038353932315A00  \"20171222085921Z\\000\"\n" +
-        "    \"nega\"<sint32>=<NULL>\n" +
-        "    \"prot\"<blob>=<NULL>\n" +
-        "    \"scrp\"<sint32>=<NULL>\n" +
-        "    \"svce\"<blob>=\"teamcity_vscode:\"\n" +
-        "    \"type\"<uint32>=<NULL>";
 }
