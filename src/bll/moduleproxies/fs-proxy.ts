@@ -1,5 +1,6 @@
 "use strict";
 
+import * as fs from "fs";
 import * as fs_async from "async-file";
 import {injectable} from "inversify";
 
@@ -26,5 +27,17 @@ export class FsProxy {
 
     public mkdirAsync(path: string, mode?: number | string): Promise<void> {
         return fs_async.mkdir(path, mode);
+    }
+
+    public createReadStream(path: string | Buffer, options?: {
+        flags?: string;
+        encoding?: string;
+        fd?: number;
+        mode?: number;
+        autoClose?: boolean;
+        start?: number;
+        end?: number;
+    }): fs.ReadStream {
+        return fs.createReadStream(path, options);
     }
 }

@@ -1,6 +1,5 @@
 "use strict";
 
-import * as fs from "fs";
 import * as request from "request";
 import {WebLinks} from "./weblinks";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
@@ -8,14 +7,18 @@ import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../bll/utils/constants";
+import {FsProxy} from "../bll/moduleproxies/fs-proxy";
 
 @injectable()
 export class WebLinksImpl implements WebLinks {
 
     private credentialsStore: CredentialsStore;
+    private fsProxy: FsProxy;
 
-    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
+                 @inject(TYPES.FsProxy) fsProxy: FsProxy) {
         this.credentialsStore = credentialsStore;
+        this.fsProxy = fsProxy;
     }
 
     /**
@@ -62,8 +65,9 @@ export class WebLinksImpl implements WebLinks {
                 "Authorization": WebLinksImpl.generateAuthorizationHeader(credentials)
             }
         };
+
         return new Promise<string>((resolve, reject) => {
-            fs.createReadStream(patchAbsPath).pipe(request.post(options, (err, httpResponse, body) => {
+            this.fsProxy.createReadStream(patchAbsPath).pipe(request.post(options, (err, httpResponse, body) => {
                 if (err) {
                     reject(err);
                 }
@@ -95,7 +99,6 @@ export class WebLinksImpl implements WebLinks {
                     reject(response.statusMessage);
                 }
             }).auth(credentials.user, credentials.password, false);
-
         });
     }
 }
