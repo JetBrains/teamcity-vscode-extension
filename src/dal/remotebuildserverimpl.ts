@@ -39,10 +39,6 @@ export class RemoteBuildServerImpl implements RemoteBuildServer {
         }
     }
 
-    /**
-     * @param userId - user internal id
-     * @return SummeryDataProxy object
-     */
     public async getGZippedSummary(): Promise<Uint8Array[]> {
         const client: any = await this.createAndInitClient();
         const userId: string = await this.getUserId();

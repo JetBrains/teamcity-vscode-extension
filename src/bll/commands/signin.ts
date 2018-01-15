@@ -5,7 +5,7 @@ import {Credentials} from "../credentialsstore/credentials";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {MessageConstants} from "../utils/messageconstants";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
-import {commands, MessageItem, window} from "vscode";
+import {MessageItem, window} from "vscode";
 import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";

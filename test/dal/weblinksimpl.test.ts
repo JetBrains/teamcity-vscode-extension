@@ -4,11 +4,11 @@ import {assert} from "chai";
 import * as http from "http";
 import {anyString, instance, mock, when} from "ts-mockito";
 import {InMemoryCredentialsStore} from "../../src/bll/credentialsstore/inmemorycredentialsstore";
-import {WebLinksImpl} from "../../src/dal/weblinksimpl";
 import {TestSettings} from "../testsettings";
 import {FsProxy} from "../../src/bll/moduleproxies/fs-proxy";
 import * as stream from "stream";
 import * as Assert from "assert";
+import {WebLinks} from "../../src/dal/weblinks";
 
 suite("WebLinksImpl", () => {
     test("should verify uploadChanges", function (done) {
@@ -25,7 +25,7 @@ suite("WebLinksImpl", () => {
         //tslint:disable-next-line: no-null-keyword
         readable.push(null);
 
-        const webLinksImpl = new WebLinksImpl(credStoreSpy, fsProxySpy);
+        const webLinksImpl = new WebLinks(credStoreSpy, fsProxySpy);
         webLinksImpl.uploadChanges("patchPath", "testMessage").then(() => {
             // do nothing;
         }).catch((err) => {
