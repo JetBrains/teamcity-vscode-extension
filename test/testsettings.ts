@@ -16,10 +16,15 @@ export class TestSettings {
     }
 
     public static get url(): string {
-        return "http://test_url";
+        return "http://localhost:" + this.port;
+    }
+
+    public static get port(): string {
+        return "8222";
     }
 
     private static testCredentials;
+
     public static get credentials(): Credentials {
         if (!TestSettings.testCredentials) {
             TestSettings.testCredentials = new Credentials(TestSettings.url, TestSettings.account, TestSettings.password, "test", "test");
@@ -30,25 +35,29 @@ export class TestSettings {
     public static get winCredentials(): any {
         return {
             credential: new Buffer(TestSettings.password),
-            targetName: TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account};
+            targetName: TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account
+        };
     }
 
     public static get anotherWinCredentials(): any {
         return {
             credential: new Buffer(TestSettings.password + 2),
-            targetName: TestSettings.url + 2 + WindowsCredentialStoreApi.separator + TestSettings.account + 2};
+            targetName: TestSettings.url + 2 + WindowsCredentialStoreApi.separator + TestSettings.account + 2
+        };
     }
 
     public static get osxCredentials(): any {
         return {
             svce: OsxKeychainApi.prefix,
-            acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account};
+            acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account
+        };
     }
 
     public static get otherOsxCredentials(): any {
         return {
             svce: OsxKeychainApi.prefix + 2,
-            acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2};
+            acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2
+        };
     }
 
     public static get linuxCredentialsObj(): any {
@@ -89,7 +98,7 @@ export class TestSettings {
         return this.winStorageExample;
     }
 
-    private static readonly winStorageExample = "Target Name: test_teamcity_vsaddin:http://test_url|test_username\n" +
+    private static readonly winStorageExample = `Target Name: test_teamcity_vsaddin:${TestSettings.url}|${TestSettings.account}\n` +
         "win-credstore-parser.ts:27\n" +
         "Type: Generic\n" +
         "User Name: creds.exe\n" +
