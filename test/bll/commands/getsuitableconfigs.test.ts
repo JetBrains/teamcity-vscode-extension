@@ -6,7 +6,6 @@ import {anything, mock, verify, when} from "ts-mockito";
 import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
 import {ChangesProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
-import {RemoteBuildServerImpl} from "../../../src/dal/remotebuildserverimpl";
 import {XmlParser} from "../../../src/bll/utils/xmlparser";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {BuildProvider} from "../../../src/view/dataproviders/buildprovider";
@@ -17,7 +16,7 @@ suite("Get Suitable Configs", () => {
         const checkInInfoSpy: CheckInInfo = tsMockito.instance(checkInInfoMock);
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
-        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServerImpl);
+        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -39,7 +38,7 @@ suite("Get Suitable Configs", () => {
     test("should verify we request data from resource provider but there are no files selected", function (done) {
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
-        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServerImpl);
+        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -61,7 +60,7 @@ suite("Get Suitable Configs", () => {
         const checkInInfoSpy: CheckInInfo = tsMockito.instance(checkInInfoMock);
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
-        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServerImpl);
+        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -85,7 +84,7 @@ suite("Get Suitable Configs", () => {
         const checkInInfoSpy: CheckInInfo = tsMockito.instance(checkInInfoMock);
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
-        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServerImpl);
+        const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);

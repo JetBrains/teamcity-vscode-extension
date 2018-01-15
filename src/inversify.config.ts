@@ -12,7 +12,6 @@ import {NotificationWatcherImpl} from "./bll/notifications/notificationwatcherim
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {RemoteLogin} from "./dal/remotelogin";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
-import {RemoteBuildServerImpl} from "./dal/remotebuildserverimpl";
 import {WebLinks} from "./dal/weblinks";
 import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
 import {PatchSender} from "./bll/remoterun/patchsender";
@@ -53,7 +52,7 @@ myContainer.bind<ExtensionManager>(TYPES.ExtensionManager).to(ExtensionManager);
 myContainer.bind<CommandHolder>(TYPES.CommandHolder).to(CommandHolder);
 myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(NotificationWatcherImpl);
 myContainer.bind<RemoteLogin>(TYPES.RemoteLogin).to(RemoteLogin);
-myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServerImpl);
+myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServer);
 myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinks);
 myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);
 myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDao);
