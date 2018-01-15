@@ -6,7 +6,7 @@ import {WebLinks} from "./weblinks";
 import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../bll/utils/constants";
 
 @injectable()
@@ -56,15 +56,27 @@ export class WebLinksImpl implements WebLinks {
     async uploadChanges(patchAbsPath: string, message: string): Promise<string> {
         const credentials: Credentials = await this.credentialsStore.getCredentials();
         const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?userId=${credentials.userId}&description=${message}&commitType=0`;
+        const options = {
+            url: patchDestinationUrl,
+            headers: {
+                "Authorization": WebLinksImpl.generateAuthorizationHeader(credentials)
+            }
+        };
         return new Promise<string>((resolve, reject) => {
-            fs.createReadStream(patchAbsPath).pipe(request.post(patchDestinationUrl, (err, httpResponse, body) => {
+            fs.createReadStream(patchAbsPath).pipe(request.post(options, (err, httpResponse, body) => {
                 if (err) {
                     reject(err);
                 }
                 resolve(body);
-            }).auth(credentials.user, credentials.password, false));
+            }));
         });
     }
+
+    private static generateAuthorizationHeader(credentials : Credentials) : string {
+        const crePair = credentials.user + ":" + credentials.password;
+        const encoded = new Buffer(crePair).toString("base64");
+        return "Basic " + encoded;
+      }
 
     async getBuildInfo(buildId: string | number): Promise<string> {
         if (buildId === undefined || buildId === -1 || buildId === "-1") {
@@ -83,6 +95,7 @@ export class WebLinksImpl implements WebLinks {
                     reject(response.statusMessage);
                 }
             }).auth(credentials.user, credentials.password, false);
+
         });
     }
 }
