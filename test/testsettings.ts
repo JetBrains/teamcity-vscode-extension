@@ -23,6 +23,11 @@ export class TestSettings {
         return "8222";
     }
 
+    public static get basicAuthHeader(): string {
+        //for test_username:test_password
+        return "Basic dGVzdF91c2VybmFtZTp0ZXN0X3Bhc3N3b3Jk";
+    }
+
     private static testCredentials;
 
     public static get credentials(): Credentials {
