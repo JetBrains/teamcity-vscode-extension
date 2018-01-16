@@ -5,19 +5,19 @@ import {Finder} from "./finder";
 import {workspace} from "vscode";
 import {Constants} from "../utils/constants";
 import * as cp_module from "child-process-promise";
-import {Process} from "../moduleinterfaces/process";
 import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 import {MessageConstants} from "../utils/messageconstants";
 import {FsProxy} from "../moduleproxies/fs-proxy";
+import {ProcessProxy} from "../moduleproxies/process-proxy";
 
 export class GitPathFinder implements Finder {
     private readonly fsProxy: FsProxy;
-    private readonly _process: Process;
+    private readonly processProxy: ProcessProxy;
     private readonly _childProcess: AsyncChildProcess;
 
-    constructor(childProcessMock?: AsyncChildProcess, processMock?: Process, fsProxy?: FsProxy ) {
+    constructor(childProcessMock?: AsyncChildProcess, processProxy?: ProcessProxy, fsProxy?: FsProxy) {
         this.fsProxy = fsProxy || new FsProxy();
-        this._process = processMock || process;
+        this.processProxy = processProxy || new ProcessProxy();
         this._childProcess = childProcessMock || cp_module;
     }
 
@@ -37,7 +37,7 @@ export class GitPathFinder implements Finder {
     private async findGitPath(hint: string | undefined): Promise<string> {
         const firstSearchPromise = hint ? this.checkPath(hint) : Promise.reject<string>(undefined);
         return firstSearchPromise.then(void 0, () => {
-            switch (this._process.platform) {
+            switch (this.processProxy.platform) {
                 case "win32":
                     return this.findGitWin32();
                 case "darwin":
@@ -60,9 +60,9 @@ export class GitPathFinder implements Finder {
 
     private async findGitWin32(): Promise<string> {
         return this.checkPath("git")
-            .then(void 0, () => this.findSystemGitWin32(this._process.env["ProgramW6432"]))
-            .then(void 0, () => this.findSystemGitWin32(this._process.env["ProgramFiles(x86)"]))
-            .then(void 0, () => this.findSystemGitWin32(this._process.env["ProgramFiles"]))
+            .then(void 0, () => this.findSystemGitWin32(this.processProxy.env["ProgramW6432"]))
+            .then(void 0, () => this.findSystemGitWin32(this.processProxy.env["ProgramFiles(x86)"]))
+            .then(void 0, () => this.findSystemGitWin32(this.processProxy.env["ProgramFiles"]))
             .then(void 0, () => this.findGitHubGitWin32());
     }
 
@@ -74,7 +74,7 @@ export class GitPathFinder implements Finder {
     }
 
     private async findGitHubGitWin32(): Promise<string> {
-        const gitHubDirectoryPath = path.join(this._process.env["LOCALAPPDATA"], "GitHub");
+        const gitHubDirectoryPath = path.join(this.processProxy.env["LOCALAPPDATA"], "GitHub");
         const childObjects: string[] = await this.getChildObjects(gitHubDirectoryPath);
         const portableGitPath = await this.getFirstPortableGitObject(childObjects);
         return this.checkPath(path.join(gitHubDirectoryPath, portableGitPath, "cmd", "git.exe"));

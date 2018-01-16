@@ -2,16 +2,16 @@
 
 import {assert} from "chai";
 import * as path from "path";
-import {Process} from "../../../src/bll/moduleinterfaces/process";
 import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
 import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
 import {MessageConstants} from "../../../src/bll/utils/messageconstants";
 import {anyString, instance, mock, when} from "ts-mockito";
 import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
+import {ProcessProxy} from "../../../src/bll/moduleproxies/process-proxy";
 
 suite("Git Path Finder", () => {
     test("should handle \"git\" path for win32", function (done) {
-        const processMock = new ProcessMock("win32");
+        const processMock = getSettedUpProcessSpy("win32");
         const childProcessMock = new GitInPathChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().then((gitPath) => {
@@ -24,7 +24,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" path for linux", function (done) {
-        const processMock = new ProcessMock("linux");
+        const processMock = getSettedUpProcessSpy("linux");
         const childProcessMock = new GitInPathChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().then((gitPath) => {
@@ -37,7 +37,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" path for macOS", function (done) {
-        const processMock = new ProcessMock("darwin");
+        const processMock = getSettedUpProcessSpy("darwin");
         const childProcessMock = new GitInPathChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().then((gitPath) => {
@@ -50,7 +50,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"ProgramFiles/Git/cmd\" for win32", function (done) {
-        const processMock = new ProcessMock("win32");
+        const processMock = getSettedUpProcessSpy("win32");
         const childProcessMock = new GitInProgramFilesFolderChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().then((gitPath) => {
@@ -63,7 +63,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"PortableGitFolder\" for win32", function (done) {
-        const processMock = new ProcessMock("win32");
+        const processMock = getSettedUpProcessSpy("win32");
         const childProcessMock = new GitInGitHubFolderChildProcessMock();
 
         const fsMock = mock(FsProxy);
@@ -81,7 +81,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for win32", function (done) {
-        const processMock = new ProcessMock("win32");
+        const processMock = getSettedUpProcessSpy("win32");
         const childProcessMock = new GitIsNotInstalledChildProcessMock();
 
         const fsMock = mock(FsProxy);
@@ -99,7 +99,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for linux", function (done) {
-        const processMock = new ProcessMock("linux");
+        const processMock = getSettedUpProcessSpy("linux");
         const childProcessMock = new GitIsNotInstalledChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().catch((err: Error) => {
@@ -112,7 +112,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for darwin", function (done) {
-        const processMock = new ProcessMock("darwin");
+        const processMock = getSettedUpProcessSpy("darwin");
         const childProcessMock = new GitIsNotInstalledChildProcessMock();
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
         gitPathFinder.find().catch((err: Error) => {
@@ -125,7 +125,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux with xcode-select installed", function (done) {
-        const processMock = new ProcessMock("darwin");
+        const processMock = getSettedUpProcessSpy("darwin");
         const xcodeSelectInstalled = true;
         const childProcessMock = new GitInUserBinChildProcessMock(xcodeSelectInstalled);
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
@@ -139,7 +139,7 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux without xcode-select installed", function (done) {
-        const processMock = new ProcessMock("darwin");
+        const processMock = getSettedUpProcessSpy("darwin");
         const xcodeSelectInstalled = false;
         const childProcessMock = new GitInUserBinChildProcessMock(xcodeSelectInstalled);
         const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
@@ -154,22 +154,16 @@ suite("Git Path Finder", () => {
 
 });
 
-class ProcessMock implements Process {
-    private _platform: NodeJS.Platform;
-    constructor(platform: NodeJS.Platform) {
-        this._platform = platform;
-    }
-    public get platform(): NodeJS.Platform {
-        return this._platform;
-    }
-    public get env(): string[] {
-        const args = [];
-        args["ProgramW6432"] = "ProgramW6432Path";
-        args["ProgramFiles(x86)"] = "ProgramFiles(x86)Path";
-        args["ProgramFiles"] = "ProgramFilesPath";
-        args["LOCALAPPDATA"] = "LOCALAPPDATAPath";
-        return args;
-    }
+function getSettedUpProcessSpy(platform: NodeJS.Platform): ProcessProxy {
+    const processMock = mock(ProcessProxy);
+    when(processMock.platform).thenReturn(platform);
+    const envArgs = [];
+    envArgs["ProgramW6432"] = "ProgramW6432Path";
+    envArgs["ProgramFiles(x86)"] = "ProgramFiles(x86)Path";
+    envArgs["ProgramFiles"] = "ProgramFilesPath";
+    envArgs["LOCALAPPDATA"] = "LOCALAPPDATAPath";
+    when(processMock.env).thenReturn(envArgs);
+    return instance(processMock);
 }
 
 class GitInPathChildProcessMock implements AsyncChildProcess {
