@@ -26,4 +26,8 @@ export class GitParser {
             prevRelativePath: parsedReplacedPath[1].trim()
         };
     }
+
+    public static parseVersion(raw: string): string {
+        return raw.replace(/^git version /, "");
+    }
 }

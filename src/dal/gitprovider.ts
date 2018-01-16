@@ -36,7 +36,7 @@ export class GitProvider implements CvsSupportProvider {
         const instance: GitProvider = new GitProvider(workspaceRootPath);
         const pathFinder: Finder = new GitPathFinder();
         const gitPath: string = await pathFinder.find();
-        const isActiveValidator: Validator = new GitIsActiveValidator(gitPath);
+        const isActiveValidator: Validator = new GitIsActiveValidator(gitPath, workspaceRootPath.fsPath);
         await isActiveValidator.validate();
         instance.gitPath = gitPath;
         return instance;
