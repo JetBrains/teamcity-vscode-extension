@@ -2,23 +2,25 @@
 
 import * as path from "path";
 import {Finder} from "./finder";
-import {workspace} from "vscode";
 import {Constants} from "../utils/constants";
-import * as cp_module from "child-process-promise";
-import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 import {MessageConstants} from "../utils/messageconstants";
 import {FsProxy} from "../moduleproxies/fs-proxy";
 import {ProcessProxy} from "../moduleproxies/process-proxy";
+import {CpProxy} from "../moduleproxies/cp-proxy";
+import {WorkspaceProxy} from "../moduleproxies/workspace-proxy";
 
 export class GitPathFinder implements Finder {
     private readonly fsProxy: FsProxy;
     private readonly processProxy: ProcessProxy;
-    private readonly _childProcess: AsyncChildProcess;
+    private readonly cpProxy: CpProxy;
+    private readonly workspaceProxy: WorkspaceProxy;
+    private static readonly GIT_IS_NOT_INSTALLED_ERR_CODE: number = 2;
 
-    constructor(childProcessMock?: AsyncChildProcess, processProxy?: ProcessProxy, fsProxy?: FsProxy) {
+    constructor(cpProxy?: CpProxy, processProxy?: ProcessProxy, fsProxy?: FsProxy, workspaceProxy?: WorkspaceProxy) {
         this.fsProxy = fsProxy || new FsProxy();
         this.processProxy = processProxy || new ProcessProxy();
-        this._childProcess = childProcessMock || cp_module;
+        this.cpProxy = cpProxy || new CpProxy();
+        this.workspaceProxy = workspaceProxy || new WorkspaceProxy();
     }
 
     public async find(): Promise<string> {
@@ -31,7 +33,7 @@ export class GitPathFinder implements Finder {
     }
 
     private getPathHint(): string {
-        return workspace.getConfiguration().get<string>(Constants.GIT_PATH_SETTING_NAME);
+        return this.workspaceProxy.getConfiguration().get<string>(Constants.GIT_PATH_SETTING_NAME);
     }
 
     private async findGitPath(hint: string | undefined): Promise<string> {
@@ -50,7 +52,7 @@ export class GitPathFinder implements Finder {
 
     private async checkPath(path: string): Promise<string> {
         const getGitVersionCommand = `"${path}" --version`;
-        const promiseResult = await this._childProcess.exec(getGitVersionCommand);
+        const promiseResult = await this.cpProxy.execAsync(getGitVersionCommand);
         const versionCommandResult: string = promiseResult.stdout.toString("utf8").trim();
         if (!versionCommandResult) {
             return Promise.reject<string>(undefined);
@@ -76,7 +78,7 @@ export class GitPathFinder implements Finder {
     private async findGitHubGitWin32(): Promise<string> {
         const gitHubDirectoryPath = path.join(this.processProxy.env["LOCALAPPDATA"], "GitHub");
         const childObjects: string[] = await this.getChildObjects(gitHubDirectoryPath);
-        const portableGitPath = await this.getFirstPortableGitObject(childObjects);
+        const portableGitPath = await GitPathFinder.getFirstPortableGitObject(childObjects);
         return this.checkPath(path.join(gitHubDirectoryPath, portableGitPath, "cmd", "git.exe"));
     }
 
@@ -84,7 +86,7 @@ export class GitPathFinder implements Finder {
         return this.fsProxy.readdirAsync(path);
     }
 
-    private async getFirstPortableGitObject(childObjects: string[]): Promise<string> {
+    private static async getFirstPortableGitObject(childObjects: string[]): Promise<string> {
         const portableGitPath = childObjects.filter((child) => /^PortableGit/.test(child))[0];
         if (!portableGitPath) {
             return Promise.reject<string>(undefined);
@@ -94,13 +96,12 @@ export class GitPathFinder implements Finder {
 
     private async findGitDarwin(): Promise<string> {
         try {
-            const promiseResult = await this._childProcess.exec("which git");
+            const promiseResult = await this.cpProxy.execAsync("which git");
             const whichCommandResult: string = promiseResult.stdout.toString("utf8").trim();
             const path = whichCommandResult.toString().replace(/^\s+|\s+$/g, "");
             if (path !== "/usr/bin/git") {
                 return this.checkPath(path);
             }
-            //TODO: check this case
             return this.checkPromptAbsence().then(() => this.checkPath(path));
         } catch (err) {
             return Promise.reject<string>(undefined);
@@ -110,18 +111,16 @@ export class GitPathFinder implements Finder {
     private async checkPromptAbsence() {
         const printDeveloperDirectoryPathCommand = "xcode-select -p";
         try {
-            await this._childProcess.exec(printDeveloperDirectoryPathCommand);
+            await this.cpProxy.execAsync(printDeveloperDirectoryPathCommand);
         } catch (err) {
-            if (this.isGitNotInstalled(err)) {
+            if (GitPathFinder.isGitNotInstalled(err)) {
                 // launching /usr/bin/git will prompt the user to install it
                 return Promise.reject<string>(undefined);
             }
         }
     }
 
-    private isGitNotInstalled(err: any) {
-        const GIT_IS_NOT_INSTALLED_ERR_CODE = 2;
-        /*According to Microsoft*/
-        return err.code === GIT_IS_NOT_INSTALLED_ERR_CODE;
+    private static isGitNotInstalled(err: any) {
+        return err.code === GitPathFinder.GIT_IS_NOT_INSTALLED_ERR_CODE;
     }
 }

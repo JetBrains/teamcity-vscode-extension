@@ -1,7 +1,5 @@
-import {injectable} from "inversify";
 import Platform = NodeJS.Platform;
 
-@injectable()
 export class ProcessProxy {
 
     public get platform(): Platform {
@@ -11,5 +9,4 @@ export class ProcessProxy {
     public get env(): string[] {
         return process.env;
     }
-
 }
