@@ -1,11 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
-import {Process} from "../../../src/bll/moduleinterfaces/process";
-import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
 import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
-import {AsyncFs} from "../../../src/bll/moduleinterfaces/asyncfs";
-import {MessageConstants} from "../../../src/bll/utils/messageconstants";
 import {GitIsActiveValidator} from "../../../src/bll/cvsutils/gitisactivevalidator";
 
 suite("Git Is Active Validator", () => {

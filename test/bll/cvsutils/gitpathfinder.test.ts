@@ -5,8 +5,9 @@ import * as path from "path";
 import {Process} from "../../../src/bll/moduleinterfaces/process";
 import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
 import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
-import {AsyncFs} from "../../../src/bll/moduleinterfaces/asyncfs";
 import {MessageConstants} from "../../../src/bll/utils/messageconstants";
+import {anyString, instance, mock, when} from "ts-mockito";
+import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
 
 suite("Git Path Finder", () => {
     test("should handle \"git\" path for win32", function (done) {
@@ -64,8 +65,12 @@ suite("Git Path Finder", () => {
     test("should handle \"git\" in the \"PortableGitFolder\" for win32", function (done) {
         const processMock = new ProcessMock("win32");
         const childProcessMock = new GitInGitHubFolderChildProcessMock();
-        const fsMock = new ReadPortableGitFolderFsMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsMock);
+
+        const fsMock = mock(FsProxy);
+        when(fsMock.readdirAsync(anyString())).thenReturn(Promise.resolve(["PortableGitFolder"]));
+        const fsSpy = instance(fsMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe"));
                 done();
@@ -78,8 +83,12 @@ suite("Git Path Finder", () => {
     test("should handle \"git\" is not installed for win32", function (done) {
         const processMock = new ProcessMock("win32");
         const childProcessMock = new GitIsNotInstalledChildProcessMock();
-        const fsMock = new ReadPortableGitFolderFsMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsMock);
+
+        const fsMock = mock(FsProxy);
+        when(fsMock.readdirAsync(anyString())).thenReturn(Promise.resolve(["PortableGitFolder"]));
+        const fsSpy = instance(fsMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -240,14 +249,6 @@ class GitInGitHubFolderChildProcessMock implements AsyncChildProcess {
 
     spawn(...args: string[]): Promise<any> {
         return undefined;
-    }
-}
-
-class ReadPortableGitFolderFsMock implements AsyncFs {
-    readdir(path: string): Promise<string[]> {
-        const mockArgs : string[] = [];
-        mockArgs.push("PortableGitFolder");
-        return Promise.resolve(mockArgs);
     }
 }
 

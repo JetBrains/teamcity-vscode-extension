@@ -4,20 +4,19 @@ import * as path from "path";
 import {Finder} from "./finder";
 import {workspace} from "vscode";
 import {Constants} from "../utils/constants";
-import * as fs_async_module from "async-file";
 import * as cp_module from "child-process-promise";
 import {Process} from "../moduleinterfaces/process";
-import {AsyncFs} from "../moduleinterfaces/asyncfs";
 import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
 import {MessageConstants} from "../utils/messageconstants";
+import {FsProxy} from "../moduleproxies/fs-proxy";
 
 export class GitPathFinder implements Finder {
-    private readonly _fs: AsyncFs;
+    private readonly fsProxy: FsProxy;
     private readonly _process: Process;
     private readonly _childProcess: AsyncChildProcess;
 
-    constructor(childProcessMock?: AsyncChildProcess, processMock?: Process, fsMock?: AsyncFs) {
-        this._fs = fsMock || fs_async_module;
+    constructor(childProcessMock?: AsyncChildProcess, processMock?: Process, fsProxy?: FsProxy ) {
+        this.fsProxy = fsProxy || new FsProxy();
         this._process = processMock || process;
         this._childProcess = childProcessMock || cp_module;
     }
@@ -82,7 +81,7 @@ export class GitPathFinder implements Finder {
     }
 
     private async getChildObjects(path: string): Promise<string[]> {
-        return this._fs.readdir(path);
+        return this.fsProxy.readdirAsync(path);
     }
 
     private async getFirstPortableGitObject(childObjects: string[]): Promise<string> {
