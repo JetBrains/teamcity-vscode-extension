@@ -7,7 +7,7 @@ import {Logger} from "../bll/utils/logger";
 import {CvsSupportProvider} from "./cvsprovider";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
-import {QuickPickItem, QuickPickOptions, scm, Uri, workspace, WorkspaceFolder} from "vscode";
+import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
@@ -19,6 +19,7 @@ import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresou
 import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
+import {GitParser} from "../bll/cvsutils/git-parser";
 
 export class GitProvider implements CvsSupportProvider {
 
@@ -179,7 +180,6 @@ export class GitProvider implements CvsSupportProvider {
         }
     }
 
-
     private async tryGetPorcelainStatusRows(): Promise<string[]> {
         try {
             return await this.getPorcelainStatusRows();
@@ -205,7 +205,7 @@ export class GitProvider implements CvsSupportProvider {
 
     private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsResource> {
 
-        const parsedStatusRow: GitParsedStatusRow = await this.parseStatusRow(statusRow);
+        const parsedStatusRow = GitParser.parseStatusRow(statusRow);
         const relativePath = parsedStatusRow.relativePath;
 
         switch (parsedStatusRow.status) {
@@ -222,13 +222,13 @@ export class GitProvider implements CvsSupportProvider {
                 return new DeletedCvsResource(fileAbsPath, relativePath);
             }
             case "R": {
-                const replacedPath = this.parseReplacedPath(relativePath);
+                const replacedPath = GitParser.parseReplacedPath(relativePath);
                 const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
                 const prevFileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.prevRelativePath);
                 return new ReplacedCvsResource(fileAbsPath, replacedPath.relativePath, prevFileAbsPath);
             }
             case "C": {
-                const replacedPath = this.parseReplacedPath(relativePath);
+                const replacedPath = GitParser.parseReplacedPath(relativePath);
                 const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
                 return new AddedCvsResource(fileAbsPath, replacedPath.relativePath);
             }
@@ -236,30 +236,6 @@ export class GitProvider implements CvsSupportProvider {
                 throw new Error(`Resource status for status row ${statusRow} is '${parsedStatusRow.status}' and not recognised`);
             }
         }
-    }
-
-    private parseStatusRow(statusRow: string): GitParsedStatusRow {
-        const porcelainStatusGitRegExp: RegExp = /^([MADRC]).\s(.*)$/;
-        const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
-        if (!parsedPorcelain || parsedPorcelain.length !== 3) {
-            throw new Error(`Incorrect number of parsed arguments in the status row ${statusRow}`);
-        }
-        return {
-            status: parsedPorcelain[1].trim(),
-            relativePath: parsedPorcelain[2].trim()
-        };
-    }
-
-    private parseReplacedPath(unparsedPath: string): GitReplacedPath {
-        const replacedPathRegExp: RegExp = /^(.*)->(.*)$/;
-        const parsedReplacedPath: string[] = replacedPathRegExp.exec(unparsedPath);
-        if (!parsedReplacedPath || parsedReplacedPath.length !== 3) {
-            throw new Error(`Incorrect number of parsed arguments in the replaced path ${unparsedPath}`);
-        }
-        return {
-            relativePath: parsedReplacedPath[2].trim(),
-            prevRelativePath: parsedReplacedPath[1].trim()
-        };
     }
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {
@@ -324,14 +300,4 @@ export class GitProvider implements CvsSupportProvider {
 interface GitRemote {
     name: string;
     url: string;
-}
-
-interface GitParsedStatusRow {
-    status: string;
-    relativePath: string;
-}
-
-interface GitReplacedPath {
-    relativePath: string;
-    prevRelativePath: string;
 }
