@@ -16,10 +16,20 @@ export class TestSettings {
     }
 
     public static get url(): string {
-        return "http://test_url";
+        return "http://localhost:" + this.port;
+    }
+
+    public static get port(): string {
+        return "8222";
+    }
+
+    public static get basicAuthHeader(): string {
+        //for test_username:test_password
+        return "Basic dGVzdF91c2VybmFtZTp0ZXN0X3Bhc3N3b3Jk";
     }
 
     private static testCredentials;
+
     public static get credentials(): Credentials {
         if (!TestSettings.testCredentials) {
             TestSettings.testCredentials = new Credentials(TestSettings.url, TestSettings.account, TestSettings.password, "test", "test");
@@ -30,25 +40,29 @@ export class TestSettings {
     public static get winCredentials(): any {
         return {
             credential: new Buffer(TestSettings.password),
-            targetName: TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account};
+            targetName: TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account
+        };
     }
 
     public static get anotherWinCredentials(): any {
         return {
             credential: new Buffer(TestSettings.password + 2),
-            targetName: TestSettings.url + 2 + WindowsCredentialStoreApi.separator + TestSettings.account + 2};
+            targetName: TestSettings.url + 2 + WindowsCredentialStoreApi.separator + TestSettings.account + 2
+        };
     }
 
     public static get osxCredentials(): any {
         return {
             svce: OsxKeychainApi.prefix,
-            acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account};
+            acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account
+        };
     }
 
     public static get otherOsxCredentials(): any {
         return {
             svce: OsxKeychainApi.prefix + 2,
-            acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2};
+            acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2
+        };
     }
 
     public static get linuxCredentialsObj(): any {
@@ -81,38 +95,13 @@ export class TestSettings {
         return "win32";
     }
 
-    public static get osxCredentialsExample(): string {
-        return this.osxStorageExample;
-    }
-
     public static get winCredentialsExample(): string {
         return this.winStorageExample;
     }
 
-    private static readonly winStorageExample = "Target Name: test_teamcity_vsaddin:http://test_url|test_username\n" +
+    private static readonly winStorageExample = `Target Name: test_teamcity_vsaddin:${TestSettings.url}|${TestSettings.account}\n` +
         "win-credstore-parser.ts:27\n" +
         "Type: Generic\n" +
         "User Name: creds.exe\n" +
         "Credential: 746573745f70617373776f7264";
-
-    private static readonly osxStorageExample = "keychain: \"/Users/jetbrains/Library/Keychains/login.keychain-db\"\n" +
-        "version: 512\n" +
-        "class: \"genp\"\n" +
-        "attributes:\n" +
-        "    0x00000007 <blob>=\"teamcity_vscode:\"\n" +
-        "    0x00000008 <blob>=<NULL>\n" +
-        "    \"acct\"<blob>=\"http://localhost:8111|rugpanov\"\n" +
-        "    \"cdat\"<timedate>=0x32303137313232323038353932315A00  \"20171222085921Z\\000\"\n" +
-        "    \"crtr\"<uint32>=<NULL>\n" +
-        "    \"cusi\"<sint32>=<NULL>\n" +
-        "    \"desc\"<blob>=<NULL>\n" +
-        "    \"gena\"<blob>=<NULL>\n" +
-        "    \"icmt\"<blob>=<NULL>\n" +
-        "    \"invi\"<sint32>=<NULL>\n" +
-        "    \"mdat\"<timedate>=0x32303137313232323038353932315A00  \"20171222085921Z\\000\"\n" +
-        "    \"nega\"<sint32>=<NULL>\n" +
-        "    \"prot\"<blob>=<NULL>\n" +
-        "    \"scrp\"<sint32>=<NULL>\n" +
-        "    \"svce\"<blob>=\"teamcity_vscode:\"\n" +
-        "    \"type\"<uint32>=<NULL>";
 }

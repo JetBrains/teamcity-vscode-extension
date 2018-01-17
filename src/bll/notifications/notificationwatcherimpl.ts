@@ -1,6 +1,5 @@
 "use strict";
 
-import {OutputChannel} from "vscode";
 import {Logger} from "../utils/logger";
 import {Build} from "../entities/build";
 import {Change} from "../entities/change";
@@ -14,7 +13,7 @@ import {Output} from "../../view/output";
 import {Credentials} from "../credentialsstore/credentials";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
-import {NotificationWatcher} from "../notifications/notificationwatcher";
+import {NotificationWatcher} from "./notificationwatcher";
 import {ModificationSubscription} from "./modificationsubscription";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
