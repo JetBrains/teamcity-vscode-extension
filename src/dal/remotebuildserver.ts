@@ -82,7 +82,7 @@ export class RemoteBuildServer {
         filesFromPatch.forEach((row) => {
             changedFiles.push(row.replace(/\\/g, "/"));
         });
-        Logger.logDebug(`XmlRpcBuildConfigResolver#requestConfigIds: changedFiles: ${changedFiles.join(";")}`);
+        Logger.logDebug(`RemoteBuildServer#requestConfigIds: changedFiles: ${changedFiles.join(";")}`);
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("VersionControlServer.getSuitableConfigurations", [changedFiles], (err, configurationId) => {
                 if (err || !configurationId) {
@@ -90,6 +90,8 @@ export class RemoteBuildServer {
                     return reject(err);
                 }
 
+                Logger.logDebug(`[RemoteBuildServer#requestConfigIds: changedFiles] was found ${configurationId.length}\n` +
+                    `Suitable configuration loaded ID's: ${configurationId.join(";")}`);
                 resolve(configurationId);
             });
         });
