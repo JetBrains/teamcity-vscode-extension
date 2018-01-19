@@ -37,8 +37,10 @@ export class RemoteLogin {
         });
     }
 
-    private static createClient(serverUrl: string): any {
-        return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true});
+    public static createClient(serverUrl: string): any {
+        const headers = {};
+        headers["User-Agent"] = VsCodeUtils.getUserAgentString();
+        return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true, headers: headers});
     }
 
     /**

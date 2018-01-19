@@ -7,6 +7,7 @@ import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../bll/utils/constants";
 import {FsProxy} from "../bll/moduleproxies/fs-proxy";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
 
 @injectable()
 export class WebLinks {
@@ -43,7 +44,8 @@ export class WebLinks {
                 {
                     uri: url
                     , headers: {
-                    "Content-Type": "application/xml"
+                    "Content-Type": "application/xml",
+                    "User-Agent": VsCodeUtils.getUserAgentString()
                 }, body: data
                 },
                 function (err, httpResponse, body) {
@@ -62,7 +64,8 @@ export class WebLinks {
             url: patchDestinationUrl,
             headers: {
                 "Authorization": WebLinks.generateAuthorizationHeader(credentials),
-                "content-length": this.fsProxy.getFileSize(patchAbsPath)
+                "content-length": this.fsProxy.getFileSize(patchAbsPath),
+                "User-Agent": VsCodeUtils.getUserAgentString()
             }
         };
 
@@ -87,9 +90,14 @@ export class WebLinks {
             return undefined;
         }
         const credentials: Credentials = await this.credentialsStore.getCredentials();
-        const url = `${credentials.serverURL}/app/rest/buildQueue/${buildId}`;
+        const options = {
+            url: `${credentials.serverURL}/app/rest/buildQueue/${buildId}`,
+            headers: {
+              "User-Agent": VsCodeUtils.getUserAgentString()
+            }
+          };
         return new Promise<string>((resolve, reject) => {
-            request.get(url, function (err, response, body) {
+            request.get(options, function (err, response, body) {
                 if (err) {
                     reject(err);
                 }
