@@ -45,4 +45,8 @@ export class FsProxy {
         const stats = fs.statSync(fileName);
         return stats.size;
     }
+
+    public readdirAsync(path: string): Promise<string[]> {
+        return fs_async.readdir(path);
+    }
 }

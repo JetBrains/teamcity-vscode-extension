@@ -2,19 +2,38 @@
 
 import {assert} from "chai";
 import * as path from "path";
-import {Process} from "../../../src/bll/moduleinterfaces/process";
 import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
-import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
-import {AsyncFs} from "../../../src/bll/moduleinterfaces/asyncfs";
 import {MessageConstants} from "../../../src/bll/utils/messageconstants";
+import {anyString, instance, mock, when} from "ts-mockito";
+import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
+import {ProcessProxy} from "../../../src/bll/moduleproxies/process-proxy";
+import {CpProxy} from "../../../src/bll/moduleproxies/cp-proxy";
 
 suite("Git Path Finder", () => {
+
+    const correctWinVersionResult: any = {
+        stdout: "git version 2.13.2.windows.1"
+    };
+
+    const correctDarwinWhichResult: any = {
+        stdout: "git"
+    };
+
+    const usrBinGitDarwinWhichResult: any = {
+        stdout: "/usr/bin/git"
+    };
+
     test("should handle \"git\" path for win32", function (done) {
-        const processMock = new ProcessMock("win32");
-        const childProcessMock = new GitInPathChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("win32");
+        const expectedGitPath = "git";
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, "git");
+                assert.equal(gitPath, expectedGitPath);
                 done();
             }
         ).catch((err) => {
@@ -23,11 +42,16 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" path for linux", function (done) {
-        const processMock = new ProcessMock("linux");
-        const childProcessMock = new GitInPathChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("linux");
+        const expectedGitPath = "git";
+
+        const cpMock: CpProxy = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, "git");
+                assert.equal(gitPath, expectedGitPath);
                 done();
             }
         ).catch((err) => {
@@ -36,11 +60,17 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" path for macOS", function (done) {
-        const processMock = new ProcessMock("darwin");
-        const childProcessMock = new GitInPathChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("darwin");
+        const expectedGitPath = "git";
+
+        const cpMock: CpProxy = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
+        when(cpMock.execAsync("which git")).thenReturn(Promise.resolve(correctDarwinWhichResult));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, "git");
+                assert.equal(gitPath, expectedGitPath);
                 done();
             }
         ).catch((err) => {
@@ -49,11 +79,18 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"ProgramFiles/Git/cmd\" for win32", function (done) {
-        const processMock = new ProcessMock("win32");
-        const childProcessMock = new GitInProgramFilesFolderChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("win32");
+        const expectedGitPath = path.join("ProgramFilesPath", "Git", "cmd", "git.exe");
+        const unExpectedGitPath = "git";
+
+        const cpMock: CpProxy = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
+        when(cpMock.execAsync(getArgumentForGitVersion(unExpectedGitPath))).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, path.join("ProgramFilesPath", "Git", "cmd", "git.exe"));
+                assert.equal(gitPath, expectedGitPath);
                 done();
             }
         ).catch((err) => {
@@ -62,12 +99,24 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"PortableGitFolder\" for win32", function (done) {
-        const processMock = new ProcessMock("win32");
-        const childProcessMock = new GitInGitHubFolderChildProcessMock();
-        const fsMock = new ReadPortableGitFolderFsMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsMock);
+        const processMock = getSettedUpProcessSpy("win32");
+        const unExpectedGitPath = `git`;
+        const unExpectedGitPath2 = path.join("ProgramFilesPath", "Git", "cmd", "git.exe");
+        const expectedGitPath = path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe");
+
+        const fsMock = mock(FsProxy);
+        when(fsMock.readdirAsync(anyString())).thenReturn(Promise.resolve(["PortableGitFolder"]));
+        const fsSpy = instance(fsMock);
+
+        const cpMock: CpProxy = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
+        when(cpMock.execAsync(getArgumentForGitVersion(unExpectedGitPath))).thenReturn(Promise.reject(undefined));
+        when(cpMock.execAsync(getArgumentForGitVersion(unExpectedGitPath2))).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy);
         gitPathFinder.find().then((gitPath) => {
-                assert.equal(gitPath, path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe"));
+                assert.equal(gitPath, expectedGitPath);
                 done();
             }
         ).catch((err) => {
@@ -76,10 +125,17 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for win32", function (done) {
-        const processMock = new ProcessMock("win32");
-        const childProcessMock = new GitIsNotInstalledChildProcessMock();
-        const fsMock = new ReadPortableGitFolderFsMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock, fsMock);
+        const processMock = getSettedUpProcessSpy("win32");
+
+        const fsMock = mock(FsProxy);
+        when(fsMock.readdirAsync(anyString())).thenReturn(Promise.resolve(["PortableGitFolder"]));
+        const fsSpy = instance(fsMock);
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -90,9 +146,13 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for linux", function (done) {
-        const processMock = new ProcessMock("linux");
-        const childProcessMock = new GitIsNotInstalledChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("linux");
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -103,9 +163,13 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" is not installed for darwin", function (done) {
-        const processMock = new ProcessMock("darwin");
-        const childProcessMock = new GitIsNotInstalledChildProcessMock();
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("darwin");
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -116,10 +180,15 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux with xcode-select installed", function (done) {
-        const processMock = new ProcessMock("darwin");
-        const xcodeSelectInstalled = true;
-        const childProcessMock = new GitInUserBinChildProcessMock(xcodeSelectInstalled);
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("darwin");
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync("which git")).thenReturn(Promise.resolve(usrBinGitDarwinWhichResult));
+        when(cpMock.execAsync("\"/usr/bin/git\" --version")).thenReturn(Promise.resolve(correctWinVersionResult));
+        when(cpMock.execAsync("xcode-select -p")).thenReturn(Promise.resolve(correctWinVersionResult));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, "/usr/bin/git");
                 done();
@@ -130,10 +199,17 @@ suite("Git Path Finder", () => {
     });
 
     test("should handle \"git\" in the \"/usr/bin/\" for linux without xcode-select installed", function (done) {
-        const processMock = new ProcessMock("darwin");
-        const xcodeSelectInstalled = false;
-        const childProcessMock = new GitInUserBinChildProcessMock(xcodeSelectInstalled);
-        const gitPathFinder: GitPathFinder = new GitPathFinder(childProcessMock, processMock);
+        const processMock = getSettedUpProcessSpy("darwin");
+        const err: any = {
+            code: 2
+        };
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync("which git")).thenReturn(Promise.resolve(usrBinGitDarwinWhichResult));
+        when(cpMock.execAsync("\"/usr/bin/git\" --version")).thenReturn(Promise.resolve(correctWinVersionResult));
+        when(cpMock.execAsync("xcode-select -p")).thenReturn(Promise.reject<any>(err));
+        const cpSpy = instance(cpMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, MessageConstants.GIT_PATH_IS_NOT_FOUND);
                 done();
@@ -145,172 +221,18 @@ suite("Git Path Finder", () => {
 
 });
 
-class ProcessMock implements Process {
-    private _platform: NodeJS.Platform;
-    constructor(platform: NodeJS.Platform) {
-        this._platform = platform;
-    }
-    public get platform(): NodeJS.Platform {
-        return this._platform;
-    }
-    public get env(): string[] {
-        const args = [];
-        args["ProgramW6432"] = "ProgramW6432Path";
-        args["ProgramFiles(x86)"] = "ProgramFiles(x86)Path";
-        args["ProgramFiles"] = "ProgramFilesPath";
-        args["LOCALAPPDATA"] = "LOCALAPPDATAPath";
-        return args;
-    }
+function getSettedUpProcessSpy(platform: NodeJS.Platform): ProcessProxy {
+    const processMock = mock(ProcessProxy);
+    when(processMock.platform).thenReturn(platform);
+    const envArgs = [];
+    envArgs["ProgramW6432"] = "ProgramW6432Path";
+    envArgs["ProgramFiles(x86)"] = "ProgramFiles(x86)Path";
+    envArgs["ProgramFiles"] = "ProgramFilesPath";
+    envArgs["LOCALAPPDATA"] = "LOCALAPPDATAPath";
+    when(processMock.env).thenReturn(envArgs);
+    return instance(processMock);
 }
 
-class GitInPathChildProcessMock implements AsyncChildProcess {
-    exec(arg: string): Promise<any> {
-        return this.handleDarwinWhichGit(arg)
-            .then(void 0, () => this.handleGitInPath(arg));
-    }
-
-    handleGitInPath(arg: string): Promise<any> {
-        if (arg === "\"git\" --version") {
-            const gitVersion = "git version 2.13.2.windows.1";
-            const mockObject = {
-                stdout: gitVersion
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    handleDarwinWhichGit(arg: string): Promise<any> {
-        if (arg === "which git") {
-            const mockObject = {
-                stdout: "git"
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    spawn(...args: string[]): Promise<any> {
-        return undefined;
-    }
-}
-
-class GitInProgramFilesFolderChildProcessMock implements AsyncChildProcess {
-    exec(arg: string): Promise<any> {
-        return this.handleGinInProgramFiles(arg);
-    }
-
-    handleGinInProgramFiles(arg: string): Promise<any> {
-        const expectedPath = `"${path.join("ProgramFilesPath", "Git", "cmd", "git.exe")}" --version`;
-        if (arg === expectedPath) {
-            const gitVersion = "git version 2.13.2.windows.1";
-            const mockObject = {
-                stdout: gitVersion
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    spawn(...args: string[]): Promise<any> {
-        return undefined;
-    }
-}
-
-class GitInGitHubFolderChildProcessMock implements AsyncChildProcess {
-    exec(arg: string): Promise<any> {
-        return this.handleGinInProgramFiles(arg);
-    }
-
-    handleGinInProgramFiles(arg: string): Promise<any> {
-        const expectedPath = `"${path.join("LOCALAPPDATAPath", "GitHub", "PortableGitFolder", "cmd", "git.exe")}" --version`;
-        if (arg === expectedPath) {
-            const gitVersion = "git version 2.13.2.windows.1";
-            const mockObject = {
-                stdout: gitVersion
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    spawn(...args: string[]): Promise<any> {
-        return undefined;
-    }
-}
-
-class ReadPortableGitFolderFsMock implements AsyncFs {
-    readdir(path: string): Promise<string[]> {
-        const mockArgs : string[] = [];
-        mockArgs.push("PortableGitFolder");
-        return Promise.resolve(mockArgs);
-    }
-}
-
-class GitInUserBinChildProcessMock implements AsyncChildProcess {
-
-    private readonly xcodeSelectInstalled : boolean;
-    constructor(xcodeSelectInstalled: boolean = true) {
-        this.xcodeSelectInstalled = xcodeSelectInstalled;
-    }
-
-    exec(arg: string): Promise<any> {
-        return this.handleDarwinWhichGit(arg)
-            .then(void 0, () => this.handleGitInPath(arg))
-            .then(void 0, () => this.handleDirrectoryCheck(arg));
-    }
-
-    handleGitInPath(arg: string): Promise<any> {
-        if (arg === "\"/usr/bin/git\" --version") {
-            const gitVersion = "git version 2.13.2.windows.1";
-            const mockObject = {
-                stdout: gitVersion
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    handleDarwinWhichGit(arg: string): Promise<any> {
-        if (arg === "which git") {
-            const mockObject = {
-                stdout: "/usr/bin/git"
-            };
-            return Promise.resolve<any>(mockObject);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    handleDirrectoryCheck(arg: string): Promise<any> {
-        if (arg === "xcode-select -p" && this.xcodeSelectInstalled) {
-            return Promise.resolve<any>(undefined);
-        } else if (arg === "xcode-select -p" && !this.xcodeSelectInstalled) {
-            const err: any = {
-                code: 2
-            };
-            return Promise.reject<any>(err);
-        } else {
-            return Promise.reject<any>(undefined);
-        }
-    }
-
-    spawn(...args: string[]): Promise<any> {
-        return undefined;
-    }
-}
-
-class GitIsNotInstalledChildProcessMock implements AsyncChildProcess {
-    exec(arg: string): Promise<any> {
-        return Promise.reject<any>(undefined);
-    }
-
-    spawn(...args: string[]): Promise<any> {
-        return undefined;
-    }
+function getArgumentForGitVersion(path: string): string {
+    return `"${path}" --version`;
 }

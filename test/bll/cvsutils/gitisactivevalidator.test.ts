@@ -1,18 +1,28 @@
-"use strict";
-
 import {assert} from "chai";
-import {Process} from "../../../src/bll/moduleinterfaces/process";
-import {GitPathFinder} from "../../../src/bll/cvsutils/gitpathfinder";
-import {AsyncChildProcess} from "../../../src/bll/moduleinterfaces/asyncchildprocess";
-import {AsyncFs} from "../../../src/bll/moduleinterfaces/asyncfs";
-import {MessageConstants} from "../../../src/bll/utils/messageconstants";
 import {GitIsActiveValidator} from "../../../src/bll/cvsutils/gitisactivevalidator";
+import {instance, mock, when} from "ts-mockito";
+import {CpProxy} from "../../../src/bll/moduleproxies/cp-proxy";
 
 suite("Git Is Active Validator", () => {
+
+    const correctVersionResult: any = {
+        stdout: "git version 2.13.2.windows.1"
+    };
+
+    const inCorrectVersionResult: any = {
+        stdout: "git version 1.13.2.windows.1"
+    };
+
     test("should handle \"git\" with valid params", function (done) {
         const gitPath: string = "git";
-        const childProcessMock = new ValidateGitChildProcessMock(true, true, true);
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, childProcessMock);
+        const rootPath: string = "testRootPath";
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(gitPath))).thenReturn(Promise.resolve(correctVersionResult));
+        when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.resolve(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
         gitIsActiveValidator.validate().then(() => {
                 done();
             }
@@ -23,8 +33,14 @@ suite("Git Is Active Validator", () => {
 
     test("should handle git has incorrect version", function (done) {
         const gitPath: string = "git";
-        const childProcessMock = new ValidateGitChildProcessMock(false, true, true);
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, childProcessMock);
+        const rootPath: string = "testRootPath";
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(gitPath))).thenReturn(Promise.resolve(inCorrectVersionResult));
+        when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.resolve(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
         gitIsActiveValidator.validate().then(() => {
                 done("Version should be incorrect");
             }
@@ -36,8 +52,14 @@ suite("Git Is Active Validator", () => {
 
     test("should handle not in git repo", function (done) {
         const gitPath: string = "git";
-        const childProcessMock = new ValidateGitChildProcessMock(true, false, true);
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, childProcessMock);
+        const rootPath: string = "testRootPath";
+
+        const cpMock = mock(CpProxy);
+        when(cpMock.execAsync(getArgumentForGitVersion(gitPath))).thenReturn(Promise.resolve(correctVersionResult));
+        when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.reject(undefined));
+        const cpSpy = instance(cpMock);
+
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
         gitIsActiveValidator.validate().then(() => {
                 done("There should not be a git repo");
             }
@@ -48,48 +70,10 @@ suite("Git Is Active Validator", () => {
     });
 });
 
-class ValidateGitChildProcessMock implements AsyncChildProcess {
-    private readonly _isVersionCorrect: boolean;
-    private readonly _isGitRepo: boolean;
-    private readonly _stageFilesPresent: boolean;
-    constructor(isVersionCorrect: boolean, isGitRepo: boolean, stageFilesPresent: boolean) {
-        this._isVersionCorrect = isVersionCorrect;
-        this._isGitRepo = isGitRepo;
-        this._stageFilesPresent = stageFilesPresent;
-    }
-    exec(arg: string): Promise<any> {
-        if (arg === "\"git\" --version" && this._isVersionCorrect) {
-            const mockObject: any = {
-                stdout: "git version 2.13.2.windows.1"
-            };
-            return Promise.resolve(mockObject);
-        } else if (arg === "\"git\" --version" && !this._isVersionCorrect) {
-            const mockObject: any = {
-                stdout: "git version 1.13.2.windows.1"
-            };
-            return Promise.resolve(mockObject);
-        } else if (this.isGitDiffCommand(arg) && this._stageFilesPresent) {
-            const mockObject: any = {
-                stdout: "Not null output"
-            };
-            return Promise.resolve(mockObject);
-        } else if (this.isGitDiffCommand(arg) && !this._stageFilesPresent) {
-            const mockObject: any = {
-                stdout: ""
-            };
-            return Promise.resolve(mockObject);
-        } else if (this._isGitRepo) {
-            return Promise.resolve(undefined);
-        } else if (!this._isGitRepo) {
-            return Promise.reject(undefined);
-        }
-    }
+function getArgumentForGitIsActiveCommand(path: string, workspaceRootPath: string): string {
+    return `"${path}" -C "${workspaceRootPath}" rev-parse --show-toplevel`;
+}
 
-    spawn(...args: string[]): Promise<any> {
-        throw new Error("Method not implemented.");
-    }
-
-    private isGitDiffCommand(command: string): boolean {
-        return command.indexOf("diff") !== -1;
-    }
+function getArgumentForGitVersion(path: string): string {
+    return `"${path}" --version`;
 }

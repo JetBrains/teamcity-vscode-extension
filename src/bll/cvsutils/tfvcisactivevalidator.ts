@@ -1,42 +1,30 @@
 "use strict";
 
-import {workspace} from "vscode";
 import {Validator} from "./validator";
-import * as cp_module from "child-process-promise";
-import {AsyncChildProcess} from "../moduleinterfaces/asyncchildprocess";
+import {CpProxy} from "../moduleproxies/cp-proxy";
 
 export class TfvcIsActiveValidator implements Validator {
 
-    private readonly _path: string;
-    private readonly _childProcess: AsyncChildProcess;
+    private readonly tfPath: string;
+    private readonly workspaceRootPath: string;
+    private readonly cpProxy: CpProxy;
 
-    constructor(path: string, childProcessMock?: any) {
-        this._path = path;
-        this._childProcess = childProcessMock || cp_module;
+    constructor(tfPath: string, workspaceRootPath: string, cpProxy?: CpProxy) {
+        this.tfPath = tfPath;
+        this.workspaceRootPath = workspaceRootPath;
+        this.cpProxy = cpProxy || new CpProxy();
     }
 
     public async validate(): Promise<void> {
-        const path = this._path;
-        await this.checkIsTfsRepository(path);
+        return this.checkIsTfsRepository();
     }
 
-    private async checkIsTfsRepository(path: string): Promise<void> {
-        const briefDiffCommand: string = `"${path}" diff /noprompt /format:brief /recursive "${workspace.rootPath}"`;
+    private async checkIsTfsRepository(): Promise<void> {
+        const briefDiffCommand: string = `"${this.tfPath}" diff /noprompt /format:brief /recursive "${this.workspaceRootPath}"`;
         try {
-            await this._childProcess.exec(briefDiffCommand);
+            await this.cpProxy.execAsync(briefDiffCommand);
         } catch (err) {
             throw new Error("Tfs repository was not determined");
         }
     }
-
-    private async checkChangedFilesPresence(path: string): Promise<void> {
-        const briefDiffCommand: string = `"${path}" diff /noprompt /format:brief /recursive "${workspace.rootPath}"`;
-        const outBriefDiff = await this._childProcess.exec(briefDiffCommand);
-        const briefDiffResults: string = outBriefDiff.stdout.toString("utf8").trim();
-        const changedFilesNotPresence: boolean = !briefDiffResults;
-        if (changedFilesNotPresence) {
-            throw new Error("There are no changed files in tfvs");
-        }
-    }
-
 }

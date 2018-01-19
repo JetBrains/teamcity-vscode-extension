@@ -44,6 +44,8 @@ function setupServer(done: any): void {
             res.end();
             Assert.equal(req.headers["authorization"], TestSettings.basicAuthHeader);
             Assert.equal(req.headers["content-length"], EXPECTED_CONTENT_LENGTH);
+            Assert.notEqual(req.headers["user-agent"].indexOf("TeamCity Integration"), -1, "User " +
+                "agent header should contain a corresponding string");
             done();
         } catch (err) {
             done(err);

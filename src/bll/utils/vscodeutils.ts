@@ -2,12 +2,14 @@
 
 import * as pako from "pako";
 import {Logger} from "./logger";
-import {MessageItem, workspace} from "vscode";
+import {extensions, version} from "vscode";
 import {Change} from "../entities/change";
 import {Build} from "../entities/build";
+import {Constants} from "./constants";
 
 export class VsCodeUtils {
 
+    private static extensionVersion: string;
     /**
      * @param value - any string in the format ${value1:value2}
      * @return - an array in the format ${[value1, value2]}
@@ -137,5 +139,10 @@ export class VsCodeUtils {
      */
     public static sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    public static getUserAgentString() : string {
+        this.extensionVersion = this.extensionVersion || extensions.getExtension(Constants.EXTENSION_ID).packageJSON.version;
+        return `${Constants.VISUAL_STUDIO_CODE}/${version} (TeamCity Integration ${this.extensionVersion})`;
     }
 }

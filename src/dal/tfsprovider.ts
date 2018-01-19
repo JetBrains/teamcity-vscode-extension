@@ -35,7 +35,7 @@ export class TfvcProvider implements CvsSupportProvider {
         const instance: TfvcProvider = new TfvcProvider(workspaceRootPath);
         const pathFinder: Finder = new TfvcPathFinder(new CpProxy(), new OsProxy());
         const tfPath: string = await pathFinder.find();
-        const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath);
+        const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath, workspaceRootPath.fsPath);
         await isActiveValidator.validate();
         const tfsInfo: TfsWorkFoldInfo = await instance.getTfsWorkFoldInfo(tfPath, instance.workspaceRootPath);
         instance.tfPath = tfPath;
