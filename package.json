@@ -2,7 +2,7 @@
   "name": "teamcity-vscode-extension",
   "displayName": "teamcity-vscode-extension",
   "description": "TeamCity integrarion for VSCode",
-  "version": "0.0.3",
+  "version": "1.0.0-beta.4",
   "publisher": "rugpanov",
   "icon": "assets/icon.png",
   "engines": {

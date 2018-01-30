@@ -12,3 +12,11 @@
 - Implement a secure credentials storage
 - Add support of multi-roots workspaces
 - Bugfixing
+
+## [v1.0.0-beta.4](https://github.com/JetBrains/teamcity-vscode-extension/tree/v1.0.0-beta.4) (2017-01-30)
+[Full Changelog](https://github.com/JetBrains/teamcity-vscode-extension/compare/v0.0.3...v1.0.0-beta.4)
+- Add more logging to investigate user problems
+- Add an authorization header for requests to uploadChanges.html to handle changes in new version of TeamCity
+- Add a content-length header for requests to uploadChanges.html to avoid sending too big patches
+- Add an user-agent header for all requests
+- Fix different bugs
