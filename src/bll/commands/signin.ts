@@ -12,7 +12,7 @@ import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
 import {inject, injectable} from "inversify";
-import {TYPES} from "../utils/constants";
+import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
 
 @injectable()
@@ -91,14 +91,15 @@ export class SignIn implements Command {
     }
 
     private async requestTypingCredentials(): Promise<Credentials> {
-        const defaultURL: string = this.settings.getLastUrl();
-        const defaultUsername: string = this.settings.getLastUsername();
         let serverUrl: string;
         let username: string;
         let password: string;
+        const currentCredentials: Credentials = await this.tryGetCredentialsFromPersistence();
+        const suggestedUrl = currentCredentials ? currentCredentials.serverURL : Constants.DEFAULT_URL;
+        const suggestedUsername = currentCredentials ? currentCredentials.user : "";
         try {
-            serverUrl = await SignIn.requestServerUrl(defaultURL);
-            username = await SignIn.requestUsername(defaultUsername, serverUrl);
+            serverUrl = await SignIn.requestServerUrl(suggestedUrl);
+            username = await SignIn.requestUsername(suggestedUsername, serverUrl);
             password = await SignIn.requestPassword(username);
         } catch (err) {
             return Promise.resolve(undefined);
@@ -159,8 +160,6 @@ export class SignIn implements Command {
         if (!credentials) {
             return;
         }
-        await this.settings.setLastUrl(credentials.serverURL);
-        await this.settings.setLastUsername(credentials.user);
         try {
             await this.persistentStorageManager.setCredentials(credentials);
         } catch (err) {

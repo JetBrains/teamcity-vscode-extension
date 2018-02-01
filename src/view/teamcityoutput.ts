@@ -1,13 +1,11 @@
 "use strict";
 
-import {TYPES} from "../bll/utils/constants";
 import {Output} from "./output";
-import {OutputChannel, window, Disposable} from "vscode";
+import {OutputChannel, window} from "vscode";
 import {injectable} from "inversify";
 
 @injectable()
 export class TeamCityOutput implements Output {
-    private static instance: TeamCityOutput;
     private outputChannel: OutputChannel;
 
     public constructor() {

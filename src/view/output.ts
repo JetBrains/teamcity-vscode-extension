@@ -1,6 +1,6 @@
 "use strict";
 
-import {OutputChannel, window, Disposable} from "vscode";
+import {Disposable} from "vscode";
 
 export interface Output extends Disposable {
     show();

@@ -203,14 +203,6 @@
           "default": true,
           "description": "Sets whether the extension should show welcome message after the login operation or not."
         },
-        "teamcity.credentials.url": {
-          "type": "string",
-          "description": "Sets default url for the Signin operation."
-        },
-        "teamcity.credentials.username": {
-          "type": "string",
-          "description": "Sets default username for the Signin operation."
-        },
         "teamcity.credentials.persistent": {
           "type": "boolean",
           "default": false,

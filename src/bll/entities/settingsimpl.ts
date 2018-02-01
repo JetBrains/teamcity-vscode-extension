@@ -9,15 +9,11 @@ import {workspace} from "vscode";
 export class SettingsImpl implements Settings {
     private readonly _loggingLevel: string;
     private _showSignInWelcome: boolean;
-    private _lastUrl: string;
-    private _lastUsername: string;
     private _shouldStoreCredentials: boolean;
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
-        this._lastUrl = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
-        this._lastUsername = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_NAME, "");
         this._shouldStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_STORE_CREDENTIALS, false);
     }
 
@@ -48,26 +44,7 @@ export class SettingsImpl implements Settings {
         return;
     }
 
-    public getLastUrl(): string {
-        return this._lastUrl;
-
-    }
-
-    public getLastUsername(): string {
-        return this._lastUsername;
-    }
-
     public shouldStoreCredentials(): boolean {
         return this._shouldStoreCredentials;
-    }
-
-    public async setLastUrl(url: string): Promise<void> {
-        await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_URL, url, true /* global */);
-        this._lastUrl = url;
-    }
-
-    public async setLastUsername(username: string): Promise<void> {
-        await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
-        this._lastUsername = username;
     }
 }
