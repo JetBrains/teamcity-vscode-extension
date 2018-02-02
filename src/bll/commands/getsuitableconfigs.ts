@@ -1,9 +1,7 @@
 "use strict";
 
-import {commands} from "vscode";
 import {Logger} from "../utils/logger";
 import {ProjectItem} from "../entities/projectitem";
-import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";
 import {CheckInInfo} from "../entities/checkininfo";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
@@ -14,6 +12,7 @@ import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
 import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
+import {Output} from "../../view/output";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -23,31 +22,36 @@ export class GetSuitableConfigs implements Command {
     private readonly buildProvider: BuildProvider;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
+    private readonly output: Output;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
                        @inject(TYPES.ResourceProvider) resourceProvider: ChangesProvider,
                        @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
-                       @inject(TYPES.XmlParser) xmlParser: XmlParser) {
+                       @inject(TYPES.XmlParser) xmlParser: XmlParser,
+                       @inject(TYPES.Output) output: Output) {
         this.cvsProvider = cvsProvider;
         this.resourceProvider = resourceProvider;
         this.buildProvider = buildProvider;
         this.remoteBuildServer = remoteBuildServer;
         this.xmlParser = xmlParser;
+        this.output = output;
     }
 
     public async exec(): Promise<void> {
-        Logger.logInfo("GetSuitableConfigs#exec: starts");
+        Logger.logInfo("GetSuitableConfigs: starts");
         try {
             const checkInArray: CheckInInfo[] = await this.getCheckInArray();
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
             this.buildProvider.setContent(projects);
         } catch (err) {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(`[GetSuitableConfig]: ${VsCodeUtils.formatErrorMessage(err)}`);
             return Promise.reject(VsCodeUtils.formatErrorMessage(err));
         }
-        MessageManager.showInfoMessage(MessageConstants.PLEASE_SPECIFY_BUILDS);
-        Logger.logInfo("GetSuitableConfigs#exec: finished");
+
+        this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);
+        this.output.show();
+        Logger.logInfo("GetSuitableConfigs: finished");
     }
 
     private async getCheckInArray(): Promise<CheckInInfo[]> {

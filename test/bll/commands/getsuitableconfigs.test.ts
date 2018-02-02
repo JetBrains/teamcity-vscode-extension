@@ -9,6 +9,7 @@ import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
 import {XmlParser} from "../../../src/bll/utils/xmlparser";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {BuildProvider} from "../../../src/view/dataproviders/buildprovider";
+import {TeamCityOutput} from "../../../src/view/teamcityoutput";
 
 suite("Get Suitable Configs", () => {
     test("should verify that we request data from resource provider", function (done) {
@@ -25,8 +26,9 @@ suite("Get Suitable Configs", () => {
         const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
-
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
+        const outputMock = mock(TeamCityOutput);
+        const outputSpy = tsMockito.instance(outputMock);
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
         testableCommand.exec().then(() => {
             verify(mockedResourceProvider.getSelectedContent()).called();
             done();
@@ -47,7 +49,9 @@ suite("Get Suitable Configs", () => {
         const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
+        const outputMock = mock(TeamCityOutput);
+        const outputSpy = tsMockito.instance(outputMock);
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
         testableCommand.exec().then(() => {
             done("An exception was expected");
         }).catch(() => {
@@ -69,7 +73,9 @@ suite("Get Suitable Configs", () => {
         const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
+        const outputMock = mock(TeamCityOutput);
+        const outputSpy = tsMockito.instance(outputMock);
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
 
         testableCommand.exec().then(() => {
             verify(remoteBuildServerMock.getSuitableConfigurations(anything())).called();
@@ -93,7 +99,9 @@ suite("Get Suitable Configs", () => {
         const resourceProviderSpy: ChangesProvider = tsMockito.instance(mockedResourceProvider);
         const buildProviderMock: BuildProvider = tsMockito.mock(BuildProvider);
         const buildProviderSpy: BuildProvider = tsMockito.instance(buildProviderMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy);
+        const outputMock = mock(TeamCityOutput);
+        const outputSpy = tsMockito.instance(outputMock);
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
 
         testableCommand.exec().then(() => {
             verify(buildProviderMock.setContent(anything())).called();
