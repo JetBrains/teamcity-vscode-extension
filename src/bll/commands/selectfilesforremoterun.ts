@@ -1,10 +1,9 @@
 "use strict";
 
-import {commands} from "vscode";
 import {Logger} from "../utils/logger";
 import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 

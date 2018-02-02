@@ -3,9 +3,9 @@
 import {TYPES} from "../bll/utils/constants";
 import {Summary} from "../bll/entities/summary";
 import {XmlParser} from "../bll/utils/xmlparser";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {RemoteBuildServer} from "./remotebuildserver";
 import {inject, injectable} from "inversify";
+import {Utils} from "../bll/utils/utils";
 
 @injectable()
 export class SummaryDao {
@@ -21,7 +21,7 @@ export class SummaryDao {
 
     public async get(): Promise<Summary> {
         const gZippedSummary: Uint8Array[] = await this.remoteBuildServer.getGZippedSummary();
-        const summeryXmlObj: string = VsCodeUtils.gzip2Xml(gZippedSummary);
+        const summeryXmlObj: string = Utils.gzip2Xml(gZippedSummary);
         return this.xmlParser.parseSummary(summeryXmlObj);
     }
 }

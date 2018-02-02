@@ -1,7 +1,6 @@
 "use strict";
 
 import * as tsMockito from "ts-mockito";
-import {VsCodeUtils} from "../../../src/bll/utils/vscodeutils";
 import {Summary} from "../../../src/bll/entities/summary";
 import {Build} from "../../../src/bll/entities/build";
 import {Change} from "../../../src/bll/entities/change";
@@ -12,6 +11,7 @@ import {TeamCityOutput} from "../../../src/view/teamcityoutput";
 import {SummaryDao} from "../../../src/dal/summarydao";
 import {BuildDao} from "../../../src/dal/builddao";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
+import {Utils} from "../../../src/bll/utils/utils";
 
 suite("Notification Watcher Implementation", () => {
 
@@ -29,7 +29,7 @@ suite("Notification Watcher Implementation", () => {
         const timeout = setTimeout(done, EXPECTED_TIMEOUT);
         watcher.activate().catch((err) => {
             clearTimeout(timeout);
-            done(new Error(`Unexpected error ${VsCodeUtils.formatErrorMessage(err)}`));
+            done(new Error(`Unexpected error ${Utils.formatErrorMessage(err)}`));
         });
     });
 
@@ -47,7 +47,7 @@ suite("Notification Watcher Implementation", () => {
         watcher.activate().then(() => {
             //do nothing
         });
-        VsCodeUtils.sleep(200).then(() => {
+        Utils.sleep(200).then(() => {
             tsMockito.verify(mockedSummaryDaoImpl.get()).called();
             done();
         });
@@ -67,7 +67,7 @@ suite("Notification Watcher Implementation", () => {
         const timeout = setTimeout(done, EXPECTED_TIMEOUT);
         watcher.activate().catch((err) => {
             clearTimeout(timeout);
-            done(new Error(`Unexpected error ${VsCodeUtils.formatErrorMessage(err)}`));
+            done(new Error(`Unexpected error ${Utils.formatErrorMessage(err)}`));
         });
     });
 
@@ -84,9 +84,9 @@ suite("Notification Watcher Implementation", () => {
 
         const watcher: NotificationWatcherImpl = new NotificationWatcherImpl(mutableRemoteBuildServer, mutableSummaryDaoImpl, buildDaoImplSpy, credentialsStore, teamCityOutput);
         watcher.activate().catch((err) => {
-            done(new Error(`Unexpected error ${VsCodeUtils.formatErrorMessage(err)}`));
+            done(new Error(`Unexpected error ${Utils.formatErrorMessage(err)}`));
         });
-        VsCodeUtils.sleep(200).then(() => {
+        Utils.sleep(200).then(() => {
             tsMockito.verify(mockedBuildDaoImpl.getById(tsMockito.anyNumber())).called();
             done();
         });
@@ -103,9 +103,9 @@ suite("Notification Watcher Implementation", () => {
 
         const watcher: NotificationWatcherImpl = new NotificationWatcherImpl(mutableRemoteBuildServer, mutableSummaryDaoImpl, buildDaoImpl, credentialsStore, teamCityOutputSpy);
         watcher.activate().catch((err) => {
-            done(new Error(`Unexpected error ${VsCodeUtils.formatErrorMessage(err)}`));
+            done(new Error(`Unexpected error ${Utils.formatErrorMessage(err)}`));
         });
-        VsCodeUtils.sleep(200).then(() => {
+        Utils.sleep(200).then(() => {
             tsMockito.verify(mockedOutputImpl.appendLine(tsMockito.anyString())).called();
             done();
         });

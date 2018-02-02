@@ -1,11 +1,8 @@
-"use strict";
-
 import * as path from "path";
 import * as stream from "stream";
 import * as cp from "child_process";
 import {Logger} from "../bll/utils/logger";
 import {CvsSupportProvider} from "./cvsprovider";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import * as cp_promise from "child-process-promise";
 import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
@@ -20,6 +17,7 @@ import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 import {GitParser} from "../bll/cvsutils/git-parser";
+import {Utils} from "../bll/utils/utils";
 
 export class GitProvider implements CvsSupportProvider {
 
@@ -142,7 +140,7 @@ export class GitProvider implements CvsSupportProvider {
             });
             showFileStream.on("error", function (err) {
                 Logger.logError(`GitSupportProvider#getStagedFileContentLength: stream for counting ` +
-                    `bytes of ${cvsResource.fileAbsPath} has ended exited with error ${VsCodeUtils.formatErrorMessage(err)}`);
+                    `bytes of ${cvsResource.fileAbsPath} has ended exited with error ${Utils.formatErrorMessage(err)}`);
                 reject(err);
             });
             showFileStream.on("data", function (chunk) {
@@ -184,7 +182,7 @@ export class GitProvider implements CvsSupportProvider {
         try {
             return await this.getPorcelainStatusRows();
         } catch (err) {
-            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${Utils.formatErrorMessage(err)}`);
             return [];
         }
     }
@@ -253,7 +251,7 @@ export class GitProvider implements CvsSupportProvider {
             if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
                 Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this.gitPath}. ` +
                     `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name" ` +
-                    `to set your account's default identity. ${VsCodeUtils.formatErrorMessage(err)}`);
+                    `to set your account's default identity. ${Utils.formatErrorMessage(err)}`);
                 throw new Error(`Unable to auto-detect email address for ${this.gitPath}`);
             }
             throw err;
@@ -285,7 +283,7 @@ export class GitProvider implements CvsSupportProvider {
             .filter((g) => !!g)
             .map((groups: RegExpExecArray) => ({name: groups[1], url: groups[2]}));
 
-        return VsCodeUtils.uniqBy(rawRemotes, (remote) => remote.name);
+        return Utils.uniqBy(rawRemotes, (remote) => remote.name);
     }
 
     public getRootPath(): string {

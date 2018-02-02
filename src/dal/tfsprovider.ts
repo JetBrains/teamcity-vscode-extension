@@ -5,7 +5,6 @@ import * as path from "path";
 import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
@@ -19,6 +18,7 @@ import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresou
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
 import {OsProxy} from "../bll/moduleproxies/os-proxy";
 import {CpProxy} from "../bll/moduleproxies/cp-proxy";
+import {Utils} from "../bll/utils/utils";
 
 export class TfvcProvider implements CvsSupportProvider {
     private workspaceRootPath: string;
@@ -37,7 +37,7 @@ export class TfvcProvider implements CvsSupportProvider {
         const tfPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath, workspaceRootPath.fsPath);
         await isActiveValidator.validate();
-        const tfsInfo: TfsWorkFoldInfo = await instance.getTfsWorkFoldInfo(tfPath, instance.workspaceRootPath);
+        const tfsInfo: TfsWorkFoldInfo = await TfvcProvider.getTfsWorkFoldInfo(tfPath, instance.workspaceRootPath);
         instance.tfPath = tfPath;
         instance.tfsInfo = tfsInfo;
         return instance;
@@ -93,7 +93,7 @@ export class TfvcProvider implements CvsSupportProvider {
         try {
             await cp.exec(checkInCommandSB.join(""));
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${VsCodeUtils.formatErrorMessage(err)}}`);
+            Logger.logError(`TfsSupportProvider#requestForPostCommit: caught an exception during attempt to commit: ${Utils.formatErrorMessage(err)}}`);
             throw new Error("Caught an exception during attempt to commit");
         }
     }
@@ -126,7 +126,7 @@ export class TfvcProvider implements CvsSupportProvider {
             const briefDiffCommandOutput = await cp.exec(briefDiffCommand);
             tfsDiffResult = briefDiffCommandOutput.stdout.toString("utf8").trim();
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`TfsSupportProvider#getAbsPaths: caught an exception during tf diff command: ${Utils.formatErrorMessage(err)}`);
             return [];
         }
         while (true) {
@@ -134,7 +134,7 @@ export class TfvcProvider implements CvsSupportProvider {
             if (!match) {
                 break;
             }
-            if (this.isInCorrectFormat(match)) {
+            if (TfvcProvider.isInCorrectFormat(match)) {
                 const changeType: string = match[1].trim();
                 const fileAbsPath: string = match[2].trim();
                 await this.tryPushCvsResource(localResources, changeType, fileAbsPath);
@@ -144,7 +144,7 @@ export class TfvcProvider implements CvsSupportProvider {
         return localResources;
     }
 
-    private isInCorrectFormat(match: string[]): boolean {
+    private static isInCorrectFormat(match: string[]): boolean {
         return match.length === 3 && match[2] !== "files differ";
     }
 
@@ -153,7 +153,7 @@ export class TfvcProvider implements CvsSupportProvider {
             const resource: CvsResource = await this.getCvsResource(changeType, fileAbsPath);
             resources.push(resource);
         } catch (err) {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(Utils.formatErrorMessage(err));
         }
     }
 
@@ -197,12 +197,12 @@ export class TfvcProvider implements CvsSupportProvider {
             Logger.logWarning(`TfsSupportProvider#getPrevFileNameIfExist: can't parse last history command row`);
             return undefined;
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getPrevFileNameIfExist: an error occurs during history command processing: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`TfsSupportProvider#getPrevFileNameIfExist: an error occurs during history command processing: ${Utils.formatErrorMessage(err)}`);
             return undefined;
         }
     }
 
-    private async getTfsWorkFoldInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
+    private static async getTfsWorkFoldInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
         const parseWorkFoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
         const getLocalRepoInfoCommand: string = `"${tfPath}" workfold "${workspaceRootPath}"`;
         try {
@@ -226,7 +226,7 @@ export class TfvcProvider implements CvsSupportProvider {
                 return undefined;
             }
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getTfsInfo: caught an exception during tf workfold command: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`TfsSupportProvider#getTfsInfo: caught an exception during tf workfold command: ${Utils.formatErrorMessage(err)}`);
             return undefined;
         }
     }
@@ -251,7 +251,7 @@ export class TfvcProvider implements CvsSupportProvider {
             }
             Logger.logDebug(`TfsSupportProvider#getWorkItemIdsFromMessage:found next workItems ${ids.join(",")}`);
         } catch (err) {
-            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message} with error: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message: ${message} with error: ${Utils.formatErrorMessage(err)}`);
         }
         return ids;
     }

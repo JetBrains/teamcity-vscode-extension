@@ -6,7 +6,6 @@ import {Change} from "../entities/change";
 import {Summary} from "../entities/summary";
 import {BuildDao} from "../../dal/builddao";
 import {SummaryDao} from "../../dal/summarydao";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {EventCounter} from "../entities/eventcounter";
 import {ChangeStorage} from "../entities/changestorage";
 import {Output} from "../../view/output";
@@ -17,6 +16,7 @@ import {NotificationWatcher} from "./notificationwatcher";
 import {ModificationSubscription} from "./modificationsubscription";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
+import {Utils} from "../utils/utils";
 
 @injectable()
 export class NotificationWatcherImpl implements NotificationWatcher {
@@ -67,7 +67,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
                 Logger.logError(`NotificationWatcherImpl#activate: an error occurs: ${err}.`);
                 await this.reinitWatcherMutableResources();
             }
-            await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
+            await Utils.sleep(this.CHECK_FREQUENCY_MS);
             if (this.isNotTheSameUser()) {
                 Logger.logInfo("NotificationWatcherImpl#activate: User has changed. ");
                 await this.reinitWatcherMutableResources();
@@ -110,7 +110,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
                 Logger.logInfo(`NotificationWatcherImpl#waitAndGetCredentials: user ${credentials.userId} is logged in.`);
                 return credentials;
             }
-            await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
+            await Utils.sleep(this.CHECK_FREQUENCY_MS);
         }
         Logger.logInfo(`NotificationWatcherImpl#waitAndGetCredentials: shouldNotBeDisposed - abort opperation`);
         return Promise.reject<Credentials>(undefined);
@@ -155,7 +155,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
         }
 
         for (let i = 0; i < changes.length; i++) {
-            const message: string = VsCodeUtils.formMessage(changes[i], credentials.serverURL);
+            const message: string = Utils.formMessage(changes[i], credentials.serverURL);
             this.teamCityOutput.appendLine(message);
             this.teamCityOutput.show();
         }

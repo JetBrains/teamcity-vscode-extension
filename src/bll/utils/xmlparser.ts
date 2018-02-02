@@ -2,14 +2,14 @@
 
 import {Logger} from "./logger";
 import * as xml2js from "xml2js";
-import {VsCodeUtils} from "./vscodeutils";
 import {QueuedBuild} from "./queuedbuild";
-import {Constants} from "../utils/constants";
+import {Constants} from "./constants";
 import {ProjectItem} from "../entities/projectitem";
 import {BuildConfigItem} from "../entities/buildconfigitem";
 import {Summary} from "../entities/summary";
 import {Build} from "../entities/build";
 import {injectable} from "inversify";
+import {Utils} from "./utils";
 
 @injectable()
 export class XmlParser {
@@ -32,7 +32,7 @@ export class XmlParser {
                     if (err) {
                         reject(err);
                     }
-                    this.collectProject(project, projectMap);
+                    XmlParser.collectProject(project, projectMap);
                     resolve();
                 });
             });
@@ -68,7 +68,7 @@ export class XmlParser {
         return new Promise<Summary>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
-                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + Utils.formatErrorMessage(err));
                     reject(err);
                 }
                 resolve(Summary.fromXmlRpcObject(obj));
@@ -81,7 +81,7 @@ export class XmlParser {
      * @param project - project as a TeamCity project entity with lots of useless fields.
      * @param projectMap - the result of the call of the method will be pushed to this object.
      */
-    private collectProject(project: any, projectMap: ProjectItem[]) {
+    private static collectProject(project: any, projectMap: ProjectItem[]) {
         if (!project || !project.Project) {
             return;
         }
@@ -114,7 +114,7 @@ export class XmlParser {
         return new Promise<QueuedBuild>((resolve, reject) => {
             xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
                 if (err) {
-                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo. An error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo. An error occurs ${Utils.formatErrorMessage(err)}`);
                     reject(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo`);
                 }
                 resolve(queuedBuildInfo.build.$);
@@ -126,7 +126,7 @@ export class XmlParser {
         return new Promise<string>((resolve, reject) => {
             xml2js.parseString(buildInfoXml, (err, buildInfo) => {
                 if (err) {
-                    reject(`XmlParser#parseBuildInfo: Can't parse buildInfoXml ${VsCodeUtils.formatErrorMessage(err)}`);
+                    reject(`XmlParser#parseBuildInfo: Can't parse buildInfoXml ${Utils.formatErrorMessage(err)}`);
                 }
                 if (!buildInfo
                     || !buildInfo.build

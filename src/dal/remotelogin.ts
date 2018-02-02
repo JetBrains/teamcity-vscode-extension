@@ -7,6 +7,8 @@ import {injectable} from "inversify";
 import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {RcaPublicKey} from "./rcapublickey";
 import {MessageConstants} from "../bll/utils/messageconstants";
+import {Utils} from "../bll/utils/utils";
+
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
 
@@ -25,11 +27,11 @@ export class RemoteLogin {
             client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err && err.message && err.message.indexOf("Incorrect username or password") !== -1) {
-                    Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + Utils.formatErrorMessage(err));
                     return reject(MessageConstants.STATUS_CODE_401);
                 } else if (err !== null) {
-                    Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + VsCodeUtils.formatErrorMessage(err));
-                    return reject(VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + Utils.formatErrorMessage(err));
+                    return reject(Utils.formatErrorMessage(err));
                 }
                 /* tslint:enable:no-null-keyword */
                 resolve(data);
@@ -54,11 +56,11 @@ export class RemoteLogin {
             client.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err !== null || data === undefined) {
-                    Logger.logError(`RemoteAuthenticationServer.getPublicKey: it failed at getting public key: ${VsCodeUtils.formatErrorMessage(err)}`);
+                    Logger.logError(`RemoteAuthenticationServer.getPublicKey: it failed at getting public key: ${Utils.formatErrorMessage(err)}`);
                     return reject(err);
                 }
                 /* tslint:enable:no-null-keyword */
-                const keys: string[] = VsCodeUtils.parseValueColonValue(data);
+                const keys: string[] = Utils.parseValueColonValue(data);
                 if (!keys || keys.length !== 2) {
                     return reject("RemoteLogin#getPublicKey: wrong number of arguments");
                 }

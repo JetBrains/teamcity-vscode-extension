@@ -3,7 +3,6 @@
 import * as path from "path";
 import {Logger} from "./logger";
 import {ByteWriter} from "./bytewriter";
-import {VsCodeUtils} from "./vscodeutils";
 import {AsyncWriteStream} from "../../dal/asyncwritestream";
 import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {CheckInInfo} from "../entities/checkininfo";
@@ -12,6 +11,8 @@ import {ReadableSet} from "./readableset";
 import {injectable} from "inversify";
 import {ReplacedCvsResource} from "../entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../entities/cvsresources/deletedcvsresource";
+import {Utils} from "./utils";
+
 const temp = require("temp").track();
 
 @injectable()
@@ -25,12 +26,12 @@ export class PatchManager {
         await patchBuilder.startPatching();
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo = checkInArray[i];
-            await this.appendCheckInInfo(patchBuilder, checkInInfo);
+            await PatchManager.appendCheckInInfo(patchBuilder, checkInInfo);
         }
         return patchBuilder.finishPatching();
     }
 
-    private async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo): Promise<void> {
+    private static async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo): Promise<void> {
         const cvsProvider = checkInInfo.cvsProvider;
         const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
         for (let i: number = 0; i < cvsResources.length; i++) {
@@ -54,10 +55,10 @@ class PatchBuilder {
         return new Promise<void>((resolve, reject) => {
             temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
                 if (err) {
-                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ${VsCodeUtils.formatErrorMessage(err)}`);
+                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ${Utils.formatErrorMessage(err)}`);
                     reject(err);
                 }
-                const inputPath = path.join(dirPath, `.${VsCodeUtils.uuidv4()}.patch`);
+                const inputPath = path.join(dirPath, `.${Utils.uuidv4()}.patch`);
                 this.patchAbsPath = inputPath;
                 this.writeSteam = new AsyncWriteStream(inputPath);
                 Logger.logDebug(`PatchBuilder#init: patchAbsPath is ${inputPath}`);
@@ -110,7 +111,7 @@ class PatchBuilder {
             await this.appendEofMark();
             this.writeSteam.dispose();
         } catch (err) {
-            Logger.logError(`CustomPatchSender#finishPatching: an error occurs ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`CustomPatchSender#finishPatching: an error occurs ${Utils.formatErrorMessage(err)}`);
         }
 
         Logger.logInfo(`CustomPatchSender#finishPatching: patch absPath is ${this.patchAbsPath}`);

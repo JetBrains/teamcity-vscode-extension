@@ -6,13 +6,13 @@ import {MessageConstants} from "../utils/messageconstants";
 import {CheckInInfo} from "../entities/checkininfo";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {injectable, inject} from "inversify";
 import {TYPES} from "../utils/constants";
 import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
 import {Output} from "../../view/output";
+import {Utils} from "../utils/utils";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -45,8 +45,8 @@ export class GetSuitableConfigs implements Command {
             const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
             this.buildProvider.setContent(projects);
         } catch (err) {
-            Logger.logError(`[GetSuitableConfig]: ${VsCodeUtils.formatErrorMessage(err)}`);
-            return Promise.reject(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(`[GetSuitableConfig]: ${Utils.formatErrorMessage(err)}`);
+            return Promise.reject(Utils.formatErrorMessage(err));
         }
 
         this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);

@@ -1,7 +1,7 @@
 "use strict";
 
 import {CvsSupportProvider} from "./cvsprovider";
-import {CvsOperation, CvsProviderTypes} from "../bll/utils/constants";
+import {CvsOperation} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {QuickPickItem, QuickPickOptions, Uri, window, workspace} from "vscode";
 import {GitProvider} from "./gitprovider";
@@ -9,7 +9,7 @@ import {TfvcProvider} from "./tfsprovider";
 import {injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {Utils} from "../bll/utils/utils";
 
 @injectable()
 export class CvsProviderProxy {
@@ -36,25 +36,25 @@ export class CvsProviderProxy {
     private async detectCvsProviders(rootPaths: Uri[]): Promise<CvsSupportProvider[]> {
         const detectedCvsProviders: CvsSupportProvider[] = [];
         for (let i = 0; i < rootPaths.length; i++) {
-            const providers: CvsSupportProvider[] = await this.detectCvsProviderInParticularDirectory(rootPaths[i]);
+            const providers: CvsSupportProvider[] = await CvsProviderProxy.detectCvsProviderInParticularDirectory(rootPaths[i]);
             providers.forEach((provider) => detectedCvsProviders.push(provider));
         }
         return detectedCvsProviders;
     }
 
-    private async detectCvsProviderInParticularDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
+    private static async detectCvsProviderInParticularDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const detectedCvsProviders: CvsSupportProvider[] = [];
         try {
             const gitProvider: CvsSupportProvider = await GitProvider.tryActivateInPath(rootPath);
             detectedCvsProviders.push(gitProvider);
         } catch (err) {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(Utils.formatErrorMessage(err));
         }
         try {
             const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
             detectedCvsProviders.push(tfvcProvider);
         } catch (err) {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(Utils.formatErrorMessage(err));
         }
         return detectedCvsProviders;
     }
@@ -81,7 +81,7 @@ export class CvsProviderProxy {
                 const checkInInfo: CheckInInfo = await provider.getRequiredCheckInInfo();
                 result.push(checkInInfo);
             } catch (err) {
-                Logger.logError(VsCodeUtils.formatErrorMessage(err));
+                Logger.logError(Utils.formatErrorMessage(err));
             }
         }
         return result;
@@ -105,7 +105,7 @@ export class CvsProviderProxy {
         const choices: QuickPickItem[] = [];
         choices.push({label: CvsOperation.DoNothing, description: undefined});
         choices.push({label: CvsOperation.DoCommitChanges, description: undefined});
-        const shouldAddPushOption: boolean = this.isGitPresented(checkInArray);
+        const shouldAddPushOption: boolean = CvsProviderProxy.isGitPresented(checkInArray);
         if (shouldAddPushOption) {
             choices.push({label: CvsOperation.DoCommitAndPushChanges, description: undefined});
         }
@@ -118,7 +118,7 @@ export class CvsProviderProxy {
         return nextOperation ? nextOperation.label : CvsOperation.DoNothing;
     }
 
-    private isGitPresented(checkInArray: CheckInInfo[]): boolean {
+    private static isGitPresented(checkInArray: CheckInInfo[]): boolean {
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo: CheckInInfo = checkInArray[i];
             const provider: CvsSupportProvider = checkInInfo.cvsProvider;
@@ -130,7 +130,7 @@ export class CvsProviderProxy {
     }
 
     private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
-        const commitMessage: string = await this.getUpdatedCommitMessages(checkInArray);
+        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
         this.setUpdatedCommitMessages(checkInArray, commitMessage);
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo: CheckInInfo = checkInArray[i];
@@ -140,7 +140,7 @@ export class CvsProviderProxy {
     }
 
     private async doCommitAndPushOperation(checkInArray: CheckInInfo[]): Promise<void> {
-        const commitMessage: string = await this.getUpdatedCommitMessages(checkInArray);
+        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
         this.setUpdatedCommitMessages(checkInArray, commitMessage);
         for (let i = 0; i < checkInArray.length; i++) {
             for (let i = 0; i < checkInArray.length; i++) {
@@ -151,7 +151,7 @@ export class CvsProviderProxy {
         }
     }
 
-    private async getUpdatedCommitMessages(checkInArray: CheckInInfo[]): Promise<string> {
+    private static async getUpdatedCommitMessages(checkInArray: CheckInInfo[]): Promise<string> {
         let commitMessage: string;
         if (checkInArray.length > 0) {
             const previousMessage: string = checkInArray[0].message;

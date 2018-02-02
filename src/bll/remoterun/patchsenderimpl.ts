@@ -6,7 +6,6 @@ import {CheckInInfo} from "../entities/checkininfo";
 import {WebLinks} from "../../dal/weblinks";
 import {XmlParser} from "../utils/xmlparser";
 import {QueuedBuild} from "../utils/queuedbuild";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {PatchManager} from "../utils/patchmanager";
 import {MessageManager} from "../../view/messagemanager";
 import {ChangeListStatus, TYPES} from "../utils/constants";
@@ -15,6 +14,7 @@ import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {window} from "vscode";
+import {Utils} from "../utils/utils";
 
 @injectable()
 export class CustomPatchSender implements PatchSender {
@@ -41,7 +41,7 @@ export class CustomPatchSender implements PatchSender {
         await this.checkCredentialsExistence();
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         try {
-            const commitMessage: string = await this.requestForCommitMessageIfRequired(checkInArray);
+            const commitMessage: string = await CustomPatchSender.requestForCommitMessageIfRequired(checkInArray);
             this.fillCommitMessage(checkInArray, commitMessage);
             const changeListId = await this.webLinks.uploadChanges(patchAbsPath, commitMessage);
             const queuedBuilds: QueuedBuild[] = await this.triggerChangeList(changeListId, configs);
@@ -54,8 +54,8 @@ export class CustomPatchSender implements PatchSender {
                 return false;
             }
         } catch (err) {
-            Logger.logError(VsCodeUtils.formatErrorMessage(err));
-            return Promise.reject(VsCodeUtils.formatErrorMessage(err));
+            Logger.logError(Utils.formatErrorMessage(err));
+            return Promise.reject(Utils.formatErrorMessage(err));
         }
     }
 
@@ -63,7 +63,7 @@ export class CustomPatchSender implements PatchSender {
         await this.credentialsStore.getCredentials();
     }
 
-    private async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {
+    private static async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {
         let commitMessage: string;
         if (checkInArray.length > 0) {
             commitMessage = await window.showInputBox({
@@ -115,7 +115,7 @@ export class CustomPatchSender implements PatchSender {
         while (!buildStatus) {
             buildStatus = await this.getBuildStatus(build);
             if (!buildStatus) {
-                await VsCodeUtils.sleep(this.CHECK_FREQUENCY_MS);
+                await Utils.sleep(this.CHECK_FREQUENCY_MS);
             }
         }
         return buildStatus;

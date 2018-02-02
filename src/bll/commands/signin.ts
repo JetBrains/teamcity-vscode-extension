@@ -2,7 +2,6 @@
 
 import {Logger} from "../utils/logger";
 import {Credentials} from "../credentialsstore/credentials";
-import {VsCodeUtils} from "../utils/vscodeutils";
 import {MessageConstants} from "../utils/messageconstants";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 import {MessageItem, window} from "vscode";
@@ -14,6 +13,7 @@ import {Output} from "../../view/output";
 import {inject, injectable} from "inversify";
 import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
+import {Utils} from "../utils/utils";
 
 @injectable()
 export class SignIn implements Command {
@@ -66,7 +66,7 @@ export class SignIn implements Command {
             credentials = await this.getCredentialsFromPersistence();
         } catch (err) {
             Logger.logWarning(`[SignIn::tryGetCredentialsFromPersistence] failed to get credentials from persistence ` +
-                `with error: ${VsCodeUtils.formatErrorMessage(err)}`);
+                `with error: ${Utils.formatErrorMessage(err)}`);
         }
         return credentials;
     }
@@ -80,7 +80,7 @@ export class SignIn implements Command {
         if (serverUrl && user && password) {
             Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials are not undefined and should be validated`);
             const unParsedColonValues: string = await this.remoteLogin.authenticate(serverUrl, user, password);
-            const loginInfo: string[] = VsCodeUtils.parseValueColonValue(unParsedColonValues);
+            const loginInfo: string[] = Utils.parseValueColonValue(unParsedColonValues);
             const authenticationSuccessful = !!loginInfo;
             if (authenticationSuccessful) {
                 const sessionId = loginInfo[0];
@@ -167,7 +167,7 @@ export class SignIn implements Command {
         try {
             await this.persistentStorageManager.setCredentials(credentials);
         } catch (err) {
-            Logger.logError(`SignIn#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${VsCodeUtils.formatErrorMessage(err)}`);
+            Logger.logError(`SignIn#storeLastUserCredentials: Unfortunately storing a password is not supported. The reason: ${Utils.formatErrorMessage(err)}`);
         }
     }
 

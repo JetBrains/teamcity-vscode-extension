@@ -1,13 +1,12 @@
 "use strict";
 
 import {Logger} from "../bll/utils/logger";
-import {Constants} from "../bll/utils/constants";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {Constants, TYPES} from "../bll/utils/constants";
 import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
-import {injectable, inject} from "inversify";
-import {TYPES} from "../bll/utils/constants";
+import {inject, injectable} from "inversify";
 import {RemoteLogin} from "./remotelogin";
+import {Utils} from "../bll/utils/utils";
 
 @injectable()
 export class RemoteBuildServer {
@@ -45,7 +44,7 @@ export class RemoteBuildServer {
             client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err || !data) {
-                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }
 
@@ -62,7 +61,7 @@ export class RemoteBuildServer {
         return new Promise<number>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getTotalNumberOfEvents", [serializedSubscription], (err, data) => {
                 if (err || !data) {
-                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }
 
@@ -86,7 +85,7 @@ export class RemoteBuildServer {
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("VersionControlServer.getSuitableConfigurations", [changedFiles], (err, configurationId) => {
                 if (err || !configurationId) {
-                    Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }
 
@@ -107,7 +106,7 @@ export class RemoteBuildServer {
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("RemoteBuildServer2.getRelatedProjects", [suitableConfigurations], (err, buildXmlArray) => {
                 if (err || !buildXmlArray) {
-                    Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + VsCodeUtils.formatErrorMessage(err));
+                    Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }
 
