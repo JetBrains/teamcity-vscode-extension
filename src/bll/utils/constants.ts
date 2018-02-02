@@ -12,7 +12,7 @@ export class Constants {
     public static readonly TFS_EXTENSION_ID = "ms-vsts.team";
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
-    public static readonly SHOULD_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
+    public static readonly SHOULD_ASK_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
     public static readonly REMOTERUN_ENABLED = `${Constants.EXTENSION_NAME_PREFIX}remoterun.enabled`;
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
     public static readonly GIT_PATH_SETTING_NAME = "git.path";

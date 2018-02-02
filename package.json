@@ -205,7 +205,7 @@
         },
         "teamcity.credentials.persistent": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Sets whether the extension should store user credentials in persistent storage or not."
         }
       }

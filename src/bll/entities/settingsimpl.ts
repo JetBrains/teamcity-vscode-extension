@@ -9,12 +9,13 @@ import {workspace} from "vscode";
 export class SettingsImpl implements Settings {
     private readonly _loggingLevel: string;
     private _showSignInWelcome: boolean;
-    private _shouldStoreCredentials: boolean;
+    private _shouldAskStoreCredentials: boolean;
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
-        this._shouldStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_STORE_CREDENTIALS, false);
+        this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_ASK_STORE_CREDENTIALS, false);
+
     }
 
     private static async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
@@ -44,7 +45,12 @@ export class SettingsImpl implements Settings {
         return;
     }
 
-    public shouldStoreCredentials(): boolean {
-        return this._shouldStoreCredentials;
+    public shouldAskStoreCredentials(): boolean {
+        return this._shouldAskStoreCredentials;
+    }
+
+    public async setShowStoreCredentialsSuggestion(newValue: boolean): Promise<void> {
+        await SettingsImpl.setSettingsProperty(Constants.SHOULD_ASK_STORE_CREDENTIALS, newValue, true);
+        this._shouldAskStoreCredentials = newValue !== undefined ? newValue : true;
     }
 }

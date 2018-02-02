@@ -8,6 +8,7 @@ export interface Settings {
      * To change this value use setShowSignInWelcome method
      */
     showSignInWelcome: boolean;
-    shouldStoreCredentials(): boolean;
+    shouldAskStoreCredentials(): boolean;
     setShowSignInWelcome(newValue: boolean): Promise<void>;
+    setShowStoreCredentialsSuggestion(newValue: boolean): Promise<void>;
 }

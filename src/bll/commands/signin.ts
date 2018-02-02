@@ -41,15 +41,19 @@ export class SignIn implements Command {
         let credentials: Credentials;
         if (!fromPersistentStore) {
             credentials = await this.requestTypingCredentials();
-        } else if (this.settings.shouldStoreCredentials()) {
+        } else {
             credentials = await this.tryGetCredentialsFromPersistence();
         }
+
         if (credentials) {
             this.credentialsStore.setCredentials(credentials);
             if (!fromPersistentStore) {
                 this.storeLastUserCredentials(credentials).catch((err) => Logger.logError(err));
             }
             Logger.logInfo("SignIn#exec: success.");
+            if (!fromPersistentStore) {
+                await this.suggestToStoreCredentials(credentials);
+            }
             this.greetUser(credentials);
         } else {
             Logger.logWarning("SignIn#exec: operation was aborted by user");
@@ -181,6 +185,27 @@ export class SignIn implements Command {
         if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
             await this.settings.setShowSignInWelcome(false);
         }
+    }
+
+    private async suggestToStoreCredentials(credentials: Credentials): Promise<void> {
+        if (!this.settings.shouldAskStoreCredentials()) {
+            return;
+        }
+
+        const storeCredentialsItem: MessageItem = {title: "Yes"};
+        const notStoreCredentialsItem: MessageItem = {title: "No"};
+        const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
+        const chosenItem: MessageItem = await MessageManager.showInfoMessage(
+            MessageConstants.STORE_CREDENTIALS_SUGGESTION, storeCredentialsItem, notStoreCredentialsItem, doNotShowAgainItem);
+        if (chosenItem && chosenItem.title === storeCredentialsItem.title) {
+            await this.storeLastUserCredentials(credentials);
+        } else if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
+            await this.settings.setShowStoreCredentialsSuggestion(false);
+            await this.persistentStorageManager.removeCredentials();
+        } else {
+            await this.persistentStorageManager.removeCredentials();
+        }
+
     }
 
 }
