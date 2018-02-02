@@ -12,8 +12,10 @@ export interface Settings {
     showSignInWelcome: boolean;
     getLastUrl(): string;
     getLastUsername(): string;
-    shouldStoreCredentials(): boolean;
+    shouldAskStoreCredentials(): boolean;
     setLastUrl(url: string): Promise<void>;
     setLastUsername(username: string): Promise<void>;
     setShowSignInWelcome(newValue: boolean): Promise<void>;
+
+    setShowStoreCredentialsSuggestion(newValue: boolean): Promise<void>;
 }

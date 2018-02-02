@@ -11,14 +11,14 @@ export class SettingsImpl implements Settings {
     private _showSignInWelcome: boolean;
     private _lastUrl: string;
     private _lastUsername: string;
-    private _shouldStoreCredentials: boolean;
+    private _shouldAskStoreCredentials: boolean;
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._lastUrl = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_URL, "");
         this._lastUsername = SettingsImpl.getSettingsProperty<string>(Constants.DEFAULT_USER_NAME, "");
-        this._shouldStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_STORE_CREDENTIALS, false);
+        this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_ASK_STORE_CREDENTIALS, false);
     }
 
     private static async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
@@ -57,8 +57,8 @@ export class SettingsImpl implements Settings {
         return this._lastUsername;
     }
 
-    public shouldStoreCredentials(): boolean {
-        return this._shouldStoreCredentials;
+    public shouldAskStoreCredentials(): boolean {
+        return this._shouldAskStoreCredentials;
     }
 
     public async setLastUrl(url: string): Promise<void> {
@@ -69,5 +69,10 @@ export class SettingsImpl implements Settings {
     public async setLastUsername(username: string): Promise<void> {
         await SettingsImpl.setSettingsProperty(Constants.DEFAULT_USER_NAME, username, true /* global */);
         this._lastUsername = username;
+    }
+
+    public async setShowStoreCredentialsSuggestion(newValue: boolean): Promise<void> {
+        await SettingsImpl.setSettingsProperty(Constants.SHOULD_ASK_STORE_CREDENTIALS, newValue, true);
+        this._shouldAskStoreCredentials = newValue !== undefined ? newValue : true;
     }
 }
