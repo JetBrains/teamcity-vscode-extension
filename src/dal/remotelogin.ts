@@ -4,10 +4,10 @@ import * as xmlrpc from "xmlrpc";
 import * as forge from "node-forge";
 import {Logger} from "../bll/utils/logger";
 import {injectable} from "inversify";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
 import {RcaPublicKey} from "./rcapublickey";
 import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
+import {VsCodeUtils} from "../bll/utils/vscodeutils";
 
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
@@ -16,7 +16,7 @@ const pki = forge.pki;
 export class RemoteLogin {
 
     async authenticate(serverUrl: string, user: string, password: string): Promise<string> {
-        const client = RemoteLogin.createClient(serverUrl);
+        const client = this.createClient(serverUrl);
         const rsaPublicKey: RcaPublicKey = await this.getPublicKey(client);
         if (!rsaPublicKey) {
             throw MessageConstants.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
@@ -39,7 +39,7 @@ export class RemoteLogin {
         });
     }
 
-    public static createClient(serverUrl: string): any {
+    public createClient(serverUrl: string): any {
         const headers = {};
         headers["User-Agent"] = VsCodeUtils.getUserAgentString();
         return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true, headers: headers});

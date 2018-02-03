@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {anything, instance, mock, verify, when} from "ts-mockito";
 import * as stream from "stream";
 import {TestSettings} from "../../../testsettings";

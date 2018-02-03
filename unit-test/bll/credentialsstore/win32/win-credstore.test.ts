@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {anything, instance, mock, verify, when} from "ts-mockito";
 import {WinPersistentCredentialsStore} from "../../../../src/bll/credentialsstore/win32/win-credstore";
 import {assert} from "chai";

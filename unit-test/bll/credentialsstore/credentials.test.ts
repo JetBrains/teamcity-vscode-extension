@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {assert} from "chai";
 import {Credentials} from "../../../src/bll/credentialsstore/credentials";
 

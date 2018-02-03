@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {anything, instance, mock, verify, when} from "ts-mockito";
 import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";

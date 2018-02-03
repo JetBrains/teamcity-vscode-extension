@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {anything, instance, mock, verify, when} from "ts-mockito";
 import {WinPersistentCredentialsStore} from "../../../../src/bll/credentialsstore/win32/win-credstore";
 import {WindowsCredentialStoreApi} from "../../../../src/bll/credentialsstore/win32/win-credstore-api";
@@ -93,10 +94,9 @@ suite("WindowsCredentialStoreApi", () => {
 
     test("should verify removeCredentials with Not Found Err Code", async function () {
         const winPersistentCredentialsStoreMock = mock(WinPersistentCredentialsStore);
-        const notFoundError: any = new Error("Any message");
-        const CREDENTIALS_ARE_NOT_FOUND_CODE: number = 1168;
-        notFoundError.code = CREDENTIALS_ARE_NOT_FOUND_CODE;
-        when(winPersistentCredentialsStoreMock.remove(anything())).thenThrow(notFoundError);
+        const credsNotFoundError: any = new Error("Any message");
+        credsNotFoundError.code = 1168;
+        when(winPersistentCredentialsStoreMock.remove(anything())).thenThrow(credsNotFoundError);
         const winPersistentCredentialsStoreSpy = instance(winPersistentCredentialsStoreMock);
         const credStore = new WindowsCredentialStoreApi(winPersistentCredentialsStoreSpy);
         await credStore.removeCredentials();
@@ -111,7 +111,7 @@ suite("WindowsCredentialStoreApi", () => {
         const credStore = new WindowsCredentialStoreApi(winPersistentCredentialsStoreSpy);
         credStore.removeCredentials().then(() => {
             done("An exception was expected");
-        }).catch((err) => {
+        }).catch(() => {
             done();
         });
     });

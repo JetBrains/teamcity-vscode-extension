@@ -1,13 +1,10 @@
 'use strict';
 
-var gulp = require('gulp'),
-    mocha = require('gulp-mocha');
+var gulp = require('gulp');
 var exec = require('child_process').exec;
-var tslint = require('gulp-tslint');
 var del = require('del');
 var typescript = require('gulp-typescript');
 var sourcemaps = require('gulp-sourcemaps');
-var istanbul = require('gulp-istanbul');
 
 function errorHandler(err) {
     console.error(err.message);
@@ -38,7 +35,7 @@ gulp.task('build', ['copyresources'], function () {
                 return file.base;
             }
         }))
-        .pipe(gulp.dest('./out'));publishbuild
+        .pipe(gulp.dest('./out'));
 });
 
 gulp.task('publishbuild', ['build'], function () {

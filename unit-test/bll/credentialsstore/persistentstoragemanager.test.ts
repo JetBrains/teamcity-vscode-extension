@@ -1,5 +1,6 @@
 "use strict";
 
+import "reflect-metadata";
 import {assert} from "chai";
 import {PersistentStorageManager} from "../../../src/bll/credentialsstore/persistentstoragemanager";
 import {TestSettings} from "../../testsettings";

@@ -12,15 +12,18 @@ import {Utils} from "../bll/utils/utils";
 export class RemoteBuildServer {
 
     private credentialsStore: CredentialsStore;
+    private remoteLogin: RemoteLogin;
 
-    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore) {
+    constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
+                 @inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin) {
         this.credentialsStore = credentialsStore;
+        this.remoteLogin = remoteLogin;
     }
 
     private async createAndInitClient(): Promise<any> {
         const credentials: Credentials = await this.credentialsStore.getCredentials();
         if (credentials) {
-            const client: any = RemoteLogin.createClient(credentials.serverURL);
+            const client: any = this.remoteLogin.createClient(credentials.serverURL);
             client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentials.sessionId);
             return Promise.resolve(client);
         } else {

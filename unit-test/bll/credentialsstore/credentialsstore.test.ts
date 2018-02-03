@@ -1,5 +1,9 @@
 "use strict";
 
+import "reflect-metadata";
+const rmock = require("mock-require");
+rmock("vscode", { });
+
 import {assert} from "chai";
 import {Credentials} from "../../../src/bll/credentialsstore/credentials";
 import {InMemoryCredentialsStore} from "../../../src/bll/credentialsstore/inmemorycredentialsstore";

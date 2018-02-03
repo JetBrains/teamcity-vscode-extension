@@ -34,12 +34,6 @@ export class Constants {
     public static readonly ROOT_PROJECT_ID = "_Root";
 }
 
-export enum CvsProviderTypes {
-    Git = <any>"Git",
-    Tfs = <any>"Tfs",
-    UndefinedCvs = <any>"UndefinedCvs"
-}
-
 /**
  * Without <any> in front of Tracker Event Type prefix ts won't compile the code.
  */
@@ -149,7 +143,7 @@ export const TYPES = {
     BuildProvider: Symbol("BuildProvider"),
     LinuxFileApi: Symbol("LinuxFileApi"),
     WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper"),
-    OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper"),
+    OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper")
 };
 
 export enum CvsOperation {
