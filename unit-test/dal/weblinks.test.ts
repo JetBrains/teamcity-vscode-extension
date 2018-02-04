@@ -9,6 +9,7 @@ import {FsProxy} from "../../src/bll/moduleproxies/fs-proxy";
 import * as stream from "stream";
 import * as Assert from "assert";
 import {WebLinks} from "../../src/dal/weblinks";
+import {IVsCodeUtils} from "../../src/bll/utils/ivscodeutils";
 
 const EXPECTED_CONTENT_LENGTH = 239;
 
@@ -27,8 +28,7 @@ suite("WebLinksImpl", () => {
         const fsProxySpy = instance(fsProxyMock);
         //tslint:disable-next-line: no-null-keyword
         readable.push(null);
-
-        const webLinksImpl = new WebLinks(credStoreSpy, fsProxySpy);
+        const webLinksImpl = new WebLinks(credStoreSpy, fsProxySpy, new VsCodeUtilsMock());
         webLinksImpl.uploadChanges("patchPath", "testMessage").then(() => {
             // do nothing;
         }).catch((err) => {
@@ -51,4 +51,10 @@ function setupServer(done: any): void {
             done(err);
         }
     }).listen(TestSettings.port);
+}
+
+class VsCodeUtilsMock implements IVsCodeUtils {
+    getUserAgentString(): string {
+        return "TeamCity Integration";
+    }
 }

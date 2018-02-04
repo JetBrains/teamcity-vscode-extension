@@ -7,18 +7,21 @@ import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../bll/utils/constants";
 import {FsProxy} from "../bll/moduleproxies/fs-proxy";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
 
 @injectable()
 export class WebLinks {
 
     private credentialsStore: CredentialsStore;
     private fsProxy: FsProxy;
+    private vsCodeUtils: IVsCodeUtils;
 
     constructor (@inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
-                 @inject(TYPES.FsProxy) fsProxy: FsProxy) {
+                 @inject(TYPES.FsProxy) fsProxy: FsProxy,
+                 @inject(TYPES.VsCodeUtils) vsCodeUtils: IVsCodeUtils) {
         this.credentialsStore = credentialsStore;
         this.fsProxy = fsProxy;
+        this.vsCodeUtils = vsCodeUtils;
     }
 
     /**
@@ -45,7 +48,7 @@ export class WebLinks {
                     uri: url
                     , headers: {
                     "Content-Type": "application/xml",
-                    "User-Agent": VsCodeUtils.getUserAgentString()
+                    "User-Agent": this.vsCodeUtils.getUserAgentString()
                 }, body: data
                 },
                 function (err, httpResponse, body) {
@@ -65,7 +68,7 @@ export class WebLinks {
             headers: {
                 "Authorization": WebLinks.generateAuthorizationHeader(credentials),
                 "content-length": this.fsProxy.getFileSize(patchAbsPath),
-                "User-Agent": VsCodeUtils.getUserAgentString()
+                "User-Agent": this.vsCodeUtils.getUserAgentString()
             }
         };
 
@@ -93,7 +96,7 @@ export class WebLinks {
         const options = {
             url: `${credentials.serverURL}/app/rest/buildQueue/${buildId}`,
             headers: {
-              "User-Agent": VsCodeUtils.getUserAgentString()
+              "User-Agent": this.vsCodeUtils.getUserAgentString()
             }
           };
         return new Promise<string>((resolve, reject) => {

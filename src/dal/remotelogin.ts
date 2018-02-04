@@ -3,17 +3,24 @@
 import * as xmlrpc from "xmlrpc";
 import * as forge from "node-forge";
 import {Logger} from "../bll/utils/logger";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
 import {RcaPublicKey} from "./rcapublickey";
 import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
-import {VsCodeUtils} from "../bll/utils/vscodeutils";
+import {TYPES} from "../bll/utils/constants";
+import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
 
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
 
 @injectable()
 export class RemoteLogin {
+
+    private readonly vsCodeUtils: IVsCodeUtils;
+
+    constructor(@inject(TYPES.VsCodeUtils) vsCodeUtils: IVsCodeUtils) {
+        this.vsCodeUtils = vsCodeUtils;
+    }
 
     async authenticate(serverUrl: string, user: string, password: string): Promise<string> {
         const client = this.createClient(serverUrl);
@@ -41,7 +48,7 @@ export class RemoteLogin {
 
     public createClient(serverUrl: string): any {
         const headers = {};
-        headers["User-Agent"] = VsCodeUtils.getUserAgentString();
+        headers["User-Agent"] = this.vsCodeUtils.getUserAgentString();
         return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true, headers: headers});
     }
 
