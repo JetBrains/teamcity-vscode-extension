@@ -23,6 +23,17 @@
             "sourceMaps": true,
             "outFiles": ["${workspaceRoot}/out/test/**/*.js"],
             "preLaunchTask": "publishbuild"
+        },
+        {
+            "name": "Unit Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/unit-test" ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": ["${workspaceRoot}/out/unit-test/**/*.js"],
+            "preLaunchTask": "publishbuild"
         }
     ]
 }
