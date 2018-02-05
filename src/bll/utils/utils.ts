@@ -46,7 +46,7 @@ export class Utils {
         const messageSB: string[] = [];
         if (change.id !== -1) {
             const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
-            const changeUrl: string = `${serverURL}/viewModification.html?modId=${change.id}&personal=true`;
+            const changeUrl: string = `${serverURL}/viewModification.html?modId=${change.id}&personal=${change.isPersonal}`;
             messageSB.push(`${changePrefix} #${change.id} has "${change.status}" status. ${changeUrl}`);
         }
         const builds: Build[] = change.builds;
