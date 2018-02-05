@@ -2,9 +2,8 @@
 
 import * as path from "path";
 import {assert} from "chai";
-import {workspace} from "vscode";
 import * as fs_async from "async-file";
-import {AsyncWriteStream} from "../../src/dal/asyncwritestream";
+import {AsyncWriteStream} from "../../../src/dal/asyncwritestream";
 
 suite("WriteStream", () => {
     test("should verify typical useCase for asyncWriteStream", function (done) {

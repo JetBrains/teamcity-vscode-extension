@@ -1,7 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
-import {BuildConfigItem} from "../../src/bll/entities/buildconfigitem";
+import {BuildConfigItem} from "../../../src/bll/entities/buildconfigitem";
 
 suite("DataProviderManager", () => {
     test("should verify BuildConfig constructor", function () {

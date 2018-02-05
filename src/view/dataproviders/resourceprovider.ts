@@ -1,7 +1,5 @@
-"use strict";
-
 import {DataProvider} from "./dataprovider";
-import {TreeItem, TreeDataProvider, ProviderResult, Event, commands, Disposable, EventEmitter} from "vscode";
+import {Event, EventEmitter, TreeItem} from "vscode";
 import {DataProviderEnum} from "../providermanager";
 import {injectable} from "inversify";
 import {CheckInInfo} from "../../bll/entities/checkininfo";

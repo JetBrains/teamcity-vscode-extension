@@ -1,7 +1,5 @@
-"use strict";
-
 import {DataProvider} from "./dataprovider";
-import {TreeItem, TreeDataProvider, ProviderResult, Event, commands, EventEmitter} from "vscode";
+import {EventEmitter, TreeItem} from "vscode";
 import {DataProviderEnum} from "../providermanager";
 import {ProjectItem} from "../../bll/entities/projectitem";
 import {Logger} from "../../bll/utils/logger";
@@ -11,7 +9,7 @@ import {injectable} from "inversify";
 @injectable()
 export class BuildProvider extends DataProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
-    readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
+    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     private projects: ProjectItem[] = [];
 

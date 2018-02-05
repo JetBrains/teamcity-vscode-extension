@@ -1,7 +1,7 @@
 "use strict";
 
 import {assert} from "chai";
-import {Utils} from "../../src/bll/utils/utils";
+import {Utils} from "../../../src/bll/utils/utils";
 
 suite("VSCodeUtils", () => {
 

@@ -2,8 +2,8 @@
 
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {ModificationSubscription} from "../../src/bll/notifications/modificationsubscription";
-import {Summary} from "../../src/bll/entities/summary";
+import {ModificationSubscription} from "../../../src/bll/notifications/modificationsubscription";
+import {Summary} from "../../../src/bll/entities/summary";
 
 suite("ModificationSubscriptionImpl", () => {
     test("should verify constructor", function () {

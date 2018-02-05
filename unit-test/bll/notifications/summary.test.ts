@@ -1,8 +1,6 @@
-"use strict";
-//TODO: update tests
 import {assert} from "chai";
 import * as xml2js from "xml2js";
-import {Summary} from "../../src/bll/entities/summary";
+import {Summary} from "../../../src/bll/entities/summary";
 
 suite("Summary", () => {
     test("should verify constructor", function (done) {
