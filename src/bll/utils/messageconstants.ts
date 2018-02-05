@@ -23,4 +23,6 @@ export class MessageConstants {
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
     static readonly USER_ABORTED_THE_OPERATION = "User aborted the operation.";
     static readonly REQUEST_FOR_NEXT_OPERATION = "Personal Build has finished successfully. Whould you like to commit/push your changes?";
+    static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations with non-manual VCS checkout mode in " +
+        "which you have permissions to start the builds were not found for the specified changes.";
 }
