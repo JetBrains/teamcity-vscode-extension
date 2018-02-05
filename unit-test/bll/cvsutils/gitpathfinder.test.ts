@@ -8,6 +8,7 @@ import {anyString, instance, mock, when} from "ts-mockito";
 import {FsProxy} from "../../../src/bll/moduleproxies/fs-proxy";
 import {ProcessProxy} from "../../../src/bll/moduleproxies/process-proxy";
 import {CpProxy} from "../../../src/bll/moduleproxies/cp-proxy";
+import {WorkspaceProxy} from "../../../src/bll/moduleproxies/workspace-proxy";
 
 suite("Git Path Finder", () => {
 
@@ -31,7 +32,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, expectedGitPath);
                 done();
@@ -49,7 +55,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(getArgumentForGitVersion(expectedGitPath))).thenReturn(Promise.resolve(correctWinVersionResult));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, expectedGitPath);
                 done();
@@ -68,7 +79,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync("which git")).thenReturn(Promise.resolve(correctDarwinWhichResult));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, expectedGitPath);
                 done();
@@ -88,7 +104,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(getArgumentForGitVersion(unExpectedGitPath))).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, expectedGitPath);
                 done();
@@ -114,7 +135,10 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(getArgumentForGitVersion(unExpectedGitPath2))).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, expectedGitPath);
                 done();
@@ -135,7 +159,10 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -152,7 +179,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -169,7 +201,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync(anyString())).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, "Git path is not found!");
                 done();
@@ -188,7 +225,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync("xcode-select -p")).thenReturn(Promise.resolve(correctWinVersionResult));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().then((gitPath) => {
                 assert.equal(gitPath, "/usr/bin/git");
                 done();
@@ -209,7 +251,12 @@ suite("Git Path Finder", () => {
         when(cpMock.execAsync("xcode-select -p")).thenReturn(Promise.reject<any>(err));
         const cpSpy = instance(cpMock);
 
-        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock);
+        const fsMock = mock(FsProxy);
+        const fsSpy = instance(fsMock);
+        const workspaceMock = mock(WorkspaceProxy);
+        const workspaceSpy = instance(workspaceMock);
+
+        const gitPathFinder: GitPathFinder = new GitPathFinder(cpSpy, processMock, fsSpy, workspaceSpy);
         gitPathFinder.find().catch((err: Error) => {
                 assert.equal(err.message, MessageConstants.GIT_PATH_IS_NOT_FOUND);
                 done();
