@@ -218,7 +218,7 @@
     "test": "node ./node_modules/vscode/bin/test",
     "publishbuild": "gulp publishbuild",
     "package": "vsce package",
-    "unit-test": "mocha **/unit-test/**/*.test.js -u tdd",
+    "unit-test": "mocha \"./out/unit-test/**/*.test.js\" -u tdd",
     "unit-test-ci": "npm run unit-test -- --reporter mocha-teamcity-reporter"
   },
   "devDependencies": {
