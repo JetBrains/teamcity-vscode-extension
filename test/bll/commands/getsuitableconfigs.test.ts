@@ -18,6 +18,7 @@ suite("Get Suitable Configs", () => {
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
+        when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -41,6 +42,7 @@ suite("Get Suitable Configs", () => {
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
+        when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -65,6 +67,7 @@ suite("Get Suitable Configs", () => {
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
+        when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
@@ -91,6 +94,7 @@ suite("Get Suitable Configs", () => {
         const mockedProviderProxy: CvsProviderProxy = mock(CvsProviderProxy);
         const providerProxySpy: CvsProviderProxy = tsMockito.instance(mockedProviderProxy);
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
+        when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
         const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
         const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
