@@ -1,8 +1,8 @@
-import {Uri, workspace, WorkspaceConfiguration} from "vscode";
+import {Uri, workspace} from "vscode";
 
 export class WorkspaceProxy {
 
-    public getConfiguration(section?: string, resource?: Uri): WorkspaceConfiguration {
-        return workspace.getConfiguration(section, resource);
+    public getConfigurationValue<T>(value: string, section?: string, resource?: Uri): T {
+        return workspace.getConfiguration(section, resource).get<T>(value);
     }
 }

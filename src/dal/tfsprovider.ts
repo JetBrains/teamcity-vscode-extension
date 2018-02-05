@@ -16,8 +16,6 @@ import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresourc
 import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
-import {OsProxy} from "../bll/moduleproxies/os-proxy";
-import {CpProxy} from "../bll/moduleproxies/cp-proxy";
 import {Utils} from "../bll/utils/utils";
 
 export class TfvcProvider implements CvsSupportProvider {
@@ -33,7 +31,7 @@ export class TfvcProvider implements CvsSupportProvider {
 
     public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
         const instance: TfvcProvider = new TfvcProvider(workspaceRootPath);
-        const pathFinder: Finder = new TfvcPathFinder(new CpProxy(), new OsProxy());
+        const pathFinder: Finder = new TfvcPathFinder();
         const tfPath: string = await pathFinder.find();
         const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath, workspaceRootPath.fsPath);
         await isActiveValidator.validate();

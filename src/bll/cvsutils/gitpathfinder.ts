@@ -33,7 +33,7 @@ export class GitPathFinder implements Finder {
     }
 
     private getPathHint(): string {
-        return this.workspaceProxy.getConfiguration().get<string>(Constants.GIT_PATH_SETTING_NAME);
+        return this.workspaceProxy.getConfigurationValue(Constants.GIT_PATH_SETTING_NAME);
     }
 
     private async findGitPath(hint: string | undefined): Promise<string> {

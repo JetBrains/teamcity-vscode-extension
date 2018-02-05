@@ -1,19 +1,21 @@
 "use strict";
 
 import {Finder} from "./finder";
-import {workspace} from "vscode";
 import {Constants} from "../utils/constants";
 import {OsProxy} from "../moduleproxies/os-proxy";
 import {CpProxy} from "../moduleproxies/cp-proxy";
+import {WorkspaceProxy} from "../moduleproxies/workspace-proxy";
 
 export class TfvcPathFinder implements Finder {
 
     private readonly cp: CpProxy;
     private readonly os: OsProxy;
+    private readonly workspaceProxy: WorkspaceProxy;
 
-    constructor(cp: CpProxy, os: OsProxy) {
-        this.os = os;
-        this.cp = cp;
+    constructor(osProxy?: OsProxy, cpProxy?: CpProxy, workspaceProxy?: WorkspaceProxy) {
+        this.os = osProxy || new OsProxy();
+        this.cp = cpProxy || new CpProxy();
+        this.workspaceProxy = workspaceProxy || new WorkspaceProxy();
     }
 
     public async find(): Promise<string> {
@@ -35,8 +37,7 @@ export class TfvcPathFinder implements Finder {
     }
 
     private getPathHint(): string {
-        const configuration = workspace.getConfiguration();
-        return configuration.get<string>(Constants.TFS_LOCATION_SETTING_NAME, undefined);
+        return this.workspaceProxy.getConfigurationValue(Constants.TFS_LOCATION_SETTING_NAME);
     }
 
     private replaceLeadingTildeForUnixLikePlatforms(location: string): string {
