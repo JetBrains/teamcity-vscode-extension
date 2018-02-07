@@ -194,7 +194,7 @@ export class SignIn implements Command {
 
         const storeCredentialsItem: MessageItem = {title: "Yes"};
         const notStoreCredentialsItem: MessageItem = {title: "No"};
-        const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
+        const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_ASK_AGAIN};
         const chosenItem: MessageItem = await MessageManager.showInfoMessage(
             MessageConstants.STORE_CREDENTIALS_SUGGESTION, storeCredentialsItem, notStoreCredentialsItem, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === storeCredentialsItem.title) {

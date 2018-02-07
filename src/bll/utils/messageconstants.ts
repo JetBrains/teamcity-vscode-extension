@@ -18,6 +18,7 @@ export class MessageConstants {
     static readonly GET_BUILDS_EXCEPTION: string = "Unexpected exception during getting builds";
     static readonly PLEASE_SPECIFY_BUILDS: string = "Please specify builds for remote run.";
     static readonly DO_NOT_SHOW_AGAIN = "Don't show again";
+    static readonly DO_NOT_ASK_AGAIN = "Don't ask again";
     static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
     static readonly STORE_CREDENTIALS_SUGGESTION = "Do you want the IDE to save the TeamCity URL and your credentials?";
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
