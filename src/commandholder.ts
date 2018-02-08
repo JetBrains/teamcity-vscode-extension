@@ -10,6 +10,8 @@ import {SignIn} from "./bll/commands/signin";
 import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
+import {ChangesProvider} from "./view/dataproviders/resourceprovider";
+import {BuildProvider} from "./view/dataproviders/buildprovider";
 
 @injectable()
 export class CommandHolder {
@@ -22,6 +24,8 @@ export class CommandHolder {
     private _remoteRun: RemoteRun;
     private providerManager: ProviderManager;
     private credentialsStore: CredentialsStore;
+    private resourceProvider: ChangesProvider;
+    private buildProvider: BuildProvider;
 
     constructor(@inject(TYPES.Output) output: Output,
                 @inject(TYPES.SignIn) signInCommand: SignIn,
@@ -30,7 +34,9 @@ export class CommandHolder {
                 @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
                 @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
                 @inject(TYPES.ProviderManager) providerManager: ProviderManager,
-                @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore) {
+                @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
+                @inject(TYPES.ResourceProvider) resourceProvider?: ChangesProvider,
+                @inject(TYPES.BuildProvider) buildProvider?: BuildProvider) {
         this.output = output;
         this._signIn = signInCommand;
         this._signOut = signOutCommand;
@@ -39,6 +45,8 @@ export class CommandHolder {
         this._remoteRun = remoteRun;
         this.providerManager = providerManager;
         this.credentialsStore = credentialsStore;
+        this.resourceProvider = resourceProvider;
+        this.buildProvider = buildProvider;
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
@@ -67,6 +75,16 @@ export class CommandHolder {
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
         return this._remoteRun.exec();
+    }
+
+    public backToEmptyDataProvider(): void {
+        this.resourceProvider.resetTreeContent();
+        this.providerManager.showEmptyDataProvider();
+    }
+
+    public backToSelectFilesForRemoteRun(): void {
+        this.buildProvider.resetTreeContent();
+        this.providerManager.showResourceProvider();
     }
 
     public showOutput(): void {

@@ -68,6 +68,24 @@
         }
       },
       {
+        "command": "teamcity.backToEmptyDataProvider",
+        "title": "Remote Run. Back To Empty Data Provider",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/back.svg",
+          "dark": "resources/icons/dark/back.svg"
+        }
+      },
+      {
+        "command": "teamcity.backToSelectFilesForRemoteRun",
+        "title": "Remote Run. Back To Select Files For Remote Run",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/back.svg",
+          "dark": "resources/icons/dark/back.svg"
+        }
+      },
+      {
         "command": "teamcity.remoteRun",
         "title": "Remote Run. Run With Chosen Build Configurations",
         "category": "TeamCity",
@@ -124,14 +142,19 @@
           "group": "@3"
         },
         {
-          "command": "teamcity.refreshSelectedFilesForRemoteRun",
+          "command": "teamcity.backToEmptyDataProvider",
           "when": "view == teamcityResourceExplorer",
           "group": "navigation@1"
         },
         {
-          "command": "teamcity.findSuitableBuildConfigurations",
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
           "when": "view == teamcityResourceExplorer",
           "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.findSuitableBuildConfigurations",
+          "when": "view == teamcityResourceExplorer",
+          "group": "navigation@3"
         },
         {
           "command": "teamcity.signIn",
@@ -154,14 +177,19 @@
           "group": "@3"
         },
         {
-          "command": "teamcity.refreshSuitableBuildConfigurations",
+          "command": "teamcity.backToSelectFilesForRemoteRun",
           "when": "view == teamcityBuildsExplorer",
           "group": "navigation@1"
         },
         {
-          "command": "teamcity.remoteRun",
+          "command": "teamcity.refreshSuitableBuildConfigurations",
           "when": "view == teamcityBuildsExplorer",
           "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.remoteRun",
+          "when": "view == teamcityBuildsExplorer",
+          "group": "navigation@3"
         },
         {
           "command": "teamcity.signIn",
