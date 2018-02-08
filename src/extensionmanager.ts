@@ -9,15 +9,7 @@ import {Output} from "./view/output";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
-import {
-    commands,
-    Disposable,
-    ExtensionContext,
-    OutputChannel,
-    StatusBarAlignment,
-    StatusBarItem,
-    workspace
-} from "vscode";
+import {Disposable, workspace} from "vscode";
 import {ProviderManager} from "./view/providermanager";
 
 @injectable()
@@ -33,7 +25,8 @@ export class ExtensionManager {
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
                 @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher,
                 @inject(TYPES.Output) output: Output,
-                @inject(TYPES.ProviderManager) providerManager: ProviderManager) {
+                @inject(TYPES.ProviderManager) providerManager: ProviderManager,
+                @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem) {
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._notificationWatcher = notificationWatcher;
@@ -41,7 +34,7 @@ export class ExtensionManager {
         this._disposables.push(notificationWatcher);
         this._disposables.push(output);
         this.initLogger(settings.loggingLevel, workspace.rootPath);
-        TeamCityStatusBarItem.init(this._disposables);
+        this._disposables.push(statusBarItem);
         this._disposables.push(providerManager);
         this.providerManager = providerManager;
         this.trySignInWithPersistentStorage();

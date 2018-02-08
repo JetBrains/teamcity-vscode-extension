@@ -11,6 +11,7 @@ import {RemoteLogin} from "../../dal/remotelogin";
 import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
 import {PersistentStorageManager} from "./persistentstoragemanager";
+import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 
 @injectable()
 export class InMemoryCredentialsStore implements CredentialsStore {
@@ -19,15 +20,18 @@ export class InMemoryCredentialsStore implements CredentialsStore {
     private output: Output;
     private settings: Settings;
     private persistentStorageManager: PersistentStorageManager;
+    private statusBarItem: TeamCityStatusBarItem;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.Output) output: Output,
                 @inject(TYPES.Settings) settings: Settings,
-                @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager) {
+                @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
+                @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem) {
         this.remoteLogin = remoteLogin;
         this.output = output;
         this.settings = settings;
         this.persistentStorageManager = persistentStorageManager;
+        this.statusBarItem = statusBarItem;
     }
 
     private credentials: Credentials;
@@ -51,7 +55,8 @@ export class InMemoryCredentialsStore implements CredentialsStore {
     }
 
     private async signIn(): Promise<void> {
-        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings, this.persistentStorageManager);
+        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings,
+                                         this.persistentStorageManager, this.statusBarItem);
         return signInCommand.exec();
     }
 

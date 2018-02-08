@@ -144,7 +144,8 @@ export const TYPES = {
     LinuxFileApi: Symbol("LinuxFileApi"),
     WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper"),
     OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper"),
-    VsCodeUtils: Symbol("VsCodeUtils")
+    VsCodeUtils: Symbol("VsCodeUtils"),
+    TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem")
 };
 
 export enum CvsOperation {

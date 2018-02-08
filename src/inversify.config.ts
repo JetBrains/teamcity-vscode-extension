@@ -45,6 +45,7 @@ import {PathProxy} from "./bll/moduleproxies/path-proxy";
 import {CpProxy} from "./bll/moduleproxies/cp-proxy";
 import {IVsCodeUtils} from "./bll/utils/ivscodeutils";
 import {VsCodeUtils} from "./bll/utils/vscodeutils";
+import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -84,3 +85,4 @@ myContainer.bind<FileTokenStorage>(TYPES.FileTokenStorage).to(FileTokenStorage).
 myContainer.bind<WinCredStoreParsingStreamWrapper>(TYPES.WinCredStoreParsingStreamWrapper).to(WinCredStoreParsingStreamWrapper).inSingletonScope();
 myContainer.bind<OsxSecurityParsingStreamWrapper>(TYPES.OsxSecurityParsingStreamWrapper).to(OsxSecurityParsingStreamWrapper).inSingletonScope();
 myContainer.bind<IVsCodeUtils>(TYPES.VsCodeUtils).to(VsCodeUtils).inSingletonScope();
+myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCityStatusBarItem).inSingletonScope();

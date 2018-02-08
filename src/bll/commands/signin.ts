@@ -23,17 +23,20 @@ export class SignIn implements Command {
     private settings: Settings;
     private output: Output;
     private persistentStorageManager: PersistentStorageManager;
+    private statusBarItem: TeamCityStatusBarItem;
 
     public constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                        @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                        @inject(TYPES.Output) output: Output,
                        @inject(TYPES.Settings) settings: Settings,
-                       @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager) {
+                       @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
+                       @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem) {
         this.remoteLogin = remoteLogin;
         this.credentialsStore = credentialsStore;
         this.output = output;
         this.settings = settings;
         this.persistentStorageManager = persistentStorageManager;
+        this.statusBarItem = statusBarItem;
     }
 
     public async exec(fromPersistentStore: boolean = false): Promise<void> {
@@ -173,7 +176,7 @@ export class SignIn implements Command {
 
     private async greetUser(credentials: Credentials): Promise<void> {
         this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
-        TeamCityStatusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
+        this.statusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         if (this.settings.showSignInWelcome) {
             await this.showWelcomeMessage();
         }
