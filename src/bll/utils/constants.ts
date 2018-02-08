@@ -145,7 +145,8 @@ export const TYPES = {
     WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper"),
     OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper"),
     VsCodeUtils: Symbol("VsCodeUtils"),
-    TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem")
+    TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem"),
+    WorkspaceProxy: Symbol("WorkspaceProxy")
 };
 
 export enum CvsOperation {

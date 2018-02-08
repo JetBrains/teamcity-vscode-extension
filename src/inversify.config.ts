@@ -46,6 +46,7 @@ import {CpProxy} from "./bll/moduleproxies/cp-proxy";
 import {IVsCodeUtils} from "./bll/utils/ivscodeutils";
 import {VsCodeUtils} from "./bll/utils/vscodeutils";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
+import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -86,3 +87,4 @@ myContainer.bind<WinCredStoreParsingStreamWrapper>(TYPES.WinCredStoreParsingStre
 myContainer.bind<OsxSecurityParsingStreamWrapper>(TYPES.OsxSecurityParsingStreamWrapper).to(OsxSecurityParsingStreamWrapper).inSingletonScope();
 myContainer.bind<IVsCodeUtils>(TYPES.VsCodeUtils).to(VsCodeUtils).inSingletonScope();
 myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCityStatusBarItem).inSingletonScope();
+myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
