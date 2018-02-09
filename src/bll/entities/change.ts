@@ -51,7 +51,7 @@ export class Change {
             !changeObj.mod[0] ||
             changeObj.mod[0].personal === undefined ||
             changeObj.mod[0].personal[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#isPersonal: isPersonal is not reachable. default: false`);
+            Logger.logDebug(`Change#isPersonal: isPersonal is not reachable. default: false`);
             return false;
         }
         return (changeObj.mod[0].personal[0] === "true");
@@ -63,7 +63,7 @@ export class Change {
             !changeObj.mod[0] ||
             changeObj.mod[0].id === undefined ||
             changeObj.mod[0].id[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#id: id is not reachable. default: -1`);
+            Logger.logDebug(`Change#id: id is not reachable. default: -1`);
             return -1;
         }
         return changeObj.mod[0].id[0];
@@ -73,7 +73,7 @@ export class Change {
         if (!changeObj ||
             !changeObj.myStatus ||
             !changeObj.myStatus[0]) {
-            Logger.logDebug(`ChangeItemProxy#status: status is not reachable. default: UNKNOWN`);
+            Logger.logDebug(`Change#status: status is not reachable. default: UNKNOWN`);
             return "UNKNOWN";
         }
         return changeObj.myStatus[0];
@@ -105,7 +105,7 @@ export class Change {
             !changeObj.mod[0] ||
             changeObj.mod[0].myDescription === undefined ||
             changeObj.mod[0].myDescription[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#getDescription: description is not reachable. default: empty string`);
+            Logger.logDebug(`Change#getDescription: description is not reachable. default: empty string`);
             return "";
         }
         return changeObj.mod[0].myDescription[0];
@@ -117,7 +117,7 @@ export class Change {
             !changeObj.mod[0] ||
             !changeObj.mod[0].myVersionControlName ||
             changeObj.mod[0].myVersionControlName[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#getVersionControlName: versionControlName is not reachable. default: empty string`);
+            Logger.logDebug(`Change#getVersionControlName: versionControlName is not reachable. default: empty string`);
             return "";
         }
         return changeObj.mod[0].myVersionControlName[0];
@@ -129,7 +129,7 @@ export class Change {
             !changeObj.mod[0] ||
             !changeObj.mod[0].myChangesCount ||
             changeObj.mod[0].myChangesCount[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#getChangesCount: changesCount is not reachable. default: 0`);
+            Logger.logDebug(`Change#getChangesCount: changesCount is not reachable. default: 0`);
             return 0;
         }
         return changeObj.mod[0].myChangesCount[0];
@@ -141,7 +141,7 @@ export class Change {
             !changeObj.mod[0] ||
             !changeObj.mod[0].myVcsDate ||
             changeObj.mod[0].myVcsDate[0] === undefined) {
-            Logger.logDebug(`ChangeItemProxy#getDate: vcsDate is not reachable. default: current date`);
+            Logger.logDebug(`Change#getDate: vcsDate is not reachable. default: current date`);
             return new Date();
         }
         const vcsDateInMilliseconds : number = +changeObj.mod[0].myVcsDate[0];
