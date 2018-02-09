@@ -33,6 +33,7 @@ export class Constants {
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
+    public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
     public static readonly ROOT_PROJECT_ID = "_Root";
 }
 
@@ -148,7 +149,8 @@ export const TYPES = {
     OsxSecurityParsingStreamWrapper: Symbol("OsxSecurityParsingStreamWrapper"),
     VsCodeUtils: Symbol("VsCodeUtils"),
     TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem"),
-    WorkspaceProxy: Symbol("WorkspaceProxy")
+    WorkspaceProxy: Symbol("WorkspaceProxy"),
+    ShowMyChangesCommand: Symbol("ShowMyChangesCommand")
 };
 
 export enum CvsOperation {

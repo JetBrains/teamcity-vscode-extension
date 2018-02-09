@@ -47,6 +47,7 @@ import {IVsCodeUtils} from "./bll/utils/ivscodeutils";
 import {VsCodeUtils} from "./bll/utils/vscodeutils";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
+import {ShowMyChanges} from "./bll/commands/showmychanges";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -88,3 +89,4 @@ myContainer.bind<OsxSecurityParsingStreamWrapper>(TYPES.OsxSecurityParsingStream
 myContainer.bind<IVsCodeUtils>(TYPES.VsCodeUtils).to(VsCodeUtils).inSingletonScope();
 myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCityStatusBarItem).inSingletonScope();
 myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
+myContainer.bind<Command>(TYPES.ShowMyChangesCommand).to(ShowMyChanges).inSingletonScope();

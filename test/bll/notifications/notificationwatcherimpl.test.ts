@@ -122,14 +122,14 @@ suite("Notification Watcher Implementation", () => {
     }
 
     function getSummaryA(): Summary {
-        const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()])];
-        const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()])];
+        const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
         return new Summary(["1", "2", "3"], changes, personalChange);
     }
 
     function getSummaryB(): Summary {
-        const changes: Change[] = [new Change(2, false, "CHECKED", [getSimpleBuild()])];
-        const personalChange: Change[] = [new Change(2, true, "CHECKED", [getSimpleBuild()])];
+        const changes: Change[] = [new Change(2, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const personalChange: Change[] = [new Change(2, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
         return new Summary(["1", "2", "3"], changes, personalChange);
     }
 

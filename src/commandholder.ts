@@ -12,6 +12,7 @@ import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {ChangesProvider} from "./view/dataproviders/resourceprovider";
 import {BuildProvider} from "./view/dataproviders/buildprovider";
+import {ShowMyChanges} from "./bll/commands/showmychanges";
 
 @injectable()
 export class CommandHolder {
@@ -22,6 +23,7 @@ export class CommandHolder {
     private _selectFilesForRemoteRun: SelectFilesForRemoteRun;
     private _getSuitableConfigs: GetSuitableConfigs;
     private _remoteRun: RemoteRun;
+    private _showMyChanges: ShowMyChanges;
     private providerManager: ProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: ChangesProvider;
@@ -33,6 +35,7 @@ export class CommandHolder {
                 @inject(TYPES.SelectFilesForRemoteRun) selectFilesForRemoteRun: SelectFilesForRemoteRun,
                 @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
                 @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
+                @inject(TYPES.ShowMyChangesCommand) showMyChanges: ShowMyChanges,
                 @inject(TYPES.ProviderManager) providerManager: ProviderManager,
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
                 @inject(TYPES.ResourceProvider) resourceProvider?: ChangesProvider,
@@ -43,6 +46,7 @@ export class CommandHolder {
         this._selectFilesForRemoteRun = selectFilesForRemoteRun;
         this._getSuitableConfigs = getSuitableConfigs;
         this._remoteRun = remoteRun;
+        this._showMyChanges = showMyChanges;
         this.providerManager = providerManager;
         this.credentialsStore = credentialsStore;
         this.resourceProvider = resourceProvider;
@@ -89,5 +93,9 @@ export class CommandHolder {
 
     public showOutput(): void {
         this.output.show();
+    }
+
+    public showMyChanges(): Promise<void> {
+        return this._showMyChanges.exec();
     }
 }

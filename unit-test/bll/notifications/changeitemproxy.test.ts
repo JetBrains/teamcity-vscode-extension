@@ -60,21 +60,89 @@ suite("ChangeItemProxy", () => {
             done();
         });
     });
+
+    test("should verify builds", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.builds.length, 1);
+            assert.equal(changeItem.builds[0].id, 87);
+            done();
+        });
+    });
+
+    test("should verify builds", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.builds.length, 1);
+            assert.equal(changeItem.builds[0].id, 87);
+            done();
+        });
+    });
+
+    test("should verify changesCount", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.myChangesCount, 5);
+            done();
+        });
+    });
+
+    test("should verify description", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.myDescription, "test description");
+            done();
+        });
+    });
+
+    test("should verify version control name", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.myVersionControlName, "Pre-Tested Commit");
+            done();
+        });
+    });
+
+    test("should verify vcs date", function (done) {
+        xml2js.parseString(changePersonalObjXml, (err, obj) => {
+            if (err) {
+                done("Unexpected error during parse of changePersonalObjXml.");
+            }
+            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
+            assert.equal(changeItem.vcsDate, new Date(1500457539333));
+            done();
+        });
+    });
 });
 
 const changePersonalObjXml: string = `<ChangeInfo>
     <mod>
-    <myVcsDate>1500457539333</myVcsDate>
-    <myVersion>19 07 2017 12:45</myVersion>
-    <myDisplayVersion>19 07 2017 12:45</myDisplayVersion>
-    <myUser>rugpanov</myUser>
-    <myDescription></myDescription>
-    <myChanges class="java.util.Collections$EmptyList" reference="../../../../changes/ChangeInfo/mod/myChanges"/>
-    <myChangesCount>5</myChangesCount>
-    <myCanBeIgnored>true</myCanBeIgnored>
-    <id>61</id>
-    <personal>true</personal>
-    <myVersionControlName>Pre-Tested Commit</myVersionControlName>
+        <myVcsDate>1500457539333</myVcsDate>
+        <myVersion>19 07 2017 12:45</myVersion>
+        <myDisplayVersion>19 07 2017 12:45</myDisplayVersion>
+        <myUser>rugpanov</myUser>
+        <myDescription>test description</myDescription>
+        <myChanges class="java.util.Collections$EmptyList" reference="../../../../changes/ChangeInfo/mod/myChanges"/>
+        <myChangesCount>5</myChangesCount>
+        <myCanBeIgnored>true</myCanBeIgnored>
+        <id>61</id>
+        <personal>true</personal>
+        <myVersionControlName>Pre-Tested Commit</myVersionControlName>
     </mod>
     <myTypeToInstanceMap class="linked-hash-map">
     <entry>

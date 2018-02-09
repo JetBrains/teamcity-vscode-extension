@@ -98,6 +98,11 @@
         "command": "teamcity.showOutput",
         "title": "Show TeamCity Output",
         "category": "TeamCity"
+      },
+      {
+        "command": "teamcity.showMyChanges",
+        "title": "Show My Changes",
+        "category": "TeamCity"
       }
     ],
     "views": {
