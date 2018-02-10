@@ -12,7 +12,7 @@ export class Change {
     public readonly myDescription: string;
     public readonly myVersionControlName: string;
     public readonly vcsDate: Date;
-    public builds: Build[]; //TODO: make readonly
+    public builds: Build[];
 
     public constructor(id: number, isPersonal: boolean, status: string, builds: Build[],
                        changesCount: number, description: string, versionControlName: string, vcsDate: Date) {
@@ -108,7 +108,12 @@ export class Change {
             Logger.logDebug(`Change#getDescription: description is not reachable. default: empty string`);
             return "";
         }
-        return changeObj.mod[0].myDescription[0];
+        const description = changeObj.mod[0].myDescription[0].trim();
+        const descriptionLines = description.split("\n");
+        const firstDescriptionLine = descriptionLines[0].trim();
+        const firstLineCharacters = firstDescriptionLine.substring(0, 30);
+        const shouldAddDots = (descriptionLines.length > 1) || (firstDescriptionLine !== firstLineCharacters);
+        return firstLineCharacters + (shouldAddDots ? "..." : "");
     }
 
     private static getVersionControlName(changeObj: any): string {
