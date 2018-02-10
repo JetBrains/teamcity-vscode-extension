@@ -124,7 +124,7 @@ suite("ChangeItemProxy", () => {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
-            assert.equal(changeItem.vcsDate, new Date(1500457539333));
+            assert.deepEqual(changeItem.vcsDate, new Date(1500457539333));
             done();
         });
     });
