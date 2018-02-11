@@ -48,6 +48,7 @@ import {VsCodeUtils} from "./bll/utils/vscodeutils";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
+import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -79,7 +80,7 @@ myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy);
 myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy);
 myContainer.bind<CpProxy>(TYPES.CpProxy).to(CpProxy);
 myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
-myContainer.bind<ResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
+myContainer.bind<IResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
 myContainer.bind<BuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();
 myContainer.bind<OsxKeychainApi>(TYPES.OsxKeychainApi).to(OsxKeychainApi).inSingletonScope();
 myContainer.bind<OsxKeychain>(TYPES.OsxKeychain).to(OsxKeychain).inSingletonScope();

@@ -8,9 +8,10 @@ import {CvsResourceItem} from "../../bll/entities/cvsresources/cvsresourceitem";
 import {Logger} from "../../bll/utils/logger";
 import {CheckInInfoItem} from "../../bll/entities/checkininfoitem";
 import {Utils} from "../../bll/utils/utils";
+import {IResourceProvider} from "./interfaces/iresourceprovider";
 
 @injectable()
-export class ResourceProvider extends DataProvider {
+export class ResourceProvider extends DataProvider implements IResourceProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 
@@ -64,7 +65,7 @@ export class ResourceProvider extends DataProvider {
         return new CheckInInfo(includedResources, checkInInfo.item.cvsProvider, checkInInfo.item.serverItems, checkInInfo.item.workItemIds);
     }
 
-    getType(): DataProviderEnum {
+    public getType(): DataProviderEnum {
         return DataProviderEnum.ResourcesProvider;
     }
 

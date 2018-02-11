@@ -6,24 +6,24 @@ import {XmlParser} from "../utils/xmlparser";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
-import {ResourceProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
 import {Output} from "../../view/output";
 import {Utils} from "../utils/utils";
 import {Project} from "../entities/project";
+import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
-    private readonly resourceProvider: ResourceProvider;
+    private readonly resourceProvider: IResourceProvider;
     private readonly buildProvider: BuildProvider;
     private readonly remoteBuildServer: RemoteBuildServer;
     private readonly xmlParser: XmlParser;
     private readonly output: Output;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
-                       @inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
+                       @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
                        @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) xmlParser: XmlParser,
