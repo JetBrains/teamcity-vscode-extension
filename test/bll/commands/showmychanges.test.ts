@@ -1,6 +1,4 @@
 import "reflect-metadata";
-const rmock = require("mock-require");
-rmock("vscode", { });
 import {assert} from "chai";
 import {ShowMyChanges} from "../../../src/bll/commands/showmychanges";
 import {anything, instance, mock, verify, when} from "ts-mockito";
@@ -10,7 +8,9 @@ import {Summary} from "../../../src/bll/entities/summary";
 import {Change} from "../../../src/bll/entities/change";
 import {Build} from "../../../src/bll/entities/build";
 import {Output} from "../../../src/view/output";
-import {MessageConstants} from "../../../src/bll/utils/messageconstants";
+
+const rmock = require("mock-require");
+rmock("vscode", { });
 
 suite("Show My Changes", () => {
     test("should verify constructor", function () {
@@ -51,14 +51,14 @@ suite("Show My Changes", () => {
         });
     });
 
-    test("should verify when there is no personal changes", function (done) {
+    test("should verify when there is no changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
-        when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryWithoutPersonalChanges()));
+        when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryWithoutChanges()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const outputCustomMock = new OutputMock();
         const command = new ShowMyChanges(summaryDaoSpy, outputCustomMock);
         command.exec().then(() => {
-            assert.notEqual(outputCustomMock.receivedLines.join("").indexOf(MessageConstants.NOTHING_TO_SHOW), -1);
+            assert.equal(outputCustomMock.receivedLines.join("").indexOf("|"), -1);
             done();
         }).catch((err) => {
             done(err);
@@ -99,8 +99,8 @@ function getSummaryA(): Summary {
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
 
-function getSummaryWithoutPersonalChanges(): Summary {
-    const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+function getSummaryWithoutChanges(): Summary {
+    const changes: Change[] = [];
     const personalChange: Change[] = [];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
