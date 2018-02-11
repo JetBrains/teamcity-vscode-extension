@@ -7,6 +7,7 @@ import {injectable} from "inversify";
 import {Project} from "../../bll/entities/project";
 import {DataProviderEnum} from "../../bll/utils/constants";
 import {IBuildProvider} from "./interfaces/ibuildprovider";
+import {BuildConfig} from "../../bll/entities/buildconfig";
 
 @injectable()
 export class BuildProvider extends DataProvider implements IBuildProvider {
@@ -28,8 +29,8 @@ export class BuildProvider extends DataProvider implements IBuildProvider {
         array.length = 0;
     }
 
-    public getSelectedContent(): BuildConfigItem[] {
-        const result: BuildConfigItem[] = [];
+    public getSelectedContent(): BuildConfig[] {
+        const result: BuildConfig[] = [];
         this.projectItems.forEach((project) => {
             this.collectAllProject(project, result);
         });
@@ -37,10 +38,10 @@ export class BuildProvider extends DataProvider implements IBuildProvider {
         return result;
     }
 
-    private collectAllProject(project: ProjectItem, summaryCollection: BuildConfigItem[]) {
+    private collectAllProject(project: ProjectItem, summaryCollection: BuildConfig[]) {
         project.children.forEach((child) => {
             if (child instanceof BuildConfigItem && child.isIncluded) {
-                summaryCollection.push(child);
+                summaryCollection.push(child.entity);
             }
             if (child instanceof ProjectItem) {
                 this.collectAllProject(child, summaryCollection);

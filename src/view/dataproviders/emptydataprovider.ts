@@ -10,14 +10,6 @@ export class EmptyDataProvider extends DataProvider {
         throw new Error("Unsupported operation");
     }
 
-    setContent(content): void {
-        throw new Error("Unsupported operation");
-    }
-
-    getSelectedContent(): TreeItem[] {
-        throw new Error("Unsupported operation");
-    }
-
     refreshTreePresentation(): void {
         throw new Error("Unsupported operation");
     }

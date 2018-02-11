@@ -1,13 +1,11 @@
-"use strict";
-
 import * as request from "request";
-import {BuildConfigItem} from "../bll/entities/buildconfigitem";
 import {Credentials} from "../bll/credentialsstore/credentials";
 import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../bll/utils/constants";
 import {FsProxy} from "../bll/moduleproxies/fs-proxy";
 import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
+import {BuildConfig} from "../bll/entities/buildconfig";
 
 @injectable()
 export class WebLinks {
@@ -28,7 +26,7 @@ export class WebLinks {
      * @param changeListId - id of change list to trigger
      * @param buildConfig - build configs, which should be triggered
      */
-    async buildQueue(changeListId: string, buildConfig: BuildConfigItem): Promise<string> {
+    async buildQueue(changeListId: string, buildConfig: BuildConfig): Promise<string> {
         if (!buildConfig) {
             return undefined;
         }

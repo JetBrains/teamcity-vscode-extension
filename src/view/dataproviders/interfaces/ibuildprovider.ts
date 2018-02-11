@@ -1,10 +1,10 @@
 import {Project} from "../../../bll/entities/project";
-import {BuildConfigItem} from "../../../bll/entities/buildconfigitem";
+import {BuildConfig} from "../../../bll/entities/buildconfig";
 
 export interface IBuildProvider {
     resetTreeContent(): void;
 
     setContent(projects: Project[]): void;
 
-    getSelectedContent(): BuildConfigItem[];
+    getSelectedContent(): BuildConfig[];
 }

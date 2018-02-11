@@ -1,13 +1,13 @@
 "use strict";
 
 import {PatchSender} from "./patchsender";
-import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CheckInInfo} from "../entities/checkininfo";
+import {BuildConfig} from "../entities/buildconfig";
 
 export interface PatchSender {
 
     /**
      * @returns true in case of success, otherwise false.
      */
-    remoteRun(configs: BuildConfigItem[], checkInInfo: CheckInInfo[]): Promise<boolean>;
+    remoteRun(configs: BuildConfig[], checkInInfo: CheckInInfo[]): Promise<boolean>;
 }

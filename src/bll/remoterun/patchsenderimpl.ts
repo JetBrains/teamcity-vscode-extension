@@ -10,11 +10,11 @@ import {PatchManager} from "../utils/patchmanager";
 import {MessageManager} from "../../view/messagemanager";
 import {ChangeListStatus, TYPES} from "../utils/constants";
 import {MessageConstants} from "../utils/messageconstants";
-import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {window} from "vscode";
 import {Utils} from "../utils/utils";
+import {BuildConfig} from "../entities/buildconfig";
 
 @injectable()
 export class CustomPatchSender implements PatchSender {
@@ -37,7 +37,7 @@ export class CustomPatchSender implements PatchSender {
     /**
      * @returns true in case of success, otherwise false.
      */
-    public async remoteRun(configs: BuildConfigItem[], checkInArray: CheckInInfo[]): Promise<boolean> {
+    public async remoteRun(configs: BuildConfig[], checkInArray: CheckInInfo[]): Promise<boolean> {
         await this.checkCredentialsExistence();
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         try {
@@ -84,13 +84,13 @@ export class CustomPatchSender implements PatchSender {
      * @param buildConfigs - all build configs, which should be triggered
      */
     public async triggerChangeList(changeListId: string,
-                                   buildConfigs: BuildConfigItem[]): Promise<QueuedBuild[]> {
+                                   buildConfigs: BuildConfig[]): Promise<QueuedBuild[]> {
         if (!buildConfigs) {
             return [];
         }
         const queuedBuilds: QueuedBuild[] = [];
         for (let i = 0; i < buildConfigs.length; i++) {
-            const build: BuildConfigItem = buildConfigs[i];
+            const build: BuildConfig = buildConfigs[i];
             const queuedBuildInfoXml: string = await this.webLinks.buildQueue(changeListId, build);
             queuedBuilds.push(await this.xmlParser.parseQueuedBuild(queuedBuildInfoXml));
         }

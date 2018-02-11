@@ -1,7 +1,6 @@
 "use strict";
 
 import {Logger} from "../utils/logger";
-import {BuildConfigItem} from "../entities/buildconfigitem";
 import {CheckInInfo} from "../entities/checkininfo";
 import {MessageManager} from "../../view/messagemanager";
 import {MessageConstants} from "../utils/messageconstants";
@@ -12,6 +11,7 @@ import {TYPES} from "../utils/constants";
 import {ProviderManager} from "../../view/providermanager";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
+import {BuildConfig} from "../entities/buildconfig";
 
 @injectable()
 export class RemoteRun implements Command {
@@ -36,7 +36,7 @@ export class RemoteRun implements Command {
 
     public async exec(): Promise<void> {
         Logger.logInfo("RemoteRun#exec: starts");
-        const includedBuildConfigs: BuildConfigItem[] = this.buildProvider.getSelectedContent();
+        const includedBuildConfigs: BuildConfig[] = this.buildProvider.getSelectedContent();
         const checkInArray: CheckInInfo[] = this.resourceProvider.getSelectedContent();
         if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
             MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);

@@ -4,7 +4,7 @@ import {LeaveSelectableItem} from "./leaveselectableitem";
 import {BuildConfig} from "./buildconfig";
 
 export class BuildConfigItem extends LeaveSelectableItem {
-    public readonly buildConfig: BuildConfig;
+    private readonly buildConfig: BuildConfig;
 
     constructor(buildConfig: BuildConfig) {
         super(buildConfig.name);
@@ -27,4 +27,7 @@ export class BuildConfigItem extends LeaveSelectableItem {
         return this.buildConfig.externalId;
     }
 
+    public get entity(): BuildConfig {
+        return this.buildConfig;
+    }
 }
