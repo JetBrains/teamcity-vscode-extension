@@ -1,4 +1,6 @@
 import "reflect-metadata";
+const rmock = require("mock-require");
+rmock("vscode", { });
 import {assert} from "chai";
 import {ShowMyChanges} from "../../../src/bll/commands/showmychanges";
 import {anything, instance, mock, verify, when} from "ts-mockito";
@@ -8,9 +10,6 @@ import {Summary} from "../../../src/bll/entities/summary";
 import {Change} from "../../../src/bll/entities/change";
 import {Build} from "../../../src/bll/entities/build";
 import {Output} from "../../../src/view/output";
-
-const rmock = require("mock-require");
-rmock("vscode", { });
 
 suite("Show My Changes", () => {
     test("should verify constructor", function () {
