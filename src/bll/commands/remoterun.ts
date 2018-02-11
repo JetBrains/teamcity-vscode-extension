@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
 import {CheckInInfo} from "../entities/checkininfo";
 import {MessageManager} from "../../view/messagemanager";
@@ -8,10 +6,10 @@ import {PatchSender} from "../remoterun/patchsender";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
-import {ProviderManager} from "../../view/providermanager";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
 import {BuildConfig} from "../entities/buildconfig";
+import {IProviderManager} from "../../view/iprovidermanager";
 
 @injectable()
 export class RemoteRun implements Command {
@@ -20,12 +18,12 @@ export class RemoteRun implements Command {
     private readonly patchSender: PatchSender;
     private readonly buildProvider: IBuildProvider;
     private readonly resourceProvider: IResourceProvider;
-    private readonly providerManager: ProviderManager;
+    private readonly providerManager: IProviderManager;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
                        @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
                        @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
-                       @inject(TYPES.ProviderManager) providerManager: ProviderManager,
+                       @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                        @inject(TYPES.PatchSender) patchSender: PatchSender) {
         this.cvsProvider = cvsProvider;
         this.buildProvider = buildProvider;

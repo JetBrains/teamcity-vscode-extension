@@ -1,7 +1,6 @@
 import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
-import {ProviderManager} from "./view/providermanager";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
 import {SignIn} from "./bll/commands/signin";
@@ -11,6 +10,7 @@ import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
 import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
+import {IProviderManager} from "./view/iprovidermanager";
 
 @injectable()
 export class CommandHolder {
@@ -22,7 +22,7 @@ export class CommandHolder {
     private _getSuitableConfigs: GetSuitableConfigs;
     private _remoteRun: RemoteRun;
     private _showMyChanges: ShowMyChanges;
-    private providerManager: ProviderManager;
+    private providerManager: IProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: IResourceProvider;
     private buildProvider: IBuildProvider;
@@ -34,7 +34,7 @@ export class CommandHolder {
                 @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
                 @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
                 @inject(TYPES.ShowMyChangesCommand) showMyChanges: ShowMyChanges,
-                @inject(TYPES.ProviderManager) providerManager: ProviderManager,
+                @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
                 @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
                 @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider) {

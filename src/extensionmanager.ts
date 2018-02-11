@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "./bll/utils/logger";
 import {TYPES} from "./bll/utils/constants";
 import {inject, injectable} from "inversify";
@@ -10,8 +8,8 @@ import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {Disposable} from "vscode";
-import {ProviderManager} from "./view/providermanager";
 import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
+import {IProviderManager} from "./view/iprovidermanager";
 
 @injectable()
 export class ExtensionManager {
@@ -19,14 +17,14 @@ export class ExtensionManager {
     private readonly _commandHolder: CommandHolder;
     private _notificationWatcher: NotificationWatcher;
     private readonly _disposables: Disposable[] = [];
-    private readonly providerManager: ProviderManager;
+    private readonly providerManager: IProviderManager;
 
     constructor(@inject(TYPES.Settings) settings: Settings,
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
                 @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher,
                 @inject(TYPES.Output) output: Output,
-                @inject(TYPES.ProviderManager) providerManager: ProviderManager,
+                @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
                 @inject(TYPES.WorkspaceProxy) workspaceProxy: WorkspaceProxy) {
         let defaultWorkspace;

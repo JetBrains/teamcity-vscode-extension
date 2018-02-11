@@ -1,5 +1,3 @@
-"use strict";
-
 import {commands, Disposable, window} from "vscode";
 import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
 import {DataProvider} from "./dataproviders/dataprovider";
@@ -7,9 +5,10 @@ import {inject, injectable} from "inversify";
 import {ResourceProvider} from "./dataproviders/resourceprovider";
 import {BuildProvider} from "./dataproviders/buildprovider";
 import {DataProviderEnum, TYPES} from "../bll/utils/constants";
+import {IProviderManager} from "./iprovidermanager";
 
 @injectable()
-export class ProviderManager implements Disposable {
+export class ProviderManager implements IProviderManager {
 
     private shownDataProvider: DataProvider;
     private readonly emptyDataProvider: EmptyDataProvider;

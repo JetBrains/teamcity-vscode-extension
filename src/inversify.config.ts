@@ -48,6 +48,7 @@ import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
 import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
+import {IProviderManager} from "./view/iprovidermanager";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -78,7 +79,7 @@ myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
 myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy);
 myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy);
 myContainer.bind<CpProxy>(TYPES.CpProxy).to(CpProxy);
-myContainer.bind<ProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
+myContainer.bind<IProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<IResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
 myContainer.bind<IBuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();
 myContainer.bind<OsxKeychainApi>(TYPES.OsxKeychainApi).to(OsxKeychainApi).inSingletonScope();
