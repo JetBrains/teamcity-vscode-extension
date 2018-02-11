@@ -5,6 +5,7 @@ node_modules
 out/test/**
 .idea
 **/*.map
+**/*.log
 tsconfig.json
 vsc-extension-quickstart.md
 /resources/.teamcity-mappings.properties
