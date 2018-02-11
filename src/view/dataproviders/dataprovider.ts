@@ -1,9 +1,9 @@
 import {commands, Event, TreeDataProvider, TreeItem} from "vscode";
-import {DataProviderEnum} from "../providermanager";
 import {injectable} from "inversify";
 import {CheckInInfo} from "../../bll/entities/checkininfo";
 import {Project} from "../../bll/entities/project";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
+import {DataProviderEnum} from "../../bll/utils/constants";
 
 @injectable()
 export abstract class DataProvider implements TreeDataProvider<TreeItem> {

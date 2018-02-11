@@ -1,6 +1,6 @@
 import {DataProvider} from "./dataprovider";
 import {Event, EventEmitter, TreeItem} from "vscode";
-import {DataProviderEnum} from "../providermanager";
+import {DataProviderEnum} from "../../bll/utils/constants";
 import {injectable} from "inversify";
 import {CheckInInfo} from "../../bll/entities/checkininfo";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";

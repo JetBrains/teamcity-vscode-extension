@@ -2,7 +2,7 @@
 
 import {DataProvider} from "./dataprovider";
 import {Event, ProviderResult, TreeItem} from "vscode";
-import {DataProviderEnum} from "../providermanager";
+import {DataProviderEnum} from "../../bll/utils/constants";
 
 export class EmptyDataProvider extends DataProvider {
 

@@ -6,7 +6,7 @@ import {DataProvider} from "./dataproviders/dataprovider";
 import {inject, injectable} from "inversify";
 import {ChangesProvider} from "./dataproviders/resourceprovider";
 import {BuildProvider} from "./dataproviders/buildprovider";
-import {TYPES} from "../bll/utils/constants";
+import {DataProviderEnum, TYPES} from "../bll/utils/constants";
 
 @injectable()
 export class ProviderManager implements Disposable {
@@ -65,10 +65,4 @@ export class ProviderManager implements Disposable {
             toDispose.dispose();
         });
     }
-}
-
-export enum DataProviderEnum {
-    EmptyDataProvider = "EmptyDataProvider",
-    ResourcesProvider = "ResourcesProvider",
-    BuildsProvider = "BuildsProvider"
 }

@@ -158,3 +158,9 @@ export enum CvsOperation {
     DoCommitChanges = "Commit changes",
     DoCommitAndPushChanges = "Commit and Push (if possible) changes"
 }
+
+export enum DataProviderEnum {
+    EmptyDataProvider = "EmptyDataProvider",
+    ResourcesProvider = "ResourcesProvider",
+    BuildsProvider = "BuildsProvider"
+}

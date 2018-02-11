@@ -3,7 +3,7 @@
 import * as tsMockito from "ts-mockito";
 import {verify, when} from "ts-mockito";
 import {assert} from "chai";
-import {DataProviderEnum, ProviderManager} from "../src/view/providermanager";
+import {ProviderManager} from "../src/view/providermanager";
 import {CommandHolder} from "../src/commandholder";
 import {SelectFilesForRemoteRun} from "../src/bll/commands/selectfilesforremoterun";
 import {GetSuitableConfigs} from "../src/bll/commands/getsuitableconfigs";
@@ -16,6 +16,7 @@ import {CredentialsStore} from "../src/bll/credentialsstore/credentialsstore";
 import {InMemoryCredentialsStore} from "../src/bll/credentialsstore/inmemorycredentialsstore";
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {ShowMyChanges} from "../src/bll/commands/showmychanges";
+import {DataProviderEnum} from "../src/bll/utils/constants";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
