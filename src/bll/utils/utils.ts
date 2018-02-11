@@ -135,4 +135,8 @@ export class Utils {
     public static sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
+    public static clearArray(array: any[]): void {
+        array.length = 0;
+    }
 }

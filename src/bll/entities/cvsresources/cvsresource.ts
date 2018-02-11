@@ -1,38 +1,26 @@
-"use strict";
-
-import * as path from "path";
-import {Uri} from "vscode";
 import {CvsFileStatusCode} from "../../utils/constants";
-import {LeaveSelectableItem} from "../leaveselectableitem";
 import {ByteWriter} from "../../utils/bytewriter";
 import {ReadableSet} from "../../utils/readableset";
 import {Logger} from "../../utils/logger";
 import * as fs from "fs";
 import * as stream from "stream";
 
-export abstract class CvsResource extends LeaveSelectableItem {
+export abstract class CvsResource {
     status: CvsFileStatusCode;
     fileAbsPath: string;
+    fileName: string;
     serverFilePath?: string;
     prevServerFilePath?: string;
     prevFileAbsPath?: string;
 
-    constructor(status: CvsFileStatusCode, fileAbsPath: string, label: string, prevFileAbsPath?: string) {
-        super(label, true);
+    constructor(status: CvsFileStatusCode, fileAbsPath: string, fileName: string, prevFileAbsPath?: string) {
         this.status = status;
         this.fileAbsPath = fileAbsPath;
+        this.fileName = fileName;
         this.prevFileAbsPath = prevFileAbsPath;
     }
 
-    public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName: string = `status-${this.isIncluded ? this.status : "I"}.svg`;
-        return {
-            light: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "dark", iconName)
-        };
-    }
-
-    protected abstract getPrefix(): number;
+    public abstract getPrefix(): number;
 
     public getHeaderForPatch(): Buffer {
         const prefix: number = this.getPrefix();

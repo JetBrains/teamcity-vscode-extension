@@ -1,5 +1,3 @@
-"use strict";
-
 import {CvsFileStatusCode} from "../../utils/constants";
 import {CvsResource} from "./cvsresource";
 
@@ -10,7 +8,7 @@ export class DeletedCvsResource extends CvsResource {
         super(CvsFileStatusCode.DELETED, prevFileAbsPath, label);
     }
 
-    protected getPrefix(): number {
+    public getPrefix(): number {
         return this.DELETE_PREFIX;
     }
 }

@@ -1,5 +1,3 @@
-"use strict";
-
 import {CvsFileStatusCode} from "../../utils/constants";
 import {CvsResource} from "./cvsresource";
 
@@ -10,7 +8,7 @@ export class AddedCvsResource extends CvsResource {
         super(CvsFileStatusCode.ADDED, fileAbsPath, label);
     }
 
-    protected getPrefix(): number {
+    public getPrefix(): number {
         return this.CREATE_PREFIX;
     }
 }

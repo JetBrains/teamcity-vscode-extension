@@ -3,6 +3,7 @@ import {DataProviderEnum} from "../providermanager";
 import {injectable} from "inversify";
 import {CheckInInfo} from "../../bll/entities/checkininfo";
 import {Project} from "../../bll/entities/project";
+import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 
 @injectable()
 export abstract class DataProvider implements TreeDataProvider<TreeItem> {
@@ -23,7 +24,7 @@ export abstract class DataProvider implements TreeDataProvider<TreeItem> {
 
     abstract setContent(content: CheckInInfo[] | Project[]): void;
 
-    abstract getSelectedContent(): TreeItem[];
+    abstract getSelectedContent(): TreeItem[] | CvsResource[] | CheckInInfo[];
 
     abstract refreshTreePresentation(): void;
 
