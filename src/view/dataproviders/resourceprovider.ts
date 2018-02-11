@@ -10,7 +10,7 @@ import {CheckInInfoItem} from "../../bll/entities/checkininfoitem";
 import {Utils} from "../../bll/utils/utils";
 
 @injectable()
-export class ChangesProvider extends DataProvider {
+export class ResourceProvider extends DataProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 

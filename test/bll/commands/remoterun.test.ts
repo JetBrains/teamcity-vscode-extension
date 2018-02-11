@@ -7,7 +7,7 @@ import {RemoteRun} from "../../../src/bll/commands/remoterun";
 import {BuildProvider} from "../../../src/view/dataproviders/buildprovider";
 import {PatchSender} from "../../../src/bll/remoterun/patchsender";
 import {CustomPatchSender} from "../../../src/bll/remoterun/patchsenderimpl";
-import {ChangesProvider} from "../../../src/view/dataproviders/resourceprovider";
+import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {ProviderManager} from "../../../src/view/providermanager";
 
 suite("Select Files For Remote Run", () => {
@@ -23,8 +23,8 @@ suite("Select Files For Remote Run", () => {
         when(patchSenderMock.remoteRun(anything(), anything())).thenReturn(Promise.resolve(true));
         const patchSenderSpy: PatchSender = tsMockito.instance(patchSenderMock);
 
-        const resourceProviderMock: ChangesProvider = tsMockito.mock(ChangesProvider);
-        const resourceProviderSpy: ChangesProvider = tsMockito.instance(resourceProviderMock);
+        const resourceProviderMock: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const resourceProviderSpy: ResourceProvider = tsMockito.instance(resourceProviderMock);
 
         const providerManagerMock: ProviderManager = tsMockito.mock(ProviderManager);
         const providerManagerSpy: ProviderManager = tsMockito.instance(providerManagerMock);
@@ -51,8 +51,8 @@ suite("Select Files For Remote Run", () => {
         when(patchSenderMock.remoteRun(anything(), anything())).thenReturn(Promise.resolve(true));
         const patchSenderSpy: PatchSender = tsMockito.instance(patchSenderMock);
 
-        const resourceProviderMock: ChangesProvider = tsMockito.mock(ChangesProvider);
-        const resourceProviderSpy: ChangesProvider = tsMockito.instance(resourceProviderMock);
+        const resourceProviderMock: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const resourceProviderSpy: ResourceProvider = tsMockito.instance(resourceProviderMock);
 
         const providerManagerMock: ProviderManager = tsMockito.mock(ProviderManager);
         const providerManagerSpy: ProviderManager = tsMockito.instance(providerManagerMock);
@@ -78,8 +78,8 @@ suite("Select Files For Remote Run", () => {
         when(patchSenderMock.remoteRun(anything(), anything())).thenReturn(Promise.resolve(true));
         const patchSenderSpy: PatchSender = tsMockito.instance(patchSenderMock);
 
-        const resourceProviderMock: ChangesProvider = tsMockito.mock(ChangesProvider);
-        const resourceProviderSpy: ChangesProvider = tsMockito.instance(resourceProviderMock);
+        const resourceProviderMock: ResourceProvider = tsMockito.mock(ResourceProvider);
+        const resourceProviderSpy: ResourceProvider = tsMockito.instance(resourceProviderMock);
 
         const providerManagerMock: ProviderManager = tsMockito.mock(ProviderManager);
         const providerManagerSpy: ProviderManager = tsMockito.instance(providerManagerMock);

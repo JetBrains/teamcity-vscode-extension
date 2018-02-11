@@ -142,7 +142,7 @@ export const TYPES = {
     CpProxy: Symbol("CpProxy"),
     OsxKeychain: Symbol("OsxKeychain"),
     ProviderManager: Symbol("ProviderManager"),
-    ResourceProvider: Symbol("ChangesProvider"),
+    ResourceProvider: Symbol("ResourceProvider"),
     BuildProvider: Symbol("BuildProvider"),
     LinuxFileApi: Symbol("LinuxFileApi"),
     WinCredStoreParsingStreamWrapper: Symbol("WinCredStoreParsingStreamWrapper"),

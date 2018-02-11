@@ -10,7 +10,7 @@ import {SignIn} from "./bll/commands/signin";
 import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
-import {ChangesProvider} from "./view/dataproviders/resourceprovider";
+import {ResourceProvider} from "./view/dataproviders/resourceprovider";
 import {BuildProvider} from "./view/dataproviders/buildprovider";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
 
@@ -26,7 +26,7 @@ export class CommandHolder {
     private _showMyChanges: ShowMyChanges;
     private providerManager: ProviderManager;
     private credentialsStore: CredentialsStore;
-    private resourceProvider: ChangesProvider;
+    private resourceProvider: ResourceProvider;
     private buildProvider: BuildProvider;
 
     constructor(@inject(TYPES.Output) output: Output,
@@ -38,7 +38,7 @@ export class CommandHolder {
                 @inject(TYPES.ShowMyChangesCommand) showMyChanges: ShowMyChanges,
                 @inject(TYPES.ProviderManager) providerManager: ProviderManager,
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
-                @inject(TYPES.ResourceProvider) resourceProvider?: ChangesProvider,
+                @inject(TYPES.ResourceProvider) resourceProvider?: ResourceProvider,
                 @inject(TYPES.BuildProvider) buildProvider?: BuildProvider) {
         this.output = output;
         this._signIn = signInCommand;

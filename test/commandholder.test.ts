@@ -10,7 +10,7 @@ import {GetSuitableConfigs} from "../src/bll/commands/getsuitableconfigs";
 import {RemoteRun} from "../src/bll/commands/remoterun";
 import {SignIn} from "../src/bll/commands/signin";
 import {SignOut} from "../src/bll/commands/signout";
-import {ChangesProvider} from "../src/view/dataproviders/resourceprovider";
+import {ResourceProvider} from "../src/view/dataproviders/resourceprovider";
 import {BuildProvider} from "../src/view/dataproviders/buildprovider";
 import {CredentialsStore} from "../src/bll/credentialsstore/credentialsstore";
 import {InMemoryCredentialsStore} from "../src/bll/credentialsstore/inmemorycredentialsstore";
@@ -192,6 +192,6 @@ suite("DataProviders", () => {
     });
 
     function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ChangesProvider(), new BuildProvider());
+        return new ProviderManager(new ResourceProvider(), new BuildProvider());
     }
 });

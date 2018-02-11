@@ -1,7 +1,7 @@
 import {assert} from "chai";
 import * as tsMockito from "ts-mockito";
 import {instance, mock, when} from "ts-mockito";
-import {ChangesProvider} from "../../../src/view/dataproviders/resourceprovider";
+import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {CvsSupportProvider} from "../../../src/dal/cvsprovider";
 import {GitProvider} from "../../../src/dal/gitprovider";
@@ -14,17 +14,17 @@ import {DataProviderEnum} from "../../../src/bll/utils/constants";
 suite("ResourceProviders", () => {
 
     test("should verify resource data provider constructor", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         assert.notEqual(resourceProvider, undefined);
     });
 
     test("should verify getType", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         assert.equal(resourceProvider.getType(), DataProviderEnum.ResourcesProvider);
     });
 
     test("should verify setContent", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         const mockedCvsProvider: CvsSupportProvider = tsMockito.mock(GitProvider);
         const cvsProviderSpy: CvsSupportProvider = tsMockito.instance(mockedCvsProvider);
         const checkInInfo: CheckInInfo[] = [new CheckInInfo([], cvsProviderSpy), new CheckInInfo([], cvsProviderSpy)];
@@ -35,7 +35,7 @@ suite("ResourceProviders", () => {
     });
 
     test("should verify resetContent", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         const mockedCvsProvider: CvsSupportProvider = tsMockito.mock(GitProvider);
         const cvsProviderSpy: CvsSupportProvider = tsMockito.instance(mockedCvsProvider);
         const checkInInfo: CheckInInfo[] = [new CheckInInfo([], cvsProviderSpy), new CheckInInfo([], cvsProviderSpy)];
@@ -45,7 +45,7 @@ suite("ResourceProviders", () => {
     });
 
     test("should verify getChildren with no arguments", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         const mockedCvsProvider: CvsSupportProvider = tsMockito.mock(GitProvider);
         const cvsProviderSpy: CvsSupportProvider = tsMockito.instance(mockedCvsProvider);
         const checkInInfo: CheckInInfo[] = [new CheckInInfo([], cvsProviderSpy), new CheckInInfo([], cvsProviderSpy)];
@@ -56,7 +56,7 @@ suite("ResourceProviders", () => {
     });
 
     test("should verify getChildren with TreeItem argument", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         const cvsProviderMock: CvsSupportProvider = mock(GitProvider);
         when(cvsProviderMock.getRootPath()).thenReturn("");
         const cvsProviderSpy: CvsSupportProvider = instance(cvsProviderMock);
@@ -69,7 +69,7 @@ suite("ResourceProviders", () => {
     });
 
     test("should verify getSelectedContent with all selected content", function () {
-        const resourceProvider = new ChangesProvider();
+        const resourceProvider = new ResourceProvider();
         const mockedCvsProvider: CvsSupportProvider = tsMockito.mock(GitProvider);
         const cvsProviderSpy: CvsSupportProvider = tsMockito.instance(mockedCvsProvider);
         const includedResource = new AddedCvsResource(undefined, undefined);
