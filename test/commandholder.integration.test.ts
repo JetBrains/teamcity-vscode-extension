@@ -1,5 +1,3 @@
-"use strict";
-
 import * as tsMockito from "ts-mockito";
 import {verify, when} from "ts-mockito";
 import {assert} from "chai";
