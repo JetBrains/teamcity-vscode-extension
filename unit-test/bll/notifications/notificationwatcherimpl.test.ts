@@ -1,5 +1,6 @@
-"use strict";
-
+import "reflect-metadata";
+const rmock = require("mock-require");
+rmock("vscode", { });
 import * as tsMockito from "ts-mockito";
 import {Summary} from "../../../src/bll/entities/summary";
 import {Build} from "../../../src/bll/entities/build";
