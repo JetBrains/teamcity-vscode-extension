@@ -9,21 +9,21 @@ import {PatchSender} from "../remoterun/patchsender";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
-import {BuildProvider} from "../../view/dataproviders/buildprovider";
 import {ProviderManager} from "../../view/providermanager";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
+import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
 
 @injectable()
 export class RemoteRun implements Command {
 
     private readonly cvsProvider: CvsProviderProxy;
     private readonly patchSender: PatchSender;
-    private readonly buildProvider: BuildProvider;
+    private readonly buildProvider: IBuildProvider;
     private readonly resourceProvider: IResourceProvider;
     private readonly providerManager: ProviderManager;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
-                       @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
+                       @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
                        @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
                        @inject(TYPES.ProviderManager) providerManager: ProviderManager,
                        @inject(TYPES.PatchSender) patchSender: PatchSender) {

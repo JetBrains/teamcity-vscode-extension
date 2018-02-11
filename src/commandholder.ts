@@ -1,5 +1,3 @@
-"use strict";
-
 import {inject, injectable} from "inversify";
 import {TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
@@ -10,9 +8,9 @@ import {SignIn} from "./bll/commands/signin";
 import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
-import {BuildProvider} from "./view/dataproviders/buildprovider";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
 import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
+import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 
 @injectable()
 export class CommandHolder {
@@ -27,7 +25,7 @@ export class CommandHolder {
     private providerManager: ProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: IResourceProvider;
-    private buildProvider: BuildProvider;
+    private buildProvider: IBuildProvider;
 
     constructor(@inject(TYPES.Output) output: Output,
                 @inject(TYPES.SignIn) signInCommand: SignIn,
@@ -39,7 +37,7 @@ export class CommandHolder {
                 @inject(TYPES.ProviderManager) providerManager: ProviderManager,
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
                 @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider?: BuildProvider) {
+                @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider) {
         this.output = output;
         this._signIn = signInCommand;
         this._signOut = signOutCommand;

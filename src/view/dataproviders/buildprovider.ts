@@ -6,9 +6,10 @@ import {BuildConfigItem} from "../../bll/entities/buildconfigitem";
 import {injectable} from "inversify";
 import {Project} from "../../bll/entities/project";
 import {DataProviderEnum} from "../../bll/utils/constants";
+import {IBuildProvider} from "./interfaces/ibuildprovider";
 
 @injectable()
-export class BuildProvider extends DataProvider {
+export class BuildProvider extends DataProvider implements IBuildProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
