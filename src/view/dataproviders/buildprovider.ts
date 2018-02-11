@@ -5,25 +5,31 @@ import {ProjectItem} from "../../bll/entities/projectitem";
 import {Logger} from "../../bll/utils/logger";
 import {BuildConfigItem} from "../../bll/entities/buildconfigitem";
 import {injectable} from "inversify";
+import {Project} from "../../bll/entities/project";
 
 @injectable()
 export class BuildProvider extends DataProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-    private projects: ProjectItem[] = [];
+    private projectItems: ProjectItem[] = [];
 
     resetTreeContent(): void {
-        this.projects = [];
+        this.projectItems = [];
     }
 
-    setContent(projects: ProjectItem[]): void {
-        this.projects = projects;
+    setContent(projects: Project[]): void {
+        BuildProvider.clearArray(this.projectItems);
+        projects.forEach((project) => this.projectItems.push(new ProjectItem(project)));
+    }
+
+    private static clearArray(array: any[]): void {
+        array.length = 0;
     }
 
     public getSelectedContent(): BuildConfigItem[] {
         const result: BuildConfigItem[] = [];
-        this.projects.forEach((project) => {
+        this.projectItems.forEach((project) => {
             this.collectAllProject(project, result);
         });
 
@@ -47,7 +53,7 @@ export class BuildProvider extends DataProvider {
 
     getChildren(element?: TreeItem):  TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
-            return this.projects;
+            return this.projectItems;
         } else if (element instanceof ProjectItem) {
             return element.children;
         }

@@ -1,17 +1,14 @@
-"use strict";
-
 import * as path from "path";
 import {Uri} from "vscode";
 import {LeaveSelectableItem} from "./leaveselectableitem";
+import {BuildConfig} from "./buildconfig";
 
 export class BuildConfigItem extends LeaveSelectableItem {
-    private readonly _id: string;
-    private readonly _externalId: string;
+    public readonly buildConfig: BuildConfig;
 
-    constructor(id: string, externalId: string, label: string) {
-        super(label, false);
-        this._id = id;
-        this._externalId = externalId;
+    constructor(buildConfig: BuildConfig) {
+        super(buildConfig.name);
+        this.buildConfig = buildConfig;
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
@@ -23,10 +20,11 @@ export class BuildConfigItem extends LeaveSelectableItem {
     }
 
     public get id(): string {
-        return this._id;
+        return this.buildConfig.id;
     }
 
     public get externalId(): string {
-        return this._externalId;
+        return this.buildConfig.externalId;
     }
+
 }

@@ -1,18 +1,16 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
-import {ProjectItem} from "../entities/projectitem";
 import {MessageConstants} from "../utils/messageconstants";
 import {CheckInInfo} from "../entities/checkininfo";
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
-import {injectable, inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {ChangesProvider} from "../../view/dataproviders/resourceprovider";
 import {BuildProvider} from "../../view/dataproviders/buildprovider";
 import {Output} from "../../view/output";
 import {Utils} from "../utils/utils";
+import {Project} from "../entities/project";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -42,7 +40,7 @@ export class GetSuitableConfigs implements Command {
         Logger.logInfo("GetSuitableConfigs: starts");
         try {
             const checkInArray: CheckInInfo[] = await this.getCheckInArray();
-            const projects: ProjectItem[] = await this.getProjectsWithSuitableBuilds(checkInArray);
+            const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);
             this.buildProvider.setContent(projects);
         } catch (err) {
             Logger.logError(`[GetSuitableConfig]: ${Utils.formatErrorMessage(err)}`);
@@ -63,14 +61,14 @@ export class GetSuitableConfigs implements Command {
         }
     }
 
-    private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<ProjectItem[]> {
+    private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<Project[]> {
         const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames(checkInArray);
         const shortBuildConfigNames: string[] = await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         if (!shortBuildConfigNames || shortBuildConfigNames.length === 0) {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
             return Promise.reject(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
         }
-        const buildXmlArray: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        return this.xmlParser.parseBuilds(buildXmlArray);
+        const projectsWithRelatedBuildsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls);
     }
 }

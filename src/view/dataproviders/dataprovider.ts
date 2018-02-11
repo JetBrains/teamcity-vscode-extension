@@ -1,8 +1,8 @@
-"use strict";
-
-import {TreeItem, TreeDataProvider, commands, Event, Disposable} from "vscode";
+import {commands, Event, TreeDataProvider, TreeItem} from "vscode";
 import {DataProviderEnum} from "../providermanager";
 import {injectable} from "inversify";
+import {CheckInInfo} from "../../bll/entities/checkininfo";
+import {Project} from "../../bll/entities/project";
 
 @injectable()
 export abstract class DataProvider implements TreeDataProvider<TreeItem> {
@@ -21,7 +21,7 @@ export abstract class DataProvider implements TreeDataProvider<TreeItem> {
 
     abstract resetTreeContent(): void;
 
-    abstract setContent(content: TreeItem[]): void;
+    abstract setContent(content: CheckInInfo[] | Project[]): void;
 
     abstract getSelectedContent(): TreeItem[];
 

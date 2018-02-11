@@ -1,6 +1,4 @@
-"use strict";
-
-import {TreeItem, Uri, Command, TreeItemCollapsibleState} from "vscode";
+import {Command, TreeItem, TreeItemCollapsibleState} from "vscode";
 
 export abstract class LeaveSelectableItem extends TreeItem {
     private _isIncluded: boolean;

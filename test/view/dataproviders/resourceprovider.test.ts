@@ -1,17 +1,13 @@
-"use strict";
-
 import {assert} from "chai";
 import * as tsMockito from "ts-mockito";
+import {instance, mock, when} from "ts-mockito";
 import {ChangesProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {DataProviderEnum} from "../../../src/view/providermanager";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {CvsSupportProvider} from "../../../src/dal/cvsprovider";
 import {GitProvider} from "../../../src/dal/gitprovider";
-import {anything, instance, mock, when} from "ts-mockito";
 import {CvsResource} from "../../../src/bll/entities/cvsresources/cvsresource";
 import {AddedCvsResource} from "../../../src/bll/entities/cvsresources/addedcvsresource";
-import {BuildConfigItem} from "../../../src/bll/entities/buildconfigitem";
-import {ProjectItem} from "../../../src/bll/entities/projectitem";
 
 suite("ResourceProviders", () => {
 
@@ -61,13 +57,6 @@ suite("ResourceProviders", () => {
         const aResource: CvsResource[] = [new AddedCvsResource(undefined, undefined)];
         const stabbedCheckInInfo: CheckInInfo = new CheckInInfo(aResource, cvsProviderSpy);
         assert.deepEqual(resourceProvider.getChildren(stabbedCheckInInfo), aResource);
-    });
-
-    test("should verify getChildren with incompatible argument", function () {
-        const resourceProvider = new ChangesProvider();
-        const children: BuildConfigItem[] = [new BuildConfigItem(anything(), anything(), anything())];
-        const projectItemSpy: ProjectItem = new ProjectItem("testObj", children);
-        assert.deepEqual(resourceProvider.getChildren(projectItemSpy), []);
     });
 
     test("should verify getSelectedContent with all selected content", function () {

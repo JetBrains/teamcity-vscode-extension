@@ -1,8 +1,8 @@
 "use strict";
 
 import {DataProvider} from "./dataprovider";
-import {TreeItem, TreeDataProvider, ProviderResult, Event, commands} from "vscode";
-import { DataProviderEnum } from "../providermanager";
+import {Event, ProviderResult, TreeItem} from "vscode";
+import {DataProviderEnum} from "../providermanager";
 
 export class EmptyDataProvider extends DataProvider {
 
@@ -10,7 +10,7 @@ export class EmptyDataProvider extends DataProvider {
         throw new Error("Unsupported operation");
     }
 
-    setContent(content: TreeItem[]): void {
+    setContent(content): void {
         throw new Error("Unsupported operation");
     }
 

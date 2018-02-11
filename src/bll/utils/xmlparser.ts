@@ -1,29 +1,23 @@
-"use strict";
-
 import {Logger} from "./logger";
 import * as xml2js from "xml2js";
 import {QueuedBuild} from "./queuedbuild";
 import {Constants} from "./constants";
-import {ProjectItem} from "../entities/projectitem";
-import {BuildConfigItem} from "../entities/buildconfigitem";
 import {Summary} from "../entities/summary";
 import {Build} from "../entities/build";
 import {injectable} from "inversify";
 import {Utils} from "./utils";
+import {Project} from "../entities/project";
+import {BuildConfig} from "../entities/buildconfig";
 
 @injectable()
 export class XmlParser {
 
-    /**
-     * @param buildsXml - xml that contains all info about related projects.
-     * @return - list of ProjectItems that contain related buildConfigs.
-     */
-    public async parseBuilds(buildsXml: string[]): Promise<ProjectItem[]> {
+    public async parseProjectsWithRelatedBuilds(buildsXml: string[]): Promise<Project[]> {
         if (buildsXml === undefined) {
             Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
         }
-        const projectMap: ProjectItem[] = [];
+        const projectMap: Project[] = [];
         Logger.logDebug("XmlParser#parseBuilds: start collect projects");
         for (let i: number = 0; i < buildsXml.length; i++) {
             const buildXml = buildsXml[i];
@@ -37,10 +31,51 @@ export class XmlParser {
                 });
             });
         }
-        const projects: ProjectItem[] = projectMap[Constants.ROOT_PROJECT_ID].children;
+        const result: Project[] = projectMap[Constants.ROOT_PROJECT_ID].children;
         Logger.logDebug("XmlParser#parseBuilds: collected projects:");
-        Logger.LogObject(projects);
-        return projects;
+        Logger.LogObject(result);
+        return result;
+    }
+
+    /**
+     * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
+     * @param xmlProject - project as a TeamCity project entity
+     * @param projectMap - the result of the call of the method will be pushed to this object.
+     */
+    private static collectProject(xmlProject: any, projectMap: Project[]) {
+        if (!xmlProject || !xmlProject.Project || !xmlProject.Project.myProjectId ||
+            !xmlProject.Project.name) {
+            return;
+        }
+        const parentId = xmlProject.Project.myParentProjectId ? xmlProject.Project.myParentProjectId[0] : undefined;
+
+        const project = new Project(xmlProject.Project.myProjectId[0], parentId, xmlProject.Project.name[0]);
+
+        const buildConfigs: BuildConfig[] = XmlParser.getBuildConfigs(xmlProject);
+        buildConfigs.forEach((config) => project.addChildBuildConfig(config));
+
+        projectMap[project.id] = project;
+        if (project.parentId && projectMap[project.parentId]) {
+            projectMap[project.parentId].addChildProject(project);
+        }
+    }
+
+    private static getBuildConfigs(xmlProject: any) : BuildConfig[] {
+        const buildConfigs: BuildConfig[] = [];
+        if (xmlProject.Project.configs &&
+            xmlProject.Project.configs[0] && xmlProject.Project.configs[0].Configuration) {
+            const xmlConfigurations: any = xmlProject.Project.configs[0].Configuration;
+            for (let i = 0; i < xmlConfigurations.length; i++) {
+                const xmlConfiguration = xmlConfigurations[i];
+                if (!xmlConfiguration.id || !xmlConfiguration.id[0] ||
+                    !xmlConfiguration.name || !xmlConfiguration.name[0] ||
+                    !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
+                    continue;
+                }
+                buildConfigs.push(new BuildConfig(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
+            }
+        }
+        return buildConfigs;
     }
 
     /**
@@ -74,40 +109,6 @@ export class XmlParser {
                 resolve(Summary.fromXmlRpcObject(obj));
             });
         });
-    }
-
-    /**
-     * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
-     * @param project - project as a TeamCity project entity with lots of useless fields.
-     * @param projectMap - the result of the call of the method will be pushed to this object.
-     */
-    private static collectProject(project: any, projectMap: ProjectItem[]) {
-        if (!project || !project.Project) {
-            return;
-        }
-        const buildConfigurations: BuildConfigItem[] = [];
-        if (project.Project.configs &&
-            project.Project.configs[0] && project.Project.configs[0].Configuration) {
-            const xmlConfigurations: any = project.Project.configs[0].Configuration;
-            for (let i = 0; i < xmlConfigurations.length; i++) {
-                const xmlConfiguration = xmlConfigurations[i];
-                if (!xmlConfiguration.id || !xmlConfiguration.id[0] ||
-                    !xmlConfiguration.name || !xmlConfiguration.name[0] ||
-                    !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
-                    continue;
-                }
-                buildConfigurations.push(new BuildConfigItem(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
-            }
-        }
-        const currentProject = new ProjectItem(project.Project.name[0], buildConfigurations);
-        projectMap[project.Project.myProjectId[0]] = currentProject;
-        if (project &&
-            project.Project &&
-            project.Project.myParentProjectId &&
-            project.Project.myParentProjectId[0] &&
-            projectMap[project.Project.myParentProjectId[0]]) {
-            projectMap[project.Project.myParentProjectId[0]].addChildProject(currentProject);
-        }
     }
 
     public parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {

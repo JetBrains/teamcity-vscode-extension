@@ -1,27 +1,21 @@
-"use strict";
-
 import * as path from "path";
 import {BuildConfigItem} from "./buildconfigitem";
-import {
-    CancellationToken,
-    Command,
-    commands,
-    EventEmitter,
-    ExtensionContext,
-    ProviderResult,
-    TextDocumentContentProvider,
-    TreeItem,
-    TreeItemCollapsibleState,
-    Uri,
-    workspace
-} from "vscode";
+import {Command, TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
+import {Project} from "./project";
+import {BuildConfig} from "./buildconfig";
 
 export class ProjectItem extends TreeItem {
-    public children: TreeItem[];
+    public children: TreeItem[] = [];
 
-    constructor(label: string, configs: BuildConfigItem[]) {
-        super(label, TreeItemCollapsibleState.Collapsed);
-        this.children = configs;
+    constructor(project: Project) {
+        super(project.name, TreeItemCollapsibleState.Collapsed);
+        project.children.forEach((child) => {
+           if (child instanceof Project) {
+               this.children.push(new ProjectItem(child));
+           } else if (child instanceof BuildConfig) {
+               this.children.push(new BuildConfigItem(child));
+           }
+        });
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
