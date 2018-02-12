@@ -1,10 +1,11 @@
 import * as path from "path";
 import {BuildConfigItem} from "./buildconfigitem";
-import {Command, TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
+import {TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
 import {Project} from "../project";
 import {BuildConfig} from "../buildconfig";
+import {ExpandableItem} from "./expandableitem";
 
-export class ProjectItem extends TreeItem {
+export class ProjectItem extends ExpandableItem {
     public children: TreeItem[] = [];
 
     constructor(project: Project) {
@@ -24,22 +25,6 @@ export class ProjectItem extends TreeItem {
             light: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName),
             dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
         };
-    }
-
-    public get command(): Command {
-        return {
-            command: "changeCollapsibleState",
-            arguments: [this],
-            title: "Change Collapsible State"
-        };
-    }
-
-    public changeCollapsibleState(): void {
-        if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
-            this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        } else {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
     }
 
     public addChildProject(project: ProjectItem) {

@@ -1,9 +1,10 @@
 import * as path from "path";
-import {Command, TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
+import {TreeItemCollapsibleState, Uri} from "vscode";
 import {CheckInInfo} from "../checkininfo";
 import {CvsResourceItem} from "../cvsresources/cvsresourceitem";
+import {ExpandableItem} from "./expandableitem";
 
-export class CheckInInfoItem extends TreeItem {
+export class CheckInInfoItem extends ExpandableItem {
 
     private checkInInfo: CheckInInfo;
     public readonly cvsLocalResources: CvsResourceItem[] = [];
@@ -21,22 +22,6 @@ export class CheckInInfoItem extends TreeItem {
                 dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
             };
         }
-
-    public get command(): Command {
-            return {
-                command: "changeCollapsibleState",
-                arguments: [this],
-                title: "Change Collapsible State"
-            };
-        }
-
-    public changeCollapsibleState(): void {
-            if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
-            this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        } else {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
-    }
 
     public get item(): CheckInInfo {
         return this.checkInInfo;
