@@ -8,6 +8,7 @@ import {Project} from "../../bll/entities/project";
 import {DataProviderEnum} from "../../bll/utils/constants";
 import {IBuildProvider} from "./interfaces/ibuildprovider";
 import {BuildConfig} from "../../bll/entities/buildconfig";
+import {Utils} from "../../bll/utils/utils";
 
 @injectable()
 export class BuildProvider extends DataProvider implements IBuildProvider {
@@ -21,12 +22,8 @@ export class BuildProvider extends DataProvider implements IBuildProvider {
     }
 
     setContent(projects: Project[]): void {
-        BuildProvider.clearArray(this.projectItems);
+        Utils.clearArray(this.projectItems);
         projects.forEach((project) => this.projectItems.push(new ProjectItem(project)));
-    }
-
-    private static clearArray(array: any[]): void {
-        array.length = 0;
     }
 
     public getSelectedContent(): BuildConfig[] {
