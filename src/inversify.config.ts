@@ -49,6 +49,8 @@ import {ShowMyChanges} from "./bll/commands/showmychanges";
 import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
+import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
+import {ChangesProvider} from "./view/dataproviders/changesprovider";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -91,3 +93,4 @@ myContainer.bind<IVsCodeUtils>(TYPES.VsCodeUtils).to(VsCodeUtils).inSingletonSco
 myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCityStatusBarItem).inSingletonScope();
 myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
 myContainer.bind<Command>(TYPES.ShowMyChangesCommand).to(ShowMyChanges).inSingletonScope();
+myContainer.bind<IChangesProvider>(TYPES.ChangesProvider).to(ChangesProvider).inSingletonScope();

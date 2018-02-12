@@ -150,7 +150,8 @@ export const TYPES = {
     VsCodeUtils: Symbol("VsCodeUtils"),
     TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem"),
     WorkspaceProxy: Symbol("WorkspaceProxy"),
-    ShowMyChangesCommand: Symbol("ShowMyChangesCommand")
+    ShowMyChangesCommand: Symbol("ShowMyChangesCommand"),
+    ChangesProvider: Symbol("ChangesProvider")
 };
 
 export enum CvsOperation {
@@ -162,5 +163,6 @@ export enum CvsOperation {
 export enum DataProviderEnum {
     EmptyDataProvider = "EmptyDataProvider",
     ResourcesProvider = "ResourcesProvider",
-    BuildsProvider = "BuildsProvider"
+    BuildsProvider = "BuildsProvider",
+    ChangesProvider = "ChangesProvider"
 }

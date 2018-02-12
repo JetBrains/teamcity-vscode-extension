@@ -139,4 +139,12 @@ export class Utils {
     public static clearArray(array: any[]): void {
         array.length = 0;
     }
+
+    public static formChangeLabel(change: Change): string {
+        const description = change.myDescription ? change.myDescription : "<no comment>";
+        const myVersionControlName = change.myVersionControlName;
+        const changesCount = `${change.myChangesCount} file${change.myChangesCount === 0 ? "s" : ""}`;
+        return `${description}\n${myVersionControlName} | ${changesCount}`;
+    }
+
 }

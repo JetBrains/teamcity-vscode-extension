@@ -5,17 +5,21 @@ import {Output} from "../../view/output";
 import {MessageConstants} from "../utils/messageconstants";
 import {Change} from "../entities/change";
 import {Logger} from "../utils/logger";
+import {IChangesProvider} from "../../view/dataproviders/interfaces/ichangesprovider";
 
 @injectable()
 export class ShowMyChanges implements Command {
 
     private summaryDao: SummaryDao;
     private output: Output;
+    private changesProvider: IChangesProvider;
 
     public constructor(@inject(TYPES.SummaryDao) summaryDao: SummaryDao,
-                       @inject(TYPES.Output) output: Output) {
+                       @inject(TYPES.Output) output: Output,
+                       @inject(TYPES.ChangesProvider) changesProvider) {
         this.summaryDao = summaryDao;
         this.output = output;
+        this.changesProvider = changesProvider;
     }
 
     public async exec(): Promise<void> {
@@ -47,6 +51,8 @@ export class ShowMyChanges implements Command {
                 }
             });
         });
+
+        this.changesProvider.setContent(summary.personalChanges);
 
         stringBuilder.push("----------------------");
         stringBuilder.push("Today:");

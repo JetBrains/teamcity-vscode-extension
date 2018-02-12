@@ -6,6 +6,7 @@ import {ResourceProvider} from "./dataproviders/resourceprovider";
 import {BuildProvider} from "./dataproviders/buildprovider";
 import {DataProviderEnum, TYPES} from "../bll/utils/constants";
 import {IProviderManager} from "./iprovidermanager";
+import {ChangesProvider} from "./dataproviders/changesprovider";
 
 @injectable()
 export class ProviderManager implements IProviderManager {
@@ -13,18 +14,22 @@ export class ProviderManager implements IProviderManager {
     private shownDataProvider: DataProvider;
     private readonly emptyDataProvider: EmptyDataProvider;
     private readonly resourcesProvider: ResourceProvider;
+    private readonly changesProvider: ChangesProvider;
     private readonly buildsProvider: BuildProvider;
     private readonly toDispose: Disposable[] = [];
 
     constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider: BuildProvider) {
+                @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
+                @inject(TYPES.ChangesProvider) changesProvider: ChangesProvider) {
         this.emptyDataProvider = new EmptyDataProvider();
         this.resourcesProvider = resourceProvider;
         this.buildsProvider = buildProvider;
+        this.changesProvider = changesProvider;
         this.hideProviders();
-        if (resourceProvider && buildProvider) {
+        if (resourceProvider && buildProvider && changesProvider) {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourceProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildProvider));
+            this.toDispose.push(window.registerTreeDataProvider("teamcityChangesProvider", changesProvider));
         }
     }
 
@@ -46,6 +51,11 @@ export class ProviderManager implements IProviderManager {
     public showBuildProvider(): void {
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
+    }
+
+    public showChangesProvider(): void {
+        this.changesProvider.show();
+        this.shownDataProvider = this.changesProvider;
     }
 
     public getShownDataProvider(): DataProviderEnum {

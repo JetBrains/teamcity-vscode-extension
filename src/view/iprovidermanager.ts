@@ -9,6 +9,8 @@ export interface IProviderManager {
 
     showBuildProvider(): void;
 
+    showChangesProvider(): void;
+
     getShownDataProvider(): DataProviderEnum;
 
     refreshAll(): void;

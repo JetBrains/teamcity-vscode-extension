@@ -15,6 +15,7 @@ import {InMemoryCredentialsStore} from "../src/bll/credentialsstore/inmemorycred
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {ShowMyChanges} from "../src/bll/commands/showmychanges";
 import {DataProviderEnum} from "../src/bll/utils/constants";
+import {ChangesProvider} from "../src/view/dataproviders/changesprovider";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
@@ -190,6 +191,6 @@ suite("DataProviders", () => {
     });
 
     function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ResourceProvider(), new BuildProvider());
+        return new ProviderManager(new ResourceProvider(), new BuildProvider(), new ChangesProvider());
     }
 });

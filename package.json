@@ -121,6 +121,11 @@
           "id": "teamcityBuildsExplorer",
           "name": "TeamCity",
           "when": "teamcity-explorer == BuildsProvider"
+        },
+        {
+          "id": "teamcityChangesProvider",
+          "name": "TeamCity",
+          "when": "teamcity-explorer == ChangesProvider"
         }
       ]
     },

@@ -11,6 +11,7 @@ import {ShowMyChanges} from "./bll/commands/showmychanges";
 import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
+import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
 
 @injectable()
 export class CommandHolder {
@@ -25,6 +26,7 @@ export class CommandHolder {
     private providerManager: IProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: IResourceProvider;
+    private changesProvider: IChangesProvider;
     private buildProvider: IBuildProvider;
 
     constructor(@inject(TYPES.Output) output: Output,
@@ -37,7 +39,8 @@ export class CommandHolder {
                 @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
                 @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider) {
+                @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider,
+                @inject(TYPES.ChangesProvider) changesProvider?: IChangesProvider) {
         this.output = output;
         this._signIn = signInCommand;
         this._signOut = signOutCommand;
@@ -49,6 +52,7 @@ export class CommandHolder {
         this.credentialsStore = credentialsStore;
         this.resourceProvider = resourceProvider;
         this.buildProvider = buildProvider;
+        this.changesProvider = changesProvider;
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
@@ -93,7 +97,9 @@ export class CommandHolder {
         this.output.show();
     }
 
-    public showMyChanges(): Promise<void> {
-        return this._showMyChanges.exec();
+    public async showMyChanges(): Promise<void> {
+        await this._showMyChanges.exec();
+        this.providerManager.refreshAll();
+        this.providerManager.showChangesProvider();
     }
 }
