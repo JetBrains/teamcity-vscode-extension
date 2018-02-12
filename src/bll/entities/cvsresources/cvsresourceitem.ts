@@ -1,6 +1,6 @@
 import * as path from "path";
 import {Uri} from "vscode";
-import {LeaveSelectableItem} from "../leaveselectableitem";
+import {LeaveSelectableItem} from "../presentable/leaveselectableitem";
 import {CvsResource} from "./cvsresource";
 
 export class CvsResourceItem extends LeaveSelectableItem {

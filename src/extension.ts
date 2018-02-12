@@ -5,9 +5,9 @@ import "reflect-metadata";
 import * as vscode from "vscode";
 import {Constants, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
-import {ProjectItem} from "./bll/entities/projectitem";
+import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
-import {LeaveSelectableItem} from "./bll/entities/leaveselectableitem";
+import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {

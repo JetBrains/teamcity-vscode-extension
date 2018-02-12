@@ -1,8 +1,8 @@
 import * as path from "path";
 import {BuildConfigItem} from "./buildconfigitem";
 import {Command, TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
-import {Project} from "./project";
-import {BuildConfig} from "./buildconfig";
+import {Project} from "../project";
+import {BuildConfig} from "../buildconfig";
 
 export class ProjectItem extends TreeItem {
     public children: TreeItem[] = [];

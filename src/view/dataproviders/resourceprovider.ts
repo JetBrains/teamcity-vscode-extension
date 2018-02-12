@@ -6,7 +6,7 @@ import {CheckInInfo} from "../../bll/entities/checkininfo";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 import {CvsResourceItem} from "../../bll/entities/cvsresources/cvsresourceitem";
 import {Logger} from "../../bll/utils/logger";
-import {CheckInInfoItem} from "../../bll/entities/checkininfoitem";
+import {CheckInInfoItem} from "../../bll/entities/presentable/checkininfoitem";
 import {Utils} from "../../bll/utils/utils";
 import {IResourceProvider} from "./interfaces/iresourceprovider";
 

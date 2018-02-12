@@ -7,7 +7,7 @@ import {CvsSupportProvider} from "../../../src/dal/cvsprovider";
 import {GitProvider} from "../../../src/dal/gitprovider";
 import {CvsResource} from "../../../src/bll/entities/cvsresources/cvsresource";
 import {AddedCvsResource} from "../../../src/bll/entities/cvsresources/addedcvsresource";
-import {CheckInInfoItem} from "../../../src/bll/entities/checkininfoitem";
+import {CheckInInfoItem} from "../../../src/bll/entities/presentable/checkininfoitem";
 import { CvsResourceItem } from "../../../src/bll/entities/cvsresources/cvsresourceitem";
 import {DataProviderEnum} from "../../../src/bll/utils/constants";
 

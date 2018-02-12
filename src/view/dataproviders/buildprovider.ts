@@ -1,8 +1,8 @@
 import {DataProvider} from "./dataprovider";
 import {EventEmitter, TreeItem} from "vscode";
-import {ProjectItem} from "../../bll/entities/projectitem";
+import {ProjectItem} from "../../bll/entities/presentable/projectitem";
 import {Logger} from "../../bll/utils/logger";
-import {BuildConfigItem} from "../../bll/entities/buildconfigitem";
+import {BuildConfigItem} from "../../bll/entities/presentable/buildconfigitem";
 import {injectable} from "inversify";
 import {Project} from "../../bll/entities/project";
 import {DataProviderEnum} from "../../bll/utils/constants";

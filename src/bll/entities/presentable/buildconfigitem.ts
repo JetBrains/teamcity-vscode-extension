@@ -1,7 +1,7 @@
 import * as path from "path";
 import {Uri} from "vscode";
 import {LeaveSelectableItem} from "./leaveselectableitem";
-import {BuildConfig} from "./buildconfig";
+import {BuildConfig} from "../buildconfig";
 
 export class BuildConfigItem extends LeaveSelectableItem {
     private readonly buildConfig: BuildConfig;

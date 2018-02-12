@@ -1,7 +1,7 @@
 import * as path from "path";
 import {Command, TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
-import {CheckInInfo} from "./checkininfo";
-import {CvsResourceItem} from "./cvsresources/cvsresourceitem";
+import {CheckInInfo} from "../checkininfo";
+import {CvsResourceItem} from "../cvsresources/cvsresourceitem";
 
 export class CheckInInfoItem extends TreeItem {
 

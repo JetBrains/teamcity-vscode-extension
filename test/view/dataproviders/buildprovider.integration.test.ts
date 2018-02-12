@@ -2,7 +2,7 @@ import {assert} from "chai";
 import {anything} from "ts-mockito";
 import {BuildProvider} from "../../../src/view/dataproviders/buildprovider";
 import {Project} from "../../../src/bll/entities/project";
-import {ProjectItem} from "../../../src/bll/entities/projectitem";
+import {ProjectItem} from "../../../src/bll/entities/presentable/projectitem";
 import {DataProviderEnum} from "../../../src/bll/utils/constants";
 
 suite("BuildProvider", () => {
