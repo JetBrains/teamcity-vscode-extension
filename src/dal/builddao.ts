@@ -1,6 +1,6 @@
 "use strict";
 
-import {WebLinks} from "./webLinks";
+import {WebLinks} from "./weblinks";
 import {Build} from "../bll/entities/build";
 import {TYPES} from "../bll/utils/constants";
 import {XmlParser} from "../bll/utils/xmlparser";
