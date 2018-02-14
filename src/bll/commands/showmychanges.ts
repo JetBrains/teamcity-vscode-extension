@@ -6,6 +6,7 @@ import {MessageConstants} from "../utils/messageconstants";
 import {Change} from "../entities/change";
 import {Logger} from "../utils/logger";
 import {IChangesProvider} from "../../view/dataproviders/interfaces/ichangesprovider";
+import {TimePeriod} from "../entities/timeperiod";
 
 @injectable()
 export class ShowMyChanges implements Command {
@@ -36,9 +37,9 @@ export class ShowMyChanges implements Command {
             return;
         }
 
-        const todayChanges = [];
-        const yesterdayChanges = [];
-        const olderChanges = [];
+        const todayChanges: Change[] = [];
+        const yesterdayChanges: Change[] = [];
+        const olderChanges: Change[] = [];
         changeSet.forEach((changes) => {
             changes.forEach((change) => {
                 const changeDate = change.vcsDate;
@@ -51,8 +52,8 @@ export class ShowMyChanges implements Command {
                 }
             });
         });
-
-        this.changesProvider.setContent(summary.personalChanges);
+        const timePeriods = [new TimePeriod("Today", todayChanges), new TimePeriod("Yesterday", yesterdayChanges), new TimePeriod("Older", olderChanges)];
+        this.changesProvider.setContent(timePeriods);
 
         stringBuilder.push("----------------------");
         stringBuilder.push("Today:");

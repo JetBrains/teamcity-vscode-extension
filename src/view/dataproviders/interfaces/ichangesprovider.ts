@@ -1,7 +1,7 @@
-import {Change} from "../../../bll/entities/change";
+import {TimePeriod} from "../../../bll/entities/timeperiod";
 
 export interface IChangesProvider {
     resetTreeContent(): void;
 
-    setContent(changes: Change[]): void;
+    setContent(changes: TimePeriod[]): void;
 }
