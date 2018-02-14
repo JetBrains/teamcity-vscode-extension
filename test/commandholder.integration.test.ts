@@ -181,7 +181,8 @@ suite("DataProviders", () => {
         const showMyChangesMock: ShowMyChanges = tsMockito.mock(ShowMyChanges);
         when(showMyChangesMock.exec()).thenReturn(Promise.resolve());
         const showMyChangesSpy: ShowMyChanges = tsMockito.instance(showMyChangesMock);
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, undefined, showMyChangesSpy, undefined);
+        const dp = prepareProviderManager();
+        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, undefined, showMyChangesSpy, dp);
         ch.showMyChanges().then(() => {
             verify(showMyChangesMock.exec()).called();
             done();
