@@ -166,3 +166,9 @@ export enum DataProviderEnum {
     BuildsProvider = "BuildsProvider",
     ChangesProvider = "ChangesProvider"
 }
+
+export enum TimePeriodEnum {
+    Today = "Today",
+    Yesterday = "Yesterday",
+    Older = "Older"
+}

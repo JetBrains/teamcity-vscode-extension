@@ -1,5 +1,5 @@
 import {inject, injectable} from "inversify";
-import {TYPES} from "../utils/constants";
+import {TimePeriodEnum, TYPES} from "../utils/constants";
 import {SummaryDao} from "../../dal/summarydao";
 import {Change} from "../entities/change";
 import {Logger} from "../utils/logger";
@@ -28,34 +28,46 @@ export class ShowMyChanges implements Command {
             return;
         }
 
-        const todayChanges: Change[] = [];
-        const yesterdayChanges: Change[] = [];
-        const olderChanges: Change[] = [];
-        changeSet.forEach((changes) => {
-            changes.forEach((change) => {
-                const changeDate = change.vcsDate;
-                if (this.isToday(changeDate)) {
-                    todayChanges.push(change);
-                } else if (this.isYesterday(changeDate)) {
-                    yesterdayChanges.push(change);
-                } else {
-                    olderChanges.push(change);
-                }
-            });
-        });
-
-        const timePeriods = [new TimePeriod("Today", todayChanges), new TimePeriod("Yesterday", yesterdayChanges), new TimePeriod("Older", olderChanges)];
+        const sortedChanges = ShowMyChanges.getSortedChanges(changeSet);
+        const timePeriods = [new TimePeriod(TimePeriodEnum.Today, sortedChanges[TimePeriodEnum.Today]),
+            new TimePeriod(TimePeriodEnum.Yesterday, sortedChanges[TimePeriodEnum.Yesterday]),
+            new TimePeriod(TimePeriodEnum.Older, sortedChanges[TimePeriodEnum.Older])];
         this.changesProvider.setContent(timePeriods);
 
         Logger.logDebug("ShowMyChanges::exec finished ");
     }
 
-    private isToday(date: Date): boolean {
+    private static getSortedChanges(changeSet) {
+        const sortedChanges = [];
+        changeSet.forEach((changes) => {
+            changes.forEach((change) => {
+                const changeTimePeriod = ShowMyChanges.getTimePeriod(change);
+                if (!sortedChanges[changeTimePeriod]) {
+                    sortedChanges[changeTimePeriod] = [];
+                }
+                sortedChanges[changeTimePeriod].push(change);
+            });
+        });
+        return sortedChanges;
+    }
+
+    private static getTimePeriod(change: Change): TimePeriodEnum {
+        const changeDate = change.vcsDate;
+        if (ShowMyChanges.isToday(changeDate)) {
+            return TimePeriodEnum.Today;
+        } else if (ShowMyChanges.isYesterday(changeDate)) {
+            return TimePeriodEnum.Yesterday;
+        } else {
+            return TimePeriodEnum.Older;
+        }
+    }
+
+    private static isToday(date: Date): boolean {
         const today = new Date();
         return ShowMyChanges.isSameDay(date, today);
     }
 
-    private isYesterday(date: Date): boolean {
+    private static isYesterday(date: Date): boolean {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
 

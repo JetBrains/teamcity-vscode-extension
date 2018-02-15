@@ -1,12 +1,13 @@
 import {Change} from "./change";
+import {TimePeriodEnum} from "../utils/constants";
 
 export class TimePeriod {
 
     public readonly changes: Change[];
-    public readonly name: string;
+    public readonly timePeriod: TimePeriodEnum;
 
-    constructor(name: string, changes: Change[]) {
-        this.name = name;
+    constructor(timePeriod: TimePeriodEnum, changes: Change[]) {
+        this.timePeriod = timePeriod;
         this.changes = changes ?  changes : [];
     }
 }
