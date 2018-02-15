@@ -185,6 +185,7 @@ suite("DataProviders", () => {
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, undefined, showMyChangesSpy, dp);
         ch.showMyChanges().then(() => {
             verify(showMyChangesMock.exec()).called();
+            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {
             done(err);
