@@ -10,9 +10,9 @@ import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider
 import {BuildConfig} from "../entities/buildconfig";
 import {IProviderManager} from "../../view/iprovidermanager";
 import {CustomPatchSender} from "../remoterun/patchsender";
-import {window} from "vscode";
 import {PatchManager} from "../utils/patchmanager";
 import {QueuedBuild} from "../utils/queuedbuild";
+import {WindowProxy} from "../moduleproxies/window-proxy";
 
 @injectable()
 export class RemoteRun implements Command {
@@ -23,19 +23,22 @@ export class RemoteRun implements Command {
     private readonly resourceProvider: IResourceProvider;
     private readonly providerManager: IProviderManager;
     private readonly patchManager: PatchManager;
+    private readonly windowProxy: WindowProxy;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
                        @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
                        @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
                        @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                        @inject(TYPES.PatchSender) patchSender: CustomPatchSender,
-                       @inject(TYPES.PatchManager) patchManager: PatchManager) {
+                       @inject(TYPES.PatchManager) patchManager: PatchManager,
+                       @inject(TYPES.WindowProxy) windowProxy: WindowProxy) {
         this.cvsProvider = cvsProvider;
         this.buildProvider = buildProvider;
         this.resourceProvider = resourceProvider;
         this.providerManager = providerManager;
         this.patchSender = patchSender;
         this.patchManager = patchManager;
+        this.windowProxy = windowProxy;
     }
 
     public async exec(): Promise<void> {
@@ -52,7 +55,7 @@ export class RemoteRun implements Command {
         this.providerManager.showEmptyDataProvider();
 
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
-        const commitMessage: string = await RemoteRun.requestForCommitMessageIfRequired(checkInArray);
+        const commitMessage: string = await this.requestForCommitMessageIfRequired(checkInArray);
         this.fillCommitMessage(checkInArray, commitMessage);
 
         const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(includedBuildConfigs, patchAbsPath, commitMessage);
@@ -67,10 +70,10 @@ export class RemoteRun implements Command {
         }
     }
 
-    private static async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {
+    private async requestForCommitMessageIfRequired(checkInArray: CheckInInfo[]): Promise<string> {
         let commitMessage: string;
         if (checkInArray.length > 0) {
-            commitMessage = await window.showInputBox({
+            commitMessage = await this.windowProxy.showInputBox({
                 prompt: MessageConstants.PROVIDE_MESSAGE_FOR_REMOTE_RUN
             });
         }

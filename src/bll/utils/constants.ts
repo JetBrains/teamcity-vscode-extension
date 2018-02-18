@@ -151,7 +151,8 @@ export const TYPES = {
     TeamCityStatusBarItem: Symbol("TeamCityStatusBarItem"),
     WorkspaceProxy: Symbol("WorkspaceProxy"),
     ShowMyChangesCommand: Symbol("ShowMyChangesCommand"),
-    ChangesProvider: Symbol("ChangesProvider")
+    ChangesProvider: Symbol("ChangesProvider"),
+    WindowProxy: Symbol("WindowProxy")
 };
 
 export enum CvsOperation {

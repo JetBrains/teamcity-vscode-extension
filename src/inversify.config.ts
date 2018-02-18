@@ -50,6 +50,7 @@ import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
 import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
 import {ChangesProvider} from "./view/dataproviders/changesprovider";
+import {WindowProxy} from "./bll/moduleproxies/window-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -93,3 +94,4 @@ myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCity
 myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
 myContainer.bind<Command>(TYPES.ShowMyChangesCommand).to(ShowMyChanges).inSingletonScope();
 myContainer.bind<IChangesProvider>(TYPES.ChangesProvider).to(ChangesProvider).inSingletonScope();
+myContainer.bind<WindowProxy>(TYPES.WindowProxy).to(WindowProxy).inSingletonScope();
