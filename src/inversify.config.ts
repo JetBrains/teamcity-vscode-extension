@@ -11,8 +11,7 @@ import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {RemoteLogin} from "./dal/remotelogin";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
 import {WebLinks} from "./dal/weblinks";
-import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
-import {PatchSender} from "./bll/remoterun/patchsender";
+import {CustomPatchSender} from "./bll/remoterun/patchsender";
 import {SummaryDao} from "./dal/summarydao";
 import {BuildDao} from "./dal/builddao";
 import {TeamCityOutput} from "./view/teamcityoutput";
@@ -62,7 +61,7 @@ myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(Notification
 myContainer.bind<RemoteLogin>(TYPES.RemoteLogin).to(RemoteLogin);
 myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServer);
 myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinks);
-myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);
+myContainer.bind<CustomPatchSender>(TYPES.PatchSender).to(CustomPatchSender);
 myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDao);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDao);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
