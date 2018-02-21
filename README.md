@@ -1,4 +1,4 @@
-# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](assets/project-incubator-brightgreen.png)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](http://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
 This extension allows you to connect to TeamCity Server and run personal builds on TeamCity server without leaving Visual Studio Code.
 
@@ -31,7 +31,7 @@ When you run the `teamcity signin` command and the `teamcity.credentials.persist
 
 ## Commands
 The extension provides several commands for interacting with Team City API. 
-In the Command Palette (`F1`), type `TeamTity` and choose a command.
+In the Command Palette (`F1`), type `TeamCity` and choose a command.
 
 * `TeamCity: Remote Run. Select Files For Remote Run` – Prompts you to choose a resources to send for remote run on the TeamCity server.
 
