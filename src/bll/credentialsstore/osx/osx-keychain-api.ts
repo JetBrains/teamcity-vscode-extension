@@ -1,5 +1,3 @@
-"use strict";
-
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {OsxKeychain} from "./osx-keychain-access";
@@ -95,14 +93,16 @@ export class OsxKeychainApi implements CredentialsStore {
     }
 
     private static createCredentialsWithoutPassword(targetName: string): Credentials {
-        const segments: Array<string> = targetName.split(OsxKeychainApi.separator);
-        const url: string = segments[0];
-        const username: string = segments[1];
+        const segments: string[] = targetName.split(OsxKeychainApi.separator);
+        const url: string = new Buffer(segments[0], "hex").toString("utf8");
+        const username: string = new Buffer(segments[1], "hex").toString("utf8");
         return new Credentials(url, username, undefined, undefined, undefined);
     }
 
     private static createTargetName(url: string, username: string): string {
-        return url + OsxKeychainApi.separator + username;
+        const encryptedUrl: string = new Buffer(url, "utf8").toString("hex");
+        const encryptedUsername: string = new Buffer(username, "utf8").toString("hex");
+        return encryptedUrl + OsxKeychainApi.separator + encryptedUsername;
     }
 
     getCredentialsSilently(): Credentials {

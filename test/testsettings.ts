@@ -29,12 +29,23 @@ export class TestSettings {
     }
 
     private static testCredentials;
+    private static testCredentialsWithSpesicficCharacters;
 
     public static get credentials(): Credentials {
         if (!TestSettings.testCredentials) {
             TestSettings.testCredentials = new Credentials(TestSettings.url, TestSettings.account, TestSettings.password, "test", "test");
         }
         return TestSettings.testCredentials;
+    }
+
+    public static get credentialsWithSpesificCharacters(): Credentials {
+        if (!TestSettings.testCredentialsWithSpesicficCharacters) {
+            const spesificCharacters = "[]|*+*-/*-&%^!@%#+)((^!%!";
+            TestSettings.testCredentialsWithSpesicficCharacters =
+                new Credentials(TestSettings.url + spesificCharacters, TestSettings.account + spesificCharacters,
+                                TestSettings.password + spesificCharacters, "test", "test");
+        }
+        return TestSettings.testCredentialsWithSpesicficCharacters;
     }
 
     public static get winCredentials(): any {
