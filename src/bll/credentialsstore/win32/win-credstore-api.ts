@@ -1,5 +1,3 @@
-"use strict";
-
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {WinPersistentCredentialsStore} from "./win-credstore";
@@ -54,14 +52,16 @@ export class WindowsCredentialStoreApi implements CredentialsStore {
 
     private static createCredentials(cred: any): Credentials {
         const password: string = new Buffer(cred.credential, "hex").toString("utf8");
-        const segments: Array<string> = cred.targetName.split(WindowsCredentialStoreApi.separator);
-        const url: string = segments[0];
-        const username: string = segments[1];
+        const segments: string[] = cred.targetName.split(WindowsCredentialStoreApi.separator);
+        const url: string = new Buffer(segments[0], "hex").toString("utf8");
+        const username: string = new Buffer(segments[1], "hex").toString("utf8");
         return new Credentials(url, username, password, undefined, undefined);
     }
 
-    private static createTargetName(service: string, username: string): string {
-        return service + WindowsCredentialStoreApi.separator + username;
+    private static createTargetName(url: string, username: string): string {
+        const encryptedUrl: string = new Buffer(url, "utf8").toString("hex");
+        const encryptedUsername: string = new Buffer(username, "utf8").toString("hex");
+        return encryptedUrl + WindowsCredentialStoreApi.separator + encryptedUsername;
     }
 
     private listCredentials(): Promise<Array<any>> {

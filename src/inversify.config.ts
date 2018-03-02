@@ -11,8 +11,7 @@ import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {RemoteLogin} from "./dal/remotelogin";
 import {RemoteBuildServer} from "./dal/remotebuildserver";
 import {WebLinks} from "./dal/weblinks";
-import {CustomPatchSender} from "./bll/remoterun/patchsenderimpl";
-import {PatchSender} from "./bll/remoterun/patchsender";
+import {CustomPatchSender} from "./bll/remoterun/patchsender";
 import {SummaryDao} from "./dal/summarydao";
 import {BuildDao} from "./dal/builddao";
 import {TeamCityOutput} from "./view/teamcityoutput";
@@ -51,6 +50,7 @@ import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
 import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
 import {ChangesProvider} from "./view/dataproviders/changesprovider";
+import {WindowProxy} from "./bll/moduleproxies/window-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -62,7 +62,7 @@ myContainer.bind<NotificationWatcher>(TYPES.NotificationWatcher).to(Notification
 myContainer.bind<RemoteLogin>(TYPES.RemoteLogin).to(RemoteLogin);
 myContainer.bind<RemoteBuildServer>(TYPES.RemoteBuildServer).to(RemoteBuildServer);
 myContainer.bind<WebLinks>(TYPES.WebLinks).to(WebLinks);
-myContainer.bind<PatchSender>(TYPES.PatchSender).to(CustomPatchSender);
+myContainer.bind<CustomPatchSender>(TYPES.PatchSender).to(CustomPatchSender);
 myContainer.bind<SummaryDao>(TYPES.SummaryDao).to(SummaryDao);
 myContainer.bind<BuildDao>(TYPES.BuildDao).to(BuildDao);
 myContainer.bind<PatchManager>(TYPES.PatchManager).to(PatchManager).inSingletonScope();
@@ -94,3 +94,4 @@ myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCity
 myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
 myContainer.bind<Command>(TYPES.ShowMyChangesCommand).to(ShowMyChanges).inSingletonScope();
 myContainer.bind<IChangesProvider>(TYPES.ChangesProvider).to(ChangesProvider).inSingletonScope();
+myContainer.bind<WindowProxy>(TYPES.WindowProxy).to(WindowProxy).inSingletonScope();

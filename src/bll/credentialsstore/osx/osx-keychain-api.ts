@@ -1,11 +1,10 @@
-"use strict";
-
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {OsxKeychain} from "./osx-keychain-access";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
+import {Utils} from "../../utils/utils";
 
 @injectable()
 export class OsxKeychainApi implements CredentialsStore {
@@ -79,8 +78,13 @@ export class OsxKeychainApi implements CredentialsStore {
         const stream = this.osxKeychain.getCredentialsWithoutPasswordsListStream();
         stream.on("data", (cred) => {
             if (cred.svce && cred.svce.indexOf(OsxKeychainApi.prefix) === 0) {
-                const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
-                credentialsList.push(credentials);
+                try {
+                    const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
+                    credentialsList.push(credentials);
+                } catch (err) {
+                    Logger.logError("[OsxKeychainApi::listCredentials] could not collect credentials. with err: "
+                    + Utils.formatErrorMessage(err));
+                }
             }
         });
         return new Promise<Credentials[]>((resolve, reject) => {
@@ -95,14 +99,16 @@ export class OsxKeychainApi implements CredentialsStore {
     }
 
     private static createCredentialsWithoutPassword(targetName: string): Credentials {
-        const segments: Array<string> = targetName.split(OsxKeychainApi.separator);
-        const url: string = segments[0];
-        const username: string = segments[1];
+        const segments: string[] = targetName.split(OsxKeychainApi.separator);
+        const url: string = new Buffer(segments[0], "hex").toString("utf8");
+        const username: string = new Buffer(segments[1], "hex").toString("utf8");
         return new Credentials(url, username, undefined, undefined, undefined);
     }
 
     private static createTargetName(url: string, username: string): string {
-        return url + OsxKeychainApi.separator + username;
+        const encryptedUrl: string = new Buffer(url, "utf8").toString("hex");
+        const encryptedUsername: string = new Buffer(username, "utf8").toString("hex");
+        return encryptedUrl + OsxKeychainApi.separator + encryptedUsername;
     }
 
     getCredentialsSilently(): Credentials {

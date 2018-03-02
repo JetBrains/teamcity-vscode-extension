@@ -49,6 +49,38 @@ suite("PersistentStorageManager - integration test", function () {
         }
     });
 
+    test("should verify store, get, remove credentials for our add-in. with specific characters Platform specific", async function () {
+        try {
+            const winParseWrapper: WinCredStoreParsingStreamWrapper = new WinCredStoreParsingStreamWrapper();
+            const winPersistentCredentialsStore: WinPersistentCredentialsStore = new WinPersistentCredentialsStore(winParseWrapper, new CpProxy());
+            const fileTokenStorage: FileTokenStorage = new FileTokenStorage(new FsProxy(), new PathProxy());
+            const defaultFilename: string = "secrets.json";
+            const defaultFolder: string = ".secrets";
+            fileTokenStorage.setFilename(path.join(os.homedir(), defaultFolder, defaultFilename));
+            const linuxFileApi: LinuxFileApi = new LinuxFileApi(fileTokenStorage);
+            const winStoreApi = new WindowsCredentialStoreApi(winPersistentCredentialsStore);
+            const osxParseWrapper: OsxSecurityParsingStreamWrapper = new OsxSecurityParsingStreamWrapper();
+            const osxKeychain: OsxKeychain = new OsxKeychain(osxParseWrapper, new CpProxy());
+            osxKeychain.setPrefix(TestSettings.persistentCredentialsPrefix);
+            const osxKeychainApi: OsxKeychainApi = new OsxKeychainApi(osxKeychain);
+            const credentialManager: PersistentStorageManager = new PersistentStorageManager(winStoreApi, linuxFileApi, osxKeychainApi, os);
+
+            rewriteMyReleasePrefix(winPersistentCredentialsStore);
+            await credentialManager.setCredentials(TestSettings.credentialsWithSpesificCharacters);
+            let credInfo: Credentials = await credentialManager.getCredentials();
+
+            const expectedCreds = TestSettings.credentialsWithSpesificCharacters;
+            assert.equal(credInfo.serverURL, expectedCreds.serverURL);
+            assert.equal(credInfo.user, expectedCreds.user);
+            assert.equal(credInfo.password, expectedCreds.password);
+            await credentialManager.removeCredentials();
+            credInfo = await credentialManager.getCredentials();
+            assert.isUndefined(credInfo);
+        } catch (err) {
+            return Promise.reject(err);
+        }
+    });
+
     function rewriteMyReleasePrefix(winPersistentCredentialsStore: WinPersistentCredentialsStore): void {
         winPersistentCredentialsStore.setPrefix(TestSettings.persistentCredentialsPrefix);
     }

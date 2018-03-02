@@ -1,5 +1,3 @@
-"use strict";
-
 import {WindowsCredentialStoreApi} from "./win32/win-credstore-api";
 import {LinuxFileApi} from "./linux/linux-file-api";
 import {Credentials} from "./credentials";
@@ -8,6 +6,8 @@ import {TYPES} from "../utils/constants";
 import {OsxKeychainApi} from "./osx/osx-keychain-api";
 import {CredentialsStore} from "./credentialsstore";
 import {OsProxy} from "../moduleproxies/os-proxy";
+import {Logger} from "../utils/logger";
+import {Utils} from "../utils/utils";
 
 @injectable()
 export class PersistentStorageManager implements CredentialsStore {
@@ -38,8 +38,18 @@ export class PersistentStorageManager implements CredentialsStore {
         return this.credentialsStore.getCredentials();
     }
 
+    private async tryGetCredentials(): Promise<Credentials> {
+        let creds: Credentials = undefined;
+        try {
+            creds = await this.credentialsStore.getCredentials();
+        } catch (err) {
+            Logger.logError(`[PersistentStorageManager:tryGetCredentials] an error occurs during getting credentials ${Utils.formatErrorMessage(err)}`);
+        }
+        return creds;
+    }
+
     public async setCredentials(credentials: Credentials): Promise<void> {
-        const cred: Credentials = await this.getCredentials();
+        const cred: Credentials = await this.tryGetCredentials();
         if (cred) {
             await this.removeCredentials();
         }

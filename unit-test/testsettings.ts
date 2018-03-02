@@ -38,30 +38,38 @@ export class TestSettings {
     }
 
     public static get winCredentials(): any {
+        const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
         return {
             credential: new Buffer(TestSettings.password),
-            targetName: TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account
+            targetName: encruptedUrl + WindowsCredentialStoreApi.separator + encruptedUsername
         };
     }
 
     public static get anotherWinCredentials(): any {
+        const encruptedUrl = new Buffer(TestSettings.url + 2, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account + 2, "utf8").toString("hex");
         return {
             credential: new Buffer(TestSettings.password + 2),
-            targetName: TestSettings.url + 2 + WindowsCredentialStoreApi.separator + TestSettings.account + 2
+            targetName: encruptedUrl + WindowsCredentialStoreApi.separator + encruptedUsername
         };
     }
 
     public static get osxCredentials(): any {
+        const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
         return {
             svce: OsxKeychainApi.prefix,
-            acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account
+            acct: encruptedUrl + OsxKeychainApi.separator + encruptedUsername
         };
     }
 
     public static get otherOsxCredentials(): any {
+        const encruptedUrl = new Buffer(TestSettings.url + 2, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account + 2, "utf8").toString("hex");
         return {
             svce: OsxKeychainApi.prefix + 2,
-            acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2
+            acct: encruptedUrl + OsxKeychainApi.separator + encruptedUsername
         };
     }
 
@@ -99,7 +107,7 @@ export class TestSettings {
         return this.winStorageExample;
     }
 
-    private static readonly winStorageExample = `Target Name: test_teamcity_vsaddin:${TestSettings.url}|${TestSettings.account}\n` +
+    private static readonly winStorageExample = `Target Name: test_teamcity_vsaddin:${TestSettings.winCredentials.targetName}\n` +
         "win-credstore-parser.ts:27\n" +
         "Type: Generic\n" +
         "User Name: creds.exe\n" +

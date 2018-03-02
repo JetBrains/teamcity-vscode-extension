@@ -1,7 +1,7 @@
 "use strict";
 
 import "reflect-metadata";
-import {anything, instance, mock, verify, when} from "ts-mockito";
+import {anything, instance, mock, verify, when, anyString} from "ts-mockito";
 import * as stream from "stream";
 import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";
@@ -59,12 +59,12 @@ suite("OsxKeychainApi", () => {
         const readable: any = new stream.Readable({ objectMode: true });
         readable.pipe(new OsxSecurityParsingStream());
         when(osxKeychainMock.getCredentialsWithoutPasswordsListStream()).thenReturn(readable);
-        const testTargetName = TestSettings.url + OsxKeychainApi.separator + TestSettings.account;
-        when(osxKeychainMock.getPasswordForUser(testTargetName)).thenReturn(new Promise<string>((r) => r(TestSettings.password)));
-
+        const targetName = TestSettings.osxCredentials;
+        when(osxKeychainMock.getPasswordForUser(anyString())).thenReturn(new Promise<string>((r) => r(TestSettings.password)));
         readable.push(TestSettings.osxCredentials);
         //tslint:disable-next-line: no-null-keyword
         readable.push(null);
+
         const osxKeychainSpy = instance(osxKeychainMock);
         const credStore = new OsxKeychainApi(osxKeychainSpy);
         credStore.getCredentials().then((cred) => {
@@ -100,12 +100,14 @@ suite("OsxKeychainApi", () => {
 
     test("should verify setCredentials", async function () {
         const osxKeychainMock = mock(OsxKeychain);
-        const targetName = TestSettings.url + OsxKeychainApi.separator + TestSettings.account;
+        const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
+        const expectedTargetName = encruptedUrl + OsxKeychainApi.separator + encruptedUsername;
         const osxKeychainSpy = instance(osxKeychainMock);
         const credStore = new OsxKeychainApi(osxKeychainSpy);
         await credStore.setCredentials(TestSettings.credentials);
         const emptyDescription = "";
-        verify(osxKeychainMock.set(targetName, emptyDescription, TestSettings.password)).called();
+        verify(osxKeychainMock.set(expectedTargetName, emptyDescription, TestSettings.password)).called();
     });
 
     test("should verify removeCredentials with one exist account", async function () {
@@ -120,7 +122,9 @@ suite("OsxKeychainApi", () => {
         const credStore = new OsxKeychainApi(osxKeychainSpy);
         await credStore.removeCredentials();
         const emptyDescription = "";
-        const expectedTargetName = TestSettings.url + OsxKeychainApi.separator + TestSettings.account;
+        const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
+        const expectedTargetName = encruptedUrl + OsxKeychainApi.separator + encruptedUsername;
         verify(osxKeychainMock.remove(expectedTargetName, emptyDescription)).called();
     });
 

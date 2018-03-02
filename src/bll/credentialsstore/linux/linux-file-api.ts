@@ -1,7 +1,3 @@
-"use strict";
-
-import {FileTokenStorage} from "./file-token-storage";
-
 import * as os from "os";
 import * as path from "path";
 import {Credentials} from "../credentials";
@@ -9,6 +5,7 @@ import {Logger} from "../../utils/logger";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
+import {FileTokenStorage} from "./file-token-storage";
 
 @injectable()
 export class LinuxFileApi implements CredentialsStore {
