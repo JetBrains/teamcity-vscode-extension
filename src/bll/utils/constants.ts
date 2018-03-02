@@ -17,6 +17,7 @@ export class Constants {
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
     public static readonly GIT_PATH_SETTING_NAME = "git.path";
     public static readonly DEFAULT_URL = "http://buildserver";
+    public static readonly SERVICE_PREFIX = "jetbrains.teamcity.vscode";
 
     public static readonly POST_METHOD = "POST";
     public static readonly GET_METHOD = "GET";

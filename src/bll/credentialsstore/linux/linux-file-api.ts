@@ -3,14 +3,13 @@ import * as path from "path";
 import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {inject, injectable} from "inversify";
-import {TYPES} from "../../utils/constants";
+import {Constants, TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
 import {FileTokenStorage} from "./file-token-storage";
 
 @injectable()
 export class LinuxFileApi implements CredentialsStore {
     private fileTokenStorage: FileTokenStorage;
-    public static readonly SERVICE_PREFIX = "teamcity_vscode:";
     private defaultFilename: string = "secrets.json";
     private defaultFolder: string = ".secrets";
 
@@ -43,7 +42,7 @@ export class LinuxFileApi implements CredentialsStore {
             username: credentials.user,
             password: credentials.password,
             url: credentials.serverURL,
-            service: LinuxFileApi.SERVICE_PREFIX
+            service: Constants.SERVICE_PREFIX
         };
 
         await this.fileTokenStorage.addEntries([newEntry], existingEntries);
@@ -75,9 +74,9 @@ export class LinuxFileApi implements CredentialsStore {
 
         const userEntries = [];
         allEntries.forEach((entry) => {
-            if (isTeamCityEntries && entry.service === LinuxFileApi.SERVICE_PREFIX) {
+            if (isTeamCityEntries && entry.service === Constants.SERVICE_PREFIX) {
                 userEntries.push(entry);
-            } else if (!isTeamCityEntries && entry.service !== LinuxFileApi.SERVICE_PREFIX) {
+            } else if (!isTeamCityEntries && entry.service !== Constants.SERVICE_PREFIX) {
                 userEntries.push(entry);
             }
         });

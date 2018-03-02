@@ -3,7 +3,7 @@
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {WindowsCredentialStoreApi} from "../src/bll/credentialsstore/win32/win-credstore-api";
 import {OsxKeychainApi} from "../src/bll/credentialsstore/osx/osx-keychain-api";
-import {LinuxFileApi} from "../src/bll/credentialsstore/linux/linux-file-api";
+import {Constants} from "../src/bll/utils/constants";
 
 export class TestSettings {
 
@@ -64,21 +64,21 @@ export class TestSettings {
 
     public static get osxCredentials(): any {
         return {
-            svce: OsxKeychainApi.prefix,
+            svce: Constants.SERVICE_PREFIX,
             acct: TestSettings.url + OsxKeychainApi.separator + TestSettings.account
         };
     }
 
     public static get otherOsxCredentials(): any {
         return {
-            svce: OsxKeychainApi.prefix + 2,
+            svce: Constants.SERVICE_PREFIX,
             acct: TestSettings.url + 2 + OsxKeychainApi.separator + TestSettings.account + 2
         };
     }
 
     public static get linuxCredentialsObj(): any {
         return {
-            service: LinuxFileApi.SERVICE_PREFIX,
+            service: Constants.SERVICE_PREFIX,
             url: TestSettings.url,
             username: TestSettings.account,
             password: TestSettings.password
@@ -91,7 +91,7 @@ export class TestSettings {
 
     public static get otherLinuxCredentials(): any {
         return {
-            service: OsxKeychainApi.prefix,
+            service: Constants.SERVICE_PREFIX,
             url: TestSettings.url + 2,
             username: TestSettings.account + 2,
             password: TestSettings.password + 2
@@ -99,7 +99,7 @@ export class TestSettings {
     }
 
     public static get persistentCredentialsPrefix(): string {
-        return "test_teamcity_vsaddin:";
+        return Constants.SERVICE_PREFIX;
     }
 
     public static get win32Platform(): NodeJS.Platform {

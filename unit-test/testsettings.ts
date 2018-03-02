@@ -3,7 +3,7 @@
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {WindowsCredentialStoreApi} from "../src/bll/credentialsstore/win32/win-credstore-api";
 import {OsxKeychainApi} from "../src/bll/credentialsstore/osx/osx-keychain-api";
-import {LinuxFileApi} from "../src/bll/credentialsstore/linux/linux-file-api";
+import {Constants} from "../src/bll/utils/constants";
 
 export class TestSettings {
 
@@ -59,7 +59,7 @@ export class TestSettings {
         const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
         const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
         return {
-            svce: OsxKeychainApi.prefix,
+            svce: Constants.SERVICE_PREFIX,
             acct: encruptedUrl + OsxKeychainApi.separator + encruptedUsername
         };
     }
@@ -68,14 +68,14 @@ export class TestSettings {
         const encruptedUrl = new Buffer(TestSettings.url + 2, "utf8").toString("hex");
         const encruptedUsername = new Buffer(TestSettings.account + 2, "utf8").toString("hex");
         return {
-            svce: OsxKeychainApi.prefix + 2,
+            svce: Constants.SERVICE_PREFIX,
             acct: encruptedUrl + OsxKeychainApi.separator + encruptedUsername
         };
     }
 
     public static get linuxCredentialsObj(): any {
         return {
-            service: LinuxFileApi.SERVICE_PREFIX,
+            service: Constants.SERVICE_PREFIX,
             url: TestSettings.url,
             username: TestSettings.account,
             password: TestSettings.password
@@ -88,7 +88,7 @@ export class TestSettings {
 
     public static get otherLinuxCredentials(): any {
         return {
-            service: OsxKeychainApi.prefix,
+            service: Constants.SERVICE_PREFIX,
             url: TestSettings.url + 2,
             username: TestSettings.account + 2,
             password: TestSettings.password + 2
@@ -96,7 +96,7 @@ export class TestSettings {
     }
 
     public static get persistentCredentialsPrefix(): string {
-        return "test_teamcity_vsaddin:";
+        return Constants.SERVICE_PREFIX;
     }
 
     public static get win32Platform(): NodeJS.Platform {

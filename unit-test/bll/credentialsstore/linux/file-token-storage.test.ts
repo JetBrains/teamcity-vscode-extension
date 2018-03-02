@@ -6,8 +6,8 @@ import {TestSettings} from "../../../testsettings";
 import {assert} from "chai";
 import {FileTokenStorage} from "../../../../src/bll/credentialsstore/linux/file-token-storage";
 import {FsProxy} from "../../../../src/bll/moduleproxies/fs-proxy";
-import {LinuxFileApi} from "../../../../src/bll/credentialsstore/linux/linux-file-api";
 import {PathProxy} from "../../../../src/bll/moduleproxies/path-proxy";
+import {Constants} from "../../../../src/bll/utils/constants";
 
 suite("FileTokenStorage", () => {
 
@@ -43,7 +43,7 @@ suite("FileTokenStorage", () => {
         assert.equal(entries.length, 1);
         assert.equal(entries[0].url, TestSettings.url);
         assert.equal(entries[0].username, TestSettings.account);
-        assert.equal(entries[0].service, LinuxFileApi.SERVICE_PREFIX);
+        assert.equal(entries[0].service, Constants.SERVICE_PREFIX);
         assert.equal(entries[0].password, TestSettings.password);
     });
 

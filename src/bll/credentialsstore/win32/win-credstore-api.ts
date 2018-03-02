@@ -2,18 +2,17 @@ import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {WinPersistentCredentialsStore} from "./win-credstore";
 import {inject, injectable} from "inversify";
-import {TYPES} from "../../utils/constants";
+import {Constants, TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
 
 @injectable()
 export class WindowsCredentialStoreApi implements CredentialsStore {
     public static separator: string = "|";
-    public static SERVICE_PREFIX = "teamcity_vscode:";
     private winPersistentCredentialsStore: WinPersistentCredentialsStore;
 
     constructor(@inject(TYPES.WinPersistentCredentialsStore) winPersistentCredentialsStore: WinPersistentCredentialsStore) {
         this.winPersistentCredentialsStore = winPersistentCredentialsStore;
-        winPersistentCredentialsStore.setPrefix(WindowsCredentialStoreApi.SERVICE_PREFIX);
+        winPersistentCredentialsStore.setPrefix(Constants.SERVICE_PREFIX);
     }
 
     public async getCredentials(): Promise<Credentials> {

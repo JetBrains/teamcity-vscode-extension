@@ -2,20 +2,19 @@ import {Credentials} from "../credentials";
 import {Logger} from "../../utils/logger";
 import {OsxKeychain} from "./osx-keychain-access";
 import {inject, injectable} from "inversify";
-import {TYPES} from "../../utils/constants";
+import {Constants, TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
 import {Utils} from "../../utils/utils";
 
 @injectable()
 export class OsxKeychainApi implements CredentialsStore {
-    public static prefix: string = "teamcity_vscode:";
     public static separator: string = "|";
 
     private osxKeychain: OsxKeychain;
 
     constructor(@inject(TYPES.OsxKeychain) osxKeychain: OsxKeychain) {
         this.osxKeychain = osxKeychain;
-        this.osxKeychain.setPrefix(OsxKeychainApi.prefix);
+        this.osxKeychain.setPrefix(Constants.SERVICE_PREFIX);
 
     }
 
@@ -77,7 +76,7 @@ export class OsxKeychainApi implements CredentialsStore {
 
         const stream = this.osxKeychain.getCredentialsWithoutPasswordsListStream();
         stream.on("data", (cred) => {
-            if (cred.svce && cred.svce.indexOf(OsxKeychainApi.prefix) === 0) {
+            if (cred.svce && cred.svce.indexOf(Constants.SERVICE_PREFIX) === 0) {
                 try {
                     const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
                     credentialsList.push(credentials);
