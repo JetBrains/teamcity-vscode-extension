@@ -4,6 +4,7 @@ import {OsxKeychain} from "./osx-keychain-access";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
 import {CredentialsStore} from "../credentialsstore";
+import {Utils} from "../../utils/utils";
 
 @injectable()
 export class OsxKeychainApi implements CredentialsStore {
@@ -77,8 +78,13 @@ export class OsxKeychainApi implements CredentialsStore {
         const stream = this.osxKeychain.getCredentialsWithoutPasswordsListStream();
         stream.on("data", (cred) => {
             if (cred.svce && cred.svce.indexOf(OsxKeychainApi.prefix) === 0) {
-                const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
-                credentialsList.push(credentials);
+                try {
+                    const credentials: Credentials = OsxKeychainApi.createCredentialsWithoutPassword(cred.acct);
+                    credentialsList.push(credentials);
+                } catch (err) {
+                    Logger.logError("[OsxKeychainApi::listCredentials] could not collect credentials. with err: "
+                    + Utils.formatErrorMessage(err));
+                }
             }
         });
         return new Promise<Credentials[]>((resolve, reject) => {

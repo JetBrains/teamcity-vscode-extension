@@ -77,11 +77,13 @@ suite("WindowsCredentialStoreApi", () => {
 
     test("should verify setCredentials", async function () {
         const winPersistentCredentialsStoreMock = mock(WinPersistentCredentialsStore);
-        const targetName = TestSettings.url + WindowsCredentialStoreApi.separator + TestSettings.account;
+        const encruptedUrl = new Buffer(TestSettings.url, "utf8").toString("hex");
+        const encruptedUsername = new Buffer(TestSettings.account, "utf8").toString("hex");
+        const expectedTargetName = encruptedUrl + WindowsCredentialStoreApi.separator + encruptedUsername;
         const winPersistentCredentialsStoreSpy = instance(winPersistentCredentialsStoreMock);
         const credStore = new WindowsCredentialStoreApi(winPersistentCredentialsStoreSpy);
         await credStore.setCredentials(TestSettings.credentials);
-        verify(winPersistentCredentialsStoreMock.set(targetName, TestSettings.password)).called();
+        verify(winPersistentCredentialsStoreMock.set(expectedTargetName, TestSettings.password)).called();
     });
 
     test("should verify removeCredentials", async function () {
