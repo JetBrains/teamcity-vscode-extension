@@ -50,9 +50,6 @@ export class SignIn implements Command {
 
         if (credentials) {
             this.credentialsStore.setCredentials(credentials);
-            if (!fromPersistentStore) {
-                this.storeLastUserCredentials(credentials).catch((err) => Logger.logError(err));
-            }
             Logger.logInfo("SignIn#exec: success.");
             if (!fromPersistentStore) {
                 await this.suggestToStoreCredentials(credentials);
