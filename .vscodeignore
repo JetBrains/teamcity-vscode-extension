@@ -9,3 +9,7 @@ src/**
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
+.idea/**
+tslint.json
+gulpfile.js
+out/gulpfile.js
