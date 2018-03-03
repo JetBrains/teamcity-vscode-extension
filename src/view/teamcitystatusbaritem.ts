@@ -17,7 +17,7 @@ export class TeamCityStatusBarItem implements Disposable {
     public setLoggedOut(): void {
         this.barItem.command = Constants.SIGNIN_COMMAND_NAME;
         this.barItem.text = `$(icon octicon-stop)`;
-        this.barItem.tooltip = "Logged out";
+        this.barItem.tooltip = "Logged out (TeamCity)";
         this.barItem.show();
     }
 
