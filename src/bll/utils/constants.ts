@@ -1,26 +1,16 @@
-"use strict";
-
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
     public static readonly EXTENSION_NAME_PREFIX: string = `${Constants.EXTENSION_NAME}.`;
     public static readonly EXTENSION_ID: string = "JetBrains.teamcity-vscode-extension";
     public static readonly XMLRPC_SESSIONID_KEY: string = "xmlrpcsessionId";
-    public static readonly HTTP_STATUS_OK = 200;
-    public static readonly HTTP_STATUS_UNAUTHORIZED = 401;
-    public static readonly GIT_EXTENSION_ID = "vscode.git";
-    public static readonly TFS_EXTENSION_ID = "ms-vsts.team";
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
     public static readonly SHOULD_ASK_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
-    public static readonly REMOTERUN_ENABLED = `${Constants.EXTENSION_NAME_PREFIX}remoterun.enabled`;
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
     public static readonly GIT_PATH_SETTING_NAME = "git.path";
     public static readonly DEFAULT_URL = "http://buildserver";
     public static readonly SERVICE_PREFIX = "jetbrains.teamcity.vscode";
-
-    public static readonly POST_METHOD = "POST";
-    public static readonly GET_METHOD = "GET";
 
     public static readonly SIGNIN_COMMAND_NAME = "teamcity.signIn";
     public static readonly SIGNOUT_COMMAND_NAME = "teamcity.signOut";
@@ -90,8 +80,7 @@ export enum CvsFileStatusCode {
     MODIFIED = <any>"M",
     ADDED = <any>"A",
     DELETED = <any>"D",
-    RENAMED = <any>"R",
-    UNRECOGNIZED = <any>"U"
+    RENAMED = <any>"R"
 }
 
 export enum LoggingLevel {
