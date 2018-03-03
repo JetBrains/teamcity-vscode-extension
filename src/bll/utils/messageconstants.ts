@@ -14,7 +14,7 @@ export class MessageConstants {
     static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
     static readonly STORE_CREDENTIALS_SUGGESTION = "Do you want the IDE to save the TeamCity URL and your credentials?";
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
-    static readonly REQUEST_FOR_NEXT_OPERATION = "Personal Build has finished successfully. Whould you like to commit/push your changes?";
+    static readonly REQUEST_FOR_NEXT_OPERATION = "Personal Build has finished successfully. Would you like to commit/push your changes?";
     static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations with non-manual VCS checkout mode in " +
         "which you have permissions to start the builds were not found for the specified changes.";
     static readonly MANDATORY_FIELD: string = "This is mandatory field.";
