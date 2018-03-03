@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
 import {Credentials} from "../credentialsstore/credentials";
 import {MessageConstants} from "../utils/messageconstants";
@@ -111,20 +109,36 @@ export class SignIn implements Command {
         return this.validateAndGenerateUserCredentials(serverUrl, username, password);
     }
 
-    private static async requestServerUrl(defaultURL: string): Promise<string> {
-        let serverUrl: string = await window.showInputBox({
-            value: defaultURL || "",
-            prompt: MessageConstants.PROVIDE_URL,
-            placeHolder: "",
-            password: false
-        });
-        const operationWasNotAborted: boolean = !!serverUrl;
-        if (operationWasNotAborted) {
-            serverUrl = this.removeSlashInTheEndIfExists(serverUrl);
-            return Promise.resolve<string>(serverUrl);
-        } else {
-            return Promise.reject("Server URL was not specified.");
+    private static async requestMandatoryFiled(defaultValue: string = "",
+                                               basicPrompt: string = "",
+                                               isPassword: boolean): Promise<string> {
+        let operationWasAborted: boolean = false;
+        let fieldWasFilled: boolean = false;
+        let fieldValue: string;
+        let prompt = basicPrompt;
+        while (!fieldWasFilled && !operationWasAborted) {
+            fieldValue = await window.showInputBox({
+                value: defaultValue,
+                prompt: prompt,
+                placeHolder: "",
+                password: isPassword
+            });
+            operationWasAborted = fieldValue === undefined;
+            fieldWasFilled = fieldValue !== "";
+            prompt = `${MessageConstants.MANDATORY_FIELD} ${basicPrompt}`;
         }
+
+        if (!operationWasAborted) {
+            fieldValue = this.removeSlashInTheEndIfExists(fieldValue);
+            return Promise.resolve<string>(fieldValue);
+        } else {
+            return Promise.reject(`Mandatory Value was not specified. basicPrompt: ${basicPrompt}`);
+        }
+    }
+
+    private static async requestServerUrl(defaultURL: string): Promise<string> {
+        const serverUrl: string = await SignIn.requestMandatoryFiled(defaultURL, MessageConstants.PROVIDE_URL, false);
+        return SignIn.removeSlashInTheEndIfExists(serverUrl);
     }
 
     private static removeSlashInTheEndIfExists(serverUrl: string): string {
@@ -132,32 +146,13 @@ export class SignIn implements Command {
     }
 
     private static async requestUsername(defaultUsername: string, serverUrl: string): Promise<string> {
-        const userName: string = await window.showInputBox({
-            value: defaultUsername || "",
-            prompt: MessageConstants.PROVIDE_USERNAME + " ( URL: " + serverUrl + " )",
-            placeHolder: "",
-            password: false
-        });
-        const operationWasNotAborted: boolean = !!userName;
-        if (operationWasNotAborted) {
-            return Promise.resolve<string>(userName);
-        } else {
-            return Promise.reject("Username was not specified.");
-        }
+        const defaultPrompt = `${MessageConstants.PROVIDE_USERNAME} ( URL: ${serverUrl} )"`;
+        return SignIn.requestMandatoryFiled(defaultUsername, defaultPrompt, false);
     }
 
     private static async requestPassword(username: string): Promise<string> {
-        const password: string = await window.showInputBox({
-            prompt: MessageConstants.PROVIDE_PASSWORD + " ( username: " + username + " )",
-            placeHolder: "",
-            password: true
-        });
-        const operationWasNotAborted: boolean = !!password;
-        if (operationWasNotAborted) {
-            return Promise.resolve<string>(password);
-        } else {
-            return Promise.reject("Password was not specified.");
-        }
+        const defaultPrompt = `${MessageConstants.PROVIDE_PASSWORD} ( username: ${username} )"`;
+        return SignIn.requestMandatoryFiled("", defaultPrompt, true);
     }
 
     private async storeLastUserCredentials(credentials: Credentials): Promise<void> {
