@@ -7,6 +7,7 @@ import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
 import {TYPES} from "../bll/utils/constants";
 import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
+import {RequestProxy, RequestResult} from "../bll/moduleproxies/request-proxy";
 
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
@@ -15,9 +16,22 @@ const pki = forge.pki;
 export class RemoteLogin {
 
     private readonly vsCodeUtils: IVsCodeUtils;
+    private readonly requestProxy: RequestProxy;
 
-    constructor(@inject(TYPES.VsCodeUtils) vsCodeUtils: IVsCodeUtils) {
+    constructor(@inject(TYPES.VsCodeUtils) vsCodeUtils: IVsCodeUtils,
+                @inject(TYPES.RequestProxy) requestProxy: RequestProxy) {
         this.vsCodeUtils = vsCodeUtils;
+        this.requestProxy = requestProxy;
+    }
+
+    async isServerReachable(serverUrl: string): Promise<boolean> {
+        const options = {
+            url: `${serverUrl}/app/rest/server/version`,
+        };
+        const requestResult: RequestResult = await this.requestProxy.get(options);
+        return !requestResult.err &&
+            requestResult.response &&
+            requestResult.response.statusCode === 200;
     }
 
     async authenticate(serverUrl: string, user: string, password: string): Promise<string> {

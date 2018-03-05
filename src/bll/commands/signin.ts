@@ -43,7 +43,7 @@ export class SignIn implements Command {
         if (silent) {
             return this.execSilent(fromPersistence);
         }
-        const typedCredentials: Credentials = await this.requestTypingCredentials();
+        const typedCredentials: Credentials = await this.requestTypingCredentials(fromPersistence);
 
         if (typedCredentials) {
             this.credentialsStore.setCredentials(typedCredentials);
@@ -102,15 +102,14 @@ export class SignIn implements Command {
         return Promise.reject("Credentials are undefined.");
     }
 
-    private async requestTypingCredentials(): Promise<Credentials> {
+    private async requestTypingCredentials(fromPersistence: Credentials): Promise<Credentials> {
         let serverUrl: string;
         let username: string;
         let password: string;
-        const currentCredentials: Credentials = await this.tryGetCredentialsFromPersistence();
-        const suggestedUrl = currentCredentials ? currentCredentials.serverURL : Constants.DEFAULT_URL;
-        const suggestedUsername = currentCredentials ? currentCredentials.user : "";
+        const suggestedUrl = fromPersistence ? fromPersistence.serverURL : Constants.DEFAULT_URL;
+        const suggestedUsername = fromPersistence ? fromPersistence.user : "";
         try {
-            serverUrl = await SignIn.requestServerUrl(suggestedUrl);
+            serverUrl = await this.requestServerUrl(suggestedUrl);
             username = await SignIn.requestUsername(suggestedUsername, serverUrl);
             password = await SignIn.requestPassword(username);
         } catch (err) {
@@ -139,16 +138,23 @@ export class SignIn implements Command {
         }
 
         if (!operationWasAborted) {
-            fieldValue = this.removeSlashInTheEndIfExists(fieldValue);
             return Promise.resolve<string>(fieldValue);
         } else {
             return Promise.reject(`Mandatory Value was not specified. basicPrompt: ${basicPrompt}`);
         }
     }
 
-    private static async requestServerUrl(defaultURL: string): Promise<string> {
-        const serverUrl: string = await SignIn.requestMandatoryFiled(defaultURL, MessageConstants.PROVIDE_URL, false);
-        return SignIn.removeSlashInTheEndIfExists(serverUrl);
+    private async requestServerUrl(defaultURL: string): Promise<string> {
+        let messageToDisplay: string = MessageConstants.PROVIDE_URL;
+        while (true) {
+            let serverUrl: string = await SignIn.requestMandatoryFiled(defaultURL, messageToDisplay, false);
+            serverUrl = SignIn.removeSlashInTheEndIfExists(serverUrl);
+            if (await this.remoteLogin.isServerReachable(serverUrl)) {
+                return serverUrl;
+            }
+            defaultURL = serverUrl;
+            messageToDisplay = `${MessageConstants.URL_NOT_REACHABLE} ${MessageConstants.PROVIDE_URL}`;
+        }
     }
 
     private static removeSlashInTheEndIfExists(serverUrl: string): string {
