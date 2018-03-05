@@ -1,23 +1,23 @@
 export class MessageConstants {
-    static readonly PROVIDE_USERNAME: string = "Provide the username for TeamCity server.";
-    static readonly PROVIDE_PASSWORD: string = "Provide the password for username.";
-    static readonly PROVIDE_URL: string = "Provide the URL for TeamCity server.";
-    static readonly URL_NOT_REACHABLE: string = "Provided URL is not reachable.";
+    static readonly PROVIDE_USERNAME: string = "Provide the username for the TeamCity server.";
+    static readonly PROVIDE_PASSWORD: string = "Provide the password for the username.";
+    static readonly PROVIDE_URL: string = "Provide the URL for the TeamCity server.";
+    static readonly URL_NOT_REACHABLE: string = "The TeamCity server cannot be reached.";
     static readonly PROVIDE_MESSAGE_FOR_REMOTE_RUN: string = "Provide the message for Remote Run.";
     static readonly PROVIDE_MESSAGE_FOR_COMMIT: string = "Provide the commit message.";
-    static readonly NO_CREDENTIALS_RUN_SIGNIN: string = "You are not connected to a TeamCity server. Please run the 'teamcity SignIn' command.";
-    static readonly NO_CONFIGS_RUN_REMOTERUN: string = "no selected build configs. Try to execute the 'Find Suitable Builds' command first";
+    static readonly NO_CREDENTIALS_RUN_SIGNIN: string = "You are not connected to the TeamCity server. Run the 'teamcity SignIn' command.";
+    static readonly NO_CONFIGS_RUN_REMOTERUN: string = "No build configurations are selected for Remote run. Execute the 'Find Suitable Builds' command first";
     static readonly STATUS_CODE_401: string = "Unauthorized. Check your authentication credentials and try again.";
     static readonly XMLRPC_AUTH_EXCEPTION: string = "Unexpected exception during xmlrpc authentication";
-    static readonly PLEASE_SPECIFY_BUILDS: string = "Please specify builds for remote run.";
+    static readonly PLEASE_SPECIFY_BUILDS: string = "Specify build configurations for remote run.";
     static readonly DO_NOT_SHOW_AGAIN = "Don't show again";
     static readonly DO_NOT_ASK_AGAIN = "Don't ask again";
     static readonly WELCOME_MESSAGE = "You are successfully logged in. Welcome to the TeamCity extension!";
-    static readonly SAVE_CREDENTIALS_SUGGESTION = "Do you want the IDE to save the TeamCity URL and your credentials?";
-    static readonly UPDATE_CREDENTIALS_SUGGESTION = "Do you want the IDE to update the TeamCity URL and your credentials?";
+    static readonly SAVE_CREDENTIALS_SUGGESTION = "Do you want Visual Studio Code to save the TeamCity URL and your credentials?";
+    static readonly UPDATE_CREDENTIALS_SUGGESTION = "Do you want Visual Studio Code to update the TeamCity URL and your credentials?";
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
-    static readonly REQUEST_FOR_NEXT_OPERATION = "Personal Build has finished successfully. Would you like to commit/push your changes?";
+    static readonly REQUEST_FOR_NEXT_OPERATION = "Your personal build has finished successfully. Commit/push your changes?";
     static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations with non-manual VCS checkout mode in " +
-        "which you have permissions to start the builds were not found for the specified changes.";
-    static readonly MANDATORY_FIELD: string = "This is mandatory field.";
+        "where you have permissions to run builds were not found for the specified changes.";
+    static readonly MANDATORY_FIELD: string = "This field is mandatory.";
 }
