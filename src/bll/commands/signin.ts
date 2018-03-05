@@ -162,12 +162,12 @@ export class SignIn implements Command {
     }
 
     private static async requestUsername(defaultUsername: string, serverUrl: string): Promise<string> {
-        const defaultPrompt = `${MessageConstants.PROVIDE_USERNAME} ( URL: ${serverUrl} )"`;
+        const defaultPrompt = `${MessageConstants.PROVIDE_USERNAME} ( URL: ${serverUrl} )`;
         return SignIn.requestMandatoryFiled(defaultUsername, defaultPrompt, false);
     }
 
     private static async requestPassword(username: string): Promise<string> {
-        const defaultPrompt = `${MessageConstants.PROVIDE_PASSWORD} ( username: ${username} )"`;
+        const defaultPrompt = `${MessageConstants.PROVIDE_PASSWORD} ( username: ${username} )`;
         return SignIn.requestMandatoryFiled("", defaultPrompt, true);
     }
 
