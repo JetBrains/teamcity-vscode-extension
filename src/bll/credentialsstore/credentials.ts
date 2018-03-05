@@ -36,13 +36,9 @@ export class Credentials {
     }
 
     public equals(credentials: Credentials): boolean {
-        if (credentials === undefined ||
+        return !(credentials === undefined ||
             this.user !== credentials.user ||
-            this.userId !== credentials.userId ||
             this.serverURL !== credentials.serverURL ||
-            this.sessionId !== credentials.sessionId) {
-            return false;
-        }
-        return true;
+            this.password !== credentials.password);
     }
 }

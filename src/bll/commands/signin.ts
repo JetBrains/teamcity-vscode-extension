@@ -37,25 +37,35 @@ export class SignIn implements Command {
         this.statusBarItem = statusBarItem;
     }
 
-    public async exec(fromPersistentStore: boolean = false): Promise<void> {
+    public async exec(silent: boolean = false): Promise<void> {
         Logger.logInfo("SignIn#exec: starts.");
-        let credentials: Credentials;
-        if (!fromPersistentStore) {
-            credentials = await this.requestTypingCredentials();
-        } else {
-            credentials = await this.tryGetCredentialsFromPersistence();
+        const fromPersistence: Credentials = await this.tryGetCredentialsFromPersistence();
+        if (silent) {
+            return this.execSilent(fromPersistence);
         }
+        const typedCredentials: Credentials = await this.requestTypingCredentials();
 
-        if (credentials) {
-            this.credentialsStore.setCredentials(credentials);
+        if (typedCredentials) {
+            this.credentialsStore.setCredentials(typedCredentials);
             Logger.logInfo("SignIn#exec: success.");
-            if (!fromPersistentStore) {
-                await this.suggestToStoreCredentials(credentials);
+            if (!fromPersistence) {
+                await this.suggestToStoreCredentials(typedCredentials);
+            } else if (!typedCredentials.equals(fromPersistence)) {
+                await this.suggestToUpdateCredentials(typedCredentials);
             }
-            this.greetUser(credentials);
+            return this.greetUser(typedCredentials);
         } else {
             Logger.logWarning("SignIn#exec: operation was aborted by user");
         }
+    }
+
+    private async execSilent(fromPersistence: Credentials): Promise<void> {
+        if (!fromPersistence) {
+            return;
+        }
+        this.credentialsStore.setCredentials(fromPersistence);
+        Logger.logInfo("SignIn#exec: success.");
+        return this.greetUser(fromPersistence);
     }
 
     private async tryGetCredentialsFromPersistence(): Promise<Credentials> {
@@ -191,7 +201,7 @@ export class SignIn implements Command {
         const notStoreCredentialsItem: MessageItem = {title: "No"};
         const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_ASK_AGAIN};
         const chosenItem: MessageItem = await MessageManager.showInfoMessage(
-            MessageConstants.STORE_CREDENTIALS_SUGGESTION, storeCredentialsItem, notStoreCredentialsItem, doNotShowAgainItem);
+            MessageConstants.SAVE_CREDENTIALS_SUGGESTION, storeCredentialsItem, notStoreCredentialsItem, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === storeCredentialsItem.title) {
             await this.storeLastUserCredentials(credentials);
         } else if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
@@ -200,7 +210,16 @@ export class SignIn implements Command {
         } else {
             await this.persistentStorageManager.removeCredentials();
         }
+    }
 
+    private async suggestToUpdateCredentials(credentials: Credentials): Promise<void> {
+        const updateCredentialsItem: MessageItem = {title: "Yes"};
+        const doNothing: MessageItem = {title: "No"};
+        const chosenItem: MessageItem = await MessageManager.showInfoMessage(
+            MessageConstants.UPDATE_CREDENTIALS_SUGGESTION, updateCredentialsItem, doNothing);
+        if (chosenItem && chosenItem.title === updateCredentialsItem.title) {
+            await this.storeLastUserCredentials(credentials);
+        }
     }
 
 }
