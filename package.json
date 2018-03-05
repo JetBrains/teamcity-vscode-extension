@@ -23,17 +23,17 @@
     "commands": [
       {
         "command": "teamcity.signIn",
-        "title": "Signin",
+        "title": "Sign in",
         "category": "TeamCity"
       },
       {
         "command": "teamcity.signOut",
-        "title": "Signout",
+        "title": "Sign out",
         "category": "TeamCity"
       },
       {
         "command": "teamcity.selectFilesForRemoteRun",
-        "title": "Remote Run. Select Files For Remote Run",
+        "title": "Select files for remote run",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/remoterun.svg",
@@ -42,7 +42,7 @@
       },
       {
         "command": "teamcity.refreshSelectedFilesForRemoteRun",
-        "title": "Remote Run. Refresh Files For Remote Run",
+        "title": "Refresh files for remote run",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
@@ -51,7 +51,7 @@
       },
       {
         "command": "teamcity.findSuitableBuildConfigurations",
-        "title": "Remote Run. Find Suitable Build Configurations",
+        "title": "Find suitable build configurations for remote run",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/findsuitable.svg",
@@ -60,7 +60,7 @@
       },
       {
         "command": "teamcity.refreshSuitableBuildConfigurations",
-        "title": "Remote Run. Refresh Suitable Build Configurations",
+        "title": "Refresh suitable build configurations",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/refresh.svg",
@@ -69,7 +69,7 @@
       },
       {
         "command": "teamcity.backToEmptyDataProvider",
-        "title": "Remote Run. Back To Empty Data Provider",
+        "title": "Back to the previous step",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/back.svg",
@@ -78,7 +78,7 @@
       },
       {
         "command": "teamcity.backToSelectFilesForRemoteRun",
-        "title": "Remote Run. Back To Select Files For Remote Run",
+        "title": "Back to the previous step",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/back.svg",
@@ -87,7 +87,7 @@
       },
       {
         "command": "teamcity.remoteRun",
-        "title": "Remote Run. Run With Chosen Build Configurations",
+        "title": "Perform remote run with selected build configurations",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/remoterun.svg",
@@ -96,12 +96,12 @@
       },
       {
         "command": "teamcity.showOutput",
-        "title": "Show TeamCity Output",
+        "title": "Show TeamCity output",
         "category": "TeamCity"
       },
       {
         "command": "teamcity.showMyChanges",
-        "title": "Show My Changes",
+        "title": "Show my changes",
         "category": "TeamCity"
       }
     ],
@@ -239,7 +239,7 @@
         "teamcity.show.welcome": {
           "type": "boolean",
           "default": true,
-          "description": "Sets whether the extension should show welcome message after the login operation or not."
+          "description": "Sets whether the extension should show the welcome message after the login operation or not."
         },
         "teamcity.credentials.persistent": {
           "type": "boolean",
