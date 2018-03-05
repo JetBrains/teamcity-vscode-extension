@@ -18,8 +18,8 @@ export class CheckInInfoItem extends ExpandableItem {
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
             const iconName: string = "project.svg";
             return {
-                light: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "light", iconName),
-                dark: path.join(__dirname, "..", "..", "..", "..", "resources", "icons", "dark", iconName)
+                light: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "light", iconName),
+                dark: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "dark", iconName)
             };
         }
 

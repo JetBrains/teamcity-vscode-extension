@@ -15,12 +15,7 @@ gulp.task('clean', function (done) {
     return del(['out/**', '!out', '!out/src/bll/credentialsstore/linux', '!out/src/bll/credentialsstore/osx', '!out/src/bll/credentialsstore/win32'], done);
 });
 
-gulp.task('copyresources', ['clean'],  function() {
-    return gulp.src('resources/**/*')
-        .pipe(gulp.dest('out/resources'));
-});
-
-gulp.task('build', ['copyresources'], function () {
+gulp.task('build', ['clean'], function () {
     var tsProject = typescript.createProject('./tsconfig.json');
     var tsResult = tsProject.src()
         .pipe(sourcemaps.init())
