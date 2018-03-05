@@ -107,7 +107,7 @@ export class TestSettings {
         return this.winStorageExample;
     }
 
-    private static readonly winStorageExample = `Target Name: test_teamcity_vsaddin:${TestSettings.winCredentials.targetName}\n` +
+    private static readonly winStorageExample = `Target Name: jetbrains.teamcity.vscode${TestSettings.winCredentials.targetName}\n` +
         "win-credstore-parser.ts:27\n" +
         "Type: Generic\n" +
         "User Name: creds.exe\n" +
