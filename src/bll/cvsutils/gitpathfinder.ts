@@ -1,5 +1,3 @@
-"use strict";
-
 import * as path from "path";
 import {Finder} from "./finder";
 import {Constants} from "../utils/constants";

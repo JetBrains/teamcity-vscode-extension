@@ -1,5 +1,3 @@
-"use strict";
-
 import {Credentials} from "./credentials";
 
 export interface CredentialsStore {

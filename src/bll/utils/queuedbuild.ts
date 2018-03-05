@@ -1,5 +1,3 @@
-"use strict";
-
 export interface QueuedBuild {
     id: string;
     buildTypeId: string;

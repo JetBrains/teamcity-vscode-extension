@@ -1,5 +1,3 @@
-"use strict";
-
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";

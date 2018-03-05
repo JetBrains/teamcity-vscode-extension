@@ -1,4 +1,3 @@
-"use strict";
 // The module 'vscode' contains the VS Code extensibility API
 
 import "reflect-metadata";

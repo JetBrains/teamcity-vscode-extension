@@ -1,5 +1,3 @@
-"use strict";
-
 import {inject, injectable} from "inversify";
 import {OsxSecurityParsingStream, OsxSecurityParsingStreamWrapper} from "./osx-keychain-parser";
 import {TYPES} from "../../utils/constants";

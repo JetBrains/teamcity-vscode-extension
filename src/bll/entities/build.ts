@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
 
 export class Build {

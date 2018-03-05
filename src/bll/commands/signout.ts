@@ -1,5 +1,3 @@
-"use strict";
-
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";

@@ -1,5 +1,3 @@
-"use strict";
-
 import * as xmlrpc from "xmlrpc";
 import * as forge from "node-forge";
 import {Logger} from "../bll/utils/logger";

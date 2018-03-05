@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "./logger";
 
 export class ByteWriter {

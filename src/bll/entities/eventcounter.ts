@@ -1,5 +1,3 @@
-"use strict";
-
 import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {ModificationSubscription} from "../notifications/modificationsubscription";
 

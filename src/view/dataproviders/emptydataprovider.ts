@@ -1,5 +1,3 @@
-"use strict";
-
 import {DataProvider} from "./dataprovider";
 import {Event, ProviderResult, TreeItem} from "vscode";
 import {DataProviderEnum} from "../../bll/utils/constants";

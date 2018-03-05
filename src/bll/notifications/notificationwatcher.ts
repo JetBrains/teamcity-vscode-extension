@@ -1,5 +1,3 @@
-"use strict";
-
 import {Disposable} from "vscode";
 import {TeamCityOutput} from "../../view/teamcityoutput";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";

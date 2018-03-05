@@ -1,5 +1,3 @@
-"use strict";
-
 import {injectable} from "inversify";
 import * as cp from "child_process";
 import * as cp_async from "child-process-promise";

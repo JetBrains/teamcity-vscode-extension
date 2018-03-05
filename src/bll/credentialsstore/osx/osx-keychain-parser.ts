@@ -1,5 +1,3 @@
-"use strict";
-
 import {Transform} from "readable-stream";
 import {injectable} from "inversify";
 

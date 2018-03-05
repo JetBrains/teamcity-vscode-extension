@@ -1,5 +1,3 @@
-"use strict";
-
 export interface Settings {
     loggingLevel: string;
 

@@ -1,5 +1,3 @@
-"use strict";
-
 import * as stream from "stream";
 
 export interface ReadableSet {

@@ -1,5 +1,3 @@
-"use strict";
-
 import {MessageItem, OutputChannel, window} from "vscode";
 import {Constants, MessageTypes} from "../bll/utils/constants";
 

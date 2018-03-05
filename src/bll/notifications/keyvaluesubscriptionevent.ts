@@ -1,5 +1,3 @@
-"use strict";
-
 import {Serializable} from "./serializable";
 import {TrackerEventType} from "../utils/constants";
 
@@ -8,7 +6,7 @@ export abstract class KeyValueSubscriptionEvent implements Serializable {
     private readonly _value: string;
     private readonly _type: TrackerEventType;
 
-    constructor(type: TrackerEventType, key: string, value: string) {
+    protected constructor(type: TrackerEventType, key: string, value: string) {
         this._type = type;
         this._key = key;
         this._value = value;

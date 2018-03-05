@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
 import {Build} from "../entities/build";
 import {Change} from "../entities/change";

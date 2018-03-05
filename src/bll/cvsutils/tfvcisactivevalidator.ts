@@ -1,5 +1,3 @@
-"use strict";
-
 import {Validator} from "./validator";
 import {CpProxy} from "../moduleproxies/cp-proxy";
 

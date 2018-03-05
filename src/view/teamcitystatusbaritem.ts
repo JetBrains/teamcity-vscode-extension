@@ -1,5 +1,3 @@
-"use strict";
-
 import {Constants} from "../bll/utils/constants";
 import {StatusBarItem, window, Disposable, StatusBarAlignment} from "vscode";
 import {injectable} from "inversify";
@@ -7,7 +5,7 @@ import {injectable} from "inversify";
 @injectable()
 export class TeamCityStatusBarItem implements Disposable {
 
-    private barItem: StatusBarItem;
+    private readonly barItem: StatusBarItem;
 
     public constructor() {
         this.barItem = window.createStatusBarItem(StatusBarAlignment.Left, 105);

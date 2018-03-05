@@ -1,5 +1,3 @@
-"use strict";
-
 import {Constants} from "../utils/constants";
 import {injectable} from "inversify";
 import {Settings} from "./settings";

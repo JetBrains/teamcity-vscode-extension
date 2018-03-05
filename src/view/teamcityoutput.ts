@@ -1,12 +1,10 @@
-"use strict";
-
 import {Output} from "./output";
 import {OutputChannel, window} from "vscode";
 import {injectable} from "inversify";
 
 @injectable()
 export class TeamCityOutput implements Output {
-    private outputChannel: OutputChannel;
+    private readonly outputChannel: OutputChannel;
 
     public constructor() {
         this.outputChannel = window.createOutputChannel("TeamCity");

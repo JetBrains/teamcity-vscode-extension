@@ -1,5 +1,3 @@
-"use strict";
-
 import {inject, injectable} from "inversify";
 import {Logger} from "../utils/logger";
 import {Credentials} from "./credentials";
@@ -16,11 +14,11 @@ import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 @injectable()
 export class InMemoryCredentialsStore implements CredentialsStore {
 
-    private remoteLogin: RemoteLogin;
-    private output: Output;
-    private settings: Settings;
-    private persistentStorageManager: PersistentStorageManager;
-    private statusBarItem: TeamCityStatusBarItem;
+    private readonly remoteLogin: RemoteLogin;
+    private readonly output: Output;
+    private readonly settings: Settings;
+    private readonly persistentStorageManager: PersistentStorageManager;
+    private readonly statusBarItem: TeamCityStatusBarItem;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.Output) output: Output,

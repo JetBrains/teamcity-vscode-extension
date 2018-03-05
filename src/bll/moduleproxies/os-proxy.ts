@@ -1,5 +1,3 @@
-"use strict";
-
 import * as os from "os";
 import {injectable} from "inversify";
 

@@ -1,5 +1,3 @@
-"use strict";
-
 import {WebLinks} from "./weblinks";
 import {Build} from "../bll/entities/build";
 import {TYPES} from "../bll/utils/constants";

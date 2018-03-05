@@ -1,5 +1,3 @@
-"use strict";
-
 import {Disposable} from "vscode";
 
 export interface Output extends Disposable {

@@ -1,5 +1,3 @@
-"use strict";
-
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../utils/constants";
 import {FsProxy} from "../../moduleproxies/fs-proxy";

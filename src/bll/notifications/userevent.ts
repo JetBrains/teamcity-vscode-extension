@@ -1,5 +1,3 @@
-"use strict";
-
 import {TrackerEventType} from "../utils/constants";
 import {KeyValueSubscriptionEvent} from "./keyvaluesubscriptionevent";
 

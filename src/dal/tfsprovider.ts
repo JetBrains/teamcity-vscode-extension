@@ -1,5 +1,3 @@
-"use strict";
-
 import * as url from "url";
 import * as path from "path";
 import {Logger} from "../bll/utils/logger";

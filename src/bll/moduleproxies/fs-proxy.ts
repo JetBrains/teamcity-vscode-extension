@@ -1,5 +1,3 @@
-"use strict";
-
 import * as fs from "fs";
 import * as fs_async from "async-file";
 import {injectable} from "inversify";

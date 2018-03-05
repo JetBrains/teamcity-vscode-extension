@@ -1,5 +1,3 @@
-"use strict";
-
 import {Finder} from "./finder";
 import {Constants} from "../utils/constants";
 import {OsProxy} from "../moduleproxies/os-proxy";

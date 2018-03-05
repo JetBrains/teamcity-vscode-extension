@@ -1,5 +1,3 @@
-"use strict";
-
 import {CvsSupportProvider} from "./cvsprovider";
 import {CvsOperation} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";

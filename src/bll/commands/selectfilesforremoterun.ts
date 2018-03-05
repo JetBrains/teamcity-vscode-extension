@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../utils/logger";
 import {CheckInInfo} from "../entities/checkininfo";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";

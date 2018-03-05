@@ -1,5 +1,3 @@
-"use strict";
-
 import {Logger} from "../bll/utils/logger";
 import {Constants, TYPES} from "../bll/utils/constants";
 import {Credentials} from "../bll/credentialsstore/credentials";

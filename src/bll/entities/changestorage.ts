@@ -1,5 +1,3 @@
-"use strict";
-
 import {Change} from "./change";
 import {Summary} from "./summary";
 

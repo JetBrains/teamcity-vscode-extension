@@ -1,5 +1,3 @@
-"use strict";
-
 import {Build} from "./build";
 import {Logger} from "../utils/logger";
 

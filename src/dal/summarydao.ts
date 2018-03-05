@@ -1,5 +1,3 @@
-"use strict";
-
 import {TYPES} from "../bll/utils/constants";
 import {Summary} from "../bll/entities/summary";
 import {XmlParser} from "../bll/utils/xmlparser";

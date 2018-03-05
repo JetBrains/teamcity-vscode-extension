@@ -1,5 +1,3 @@
-"use strict";
-
 import {UserEvent} from "./userevent";
 import {Serializable} from "./serializable";
 import {ProjectEvent} from "./projectevent";
