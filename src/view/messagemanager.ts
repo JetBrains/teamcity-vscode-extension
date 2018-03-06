@@ -18,7 +18,7 @@ export class MessageManager {
     }
 
     private static async showMessage(message: string, type: MessageTypes, ...messageItems: MessageItem[]): Promise<MessageItem> {
-        const messageToDisplay: string = `(${Constants.EXTENSION_NAME}) ${message}`;
+        const messageToDisplay: string = `(${Constants.EXTENSION_NAME_CAPITALIZED}) ${message}`;
         let chosenItem: MessageItem;
         switch (type) {
             case MessageTypes.Error:

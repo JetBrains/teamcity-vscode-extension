@@ -1,6 +1,7 @@
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
+    public static readonly EXTENSION_NAME_CAPITALIZED: string = "TeamCity";
     public static readonly EXTENSION_NAME_PREFIX: string = `${Constants.EXTENSION_NAME}.`;
     public static readonly EXTENSION_ID: string = "JetBrains.teamcity-vscode-extension";
     public static readonly XMLRPC_SESSIONID_KEY: string = "xmlrpcsessionId";
