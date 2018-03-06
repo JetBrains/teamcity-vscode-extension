@@ -125,12 +125,14 @@ export class SignIn implements Command {
         let fieldWasFilled: boolean = false;
         let fieldValue: string;
         let prompt = basicPrompt;
+        const placeHolder = MessageConstants.MANDATORY_FIELD;
         while (!fieldWasFilled && !operationWasAborted) {
             fieldValue = await window.showInputBox({
                 value: defaultValue,
                 prompt: prompt,
-                placeHolder: "",
-                password: isPassword
+                placeHolder: placeHolder,
+                password: isPassword,
+                ignoreFocusOut: true
             });
             operationWasAborted = fieldValue === undefined;
             fieldWasFilled = fieldValue !== "";
@@ -227,5 +229,4 @@ export class SignIn implements Command {
             await this.storeLastUserCredentials(credentials);
         }
     }
-
 }
