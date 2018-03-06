@@ -149,7 +149,7 @@ suite("DataProviders", () => {
 
         ch.getSuitableConfigs().then(() => {
             verify(messageManagerMock.showErrorMessage(anything())).called();
-            tsMockito.verify(mockedGetSuitableConfigs.exec(anything())).called();
+            tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
             done();
         }).catch((err) => {
@@ -190,7 +190,7 @@ suite("DataProviders", () => {
 
         ch.remoteRunWithChosenConfigs().then(() => {
             verify(messageManagerMock.showErrorMessage(anything())).called();
-            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
+            tsMockito.verify(mockedRemoteRun.exec()).called();
             done();
         }).catch((err) => {
             done(err);
