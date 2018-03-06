@@ -78,10 +78,10 @@ suite("Run Remote Run", () => {
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
                                               providerManagerSpy, patchSenderSpy, undefined, windowSpy);
         testableCommand.exec().then(() => {
+            done("There should be an error!");
+        }).catch(() => {
             tsMockito.verify(patchSenderMock.sendPatch(anything(), anything(), anything())).never();
             done();
-        }).catch((err) => {
-            done("There is no reason for error: " + err);
         });
     });
 
