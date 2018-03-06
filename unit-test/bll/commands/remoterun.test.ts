@@ -1,7 +1,5 @@
 import "reflect-metadata";
 import * as tsMockito from "ts-mockito";
-const rmock = require("mock-require");
-rmock("vscode", { });
 import {anything, verify, when} from "ts-mockito";
 import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
 import {RemoteRun} from "../../../src/bll/commands/remoterun";
@@ -13,7 +11,9 @@ import {IProviderManager} from "../../../src/view/iprovidermanager";
 import {PatchManager} from "../../../src/bll/utils/patchmanager";
 import {WindowProxy} from "../../../src/bll/moduleproxies/window-proxy";
 import {ChangeListStatus} from "../../../src/bll/utils/constants";
-import {MessageManager} from "../../../src/view/messagemanager";
+
+const rmock = require("mock-require");
+rmock("vscode", { });
 
 suite("Run Remote Run", () => {
     test("should verify we request getting source data and trigger output methods", function (done) {
@@ -42,11 +42,8 @@ suite("Run Remote Run", () => {
         const windowMock: WindowProxy = tsMockito.mock(WindowProxy);
         const windowSpy: WindowProxy = tsMockito.instance(windowMock);
 
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
-
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
-                                              providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy, messageManagerSpy);
+                                              providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy);
         testableCommand.exec().then(() => {
             verify(patchManagerMock.preparePatch(anything())).called();
             buildProviderMock.verify((foo) => foo.getSelectedContent(), TypeMoq.Times.atLeastOnce());
@@ -78,11 +75,8 @@ suite("Run Remote Run", () => {
         const windowMock: WindowProxy = tsMockito.mock(WindowProxy);
         const windowSpy: WindowProxy = tsMockito.instance(windowMock);
 
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
-
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
-                                              providerManagerSpy, patchSenderSpy, undefined, windowSpy, messageManagerSpy);
+                                              providerManagerSpy, patchSenderSpy, undefined, windowSpy);
         testableCommand.exec().then(() => {
             tsMockito.verify(patchSenderMock.sendPatch(anything(), anything(), anything())).never();
             done();
@@ -117,11 +111,8 @@ suite("Run Remote Run", () => {
         const windowMock: WindowProxy = tsMockito.mock(WindowProxy);
         const windowSpy: WindowProxy = tsMockito.instance(windowMock);
 
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
-
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
-                                              providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy, messageManagerSpy);
+                                              providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy);
         testableCommand.exec().then(() => {
             buildProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
             resourceProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
