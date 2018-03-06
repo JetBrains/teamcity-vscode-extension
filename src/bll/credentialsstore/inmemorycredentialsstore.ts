@@ -10,6 +10,7 @@ import {Settings} from "../entities/settings";
 import {Output} from "../../view/output";
 import {PersistentStorageManager} from "./persistentstoragemanager";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
+import {MessageManager} from "../../view/messagemanager";
 
 @injectable()
 export class InMemoryCredentialsStore implements CredentialsStore {
@@ -19,17 +20,20 @@ export class InMemoryCredentialsStore implements CredentialsStore {
     private readonly settings: Settings;
     private readonly persistentStorageManager: PersistentStorageManager;
     private readonly statusBarItem: TeamCityStatusBarItem;
+    private readonly messageManager: MessageManager;
 
     constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                 @inject(TYPES.Output) output: Output,
                 @inject(TYPES.Settings) settings: Settings,
                 @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
-                @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem) {
+                @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
+                @inject(TYPES.MessageManager) messageManager: MessageManager) {
         this.remoteLogin = remoteLogin;
         this.output = output;
         this.settings = settings;
         this.persistentStorageManager = persistentStorageManager;
         this.statusBarItem = statusBarItem;
+        this.messageManager = messageManager;
     }
 
     private credentials: Credentials;
@@ -54,7 +58,7 @@ export class InMemoryCredentialsStore implements CredentialsStore {
 
     private async signIn(): Promise<void> {
         const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings,
-                                         this.persistentStorageManager, this.statusBarItem);
+                                         this.persistentStorageManager, this.statusBarItem, this.messageManager);
         return signInCommand.exec();
     }
 

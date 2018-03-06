@@ -52,6 +52,7 @@ import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider
 import {ChangesProvider} from "./view/dataproviders/changesprovider";
 import {WindowProxy} from "./bll/moduleproxies/window-proxy";
 import {RequestProxy} from "./bll/moduleproxies/request-proxy";
+import {MessageManager} from "./view/messagemanager";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -97,3 +98,4 @@ myContainer.bind<Command>(TYPES.ShowMyChangesCommand).to(ShowMyChanges).inSingle
 myContainer.bind<IChangesProvider>(TYPES.ChangesProvider).to(ChangesProvider).inSingletonScope();
 myContainer.bind<WindowProxy>(TYPES.WindowProxy).to(WindowProxy).inSingletonScope();
 myContainer.bind<RequestProxy>(TYPES.RequestProxy).to(RequestProxy).inSingletonScope();
+myContainer.bind<MessageManager>(TYPES.MessageManager).to(MessageManager).inSingletonScope();

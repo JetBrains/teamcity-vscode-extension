@@ -1,5 +1,3 @@
-"use strict";
-
 import "reflect-metadata";
 const rmock = require("mock-require");
 rmock("vscode", { });
@@ -40,5 +38,5 @@ suite("CredentialStore", function () {
 });
 
 function getImMemoryStorage(): InMemoryCredentialsStore {
-    return new InMemoryCredentialsStore(undefined, undefined, undefined, undefined, undefined);
+    return new InMemoryCredentialsStore(undefined, undefined, undefined, undefined, undefined, undefined);
 }

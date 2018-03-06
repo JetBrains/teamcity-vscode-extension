@@ -35,7 +35,7 @@ export class GetSuitableConfigs implements Command {
         this.output = output;
     }
 
-    public async exec(): Promise<void> {
+    public async exec(args?: any[]): Promise<void> {
         Logger.logInfo("GetSuitableConfigs: starts");
         const checkInArray: CheckInInfo[] = await this.getCheckInArray();
         const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);

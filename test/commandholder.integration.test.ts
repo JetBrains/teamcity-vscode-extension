@@ -1,5 +1,5 @@
 import * as tsMockito from "ts-mockito";
-import {verify, when} from "ts-mockito";
+import {anything, verify, when} from "ts-mockito";
 import {assert} from "chai";
 import {ProviderManager} from "../src/view/providermanager";
 import {CommandHolder} from "../src/commandholder";
@@ -16,6 +16,7 @@ import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {ShowMyChanges} from "../src/bll/commands/showmychanges";
 import {DataProviderEnum} from "../src/bll/utils/constants";
 import {ChangesProvider} from "../src/view/dataproviders/changesprovider";
+import {MessageManager} from "../src/view/messagemanager";
 
 suite("DataProviders", () => {
     test("should verify signIn success", function (done) {
@@ -29,9 +30,10 @@ suite("DataProviders", () => {
         const dp = prepareProviderManager();
         assert.isUndefined(dp.getShownDataProvider());
 
-        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, undefined, dp, credentialsStoreSpy);
+        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined,
+                                     undefined, undefined, undefined, dp, credentialsStoreSpy);
         ch.signIn().then(() => {
-            tsMockito.verify(mockedSignIn.exec([false])).called();
+            tsMockito.verify(mockedSignIn.exec(anything())).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
         }).catch((err) => {
@@ -41,7 +43,7 @@ suite("DataProviders", () => {
 
     test("should verify signIn failed", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
-        tsMockito.when(mockedSignIn.exec([false])).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedSignIn.exec(anything())).thenThrow(new Error("Any Exception"));
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
         const dp = prepareProviderManager();
         assert.isUndefined(dp.getShownDataProvider());
@@ -50,7 +52,7 @@ suite("DataProviders", () => {
         ch.signIn().then(() => {
             done("Expected an exception");
         }).catch(() => {
-            tsMockito.verify(mockedSignIn.exec([false])).called();
+            tsMockito.verify(mockedSignIn.exec(anything())).called();
             assert.isUndefined(dp.getShownDataProvider(), "DataProviders should be hidden");
             done();
         }).catch((err) => {
@@ -94,18 +96,24 @@ suite("DataProviders", () => {
 
     test("should verify selectFilesForRemoteRun failed", function (done) {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
-        tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedSelectFilesForRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
         const dp = prepareProviderManager();
         dp.showEmptyDataProvider();
-        const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, undefined, dp);
+
+        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
+        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
+        const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy,
+                                     undefined, undefined, undefined, dp, undefined,
+                                     undefined, undefined, undefined, messageManagerSpy);
 
         ch.selectFilesForRemoteRun().then(() => {
-            done("Exception should be thrown");
-        }).catch(() => {
+            verify(messageManagerMock.showErrorMessage(anything())).called();
             tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -126,19 +134,26 @@ suite("DataProviders", () => {
 
     test("should verify getSuitableConfigs failed", function (done) {
         const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
-        tsMockito.when(mockedGetSuitableConfigs.exec()).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedGetSuitableConfigs.exec(anything())).thenThrow(new Error("Any Exception"));
         const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
         const dp = prepareProviderManager();
         dp.showResourceProvider();
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, getSuitableConfigsSpy, undefined, undefined, dp);
+
+        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
+        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
+
+        const ch = new CommandHolder(undefined, undefined, undefined, undefined,
+                                     getSuitableConfigsSpy, undefined, undefined, dp, undefined,
+                                     undefined, undefined, undefined, messageManagerSpy);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
 
         ch.getSuitableConfigs().then(() => {
-            done("Exception should be thrown");
-        }).catch(() => {
-            tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
+            verify(messageManagerMock.showErrorMessage(anything())).called();
+            tsMockito.verify(mockedGetSuitableConfigs.exec(anything())).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
             done();
+        }).catch((err) => {
+            done(err);
         });
     });
 
@@ -160,17 +175,22 @@ suite("DataProviders", () => {
 
     test("should verify remoteRun failed", function (done) {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
-        tsMockito.when(mockedRemoteRun.exec()).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
         const dp = prepareProviderManager();
         dp.showBuildProvider();
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, undefined, dp);
+
+        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
+        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
+
+        const ch = new CommandHolder(undefined, undefined, undefined, undefined,
+                                     undefined, remoteRunSpy, undefined, dp, undefined,
+                                     undefined, undefined, undefined, messageManagerSpy);
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
 
         ch.remoteRunWithChosenConfigs().then(() => {
-            done("An exception was expected");
-        }).catch(() => {
-            tsMockito.verify(mockedRemoteRun.exec()).called();
+            verify(messageManagerMock.showErrorMessage(anything())).called();
+            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
             done();
         }).catch((err) => {
             done(err);

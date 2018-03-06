@@ -31,6 +31,7 @@ export class CommandHolder {
     private resourceProvider: IResourceProvider;
     private changesProvider: IChangesProvider;
     private buildProvider: IBuildProvider;
+    private messageManager: MessageManager;
 
     constructor(@inject(TYPES.Output) output: Output,
                 @inject(TYPES.SignIn) signInCommand: SignIn,
@@ -43,7 +44,8 @@ export class CommandHolder {
                 @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
                 @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
                 @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider,
-                @inject(TYPES.ChangesProvider) changesProvider?: IChangesProvider) {
+                @inject(TYPES.ChangesProvider) changesProvider?: IChangesProvider,
+                @inject(TYPES.MessageManager) messageManager?: MessageManager) {
         this.output = output;
         this._signIn = signInCommand;
         this._signOut = signOutCommand;
@@ -56,6 +58,7 @@ export class CommandHolder {
         this.resourceProvider = resourceProvider;
         this.buildProvider = buildProvider;
         this.changesProvider = changesProvider;
+        this.messageManager = messageManager;
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
@@ -116,7 +119,7 @@ export class CommandHolder {
             await command.exec(args);
         } catch (err) {
             Logger.logError(`[tryExecuteCommand] ${err}`);
-            MessageManager.showErrorMessage(Utils.formatErrorMessage(err));
+            this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
             return false;
         }
         return true;

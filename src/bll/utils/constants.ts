@@ -143,7 +143,8 @@ export const TYPES = {
     ShowMyChangesCommand: Symbol("ShowMyChangesCommand"),
     ChangesProvider: Symbol("ChangesProvider"),
     WindowProxy: Symbol("WindowProxy"),
-    RequestProxy: Symbol("RequestProxy")
+    RequestProxy: Symbol("RequestProxy"),
+    MessageManager: Symbol("MessageManager")
 };
 
 export enum CvsOperation {

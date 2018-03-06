@@ -17,7 +17,7 @@ export class SelectFilesForRemoteRun implements Command {
         this.resourceProvider = resourceProvider;
     }
 
-    public async exec(): Promise<void> {
+    public async exec(args?: any[]): Promise<void> {
         Logger.logInfo("SelectFilesForRemoteRun#exec: start");
         const checkInInfo: CheckInInfo[] = await this.cvsProvider.getRequiredCheckInInfo();
         this.resourceProvider.setContent(checkInInfo);

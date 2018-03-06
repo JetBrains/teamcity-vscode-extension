@@ -22,19 +22,22 @@ export class SignIn implements Command {
     private output: Output;
     private persistentStorageManager: PersistentStorageManager;
     private statusBarItem: TeamCityStatusBarItem;
+    private readonly messageManager: MessageManager;
 
     public constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
                        @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                        @inject(TYPES.Output) output: Output,
                        @inject(TYPES.Settings) settings: Settings,
                        @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
-                       @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem) {
+                       @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
+                       @inject(TYPES.MessageManager) messageManager: MessageManager) {
         this.remoteLogin = remoteLogin;
         this.credentialsStore = credentialsStore;
         this.output = output;
         this.settings = settings;
         this.persistentStorageManager = persistentStorageManager;
         this.statusBarItem = statusBarItem;
+        this.messageManager = messageManager;
     }
 
     public async exec(args: any[] = undefined): Promise<void> {
@@ -195,7 +198,7 @@ export class SignIn implements Command {
 
     private async showWelcomeMessage(): Promise<void> {
         const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
-        const chosenItem: MessageItem = await MessageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
+        const chosenItem: MessageItem = await this.messageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
             await this.settings.setShowSignInWelcome(false);
         }
@@ -209,7 +212,7 @@ export class SignIn implements Command {
         const storeCredentialsItem: MessageItem = {title: "Yes"};
         const notStoreCredentialsItem: MessageItem = {title: "No"};
         const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_ASK_AGAIN};
-        const chosenItem: MessageItem = await MessageManager.showInfoMessage(
+        const chosenItem: MessageItem = await this.messageManager.showInfoMessage(
             MessageConstants.SAVE_CREDENTIALS_SUGGESTION, storeCredentialsItem, notStoreCredentialsItem, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === storeCredentialsItem.title) {
             await this.storeLastUserCredentials(credentials);
@@ -224,7 +227,7 @@ export class SignIn implements Command {
     private async suggestToUpdateCredentials(credentials: Credentials): Promise<void> {
         const updateCredentialsItem: MessageItem = {title: "Yes"};
         const doNothing: MessageItem = {title: "No"};
-        const chosenItem: MessageItem = await MessageManager.showInfoMessage(
+        const chosenItem: MessageItem = await this.messageManager.showInfoMessage(
             MessageConstants.UPDATE_CREDENTIALS_SUGGESTION, updateCredentialsItem, doNothing);
         if (chosenItem && chosenItem.title === updateCredentialsItem.title) {
             await this.storeLastUserCredentials(credentials);

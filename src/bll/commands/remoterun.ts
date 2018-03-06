@@ -24,6 +24,7 @@ export class RemoteRun implements Command {
     private readonly providerManager: IProviderManager;
     private readonly patchManager: PatchManager;
     private readonly windowProxy: WindowProxy;
+    private readonly messageManager;
 
     public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
                        @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
@@ -31,7 +32,8 @@ export class RemoteRun implements Command {
                        @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                        @inject(TYPES.PatchSender) patchSender: CustomPatchSender,
                        @inject(TYPES.PatchManager) patchManager: PatchManager,
-                       @inject(TYPES.WindowProxy) windowProxy: WindowProxy) {
+                       @inject(TYPES.WindowProxy) windowProxy: WindowProxy,
+                       @inject(TYPES.MessageManager) messageManager: MessageManager) {
         this.cvsProvider = cvsProvider;
         this.buildProvider = buildProvider;
         this.resourceProvider = resourceProvider;
@@ -39,14 +41,15 @@ export class RemoteRun implements Command {
         this.patchSender = patchSender;
         this.patchManager = patchManager;
         this.windowProxy = windowProxy;
+        this.messageManager = messageManager;
     }
 
-    public async exec(): Promise<void> {
+    public async exec(args?: any[]): Promise<void> {
         Logger.logInfo("RemoteRun#exec: starts");
         const includedBuildConfigs: BuildConfig[] = this.buildProvider.getSelectedContent();
         const checkInArray: CheckInInfo[] = this.resourceProvider.getSelectedContent();
         if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
-            MessageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
+            this.messageManager.showErrorMessage(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             Logger.logWarning("RemoteRun#exec: " + MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
             return;
         }

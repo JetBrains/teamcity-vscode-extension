@@ -1,17 +1,19 @@
-import {MessageItem, OutputChannel, window} from "vscode";
+import {MessageItem, window} from "vscode";
 import {Constants, MessageTypes} from "../bll/utils/constants";
+import {injectable} from "inversify";
 
+@injectable()
 export class MessageManager {
 
-    public static async showInfoMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
+    public async showInfoMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return MessageManager.showMessage(messageToDisplay, MessageTypes.Info, ...messageItems);
     }
 
-    public static async showWarningMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
+    public async showWarningMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return MessageManager.showMessage(messageToDisplay, MessageTypes.Warn, ...messageItems);
     }
 
-    public static async showErrorMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
+    public async showErrorMessage(messageToDisplay: string, ...messageItems: MessageItem[]): Promise<MessageItem> {
         return MessageManager.showMessage(messageToDisplay, MessageTypes.Error, ...messageItems);
     }
 
