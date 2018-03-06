@@ -48,7 +48,7 @@ export class GetSuitableConfigs implements Command {
     private async getCheckInArray(): Promise<CheckInInfo[]> {
         const selectedResources: CheckInInfo[] = this.resourceProvider.getSelectedContent();
         if (!selectedResources || selectedResources.length === 0) {
-            throw new Error("Choose at least one changed resource");
+            throw new Error(MessageConstants.NO_CHANGED_FILES_CHOSEN);
         } else {
             return selectedResources;
         }

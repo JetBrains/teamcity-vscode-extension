@@ -20,4 +20,5 @@ export class MessageConstants {
     static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations with non-manual VCS checkout mode in " +
         "where you have permissions to run builds were not found for the specified changes.";
     static readonly MANDATORY_FIELD: string = "This field is mandatory.";
+    static readonly NO_CHANGED_FILES_CHOSEN: string = "Choose at least one changed file.";
 }
