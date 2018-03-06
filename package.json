@@ -137,19 +137,9 @@
           "group": "navigation@1"
         },
         {
-          "command": "teamcity.signIn",
-          "when": "view == teamcityEmptyExplorer",
-          "group": "@1"
-        },
-        {
-          "command": "teamcity.selectFilesForRemoteRun",
-          "when": "view == teamcityEmptyExplorer",
-          "group": "@2"
-        },
-        {
           "command": "teamcity.signOut",
           "when": "view == teamcityEmptyExplorer",
-          "group": "@3"
+          "group": "@1"
         },
         {
           "command": "teamcity.backToEmptyDataProvider",
@@ -167,24 +157,9 @@
           "group": "navigation@3"
         },
         {
-          "command": "teamcity.signIn",
-          "when": "view == teamcityResourceExplorer",
-          "group": "@1"
-        },
-        {
-          "command": "teamcity.refreshSelectedFilesForRemoteRun",
-          "when": "view == teamcityResourceExplorer",
-          "group": "@2"
-        },
-        {
-          "command": "teamcity.findSuitableBuildConfigurations",
-          "when": "view == teamcityResourceExplorer",
-          "group": "@2"
-        },
-        {
           "command": "teamcity.signOut",
           "when": "view == teamcityResourceExplorer",
-          "group": "@3"
+          "group": "@1"
         },
         {
           "command": "teamcity.backToSelectFilesForRemoteRun",
@@ -202,29 +177,9 @@
           "group": "navigation@3"
         },
         {
-          "command": "teamcity.signIn",
-          "when": "view == teamcityBuildsExplorer",
-          "group": "@1"
-        },
-        {
-          "command": "teamcity.refreshSelectedFilesForRemoteRun",
-          "when": "view == teamcityBuildsExplorer",
-          "group": "@2"
-        },
-        {
-          "command": "teamcity.refreshSuitableBuildConfigurations",
-          "when": "view == teamcityBuildsExplorer",
-          "group": "@2"
-        },
-        {
-          "command": "teamcity.remoteRun",
-          "when": "view == teamcityBuildsExplorer",
-          "group": "@2"
-        },
-        {
           "command": "teamcity.signOut",
           "when": "view == teamcityBuildsExplorer",
-          "group": "@3"
+          "group": "@1"
         }
       ]
     },
