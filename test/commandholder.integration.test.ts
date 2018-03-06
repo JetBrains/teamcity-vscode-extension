@@ -31,7 +31,7 @@ suite("DataProviders", () => {
 
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, undefined, dp, credentialsStoreSpy);
         ch.signIn().then(() => {
-            tsMockito.verify(mockedSignIn.exec(false)).called();
+            tsMockito.verify(mockedSignIn.exec([false])).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
         }).catch((err) => {
@@ -41,7 +41,7 @@ suite("DataProviders", () => {
 
     test("should verify signIn failed", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
-        tsMockito.when(mockedSignIn.exec(false)).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedSignIn.exec([false])).thenThrow(new Error("Any Exception"));
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
         const dp = prepareProviderManager();
         assert.isUndefined(dp.getShownDataProvider());
@@ -50,7 +50,7 @@ suite("DataProviders", () => {
         ch.signIn().then(() => {
             done("Expected an exception");
         }).catch(() => {
-            tsMockito.verify(mockedSignIn.exec(false)).called();
+            tsMockito.verify(mockedSignIn.exec([false])).called();
             assert.isUndefined(dp.getShownDataProvider(), "DataProviders should be hidden");
             done();
         }).catch((err) => {

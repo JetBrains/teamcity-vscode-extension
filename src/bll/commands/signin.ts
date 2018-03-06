@@ -37,8 +37,9 @@ export class SignIn implements Command {
         this.statusBarItem = statusBarItem;
     }
 
-    public async exec(silent: boolean = false): Promise<void> {
+    public async exec(args: any[] = undefined): Promise<void> {
         Logger.logInfo("SignIn#exec: starts.");
+        const silent: boolean = args && args[0];
         const fromPersistence: Credentials = await this.tryGetCredentialsFromPersistence();
         if (silent) {
             return this.execSilent(fromPersistence);

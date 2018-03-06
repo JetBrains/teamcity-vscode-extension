@@ -12,17 +12,20 @@ import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovid
 import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
 import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
+import {Logger} from "./bll/utils/logger";
+import {Utils} from "./bll/utils/utils";
+import {MessageManager} from "./view/messagemanager";
 
 @injectable()
 export class CommandHolder {
 
     private output: Output;
-    private _signIn: SignIn;
-    private _signOut: SignOut;
-    private _selectFilesForRemoteRun: SelectFilesForRemoteRun;
-    private _getSuitableConfigs: GetSuitableConfigs;
-    private _remoteRun: RemoteRun;
-    private _showMyChanges: ShowMyChanges;
+    private readonly _signIn: SignIn;
+    private readonly _signOut: SignOut;
+    private readonly _selectFilesForRemoteRun: SelectFilesForRemoteRun;
+    private readonly _getSuitableConfigs: GetSuitableConfigs;
+    private readonly _remoteRun: RemoteRun;
+    private readonly _showMyChanges: ShowMyChanges;
     private providerManager: IProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: IResourceProvider;
@@ -56,31 +59,35 @@ export class CommandHolder {
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
-        await this._signIn.exec(fromPersistentStore);
-        if (this.credentialsStore.getCredentialsSilently()) {
-            this.providerManager.showEmptyDataProvider();
+        if (await this.tryExecuteCommand(this._signIn, fromPersistentStore)) {
+            if (this.credentialsStore.getCredentialsSilently()) {
+                this.providerManager.showEmptyDataProvider();
+            }
         }
     }
 
     public async signOut(): Promise<void> {
-        await this._signOut.exec();
-        this.providerManager.hideProviders();
+        if (await this.tryExecuteCommand(this._signOut)) {
+            this.providerManager.hideProviders();
+        }
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        await this._selectFilesForRemoteRun.exec();
-        this.providerManager.refreshAll();
-        this.providerManager.showResourceProvider();
+        if (await this.tryExecuteCommand(this._selectFilesForRemoteRun)) {
+            this.providerManager.refreshAll();
+            this.providerManager.showResourceProvider();
+        }
     }
 
     public async getSuitableConfigs(): Promise<void> {
-        await this._getSuitableConfigs.exec();
-        this.providerManager.refreshAll();
-        this.providerManager.showBuildProvider();
+        if (await this.tryExecuteCommand(this._getSuitableConfigs)) {
+            this.providerManager.refreshAll();
+            this.providerManager.showBuildProvider();
+        }
     }
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
-        return this._remoteRun.exec();
+        await this.tryExecuteCommand(this._remoteRun);
     }
 
     public backToEmptyDataProvider(): void {
@@ -98,8 +105,20 @@ export class CommandHolder {
     }
 
     public async showMyChanges(): Promise<void> {
-        await this._showMyChanges.exec();
-        this.providerManager.refreshAll();
-        this.providerManager.showChangesProvider();
+        if (await this.tryExecuteCommand(this._showMyChanges)) {
+            this.providerManager.refreshAll();
+            this.providerManager.showChangesProvider();
+        }
+    }
+
+    private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
+        try {
+            await command.exec(args);
+        } catch (err) {
+            Logger.logError(`[tryExecuteCommand] ${err}`);
+            MessageManager.showErrorMessage(Utils.formatErrorMessage(err));
+            return false;
+        }
+        return true;
     }
 }

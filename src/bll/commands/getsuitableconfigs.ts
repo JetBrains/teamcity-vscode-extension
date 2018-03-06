@@ -7,7 +7,6 @@ import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {Output} from "../../view/output";
-import {Utils} from "../utils/utils";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
@@ -38,15 +37,9 @@ export class GetSuitableConfigs implements Command {
 
     public async exec(): Promise<void> {
         Logger.logInfo("GetSuitableConfigs: starts");
-        try {
-            const checkInArray: CheckInInfo[] = await this.getCheckInArray();
-            const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);
-            this.buildProvider.setContent(projects);
-        } catch (err) {
-            Logger.logError(`[GetSuitableConfig]: ${Utils.formatErrorMessage(err)}`);
-            return Promise.reject(Utils.formatErrorMessage(err));
-        }
-
+        const checkInArray: CheckInInfo[] = await this.getCheckInArray();
+        const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);
+        this.buildProvider.setContent(projects);
         this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);
         this.output.show();
         Logger.logInfo("GetSuitableConfigs: finished");
