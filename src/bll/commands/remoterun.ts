@@ -41,7 +41,7 @@ export class RemoteRun implements Command {
     }
 
     public async exec(args?: any[]): Promise<void> {
-        Logger.logInfo("RemoteRun#exec: starts");
+        Logger.logInfo("RemoteRun#exec: Personal Build started");
         const includedBuildConfigs: BuildConfig[] = this.buildProvider.getSelectedContent();
         const checkInArray: CheckInInfo[] = this.resourceProvider.getSelectedContent();
         if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
@@ -59,11 +59,11 @@ export class RemoteRun implements Command {
         const changeListStatus: ChangeListStatus = await this.patchSender.waitForChangeFinish(queuedBuilds);
 
         if (changeListStatus === ChangeListStatus.CHECKED) {
-            Logger.logInfo("RemoteRun#exec: remote run is ok");
+            Logger.logInfo("RemoteRun#exec: Personal Build is successful");
             return this.cvsProvider.requestForPostCommit(checkInArray);
         } else {
-            Logger.logWarning("RemoteRun#exec: something went wrong during remote run");
-            return Promise.reject("Something went wrong during remote run");
+            Logger.logWarning("RemoteRun#exec: Personal Build failed");
+            return Promise.reject("Personal Build failed");
         }
     }
 
