@@ -83,7 +83,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
             } catch (err) {
                 err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                 Logger.logError(`NotificationWatcher failed with ${Utils.formatErrorMessage(err)}`);
-                Utils.sleep(5000);
+                await Utils.sleep(5000);
             }
         }
     }
