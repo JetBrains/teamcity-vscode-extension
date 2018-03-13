@@ -8,6 +8,7 @@ export class Constants {
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
     public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
     public static readonly SHOULD_ASK_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
+    public static readonly LAST_LOGIN = `${Constants.EXTENSION_NAME_PREFIX}credentials.lastLogin`;
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
     public static readonly GIT_PATH_SETTING_NAME = "git.path";
     public static readonly DEFAULT_URL = "http://buildserver";
@@ -27,6 +28,7 @@ export class Constants {
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
     public static readonly ROOT_PROJECT_ID = "_Root";
+    public static readonly TARGET_NAME_SEPARATOR = "|";
 }
 
 /**

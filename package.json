@@ -200,6 +200,10 @@
           "type": "boolean",
           "default": true,
           "description": "Sets whether the extension should store user credentials in persistent storage or not."
+        },
+        "teamcity.credentials.lastLogin": {
+          "type": "string",
+          "description": "Stores the last used url and username."
         }
       }
     }

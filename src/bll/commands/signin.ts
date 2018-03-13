@@ -51,6 +51,7 @@ export class SignIn implements Command {
 
         if (typedCredentials) {
             this.credentialsStore.setCredentials(typedCredentials);
+            this.saveTargetNameToSettings(typedCredentials);
             Logger.logInfo("SignIn#exec: success.");
             if (!fromPersistence) {
                 await this.suggestToStoreCredentials(typedCredentials);
@@ -110,8 +111,19 @@ export class SignIn implements Command {
         let serverUrl: string;
         let username: string;
         let password: string;
-        const suggestedUrl = fromPersistence ? fromPersistence.serverURL : Constants.DEFAULT_URL;
-        const suggestedUsername = fromPersistence ? fromPersistence.user : "";
+        let suggestedUrl = Constants.DEFAULT_URL;
+        let suggestedUsername = "";
+
+        if (fromPersistence) {
+            suggestedUrl = fromPersistence.serverURL;
+            suggestedUsername = fromPersistence.user;
+        } else {
+            const targetNameSettings = this.settings.lastLogin;
+            const targetName: {url, username} = Utils.tryParseTargetName(targetNameSettings);
+            suggestedUrl = targetName ? targetName.url : suggestedUrl;
+            suggestedUsername = targetName ? targetName.username : suggestedUsername;
+        }
+
         try {
             serverUrl = await this.requestServerUrl(suggestedUrl);
             username = await SignIn.requestUsername(suggestedUsername, serverUrl);
@@ -200,7 +212,7 @@ export class SignIn implements Command {
         const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
         const chosenItem: MessageItem = await this.messageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
         if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
-            await this.settings.setShowSignInWelcome(false);
+            this.settings.showSignInWelcome = false;
         }
     }
 
@@ -217,7 +229,7 @@ export class SignIn implements Command {
         if (chosenItem && chosenItem.title === storeCredentialsItem.title) {
             await this.storeLastUserCredentials(credentials);
         } else if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
-            await this.settings.setShowStoreCredentialsSuggestion(false);
+            await this.settings.setShouldAskStoreCredentials(false);
             await this.persistentStorageManager.removeCredentials();
         } else {
             await this.persistentStorageManager.removeCredentials();
@@ -232,5 +244,9 @@ export class SignIn implements Command {
         if (chosenItem && chosenItem.title === updateCredentialsItem.title) {
             await this.storeLastUserCredentials(credentials);
         }
+    }
+
+    private saveTargetNameToSettings(credentials: Credentials): void {
+        this.settings.lastLogin =  Utils.createTargetName(credentials.serverURL, credentials.user);
     }
 }

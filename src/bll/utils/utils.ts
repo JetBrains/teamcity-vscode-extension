@@ -2,6 +2,7 @@ import * as pako from "pako";
 import {Logger} from "./logger";
 import {Change} from "../entities/change";
 import {Build} from "../entities/build";
+import {Constants} from "./constants";
 
 export class Utils {
 
@@ -147,4 +148,36 @@ export class Utils {
         return `${description}\n${myVersionControlName} | ${changesCount}`;
     }
 
+    public static createTargetName(url: string, username: string): string {
+        const encryptedUrl: string = new Buffer(url, "utf8").toString("hex");
+        const encryptedUsername: string = new Buffer(username, "utf8").toString("hex");
+        return encryptedUrl + Constants.TARGET_NAME_SEPARATOR + encryptedUsername;
+    }
+
+    public static tryParseTargetName(targetName: string): {url, username} {
+        if (!targetName) {
+            return undefined;
+        }
+        let result;
+        try {
+            result = this.parseTargetName(targetName);
+        } catch (err) {
+            Logger.logWarning(`tryParseTargetName: ${Utils.formatErrorMessage(err)}`);
+            result = undefined;
+        }
+        return result;
+    }
+
+    private static parseTargetName(targetName: string): {url, username} {
+        if (!targetName) {
+            return undefined;
+        }
+        const segments: string[] = targetName.split(Constants.TARGET_NAME_SEPARATOR);
+        const url: string = new Buffer(segments[0], "hex").toString("utf8");
+        const username: string = new Buffer(segments[1], "hex").toString("utf8");
+        return {
+            url: url,
+            username: username
+        };
+    }
 }

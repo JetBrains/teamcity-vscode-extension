@@ -9,35 +9,21 @@ suite("Settings", () => {
         assert.isObject(settings);
     });
 
-    test("should verify setting false showSignInWelcome property", function (done) {
+    test("should verify setting value to showSignInWelcome property", function (done) {
         const settings: Settings = new SettingsImpl();
         const temp = settings.showSignInWelcome;
-        settings.setShowSignInWelcome(false).then(() => {
+        const expectedValue = !temp;
+        settings.showSignInWelcome = expectedValue;
+        setTimeout(() => {
             const settings: Settings = new SettingsImpl();
-            assert.equal(settings.showSignInWelcome, false);
-            settings.setShowSignInWelcome(temp).then(() => {
+            assert.equal(settings.showSignInWelcome, expectedValue);
+            settings.showSignInWelcome = temp;
+            setTimeout(() => {
+                const settings: Settings = new SettingsImpl();
+                assert.equal(settings.showSignInWelcome, temp);
                 done();
-            }).catch((err) => {
-                done(err);
-            });
-        }).catch((err) => {
-            done(err);
-        });
-    });
+            },         150);
+        },         150);
 
-    test("should verify setting true showSignInWelcome property", function (done) {
-        const settings: Settings = new SettingsImpl();
-        const temp = settings.showSignInWelcome;
-        settings.setShowSignInWelcome(true).then(() => {
-            const settings: Settings = new SettingsImpl();
-            assert.equal(settings.showSignInWelcome, true);
-            settings.setShowSignInWelcome(temp).then(() => {
-                done();
-            }).catch((err) => {
-                done(err);
-            });
-        }).catch((err) => {
-            done(err);
-        });
     });
 });

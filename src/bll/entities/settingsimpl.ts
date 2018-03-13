@@ -8,12 +8,13 @@ export class SettingsImpl implements Settings {
     private readonly _loggingLevel: string;
     private _showSignInWelcome: boolean;
     private _shouldAskStoreCredentials: boolean;
+    private _lastLogin: string;
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_ASK_STORE_CREDENTIALS, false);
-
+        this._lastLogin = SettingsImpl.getSettingsProperty<string>(Constants.LAST_LOGIN, "");
     }
 
     private static async setSettingsProperty(key: string, value: any, global?: boolean): Promise<void> {
@@ -37,18 +38,26 @@ export class SettingsImpl implements Settings {
     /**
      * If undefined then signInWelcomeMessage = true
      */
-    public async setShowSignInWelcome(newValue: boolean): Promise<void> {
-        await SettingsImpl.setSettingsProperty(Constants.SIGNIN_WELCOME_SETTING_KEY, newValue, true /* global */);
+    public set showSignInWelcome(newValue: boolean) {
         this._showSignInWelcome = newValue !== undefined ? newValue : true;
-        return;
+        SettingsImpl.setSettingsProperty(Constants.SIGNIN_WELCOME_SETTING_KEY, newValue, true /* global */);
     }
 
     public shouldAskStoreCredentials(): boolean {
         return this._shouldAskStoreCredentials;
     }
 
-    public async setShowStoreCredentialsSuggestion(newValue: boolean): Promise<void> {
+    public async setShouldAskStoreCredentials(newValue: boolean): Promise<void> {
         await SettingsImpl.setSettingsProperty(Constants.SHOULD_ASK_STORE_CREDENTIALS, newValue, true);
         this._shouldAskStoreCredentials = newValue !== undefined ? newValue : true;
+    }
+
+    public get lastLogin(): string {
+        return this._lastLogin;
+    }
+
+    public set lastLogin(targetName: string) {
+        this._lastLogin = targetName;
+        SettingsImpl.setSettingsProperty(Constants.LAST_LOGIN, targetName, true);
     }
 }
