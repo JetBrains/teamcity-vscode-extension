@@ -5,6 +5,7 @@ import {CredentialsStore} from "../bll/credentialsstore/credentialsstore";
 import {inject, injectable} from "inversify";
 import {RemoteLogin} from "./remotelogin";
 import {Utils} from "../bll/utils/utils";
+import {MessageConstants} from "../bll/utils/messageconstants";
 
 @injectable()
 export class RemoteBuildServer {
@@ -86,6 +87,7 @@ export class RemoteBuildServer {
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("VersionControlServer.getSuitableConfigurations", [changedFiles], (err, configurationId) => {
                 if (err || !configurationId) {
+                    err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                     Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }

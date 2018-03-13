@@ -15,6 +15,7 @@ import {ModificationSubscription} from "./modificationsubscription";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {Utils} from "../utils/utils";
+import {MessageConstants} from "../utils/messageconstants";
 
 @injectable()
 export class NotificationWatcherImpl implements NotificationWatcher {
@@ -54,7 +55,7 @@ export class NotificationWatcherImpl implements NotificationWatcher {
     public async activate(): Promise<void> {
         Logger.logInfo("NotificationWatcherImpl#activate: NW was activated");
         try {
-            await this.reinitWatcherMutableResources();
+            await this.tryReinitWatcherMutableResources();
         } catch (err) {
             Logger.logError(`NotificationWatcherImpl#activate: an error occurs: ${err}.`);
         }
@@ -63,15 +64,28 @@ export class NotificationWatcherImpl implements NotificationWatcher {
                 await this.processNewChangesIfRequired();
             } catch (err) {
                 Logger.logError(`NotificationWatcherImpl#activate: an error occurs: ${err}.`);
-                await this.reinitWatcherMutableResources();
+                await this.tryReinitWatcherMutableResources();
             }
             await Utils.sleep(this.CHECK_FREQUENCY_MS);
             if (this.isNotTheSameUser()) {
                 Logger.logInfo("NotificationWatcherImpl#activate: User has changed. ");
-                await this.reinitWatcherMutableResources();
+                await this.tryReinitWatcherMutableResources();
             }
         }
         Logger.logDebug("NotificationWatcherImpl#activate: finish watching.");
+    }
+
+    private async tryReinitWatcherMutableResources() {
+        while (this.shouldNotBeDisposed) {
+            try {
+                await this.reinitWatcherMutableResources();
+                break;
+            } catch (err) {
+                err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
+                Logger.logError(`NotificationWatcher failed with ${Utils.formatErrorMessage(err)}`);
+                Utils.sleep(5000);
+            }
+        }
     }
 
     private async reinitWatcherMutableResources() {

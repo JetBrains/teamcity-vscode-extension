@@ -6,6 +6,7 @@ import {TYPES} from "../bll/utils/constants";
 import {FsProxy} from "../bll/moduleproxies/fs-proxy";
 import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
 import {BuildConfig} from "../bll/entities/buildconfig";
+import {MessageConstants} from "../bll/utils/messageconstants";
 
 @injectable()
 export class WebLinks {
@@ -73,6 +74,7 @@ export class WebLinks {
         return new Promise<string>((resolve, reject) => {
             this.fsProxy.createReadStream(patchAbsPath).pipe(request.post(options, (err, httpResponse, body) => {
                 if (err) {
+                    err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                     reject(err);
                 }
                 resolve(body);
@@ -100,6 +102,7 @@ export class WebLinks {
         return new Promise<string>((resolve, reject) => {
             request.get(options, function (err, response, body) {
                 if (err) {
+                    err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                     reject(err);
                 }
                 if (response.statusCode >= 200 && response.statusCode < 300) {
