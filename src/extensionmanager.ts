@@ -27,22 +27,19 @@ export class ExtensionManager {
                 @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
                 @inject(TYPES.WorkspaceProxy) workspaceProxy: WorkspaceProxy) {
-        let defaultWorkspace;
-        if (!workspaceProxy.workspaceFolders || workspaceProxy.workspaceFolders.length === 0) {
-            return;
-        } else {
-            defaultWorkspace = workspaceProxy.workspaceFolders[0];
-        }
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._notificationWatcher = notificationWatcher;
         notificationWatcher.activate();
         this._disposables.push(notificationWatcher);
         this._disposables.push(output);
-        this.initLogger(settings.loggingLevel, defaultWorkspace.uri.fsPath);
         this._disposables.push(statusBarItem);
         this._disposables.push(providerManager);
         this.providerManager = providerManager;
+        if (workspaceProxy.workspaceFolders && workspaceProxy.workspaceFolders.length !== 0) {
+            const defaultWorkspace = workspaceProxy.workspaceFolders[0];
+            this.initLogger(settings.loggingLevel, defaultWorkspace.uri.fsPath);
+        }
         this.trySignInWithPersistentStorage();
     }
 
