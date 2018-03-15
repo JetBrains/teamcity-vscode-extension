@@ -35,6 +35,7 @@ export class WebLinks {
         const url: string = `${credentials.serverURL}/app/rest/buildQueue`;
         const data = `
             <build personal="true">
+                <triggered type='idePlugin' details='Visual Studio Code'/>
                 <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="false"/>
                 <buildType id="${buildConfig.externalId}"/>
                 <lastChanges>
