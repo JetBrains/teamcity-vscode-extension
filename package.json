@@ -102,7 +102,11 @@
       {
         "command": "teamcity.showMyChanges",
         "title": "Show my changes",
-        "category": "TeamCity"
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/serverchanges.png",
+          "dark": "resources/icons/dark/serverchanges.png"
+        }
       }
     ],
     "views": {
@@ -135,6 +139,11 @@
           "command": "teamcity.selectFilesForRemoteRun",
           "when": "view == teamcityEmptyExplorer",
           "group": "navigation@1"
+        },
+        {
+          "command": "teamcity.showMyChanges",
+          "when": "view == teamcityEmptyExplorer",
+          "group": "navigation@2"
         },
         {
           "command": "teamcity.signOut",
@@ -179,6 +188,16 @@
         {
           "command": "teamcity.signOut",
           "when": "view == teamcityBuildsExplorer",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.backToEmptyDataProvider",
+          "when": "view == teamcityChangesProvider",
+          "group": "navigation@1"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == teamcityChangesProvider",
           "group": "@1"
         }
       ]
