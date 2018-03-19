@@ -1,8 +1,7 @@
-"use strict";
-
 import {assert} from "chai";
 import * as xml2js from "xml2js";
 import {Change} from "../../../src/bll/entities/change";
+import {UserChangeStatus} from "../../../src/bll/utils/constants";
 
 suite("ChangeItemProxy", () => {
     test("should verify constructor/changeId", function (done) {
@@ -44,7 +43,7 @@ suite("ChangeItemProxy", () => {
                 done("Unexpected error during parse of changePersonalObjXml.");
             }
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
-            assert.equal(changeItem.status, "CHECKED");
+            assert.equal(changeItem.status, UserChangeStatus.CHECKED);
             done();
         });
     });

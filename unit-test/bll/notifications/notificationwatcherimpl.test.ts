@@ -13,6 +13,7 @@ import {SummaryDao} from "../../../src/dal/summarydao";
 import {BuildDao} from "../../../src/dal/builddao";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
 import {Utils} from "../../../src/bll/utils/utils";
+import {UserChangeStatus} from "../../../src/bll/utils/constants";
 
 suite("Notification Watcher Implementation", () => {
 
@@ -123,14 +124,14 @@ suite("Notification Watcher Implementation", () => {
     }
 
     function getSummaryA(): Summary {
-        const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
-        const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const changes: Change[] = [new Change(1, false, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const personalChange: Change[] = [new Change(1, true, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
         return new Summary(["1", "2", "3"], changes, personalChange);
     }
 
     function getSummaryB(): Summary {
-        const changes: Change[] = [new Change(2, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
-        const personalChange: Change[] = [new Change(2, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const changes: Change[] = [new Change(2, false, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+        const personalChange: Change[] = [new Change(2, true, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
         return new Summary(["1", "2", "3"], changes, personalChange);
     }
 

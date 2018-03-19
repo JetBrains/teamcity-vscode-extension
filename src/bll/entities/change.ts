@@ -1,18 +1,19 @@
 import {Build} from "./build";
 import {Logger} from "../utils/logger";
+import {UserChangeStatus} from "../utils/constants";
 
 export class Change {
 
     public readonly id: number;
     public readonly isPersonal: boolean;
-    public readonly status: string;
+    public readonly status: UserChangeStatus;
     public readonly myChangesCount: number;
     public readonly myDescription: string;
     public readonly myVersionControlName: string;
     public readonly vcsDate: Date;
     public builds: Build[];
 
-    public constructor(id: number, isPersonal: boolean, status: string, builds: Build[],
+    public constructor(id: number, isPersonal: boolean, status: UserChangeStatus, builds: Build[],
                        changesCount: number, description: string, versionControlName: string, vcsDate: Date) {
         this.id = id;
         this.isPersonal = isPersonal;
@@ -34,7 +35,7 @@ export class Change {
         }
         const isPersonal: boolean = Change.isPersonal(changeObj);
         const id: number = Change.getId(changeObj);
-        const status: string = Change.getStatus(changeObj);
+        const status: UserChangeStatus = Change.getStatus(changeObj);
         const builds: Build[] = Change.getBuilds(changeObj);
         const changesCount: number = Change.getChangesCount(changeObj);
         const description: string = Change.getDescription(changeObj);
@@ -67,14 +68,31 @@ export class Change {
         return changeObj.mod[0].id[0];
     }
 
-    private static getStatus(changeObj: any): string {
+    private static getStatus(changeObj: any): UserChangeStatus {
         if (!changeObj ||
             !changeObj.myStatus ||
             !changeObj.myStatus[0]) {
             Logger.logDebug(`Change#status: status is not reachable. default: UNKNOWN`);
-            return "UNKNOWN";
+            return undefined;
         }
-        return changeObj.myStatus[0];
+        const text = changeObj.myStatus[0];
+
+        switch (text) {
+            case "CANCELED":
+                return UserChangeStatus.CANCELED;
+            case "CHECKED":
+                return UserChangeStatus.CHECKED;
+            case "FAILED":
+                return UserChangeStatus.FAILED;
+            case "PENDING":
+                return UserChangeStatus.PENDING;
+            case "RUNNING_FAILED":
+                return UserChangeStatus.RUNNING_FAILED;
+            case "RUNNING_SUCCESSFULY":
+                return UserChangeStatus.RUNNING_SUCCESSFULY;
+            default:
+                return undefined;
+        }
     }
 
     private static getBuilds(changeObj: any): Build[] {

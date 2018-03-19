@@ -9,7 +9,7 @@ import {Build} from "../../../src/bll/entities/build";
 import * as TypeMoq from "typemoq";
 import {IChangesProvider} from "../../../src/view/dataproviders/interfaces/ichangesprovider";
 import {TimePeriod} from "../../../src/bll/entities/timeperiod";
-import {TimePeriodEnum} from "../../../src/bll/utils/constants";
+import {TimePeriodEnum, UserChangeStatus} from "../../../src/bll/utils/constants";
 
 const rmock = require("mock-require");
 rmock("vscode", { });
@@ -207,19 +207,19 @@ suite("Show My Changes", () => {
 });
 
 function getTodaySummary(): Summary {
-    const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
-    const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+    const changes: Change[] = [new Change(1, false, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+    const personalChange: Change[] = [new Change(1, true, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
 
 function getSummaryOnlyPersonal(): Summary {
     const changes: Change[] = [];
-    const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+    const personalChange: Change[] = [new Change(1, true, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
 
 function getSummaryOnlyNotPersonal(): Summary {
-    const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
+    const changes: Change[] = [new Change(1, false, UserChangeStatus.CHECKED, [getSimpleBuild()], 239, "123", "Remote Run", new Date())];
     const personalChange: Change[] = [];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
@@ -231,17 +231,17 @@ function getSummaryWithoutChanges(): Summary {
 }
 
 function getYesterdaySummary(): Summary {
-    const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()],
+    const changes: Change[] = [new Change(1, false, UserChangeStatus.CHECKED, [getSimpleBuild()],
                                           239, "123", "Remote Run", yesterday(new Date()))];
-    const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()],
+    const personalChange: Change[] = [new Change(1, true, UserChangeStatus.CHECKED, [getSimpleBuild()],
                                                  239, "123", "Remote Run", yesterday(new Date()))];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
 
 function getOlderSummary(): Summary {
-    const changes: Change[] = [new Change(1, false, "CHECKED", [getSimpleBuild()],
+    const changes: Change[] = [new Change(1, false, UserChangeStatus.CHECKED, [getSimpleBuild()],
                                           239, "123", "Remote Run", yesterday(yesterday(new Date())))];
-    const personalChange: Change[] = [new Change(1, true, "CHECKED", [getSimpleBuild()],
+    const personalChange: Change[] = [new Change(1, true, UserChangeStatus.CHECKED, [getSimpleBuild()],
                                                  239, "123", "Remote Run", yesterday(yesterday(new Date())))];
     return new Summary(["1", "2", "3"], changes, personalChange);
 }
