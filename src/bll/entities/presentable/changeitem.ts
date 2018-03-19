@@ -1,7 +1,7 @@
 import {TreeItem, TreeItemCollapsibleState, Uri} from "vscode";
 import {Change} from "../change";
 import {Utils} from "../../utils/utils";
-import * as path from "path";
+import {ImageConstants} from "../imageconstants";
 
 export class ChangeItem extends TreeItem {
 
@@ -13,10 +13,9 @@ export class ChangeItem extends TreeItem {
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName: string = "change.svg";
         return {
-            light: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "light", iconName),
-            dark: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "dark", iconName)
+            light: ImageConstants.makeChangesImage(this.change.status, this.change.isPersonal, false),
+            dark: ImageConstants.makeChangesImage(this.change.status, this.change.isPersonal, true)
         };
     }
 
