@@ -170,10 +170,10 @@ export enum TimePeriodEnum {
 }
 
 export enum UserChangeStatus {
-    CHECKED, //all configurations are checked successfully
-    FAILED,  // at least one configuration with the change has failed status
-    CANCELED, // for personal only. at least one build canceled
-    PENDING, //at least one configuration has not bean run yet (no failed and no canceled)
-    RUNNING_SUCCESSFULY, //there are no failed, pending and canceled and there is at least one running
-    RUNNING_FAILED //there are no pending and canceled, but there is at least one failed and there is at least one running
+    CHECKED = "Checked", //all configurations are checked successfully
+    FAILED = "Failed",  // at least one configuration with the change has failed status
+    CANCELED = "Canceled", // for personal only. at least one build canceled
+    PENDING = "Pending", //at least one configuration has not bean run yet (no failed and no canceled)
+    RUNNING_SUCCESSFULY = "Running successfully", //there are no failed, pending and canceled and there is at least one running
+    RUNNING_FAILED = "Running failed"//there are no pending and canceled, but there is at least one failed and there is at least one running
 }
