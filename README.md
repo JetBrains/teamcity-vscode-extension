@@ -33,18 +33,21 @@ When you run the `teamcity signin` command and the `teamcity.credentials.persist
 The extension provides several commands for interacting with the TeamCity API. 
 In the Command Palette (`F1`), type `TeamCity` and choose a command.
 
-* `TeamCity: Remote Run. Select Files For Remote Run` – Prompts you to choose resources to send for remote run on the TeamCity server.
+* `TeamCity: Select files for remote run` – Prompts you to choose resources to send for remote run on the TeamCity server.
 
-* `TeamCity: Remote Run. Find Suitable Build Configurations` – Prompts you to choose build configurations compatible to the selected resources.
- When it is used without `TeamCity: Remote Run. Select Files For Remote Run`, it takes all files from the staged area.
+* `TeamCity: Find suitable build configurations for remote run` – Prompts you to choose build configurations compatible to the selected resources.
+Should be executed after the `TeamCity: Select files for remote run` command.
 
-* `TeamCity: Remote Run. Run With Chosen Build Configurations` – Remote run selected files on the TeamCity server with the selected  build configurations.
+* `TeamCity: Perform remote run with selected build configurations` – Remote run selected files on the TeamCity server with the selected build configurations.
+Should be executed after the `TeamCity: Find suitable build configurations for remote run` command.
 
-* `TeamCity: Signin` – This command is used for signing in to a TeamCity server. When required credentials are provided, they are sent to TeamCity server 
+* `TeamCity: Show my changes` – Shows representation of changes in the editor.
+
+* `TeamCity: Sign in` – This command is used for signing in to a TeamCity server. When required credentials are provided, they are sent to TeamCity server
 to validate them and get internal user information. If validation is passed, it will be stored securely if possible on user
 the computer and used to connect to the TeamCity server.
 
-* `TeamCity: Signout` – This command is used for signing out of a TeamCity server. 
+* `TeamCity: Sign out` – This command is used for signing out of a TeamCity server.
 
 ## Data Provider
 The extension uses custom tree data provider to represent resources that can be send to a TeamCity server for remote run and suitable build configurations for them. 
