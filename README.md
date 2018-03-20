@@ -21,13 +21,10 @@ code --install-extension myextension.vsix
 ## Authentication
 When you are connecting to the TeamCity Server, you will only need your TeamCity server credentials (domain name, account name and password).
 ![Sign in command](assets/tc-signin-command.png)
-To sign in to your account, run the `teamcity signin` command. You will be prompted to enter your credentials. When you do, and the authorization on the TeamCity server is successful, your credentials will be stored securely on your local machine if the `teamcity.credentials.persistent` option is set to `true`; otherwise, only your domain name and account name will be stored at the vscode global settings.
-
-**Note:** In order for the extension to be activated, a repository *folder* must be opened. The extension
-won't be activated if only a single *file* in the repository is opened.
+To sign in to your account, run the `teamcity signin` command. You will be prompted to enter your credentials. When you do, and the authorization on the TeamCity server is successful, your will be prompted to save credentials securely on your local machine.
 
 ## Credentials Storage
-When you run the `teamcity signin` command and the `teamcity.credentials.persistent` option is set to `true`, the credentials that you provide will be stored securely on your computer. On Windows, your credentials wil be stored by Windows Credential Manager. On macOS, your credentials will be stored in the Keychain. On Linux, your credentials will be stored in a file on your local file system in a subdirectory of your home folder. That file is created only with RW rights for the user running Visual Studio Code.
+On Windows, your credentials wil be stored by Windows Credential Manager. On macOS, your credentials will be stored in the Keychain. On Linux, your credentials will be stored in a file on your local file system in a subdirectory of your home folder. That file is created only with RW rights for the user running Visual Studio Code.
 
 ## Commands
 The extension provides several commands for interacting with the TeamCity API. 
@@ -50,17 +47,13 @@ the computer and used to connect to the TeamCity server.
 * `TeamCity: Sign out` – This command is used for signing out of a TeamCity server.
 
 ## Data Provider
-The extension uses custom tree data provider to represent resources that can be send to a TeamCity server for remote run and suitable build configurations for them. 
+The extension uses custom tree data providers to represent resources that can be send to a TeamCity server for remote run, suitable build configurations for them and existing changes.
 ![Tree Data Provider](assets/tc-build-configuration-provider.png)
 
-The data provider also contains the header with buttons as an alternative to typing commands in the Command Palette:
-1. ![Find Suitable Build Cnfigurations](assets/tc-find-suitable-build-configurations.png) - execute the `TeamCity: Remote Run. Select Files For Remote Run` command;
-2. ![Remote Run](assets/tc-remote-run.png) - execute the `TeamCity: Remote Run. Find Suitable Build Configurations` command;
-3. ![Show Context Menu](assets/tc-show-context-menu.png) - show the context menu that contains the following options: 
-* `Signin`
-* `Remote Run. Find Suitable Build Configurations` 
-* `Remote Run. Select Files For Remote Run`
-* `Remote Run. Run With Chosen Build Configurations`
+The data providers contains headers with buttons as an alternative to typing commands in the Command Palette:
+1. ![Find Suitable Build Cnfigurations](assets/tc-find-suitable-build-configurations.png) - execute the `TeamCity: Select files for remote run` command;
+2. ![Remote Run](assets/tc-remote-run.png) - execute the `TeamCity: Find suitable build configurations for remote run` command;
+3. ![Show Context Menu](assets/tc-show-context-menu.png) - show the context menu that contains the following options:
 * `Signout`
 
 ## Detailed Remote Run Results
