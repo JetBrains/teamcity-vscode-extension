@@ -22,8 +22,8 @@ suite("Settings", () => {
                 const settings: Settings = new SettingsImpl();
                 assert.equal(settings.showSignInWelcome, temp);
                 done();
-            },         150);
-        },         150);
+            },         350);
+        },         350);
 
     });
 });
