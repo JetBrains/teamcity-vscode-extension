@@ -54,7 +54,7 @@ The data providers contains headers with buttons as an alternative to typing com
 1. ![Find Suitable Build Cnfigurations](assets/tc-find-suitable-build-configurations.png) - execute the `TeamCity: Select files for remote run` command;
 2. ![Remote Run](assets/tc-remote-run.png) - execute the `TeamCity: Find suitable build configurations for remote run` command;
 3. ![Show Context Menu](assets/tc-show-context-menu.png) - show the context menu that contains the following options:
-* `Signout`
+* `Sign out`
 
 ## Detailed Remote Run Results
 The extension writes personal build statuses into the TeamCity output. This is a simple and convenient way to navigate to the Build Overview page.
