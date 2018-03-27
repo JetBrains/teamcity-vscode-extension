@@ -10,6 +10,7 @@ import {injectable} from "inversify";
 import {ReplacedCvsResource} from "../entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../entities/cvsresources/deletedcvsresource";
 import {Utils} from "./utils";
+import * as pify from "pify";
 
 const temp = require("temp").track();
 
@@ -48,21 +49,19 @@ class PatchBuilder {
         Logger.logDebug(`PatchBuilder#constructor: start construct patch`);
     }
 
-    public startPatching(): Promise<void> {
+    public async startPatching(): Promise<void> {
         Logger.logDebug(`PatchBuilder#init: start construct patch`);
-        return new Promise<void>((resolve, reject) => {
-            temp.mkdir("VsCode_TeamCity", (err, dirPath) => {
-                if (err) {
-                    Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ${Utils.formatErrorMessage(err)}`);
-                    reject(err);
-                }
-                const inputPath = path.join(dirPath, `.${Utils.uuidv4()}.patch`);
-                this.patchAbsPath = inputPath;
-                this.writeSteam = new AsyncWriteStream(inputPath);
-                Logger.logDebug(`PatchBuilder#init: patchAbsPath is ${inputPath}`);
-                resolve();
-            });
-        });
+        try {
+            const dirPath: string = await pify(temp.mkdir)("VsCode_TeamCity");
+            const inputPath = path.join(dirPath, `.${Utils.uuidv4()}.patch`);
+            this.patchAbsPath = inputPath;
+            this.writeSteam = new AsyncWriteStream(inputPath);
+            Logger.logDebug(`PatchBuilder#init: patchAbsPath is ${inputPath}`);
+        } catch (err) {
+            Logger.logError(`PatchBuilder#init: an error occurs during making temp dir: ` +
+                `${Utils.formatErrorMessage(err)}`);
+            return Promise.reject(err);
+        }
     }
 
     public async appendCvsResource(cvsProvider: CvsSupportProvider, cvsResource: CvsResource): Promise<void> {
