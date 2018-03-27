@@ -182,7 +182,8 @@ export class GitProvider implements CvsSupportProvider {
         try {
             return await this.getPorcelainStatusRows();
         } catch (err) {
-            Logger.logWarning(`GitSupportProvider#getLocalResources: git status leads to the error: ${Utils.formatErrorMessage(err)}`);
+            Logger.logWarning(`GitSupportProvider#getLocalResources:` +
+                ` git status leads to the error: ${Utils.formatErrorMessage(err)}`);
             return [];
         }
     }
@@ -190,8 +191,8 @@ export class GitProvider implements CvsSupportProvider {
     private async getPorcelainStatusRows(): Promise<string[]> {
         const END_SPACES_REGEXP: RegExp = /\s*$/;
         let porcelainStatusResult: any;
-        const getPorcelainStatusRowsCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" status --porcelain`;
-        porcelainStatusResult = await cp_promise.exec(getPorcelainStatusRowsCommand);
+        const getPorcelainStatusCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" status --porcelain`;
+        porcelainStatusResult = await cp_promise.exec(getPorcelainStatusCommand);
         if (!porcelainStatusResult || !porcelainStatusResult.stdout) {
             throw new Error(`Git status haven't found any staged files`);
         }
@@ -203,10 +204,9 @@ export class GitProvider implements CvsSupportProvider {
 
     private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsResource> {
 
-        const parsedStatusRow = GitParser.parseStatusRow(statusRow);
-        const relativePath = parsedStatusRow.relativePath;
+        const {relativePath, status} = GitParser.parseStatusRow(statusRow);
 
-        switch (parsedStatusRow.status) {
+        switch (status) {
             case "M": {
                 const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
                 return new ModifiedCvsResource(fileAbsPath, relativePath);
@@ -220,18 +220,18 @@ export class GitProvider implements CvsSupportProvider {
                 return new DeletedCvsResource(fileAbsPath, relativePath);
             }
             case "R": {
-                const replacedPath = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
-                const prevFileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.prevRelativePath);
-                return new ReplacedCvsResource(fileAbsPath, replacedPath.relativePath, prevFileAbsPath);
+                const {relativePath: replacedPath, prevRelativePath} = GitParser.parseReplacedPath(relativePath);
+                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath);
+                const prevFileAbsPath: string = path.join(this.workspaceRootPath, prevRelativePath);
+                return new ReplacedCvsResource(fileAbsPath, replacedPath, prevFileAbsPath);
             }
             case "C": {
-                const replacedPath = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath.relativePath);
-                return new AddedCvsResource(fileAbsPath, replacedPath.relativePath);
+                const {relativePath: replacedPath} = GitParser.parseReplacedPath(relativePath);
+                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath);
+                return new AddedCvsResource(fileAbsPath, replacedPath);
             }
             default: {
-                throw new Error(`Resource status for status row ${statusRow} is '${parsedStatusRow.status}' and not recognised`);
+                throw new Error(`Resource status for status row ${statusRow} is '${status}' and not recognised`);
             }
         }
     }

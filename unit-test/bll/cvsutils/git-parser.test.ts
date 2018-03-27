@@ -17,9 +17,9 @@ suite("GitParser", () => {
 
     test("should verify parseStatusRow with a staged change", function () {
         const testString = "M  src/main/java/ru/smt/EntryPoint.java";
-        const result = GitParser.parseStatusRow(testString);
-        assert.equal(result.relativePath, "src/main/java/ru/smt/EntryPoint.java");
-        assert.equal(result.status, "M");
+        const {relativePath, status} = GitParser.parseStatusRow(testString);
+        assert.equal(relativePath, "src/main/java/ru/smt/EntryPoint.java");
+        assert.equal(status, "M");
     });
 
     test("should verify parseReplacedPath with an incorrect status row", function (done) {
@@ -34,8 +34,8 @@ suite("GitParser", () => {
 
     test("should verify parseReplacedPath with a correct status row", function () {
         const testString = "src/smt/speakers/HelloWorldSpeaker.java -> src/smt/speakers/HWSpeaker.java";
-        const result = GitParser.parseReplacedPath(testString);
-        assert.equal(result.relativePath, "src/smt/speakers/HWSpeaker.java");
-        assert.equal(result.prevRelativePath, "src/smt/speakers/HelloWorldSpeaker.java");
+        const {relativePath, prevRelativePath} = GitParser.parseReplacedPath(testString);
+        assert.equal(relativePath, "src/smt/speakers/HWSpeaker.java");
+        assert.equal(prevRelativePath, "src/smt/speakers/HelloWorldSpeaker.java");
     });
 });
