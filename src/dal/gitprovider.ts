@@ -22,7 +22,7 @@ import {Utils} from "../bll/utils/utils";
 export class GitProvider implements CvsSupportProvider {
 
     private gitPath: string;
-    private workspaceRootPath: string;
+    private readonly workspaceRootPath: string;
     private workspaceRootPathAsUri: Uri;
 
     private constructor(rootPath: Uri) {
@@ -52,7 +52,7 @@ export class GitProvider implements CvsSupportProvider {
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
         const cvsLocalResource: CvsResource[] = await this.getLocalResources();
-        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: absPaths is ${cvsLocalResource ? " not" : ""}empty`);
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo:absPaths is ${cvsLocalResource ? "not " : ""}empty`);
         await this.fillInServerPaths(cvsLocalResource);
 
         const cvsProvider: CvsSupportProvider = this;
@@ -68,14 +68,15 @@ export class GitProvider implements CvsSupportProvider {
             const relativePath: string = localResource.fileAbsPath.replace(this.workspaceRootPath, "");
             localResource.serverFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
             if (localResource.prevFileAbsPath) {
-                const relativePath: string = localResource.prevFileAbsPath.replace(this.workspaceRootPath, "");
-                localResource.prevServerFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relativePath}`;
+                const relPath: string = localResource.prevFileAbsPath.replace(this.workspaceRootPath, "");
+                localResource.prevServerFilePath = `jetbrains.git://${firstMonthRevHash}${lastRevHash}||${relPath}`;
             }
         });
     }
 
     private async getRemoteBrunch(): Promise<string> {
-        const getRemoteBranchCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" rev-parse --abbrev-ref --symbolic-full-name @{u}`;
+        const getRemoteBranchCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" ` +
+                                                 `rev-parse --abbrev-ref --symbolic-full-name @{u}`;
         const prom = await cp_promise.exec(getRemoteBranchCommand);
         let remoteBranch: string = prom.stdout;
         if (remoteBranch === undefined || remoteBranch.length === 0) {
@@ -89,11 +90,12 @@ export class GitProvider implements CvsSupportProvider {
 
     private async getFirstMonthRev(): Promise<string> {
         const date: Date = new Date();
-        const getFirstMonthRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" rev-list --reverse --since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
+        const getFirstMonthRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" rev-list --reverse ` +
+                                                        `--since="${date.getFullYear()}.${date.getMonth() + 1}.1" HEAD`;
         const prom = await cp_promise.exec(getFirstMonthRevCommand);
         let firstRevHash: string = prom.stdout;
         if (firstRevHash === undefined) {
-            Logger.logWarning(`GitSupportProvider#firstRevHash: first month revision wasn't determined but it's still ok`);
+            Logger.logWarning(`GitSupportProvider#firstRevHash: first month revision wasn't determined.`);
             return "";
         }
         firstRevHash = firstRevHash.split("\n")[0];
@@ -102,14 +104,16 @@ export class GitProvider implements CvsSupportProvider {
     }
 
     private async getLastCompatibleMergeBaseRevision(remoteBranch): Promise<string> {
-        const getLastRevCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
-        const prom = await cp_promise.exec(getLastRevCommand);
+        const getLastRev: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" merge-base HEAD ${remoteBranch}`;
+        const prom = await cp_promise.exec(getLastRev);
         const lastRevHash: string = prom.stdout;
         if (lastRevHash === undefined || lastRevHash.length === 0) {
-            Logger.logError(`GitSupportProvider#getLastCompatibleMergeBaseRevision: revision of last commit wasn't determined`);
+            Logger.logError(`GitSupportProvider#getLastCompatibleMergeBaseRevision: ` +
+                                                        `revision of last commit wasn't determined`);
             throw new Error("Revision of last commit wasn't determined.");
         }
-        Logger.logDebug(`GitSupportProvider#getLastCompatibleMergeBaseRevision: last merge-based revision is ${lastRevHash}`);
+        Logger.logDebug(`GitSupportProvider#getLastCompatibleMergeBaseRevision: last ` +
+                                                           `merge-based revision is ${lastRevHash}`);
         return lastRevHash.trim();
     }
 
@@ -173,7 +177,7 @@ export class GitProvider implements CvsSupportProvider {
             return true;
         } catch (err) {
             Logger.logWarning(`[GitSupportProvider::tryParseAndAddStatusRow] The status raw ${statusRow} was not ` +
-                `parsed with error: ${err}`);
+                                                                                        `parsed with error: ${err}`);
             return false;
         }
     }
@@ -182,8 +186,8 @@ export class GitProvider implements CvsSupportProvider {
         try {
             return await this.getPorcelainStatusRows();
         } catch (err) {
-            Logger.logWarning(`GitSupportProvider#getLocalResources:` +
-                ` git status leads to the error: ${Utils.formatErrorMessage(err)}`);
+            Logger.logWarning(`GitSupportProvider#getLocalResources: ` +
+                                 `git status leads to the error: ${Utils.formatErrorMessage(err)}`);
             return [];
         }
     }
@@ -197,7 +201,7 @@ export class GitProvider implements CvsSupportProvider {
             throw new Error(`Git status haven't found any staged files`);
         }
         return porcelainStatusResult.stdout
-            .toString("utf8")
+            .toString()
             .replace(END_SPACES_REGEXP, "")
             .split("\n");
     }
@@ -231,14 +235,16 @@ export class GitProvider implements CvsSupportProvider {
                 return new AddedCvsResource(fileAbsPath, replacedPath);
             }
             default: {
-                throw new Error(`Resource status for status row ${statusRow} is '${status}' and not recognised`);
+                throw new Error(`Resource status for status row ${statusRow} is ` +
+                                                                    `'${status}' and not recognised`);
             }
         }
     }
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {
         const commitCommandBuilder: string[] = [];
-        commitCommandBuilder.push(`"${this.gitPath}" -C "${this.workspaceRootPath}" commit -m "${checkInInfo.message}" --quiet --allow-empty-message`);
+        commitCommandBuilder.push(`"${this.gitPath}" -C "${this.workspaceRootPath}" commit ` +
+                                        `-m "${checkInInfo.message}" --quiet --allow-empty-message`);
         checkInInfo.cvsLocalResources.forEach((cvsLocalResource) => {
             commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
             if (cvsLocalResource.prevFileAbsPath) {
@@ -250,8 +256,8 @@ export class GitProvider implements CvsSupportProvider {
         } catch (err) {
             if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
                 Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this.gitPath}. ` +
-                    `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name" ` +
-                    `to set your account's default identity. ${Utils.formatErrorMessage(err)}`);
+                    `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name"` +
+                    ` to set your account's default identity. ${Utils.formatErrorMessage(err)}`);
                 throw new Error(`Unable to auto-detect email address for ${this.gitPath}`);
             }
             throw err;
