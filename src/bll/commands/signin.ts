@@ -204,7 +204,7 @@ export class SignIn implements Command {
         this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
         this.statusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         if (this.settings.showSignInWelcome) {
-            await this.showWelcomeMessage();
+            this.showWelcomeMessage();
         }
     }
 
