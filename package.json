@@ -104,8 +104,8 @@
         "title": "Show my changes",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/serverchanges.png",
-          "dark": "resources/icons/dark/serverchanges.png"
+          "light": "resources/icons/light/serverchanges.svg",
+          "dark": "resources/icons/dark/serverchanges.svg"
         }
       }
     ],

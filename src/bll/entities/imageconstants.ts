@@ -7,11 +7,11 @@ export class ImageConstants {
         const iconDirPath = path.join(__dirname, "..", "..", "..", "..", "resources", "icons", isDark ? "dark" : "light");
         switch (value) {
             case TimePeriodEnum.Today:
-                return path.join(iconDirPath, "timeperiod-today.png");
+                return path.join(iconDirPath, "timeperiod-today.svg");
             case TimePeriodEnum.Yesterday:
-                return path.join(iconDirPath, "timeperiod-yesterday.png");
+                return path.join(iconDirPath, "timeperiod-yesterday.svg");
             case TimePeriodEnum.Older:
-                return path.join(iconDirPath, "timeperiod-older.png");
+                return path.join(iconDirPath, "timeperiod-older.svg");
             default:
                 throw new Error("Illegal argument!");
         }
