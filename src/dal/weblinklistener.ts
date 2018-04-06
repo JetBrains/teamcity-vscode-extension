@@ -2,6 +2,7 @@ import {injectable} from "inversify";
 import * as net from "net";
 import {Logger} from "../bll/utils/logger";
 import {Disposable} from "vscode";
+import {HttpHostRequest} from "../bll/weblinklistener/httphostrequest";
 
 @injectable()
 export class WebLinkListener implements Disposable {
@@ -29,6 +30,9 @@ export class WebLinkListener implements Disposable {
             });
             socket.on("data", function(data) {
                 Logger.logDebug(`WebLinkListener#initListener received data: ${data}`);
+                if (data) {
+                    HttpHostRequest.processRequest(data);
+                }
                 socket.destroy();
             });
             socket.on("close", () => {
