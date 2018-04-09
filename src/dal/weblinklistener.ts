@@ -22,16 +22,15 @@ export class WebLinkListener implements Disposable {
     public async initListener(): Promise<void> {
         const server = net.createServer();
         server.on("connection", (socket) => {
-            //socket.pipe(socket);
             this.clients.push(socket);
             socket.on("error", function(err) {
                 Logger.logWarning(`WebLinkListener#initListener error with socket: ${err}`);
                 socket.destroy();
             });
-            socket.on("data", function(data) {
+            socket.on("data", async function(data) {
                 Logger.logDebug(`WebLinkListener#initListener received data: ${data}`);
                 if (data) {
-                    HttpHostRequest.processRequest(data);
+                    await HttpHostRequest.processRequest(data);
                 }
                 socket.destroy();
             });

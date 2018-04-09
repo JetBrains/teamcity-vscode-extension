@@ -15,19 +15,23 @@ export class HttpRequestData {
         this.params = params;
     }
 
-    public isValid(): boolean {
-        return this.isOpenFileRequest() || this.isOpenTestRequest();
+    public isSupportedRequest(): boolean {
+        return this.isOpenFileRequest();
+    }
+
+    public getFile(): string {
+      return this.params[HttpRequestData.FILE];
     }
 
     private isOpenTestRequest(): boolean {
-        return HttpRequestData.TEST_REQUEST &&
+        return this.path === HttpRequestData.TEST_REQUEST &&
             this.params[HttpRequestData.BUILD_ID] &&
             this.params[HttpRequestData.TEST_ID] &&
             this.params[HttpRequestData.SERVER];
     }
 
     private isOpenFileRequest(): boolean {
-        return HttpRequestData.FILE_REQUEST && this.params[HttpRequestData.FILE];
+        return this.path === HttpRequestData.FILE_REQUEST && this.params[HttpRequestData.FILE];
     }
 
     public toString(): string {
