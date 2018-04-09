@@ -1,8 +1,13 @@
 import {HttpRequestData} from "./httprequestdata";
+import {Uri, window, workspace, WorkspaceFolder} from "vscode";
+import {WorkspaceProxy} from "../moduleproxies/workspace-proxy";
+import * as path from "path";
+import {FsProxy} from "../moduleproxies/fs-proxy";
+import { Logger } from "../utils/logger";
 
 export class HttpHostRequest {
 
-    public static processRequest(bytes: Uint8Array): {succeed: boolean, httpVersion: string} {
+    public static async processRequest(bytes: Uint8Array): Promise<{succeed: boolean, httpVersion: string}> {
         const input: string[] = bytes.toString().trim().split("\n");
         const firstLine: string = input[0];
 
@@ -23,7 +28,7 @@ export class HttpHostRequest {
                 HttpHostRequest.parseGetRequestParams(decodeURIComponent(request), params);
             }
         }
-        const succeed = HttpHostRequest.fireRequestAccepted(path, params);
+        const succeed = await HttpHostRequest.fireRequestAccepted(path, params);
         return {succeed: succeed, httpVersion: httpVersion};
     }
 
@@ -41,10 +46,22 @@ export class HttpHostRequest {
         });
     }
 
-    public static fireRequestAccepted(path: string, pars: {}): boolean {
-        const data: HttpRequestData = new HttpRequestData(path, pars);
-        if (data.isValid()) {
-            // some logic here
+    public static async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
+        const data: HttpRequestData = new HttpRequestData(resourcePath, pars);
+        const workspaceFolders: WorkspaceFolder[] = new WorkspaceProxy().workspaceFolders;
+        if (data.isSupportedRequest() && workspaceFolders.length > 0) {
+            for (let i = 0; i < workspaceFolders.length; i++) {
+                const filePath = path.join(new WorkspaceProxy().workspaceFolders[0].uri.path, data.getFile());
+                const uriPath: Uri = Uri.file(filePath);
+                if (await new FsProxy().existsAsync(uriPath.fsPath)) {
+                    try {
+                        await window.showTextDocument(uriPath);
+                        return true;
+                    } catch (err) {
+                        Logger.logWarning(err);
+                    }
+                }
+            }
         }
         return false;
     }
