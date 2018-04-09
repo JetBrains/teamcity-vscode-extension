@@ -65,8 +65,8 @@ export class HttpHostRequest {
 
     public async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
         const data: HttpRequestData = new HttpRequestData(resourcePath, pars);
-        const workspaceFolders: any[] = this.workspaceProxy.workspaceFolders;
-        if (!data.isSupportedRequest() || workspaceFolders.length === 0) {
+        const workspaceFolders: any[] = this.workspaceProxy.getWorkspaceFolders();
+        if (!data.isSupportedRequest() || !workspaceFolders || workspaceFolders.length === 0) {
             Logger.logInfo("HttpHostRequest#fireRequestAccepted: either request not supported either wf.len = 0");
             return false;
         }

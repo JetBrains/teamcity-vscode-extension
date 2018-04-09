@@ -12,4 +12,8 @@ export class WorkspaceProxy {
         return workspace.workspaceFolders;
     }
 
+    public getWorkspaceFolders(): WorkspaceFolder[] | undefined {
+        return workspace.workspaceFolders;
+    }
+
 }
