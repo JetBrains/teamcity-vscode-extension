@@ -48,7 +48,7 @@ export class WebLinkListener implements Disposable {
         });
     }
 
-    public async initListener(): Promise<void> {
+    private async initListener(): Promise<void> {
         this.prepareServer();
 
         for (let port = WebLinkListener.SOCKET_NUMBER_START; port <= WebLinkListener.SOCKET_NUMBER_END; port++) {
