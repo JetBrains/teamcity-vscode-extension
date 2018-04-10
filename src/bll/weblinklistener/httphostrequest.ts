@@ -63,7 +63,7 @@ export class HttpHostRequest {
         });
     }
 
-    public async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
+    private async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
         const data: HttpRequestData = new HttpRequestData(resourcePath, pars);
         const workspaceFolders: any[] = this.workspaceProxy.getWorkspaceFolders();
         if (!data.isSupportedRequest() || !workspaceFolders || workspaceFolders.length === 0) {
