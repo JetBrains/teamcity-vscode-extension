@@ -6,14 +6,12 @@ import {UriProxy} from "../../src/bll/moduleproxies/uri-proxy";
 import {WindowProxy} from "../../src/bll/moduleproxies/window-proxy";
 import {FsProxy} from "../../src/bll/moduleproxies/fs-proxy";
 import {WebLinkListener} from "../../src/dal/weblinklistener";
-import {anyString, anything, instance, mock, when} from "ts-mockito";
-import { VsCodeUtils } from "../../src/bll/utils/vscodeutils";
-import { Utils } from "../../src/bll/utils/utils";
+import {anything, instance, mock, when} from "ts-mockito";
 
 suite("WebLinkListener", () => {
     test("should verify sending incorrect request", async function () {
         const incorrectRequest = "Hello, server! Love, Client.";
-        setupServer();
+        const server = setupServer();
         const SOCKET_NUMBER_START: number = 63330;
         const SOCKET_NUMBER_END: number = SOCKET_NUMBER_START + 9;
         let receivedCorrectResponse: boolean = false;
@@ -23,6 +21,8 @@ suite("WebLinkListener", () => {
                 break;
             }
         }
+        server.dispose();
+
         if (!receivedCorrectResponse) {
             throw new Error("We don't received correct response from VSCode.");
         }
@@ -30,11 +30,12 @@ suite("WebLinkListener", () => {
 
     test("should verify sending correct request", async function () {
         const incorrectRequest = "Hello, server! Love, Client.";
-        const correctRequest = "GET /file?file=1.ts&project=&noCache=1523307618951&server=http://localhost:8111/bs HTTP/1.1\n" +
+        const correctRequest = "GET /file?file=1.ts&project=&noCache=1523307618951&server=" +
+            "http://localhost:8111/bs HTTP/1.1\n" +
             "logger.js:24\n" +
             "Host: 127.0.0.1:63331\n" +
             "Connection: keep-alive\n";
-        setupServer();
+        const server = setupServer();
 
         const SOCKET_NUMBER_START: number = 63330;
         const SOCKET_NUMBER_END: number = SOCKET_NUMBER_START + 9;
@@ -57,6 +58,7 @@ suite("WebLinkListener", () => {
             receivedCorrectResponse = true;
         }
 
+        server.dispose();
         if (!receivedCorrectResponse) {
             throw new Error("We don't received correct response from VSCode.");
         }
@@ -72,10 +74,10 @@ async function sendSocketRequest(port: number, request: string): Promise<Buffer>
         });
 
         client.on("data", function(data) {
-            console.log("Received: " + data);
             const dataAsString = data.toString();
             if (dataAsString.toLowerCase().indexOf("visual studio code") !== -1) {
                 client.destroy();
+                console.log("Received data from vscode: " + data);
                 resolve(data);
             } else {
                 client.destroy();
@@ -83,12 +85,12 @@ async function sendSocketRequest(port: number, request: string): Promise<Buffer>
             }
         });
 
-        client.on("end", function(data) {
+        client.on("end", function() {
             console.log("Close port#" + port);
             resolve(undefined);
         });
 
-        client.on("error", function(data) {
+        client.on("error", function() {
             console.log("Could not connected on port#" + port);
             client.destroy();
             resolve(undefined);
@@ -96,7 +98,7 @@ async function sendSocketRequest(port: number, request: string): Promise<Buffer>
     });
 }
 
-function setupServer(): void {
+function setupServer(): WebLinkListener {
     const fsProxyMock = mock(FsProxy);
     when(fsProxyMock.existsAsync(anything())).thenReturn(Promise.resolve(true));
     const fsProxySpy = instance(fsProxyMock);
@@ -107,7 +109,7 @@ function setupServer(): void {
     when(workspaceProxy.getWorkspaceFolders()).thenReturn([]);
     const workspaceSpy = instance(workspaceProxy);
     const httpHostRequest: HttpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy, new UriProxy(), windowSpy);
-    const webLinkListener: WebLinkListener = new WebLinkListener(httpHostRequest);
+    return new WebLinkListener(httpHostRequest);
 }
 
 function areBuffersEqual(bufA, bufB): boolean {
