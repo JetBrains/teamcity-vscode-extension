@@ -8,6 +8,7 @@ import {TYPES} from "../utils/constants";
 import {WindowProxy} from "../moduleproxies/window-proxy";
 import {UriProxy} from "../moduleproxies/uri-proxy";
 import {Utils} from "../utils/utils";
+import {parse as parseUrl} from "url";
 
 @injectable()
 export class HttpHostRequest {
@@ -18,49 +19,22 @@ export class HttpHostRequest {
                        @inject(TYPES.WindowProxy) private windowProxy: WindowProxy) {
     }
 
-    public async processRequest(bytes: Uint8Array): Promise<{succeed: boolean, httpVersion: string}> {
-        const input: string[] = bytes.toString().trim().split("\n");
-        const firstLine: string = input[0];
-        Logger.logDebug(`HttpHostRequest#processRequest: firstLine is ${firstLine}`);
-        const tokens: string[] = firstLine.trim().split(/[\t\r\n\f ]+/);
-        if (tokens.length < 3) {
-            Logger.logWarning(`HttpHostRequest#processRequest: not enough tokens: ${tokens.join(";")}`);
-            return {succeed: false, httpVersion: undefined};
+    public async processRequest(request: {url?: string, method?: string}): Promise<boolean> {
+        if (!request.url) {
+            Logger.logWarning("HttpHostRequest#processRequest url is required for processing request");
+            return false;
         }
 
-        const uri = tokens[1];
-        const httpVersion = tokens[2];
-        let path = uri;
-        const params = {};
+        let path = request.url;
+        let params = {};
 
-        const endOfPathIndex: number = uri.indexOf("?");
+        const endOfPathIndex: number = request.url.indexOf("?");
         if (endOfPathIndex >= 0) {
-            path = uri.substring(0, endOfPathIndex);
-            const request = uri.substring(endOfPathIndex + 1);
-            this.parseGetRequestParams(request, params);
+            path = request.url.substring(0, endOfPathIndex);
+            params = parseUrl(request.url, true).query;
         }
 
-        const succeed = await this.fireRequestAccepted(path, params);
-        return {succeed: succeed, httpVersion: httpVersion};
-    }
-
-    private parseGetRequestParams(encodedURIComponent: string, pars: {}): void {
-        if (!encodedURIComponent) {
-            return;
-        }
-
-        const req = decodeURIComponent(encodedURIComponent);
-        const pairs: string[] = req.split("&");
-        pairs.forEach((pair) => {
-            const s: number = pair.indexOf("=");
-            if (s > 0) {
-                const key: string = pair.substring(0, s);
-                const value: string = pair.substring(s + 1);
-                if (key && value) {
-                    pars[key] = value;
-                }
-            }
-        });
+        return await this.fireRequestAccepted(path, params);
     }
 
     private async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
