@@ -31,7 +31,7 @@ export class HttpRequestData {
     }
 
     private isOpenFileRequest(): boolean {
-        return this.path === HttpRequestData.FILE_REQUEST && this.params[HttpRequestData.FILE];
+        return this.path === HttpRequestData.FILE_REQUEST && !!this.params[HttpRequestData.FILE];
     }
 
     public toString(): string {
