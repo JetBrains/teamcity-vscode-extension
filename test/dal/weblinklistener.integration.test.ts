@@ -1,5 +1,4 @@
 import {assert} from "chai";
-import {Socket} from "net";
 import {HttpHostRequest} from "../../src/bll/weblinklistener/httphostrequest";
 import {WorkspaceProxy} from "../../src/bll/moduleproxies/workspace-proxy";
 import {UriProxy} from "../../src/bll/moduleproxies/uri-proxy";
@@ -9,93 +8,70 @@ import {WebLinkListener} from "../../src/dal/weblinklistener";
 import {anything, instance, mock, when} from "ts-mockito";
 import {Uri, WorkspaceFolder} from "vscode";
 import * as TypeMoq from "typemoq";
+import * as request from "request";
 
 suite("WebLinkListener", () => {
     test("should verify sending incorrect request", async function () {
-        const incorrectRequest = "Hello, server! Love, Client.";
+        const incorrectRequest = { smt:"test1" };
         const server = setupServer();
         const SOCKET_NUMBER_START: number = 63330;
         const SOCKET_NUMBER_END: number = SOCKET_NUMBER_START + 9;
-        let receivedCorrectResponse: boolean = false;
+        let receivedVSCodeResponse: boolean = false;
         for (let port = SOCKET_NUMBER_START; port <= SOCKET_NUMBER_END; port++) {
-            if (await sendSocketRequest(port, incorrectRequest)) {
-                receivedCorrectResponse = true;
+            const result = await sendSocketRequest(port, incorrectRequest);
+            if (result !== undefined && result.toString() !== "") {
+                receivedVSCodeResponse = true;
                 break;
             }
         }
         server.dispose();
 
-        if (!receivedCorrectResponse) {
+        if (!receivedVSCodeResponse) {
             throw new Error("We don't received correct response from VSCode.");
         }
     });
 
     test("should verify sending correct request", async function () {
-        const incorrectRequest = "Hello, server! HTTP/1.1 Client.";
-        const correctRequest = "GET /file?file=1.ts&project=&noCache=1523307618951&server=" +
-            "http://localhost:8111/bs HTTP/1.1\n" +
-            "logger.js:24\n" +
-            "Host: 127.0.0.1:63331\n" +
-            "Connection: keep-alive\n";
+        const incorrectRequest = { smt:"test1" };
+        const correctRequest = { file: "1.ts", project: "", noCache: 1523307618951, server:"http://localhost:8111"};
         const server = setupServer();
-
         const SOCKET_NUMBER_START: number = 63330;
         const SOCKET_NUMBER_END: number = SOCKET_NUMBER_START + 9;
-        let receivedCorrectResponse: boolean = false;
         let incorrectData: Buffer;
         let correctData: Buffer;
         for (let port = SOCKET_NUMBER_START; port <= SOCKET_NUMBER_END; port++) {
-            incorrectData = await sendSocketRequest(port, incorrectRequest);
-            if (incorrectData) {
+            const result = await sendSocketRequest(port, incorrectRequest);
+            if (result !== undefined && result.toString() !== "") {
+                incorrectData = result;
                 break;
             }
         }
         for (let port = SOCKET_NUMBER_START; port <= SOCKET_NUMBER_END; port++) {
-            correctData = await sendSocketRequest(port, correctRequest);
-            if (correctData && !areBuffersEqual(correctData, incorrectData)) {
+            const result = await sendSocketRequest(port, correctRequest);
+            if (result !== undefined && result.toString() !== "" && !areBuffersEqual(result, incorrectData)) {
+                correctData = result;
                 break;
             }
         }
-        if (incorrectData && correctData && !areBuffersEqual(correctData, incorrectData)) {
-            receivedCorrectResponse = true;
-        }
-
         server.dispose();
-        if (!receivedCorrectResponse) {
-            throw new Error("We haven't received correct response from VSCode.");
+        if (!incorrectData || !correctData || areBuffersEqual(correctData, incorrectData)) {
+            throw new Error("We haven't received correct response from VSCode");
         }
     });
 });
 
-async function sendSocketRequest(port: number, request: string): Promise<Buffer> {
+async function sendSocketRequest(port: number, requestParam: {}): Promise<Buffer> {
     return new Promise<Buffer>((resolve) => {
-        const client = new Socket();
-        client.connect(port, "127.0.0.1", function() {
-            console.log("Connected on port#" + port);
-            client.write(request);
-        });
-
-        client.on("data", function(data) {
-            const dataAsString = data.toString();
-            if (dataAsString.toLowerCase().indexOf("visual studio code") !== -1) {
-                client.destroy();
-                console.log("Received data from vscode: " + data);
-                resolve(data);
-            } else {
-                client.destroy();
+        // tslint:disable-next-line:no-null-keyword
+        const bufferBodyEncoding = null;
+        request({url:`http://127.0.0.1:${port}/file`, qs:requestParam, encoding: bufferBodyEncoding}, (error, response, body) => {
+            if (error !== null ||
+                !response.headers["server"] ||
+                response.headers["server"].indexOf("Visual Studio Code") === -1) {
                 resolve(undefined);
+            } else {
+                resolve(body);
             }
-        });
-
-        client.on("end", function() {
-            console.log("Close port#" + port);
-            resolve(undefined);
-        });
-
-        client.on("error", function() {
-            console.log("Could not connected on port#" + port);
-            client.destroy();
-            resolve(undefined);
         });
     });
 }

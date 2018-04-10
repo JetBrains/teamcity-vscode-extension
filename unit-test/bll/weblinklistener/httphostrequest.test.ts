@@ -14,33 +14,6 @@ import * as TypeMoq from "typemoq";
 
 suite("HttpHostRequest", function () {
 
-    test("should verify processRequest with incorrect number of tokens", async function () {
-        const fsProxyMock = mock(FsProxy);
-        when(fsProxyMock.existsAsync(anything())).thenReturn(Promise.resolve(true));
-        const fsProxySpy = instance(fsProxyMock);
-        const windowProxy = mock(WindowProxy);
-        when(windowProxy.showTextDocument(anything())).thenReturn(Promise.resolve(undefined));
-        const windowSpy = instance(windowProxy);
-        const workspaceProxy = mock(WorkspaceProxy);
-        when(workspaceProxy.getWorkspaceFolders()).thenReturn([]);
-        const workspaceSpy = instance(workspaceProxy);
-        const httpHostRequest: HttpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy,
-                                                                     new UriProxy(), windowSpy);
-        {
-            const request = "1\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
-            assert.equal(succeed, false);
-            assert.equal(httpVersion, undefined);
-        }
-
-        {
-            const request = "1 2\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
-            assert.equal(succeed, false);
-            assert.equal(httpVersion, undefined);
-        }
-    });
-
     test("should verify processRequest without endOfPath", async function () {
         const fsProxyMock = mock(FsProxy);
         when(fsProxyMock.existsAsync(anything())).thenReturn(Promise.resolve(true));
@@ -54,10 +27,9 @@ suite("HttpHostRequest", function () {
         const httpHostRequest: HttpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy,
                                                                      new UriProxy(), windowSpy);
         {
-            const request = "1 2 httpVersion\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
+            const request = {url: "1 2 httpVersion"};
+            const succeed = await httpHostRequest.processRequest(request);
             assert.equal(succeed, false);
-            assert.equal(httpVersion, "httpVersion");
         }
     });
 
@@ -88,10 +60,9 @@ suite("HttpHostRequest", function () {
 
         const httpHostRequest: HttpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy, uriProxySpy, windowSpy);
         {
-            const request = "1 /file?file=1 httpVersion\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
+            const request = {url: "/file?file=1"};
+            const succeed = await httpHostRequest.processRequest(request);
             assert.equal(succeed, true);
-            assert.equal(httpVersion, "httpVersion");
         }
     });
 
@@ -122,26 +93,23 @@ suite("HttpHostRequest", function () {
 
         let httpHostRequest: HttpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy, uriProxySpy, windowSpy);
         {
-            const request = "1 /file?test=1 httpVersion\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
+            const request = {url: "/file?test=1\n"};
+            const succeed = await httpHostRequest.processRequest(request);
             assert.equal(succeed, false);
-            assert.equal(httpVersion, "httpVersion");
         }
 
         httpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy, uriProxySpy, windowSpy);
         {
-            const request = "1 /patch?file=1 httpVersion\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
+            const request = {url: "/patch?file=1"};
+            const succeed = await httpHostRequest.processRequest(request);
             assert.equal(succeed, false);
-            assert.equal(httpVersion, "httpVersion");
         }
 
         httpHostRequest = new HttpHostRequest(workspaceSpy, fsProxySpy, uriProxySpy, windowSpy);
         {
-            const request = "1 /test?file=1 httpVersion\n";
-            const {succeed, httpVersion} = await httpHostRequest.processRequest(new Buffer(request));
+            const request = {url: "/test?file=1"};
+            const succeed = await httpHostRequest.processRequest(request);
             assert.equal(succeed, false);
-            assert.equal(httpVersion, "httpVersion");
         }
     });
 });
