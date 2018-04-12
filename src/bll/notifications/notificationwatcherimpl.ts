@@ -81,8 +81,13 @@ export class NotificationWatcherImpl implements NotificationWatcher {
                 await this.reinitWatcherMutableResources();
                 break;
             } catch (err) {
-                err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
-                Logger.logError(`NotificationWatcher failed with ${Utils.formatErrorMessage(err)}`);
+                if (!err) {
+                    Logger.logError(`NotificationWatcherImpl#tryReinitWatcherMutableResources: ` +
+                    `NotificationWatcher failed with empty error: ` + new Error().stack);
+                } else {
+                    err = (err.code === ("ENOENT" || "ENOTFOUND")) ? MessageConstants.URL_NOT_REACHABLE : err;
+                    Logger.logError(`NotificationWatcher failed with ${Utils.formatErrorMessage(err)}`);
+                }
                 await Utils.sleep(5000);
             }
         }

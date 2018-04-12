@@ -45,9 +45,12 @@ export class RemoteBuildServer {
         return new Promise<Uint8Array[]>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data) => {
                 /* tslint:disable:no-null-keyword */
-                if (err || !data) {
+                if (err) {
                     Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + Utils.formatErrorMessage(err));
                     return reject(err);
+                } else if (!data) {
+                    Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: data is empty" + new Error().stack);
+                    return reject("Received data object is unexpectedly empty");
                 }
 
                 resolve(data);
@@ -62,9 +65,12 @@ export class RemoteBuildServer {
         const client: any = await this.createAndInitClient();
         return new Promise<number>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getTotalNumberOfEvents", [serializedSubscription], (err, data) => {
-                if (err || !data) {
+                if (err) {
                     Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
                     return reject(err);
+                } else if (!data) {
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: data is empty: " + new Error().stack );
+                    return reject("Received data object is unexpectedly empty");
                 }
 
                 resolve(data);
@@ -86,10 +92,13 @@ export class RemoteBuildServer {
         Logger.logDebug(`RemoteBuildServer#requestConfigIds: changedFiles: ${changedFiles.join(";")}`);
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("VersionControlServer.getSuitableConfigurations", [changedFiles], (err, configurationId) => {
-                if (err || !configurationId) {
+                if (err) {
                     err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                     Logger.logError("VersionControlServer.getSuitableConfigurations failed with error: " + Utils.formatErrorMessage(err));
                     return reject(err);
+                } else if (!configurationId) {
+                    Logger.logError("VersionControlServer.getSuitableConfigurations: configurationId is unexpectedly empty " + new Error().stack);
+                    return reject("Configuration ids is unexpectedly empty");
                 }
 
                 Logger.logDebug(`[RemoteBuildServer#requestConfigIds: changedFiles] was found ${configurationId.length}\n` +
@@ -108,9 +117,12 @@ export class RemoteBuildServer {
         const client: any = await this.createAndInitClient();
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("RemoteBuildServer2.getRelatedProjects", [suitableConfigurations], (err, buildXmlArray) => {
-                if (err || !buildXmlArray) {
+                if (err) {
                     Logger.logError("RemoteBuildServer2.getRelatedProjects failed with error: " + Utils.formatErrorMessage(err));
                     return reject(err);
+                } else if (!buildXmlArray) {
+                    Logger.logError("RemoteBuildServer2.getRelatedBuilds: buildXmlArray is unexpectedly empty " + new Error().stack);
+                    return reject("Build array is unexpectedly empty");
                 }
 
                 resolve(buildXmlArray);
