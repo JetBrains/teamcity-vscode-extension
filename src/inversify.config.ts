@@ -53,6 +53,9 @@ import {ChangesProvider} from "./view/dataproviders/changesprovider";
 import {WindowProxy} from "./bll/moduleproxies/window-proxy";
 import {RequestProxy} from "./bll/moduleproxies/request-proxy";
 import {MessageManager} from "./view/messagemanager";
+import {WebLinkListener} from "./dal/weblinklistener";
+import {HttpHostRequest} from "./bll/weblinklistener/httphostrequest";
+import {UriProxy} from "./bll/moduleproxies/uri-proxy";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -99,3 +102,6 @@ myContainer.bind<IChangesProvider>(TYPES.ChangesProvider).to(ChangesProvider).in
 myContainer.bind<WindowProxy>(TYPES.WindowProxy).to(WindowProxy).inSingletonScope();
 myContainer.bind<RequestProxy>(TYPES.RequestProxy).to(RequestProxy).inSingletonScope();
 myContainer.bind<MessageManager>(TYPES.MessageManager).to(MessageManager).inSingletonScope();
+myContainer.bind<WebLinkListener>(TYPES.WebLinkListener).to(WebLinkListener).inSingletonScope();
+myContainer.bind<HttpHostRequest>(TYPES.HttpHostRequest).to(HttpHostRequest).inSingletonScope();
+myContainer.bind<UriProxy>(TYPES.UriProxy).to(UriProxy).inSingletonScope();

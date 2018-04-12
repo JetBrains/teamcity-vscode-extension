@@ -104,8 +104,8 @@
         "title": "Show my changes",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/serverchanges.png",
-          "dark": "resources/icons/dark/serverchanges.png"
+          "light": "resources/icons/light/serverchanges.svg",
+          "dark": "resources/icons/dark/serverchanges.svg"
         }
       }
     ],
@@ -272,6 +272,7 @@
     "pako": "^1.0.5",
     "path": "^0.12.7",
     "pify": "^3.0.0",
+    "portscanner": "^2.1.1",
     "readable-stream": "^2.3.3",
     "reflect-metadata": "^0.1.10",
     "request": "^2.81.0",

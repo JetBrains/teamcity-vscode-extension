@@ -147,7 +147,10 @@ export const TYPES = {
     ChangesProvider: Symbol("ChangesProvider"),
     WindowProxy: Symbol("WindowProxy"),
     RequestProxy: Symbol("RequestProxy"),
-    MessageManager: Symbol("MessageManager")
+    MessageManager: Symbol("MessageManager"),
+    WebLinkListener: Symbol("WebLinkListener"),
+    HttpHostRequest: Symbol("HttpHostRequest"),
+    UriProxy: Symbol("UriProxy")
 };
 
 export enum CvsOperation {
