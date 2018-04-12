@@ -8,7 +8,7 @@ import {TYPES} from "../utils/constants";
 import {WindowProxy} from "../moduleproxies/window-proxy";
 import {UriProxy} from "../moduleproxies/uri-proxy";
 import {Utils} from "../utils/utils";
-import {parse as parseUrl} from "url";
+import {parse as parseUrl, Url} from "url";
 
 @injectable()
 export class HttpHostRequest {
@@ -25,16 +25,8 @@ export class HttpHostRequest {
             return false;
         }
 
-        let path = request.url;
-        let params = {};
-
-        const endOfPathIndex: number = request.url.indexOf("?");
-        if (endOfPathIndex >= 0) {
-            path = request.url.substring(0, endOfPathIndex);
-            params = parseUrl(request.url, true).query;
-        }
-
-        return await this.fireRequestAccepted(path, params);
+        const url: Url = parseUrl(request.url, true);
+        return this.fireRequestAccepted(url.pathname, url.query);
     }
 
     private async fireRequestAccepted(resourcePath: string, pars: {}): Promise<boolean> {
