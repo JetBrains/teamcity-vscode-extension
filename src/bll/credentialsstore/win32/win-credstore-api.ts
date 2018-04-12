@@ -40,6 +40,8 @@ export class WindowsCredentialStoreApi implements CredentialsStore {
         } catch (err) {
             if (!WindowsCredentialStoreApi.isCredentialsNotFoundCode(err)) {
                 throw err;
+            } else {
+                Logger.logError(`WindowsCredentialStoreApi#removeCredentials: ${err}`);
             }
         }
     }
