@@ -71,7 +71,7 @@ The log file will be placed at the root of your workspace and will be named `tea
 
 ## Debugging
 To start debugging the extension, do the following:
-1. Clone the repository from the GitHub [repository](https://github.com/rugpanov/teamcity-vscode-extension).
+1. Clone the repository from the GitHub [repository](https://github.com/JetBrains/teamcity-vscode-extension/issues).
 2. Execute the `npm install` command from the root of the project.
 3. Open the project via the `Visual Studio Code` editor
 4. `Debug` -> `Start Debugging` 
@@ -80,9 +80,9 @@ To start debugging the extension, do the following:
 To package a custom version of the extension, please refer to the [VSCode documentation](https://code.visualstudio.com/docs/extensions/publish-extension#_packaging-extensions).
 
 ## Support
-Support for this extension is provided in [GitHub Issue Tracker](https://github.com/rugpanov/teamcity-vscode-extension/issues). You
-can submit a [bug report](https://github.com/rugpanov/teamcity-vscode-extension/issues/new), a [feature request](https://github.com/rugpanov/teamcity-vscode-extension/issues/new)
-or participate in [discussions](https://github.com/rugpanov/teamcity-vscode-extension/issues).
+Support for this extension is provided in [GitHub Issue Tracker](https://github.com/JetBrains/teamcity-vscode-extension/issues/new). You
+can submit a [bug report](https://github.com/JetBrains/teamcity-vscode-extension/issues/new), a [feature request](https://github.com/JetBrains/teamcity-vscode-extension/issues/new)
+or participate in [discussions](https://github.com/JetBrains/teamcity-vscode-extension/issues).
 
 ## License
 This extension is [licensed under the MIT License](LICENSE.txt).
