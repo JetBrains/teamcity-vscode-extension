@@ -20,12 +20,12 @@ export class Utils {
         return keys.length !== 2 ? undefined : keys;
     }
 
-    public static gzip2Xml(gzip: Uint8Array[]): string {
+    public static gzip2Xml(gzip: Uint8Array): string {
         Logger.logDebug(`VsCodeUtils#gzip2Str: starts unzipping gzip`);
         const STEP: number = 100000;
         const buffer: string[] = [];
         // Pako magic
-        const inflatedGzip: Uint16Array = pako.inflate(gzip);
+        const inflatedGzip: Uint8Array = pako.inflate(gzip);
         // Convert gzipped byteArray back to ascii string:
         for (let i: number = 0; i < inflatedGzip.byteLength; i = i + STEP) {
             /*RangeError: Maximum call stack size exceeded when i is between 250000 and 260000*/

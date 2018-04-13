@@ -35,7 +35,7 @@ export class RemoteLogin {
     }
 
     async authenticate(serverUrl: string, user: string, password: string): Promise<string> {
-        const client = this.createClient(serverUrl);
+        const client: xmlrpc.Client = this.createClient(serverUrl);
         const rsaPublicKey: RcaPublicKey = await this.getPublicKey(client);
         if (!rsaPublicKey) {
             throw MessageConstants.XMLRPC_AUTH_EXCEPTION + " rsaPublicKey is absent";
@@ -43,7 +43,7 @@ export class RemoteLogin {
         const encPass = rsaPublicKey.encrypt(password);
         const hexEncPass = forge.util.createBuffer(encPass).toHex();
         return new Promise<string>((resolve, reject) => {
-            client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err, data) => {
+            client.methodCall("RemoteAuthenticationServer.authenticate", [user, hexEncPass], (err: any, data) => {
                 /* tslint:disable:no-null-keyword */
                 if (err && err.message && err.message.indexOf("Incorrect username or password") !== -1) {
                     Logger.logError("RemoteAuthenticationServer.authenticate: return an error: " + Utils.formatErrorMessage(err));
@@ -58,7 +58,7 @@ export class RemoteLogin {
         });
     }
 
-    public createClient(serverUrl: string): any {
+    public createClient(serverUrl: string): xmlrpc.Client {
         const headers = {};
         headers["User-Agent"] = this.vsCodeUtils.getUserAgentString();
         return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true, headers: headers});

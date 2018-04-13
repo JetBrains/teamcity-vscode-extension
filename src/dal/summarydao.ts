@@ -18,7 +18,7 @@ export class SummaryDao {
     }
 
     public async get(): Promise<Summary> {
-        const gZippedSummary: Uint8Array[] = await this.remoteBuildServer.getGZippedSummary();
+        const gZippedSummary: Uint8Array = await this.remoteBuildServer.getGZippedSummary();
         const summeryXmlObj: string = Utils.gzip2Xml(gZippedSummary);
         return this.xmlParser.parseSummary(summeryXmlObj);
     }
