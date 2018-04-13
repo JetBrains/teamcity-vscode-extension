@@ -80,7 +80,7 @@ To start debugging the extension, do the following:
 To package a custom version of the extension, please refer to the [VSCode documentation](https://code.visualstudio.com/docs/extensions/publish-extension#_packaging-extensions).
 
 ## Support
-Support for this extension is provided in [GitHub Issue Tracker](https://github.com/JetBrains/teamcity-vscode-extension/issues/new). You
+Support for this extension is provided in [GitHub Issue Tracker](https://github.com/JetBrains/teamcity-vscode-extension/issues). You
 can submit a [bug report](https://github.com/JetBrains/teamcity-vscode-extension/issues/new), a [feature request](https://github.com/JetBrains/teamcity-vscode-extension/issues/new)
 or participate in [discussions](https://github.com/JetBrains/teamcity-vscode-extension/issues).
 
