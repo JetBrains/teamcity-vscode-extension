@@ -39,11 +39,11 @@ export class RemoteBuildServer {
         }
     }
 
-    public async getGZippedSummary(): Promise<Uint8Array[]> {
+    public async getGZippedSummary(): Promise<Uint8Array> {
         const client: any = await this.createAndInitClient();
         const userId: string = await this.getUserId();
-        return new Promise<Uint8Array[]>((resolve, reject) => {
-            client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data) => {
+        return new Promise<Uint8Array>((resolve, reject) => {
+            client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data: Uint8Array) => {
                 /* tslint:disable:no-null-keyword */
                 if (err || !data) {
                     Logger.logError("UserSummaryRemoteManager2.getGZippedSummary: return an error: " + Utils.formatErrorMessage(err));
