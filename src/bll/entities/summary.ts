@@ -28,7 +28,7 @@ export class Summary {
             !summaryObj.myVisibleProjects ||
             !summaryObj.myVisibleProjects[0] ||
             !summaryObj.myVisibleProjects[0].string) {
-            Logger.logDebug(`SummaryDataProxy#getVisibleProjectIds: visibleProjectIds are not reachable`);
+            Logger.logDebug(`Summary#getVisibleProjectIds: visibleProjectIds are not reachable`);
             return [];
         }
         return summaryObj.myVisibleProjects[0].string;
@@ -41,7 +41,7 @@ export class Summary {
             || !summaryObj.changes[0]
             || !summaryObj.changes[0].ChangeInfo
             || summaryObj.changes[0].ChangeInfo.length <= 0) {
-            Logger.logDebug(`SummaryDataProxy#personalChanges: changes are not reachable`);
+            Logger.logDebug(`Summary#extractChanges: changes are not reachable`);
             return [];
         }
         const changes: any[] = summaryObj.changes[0].ChangeInfo;
@@ -58,7 +58,7 @@ export class Summary {
             || !summaryObj.personalChanges[0]
             || !summaryObj.personalChanges[0].ChangeInfo
             || summaryObj.personalChanges[0].ChangeInfo.length <= 0) {
-            Logger.logDebug(`SummaryDataProxy#personalChanges: personalChanges are not reachable`);
+            Logger.logDebug(`Summary#extractPersonalChanges: personalChanges are not reachable`);
             return [];
         }
         const changes: any[] = summaryObj.personalChanges[0].ChangeInfo;
