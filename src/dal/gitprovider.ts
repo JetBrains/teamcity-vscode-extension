@@ -254,6 +254,7 @@ export class GitProvider implements CvsSupportProvider {
         try {
             await cp_promise.exec(commitCommandBuilder.join(" "));
         } catch (err) {
+            Logger.logError(`GitProvider#commit: ${err}`);
             if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
                 Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this.gitPath}. ` +
                     `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name"` +

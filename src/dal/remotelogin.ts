@@ -74,9 +74,12 @@ export class RemoteLogin {
         return new Promise<RcaPublicKey>((resolve, reject) => {
             client.methodCall("RemoteAuthenticationServer.getPublicKey", [], (err, data) => {
                 /* tslint:disable:no-null-keyword */
-                if (err !== null || data === undefined) {
+                if (err !== null) {
                     Logger.logError(`RemoteAuthenticationServer.getPublicKey: it failed at getting public key: ${Utils.formatErrorMessage(err)}`);
                     return reject(err);
+                } else if (!data) {
+                    Logger.logError("RemoteAuthenticationServer.getPublicKey: received public key is unexpectedly empty " + new Error().stack);
+                    return reject("Received public key is unexpectedly empty");
                 }
                 /* tslint:enable:no-null-keyword */
                 const keys: string[] = Utils.parseValueColonValue(data);

@@ -67,6 +67,8 @@ export class OsxKeychainApi implements CredentialsStore {
             const CREDENTIALS_NOT_FOUND_CODE = 44;
             if (err.code && err.code !== CREDENTIALS_NOT_FOUND_CODE) {
                 throw err;
+            } else {
+                Logger.logError(`OsxKeychainApi#removeCredentialByName: ${err}`);
             }
         }
     }
