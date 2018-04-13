@@ -29,3 +29,10 @@
 - Fix the log and UI messages
 - Add unit tests for code
 - Fix different bugs
+
+## [v1.0.0-beta.6](https://github.com/JetBrains/teamcity-vscode-extension/tree/v1.0.0-beta.6) (2018-04-14)
+[Full Changelog](https://github.com/JetBrains/teamcity-vscode-extension/compare/v1.0.0-beta.5...v1.0.0-beta.6)
+- Update icons for change statuses
+- Update icons for some actions
+- Support "Open in IDE" functionality
+- Fix different bugs
