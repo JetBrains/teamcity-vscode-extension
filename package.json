@@ -208,21 +208,26 @@
       "properties": {
         "teamcity.logging.level": {
           "type": "string",
-          "description": "Set the logging level for the extension (error, warn, info, debug)."
+          "description": "Specifies the logging level for the extension (error, warn, info, debug)."
         },
         "teamcity.show.welcome": {
           "type": "boolean",
           "default": true,
-          "description": "Sets whether the extension should show the welcome message after the login operation or not."
+          "description": "Specifies whether the extension should show the welcome message after the login operation or not."
         },
         "teamcity.credentials.persistent": {
           "type": "boolean",
           "default": true,
-          "description": "Sets whether the extension should store user credentials in persistent storage or not."
+          "description": "Specifies whether the extension should store user credentials in persistent storage or not."
         },
         "teamcity.credentials.lastLogin": {
           "type": "string",
           "description": "Stores the last used url and username."
+        },
+        "teamcity.git.changesFromIndex": {
+          "type": "boolean",
+          "default": false,
+          "description": "Git specific. Specifies whether the extension should collect changes from the index or not. When set to false, changes are collected from the working tree."
         }
       }
     }
