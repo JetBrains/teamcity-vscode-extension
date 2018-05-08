@@ -11,17 +11,15 @@ import {Utils} from "../../bll/utils/utils";
 @injectable()
 export class GitProviderActivator {
 
-    private readonly pathFinder: GitPathFinder;
-    private readonly isActiveValidator: GitIsActiveValidator;
-
-    public constructor(@inject(TYPES.Settings) private readonly settings: Settings) {
-        this.pathFinder = new GitPathFinder();
-        this.isActiveValidator = new GitIsActiveValidator();
+    public constructor(@inject(TYPES.Settings) private readonly settings: Settings,
+                       @inject(TYPES.GitIsActiveValidator) private readonly isActiveValidator: GitIsActiveValidator,
+                       @inject(TYPES.GitPathFinder) private readonly pathFinder: GitPathFinder) {
+        //
     }
 
     public async tryActivateInPath(workspaceRootPath: Uri): Promise<GitProvider> | undefined {
-        const gitPath: string = await this.pathFinder.find();
         try {
+            const gitPath: string = await this.pathFinder.find();
             await this.isActiveValidator.validate(workspaceRootPath.fsPath, gitPath);
             return new GitProvider(workspaceRootPath, gitPath);
         } catch (err) {

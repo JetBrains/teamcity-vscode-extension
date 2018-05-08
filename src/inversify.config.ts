@@ -56,6 +56,10 @@ import {MessageManager} from "./view/messagemanager";
 import {WebLinkListener} from "./dal/weblinklistener";
 import {HttpHostRequest} from "./bll/weblinklistener/httphostrequest";
 import {UriProxy} from "./bll/moduleproxies/uri-proxy";
+import {GitProviderActivator} from "./dal/git/GitProviderActivator";
+import {GitIsActiveValidator} from "./bll/cvsutils/gitisactivevalidator";
+import {ProcessProxy} from "./bll/moduleproxies/process-proxy";
+import {GitPathFinder} from "./bll/cvsutils/gitpathfinder";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -86,6 +90,7 @@ myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy);
 myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy);
 myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy);
 myContainer.bind<CpProxy>(TYPES.CpProxy).to(CpProxy);
+myContainer.bind<ProcessProxy>(TYPES.ProcessProxy).to(ProcessProxy).inSingletonScope();
 myContainer.bind<IProviderManager>(TYPES.ProviderManager).to(ProviderManager).inSingletonScope();
 myContainer.bind<IResourceProvider>(TYPES.ResourceProvider).to(ResourceProvider).inSingletonScope();
 myContainer.bind<IBuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingletonScope();
@@ -105,3 +110,6 @@ myContainer.bind<MessageManager>(TYPES.MessageManager).to(MessageManager).inSing
 myContainer.bind<WebLinkListener>(TYPES.WebLinkListener).to(WebLinkListener).inSingletonScope();
 myContainer.bind<HttpHostRequest>(TYPES.HttpHostRequest).to(HttpHostRequest).inSingletonScope();
 myContainer.bind<UriProxy>(TYPES.UriProxy).to(UriProxy).inSingletonScope();
+myContainer.bind<GitProviderActivator>(TYPES.GitProviderActivator).to(GitProviderActivator).inSingletonScope();
+myContainer.bind<GitIsActiveValidator>(TYPES.GitIsActiveValidator).to(GitIsActiveValidator).inSingletonScope();
+myContainer.bind<GitPathFinder>(TYPES.GitPathFinder).to(GitPathFinder).inSingletonScope();

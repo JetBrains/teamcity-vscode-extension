@@ -26,8 +26,8 @@ suite("Git Is Active Validator", () => {
         when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.resolve(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
-        gitIsActiveValidator.validate().then(() => {
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(cpSpy);
+        gitIsActiveValidator.validate(rootPath, gitPath).then(() => {
                 done();
             }
         ).catch((err) => {
@@ -44,8 +44,8 @@ suite("Git Is Active Validator", () => {
         when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.resolve(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
-        gitIsActiveValidator.validate().then(() => {
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(cpSpy);
+        gitIsActiveValidator.validate(rootPath, gitPath).then(() => {
                 done("Version should be incorrect");
             }
         ).catch((err: Error) => {
@@ -63,8 +63,8 @@ suite("Git Is Active Validator", () => {
         when(cpMock.execAsync(getArgumentForGitIsActiveCommand(gitPath, rootPath))).thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(gitPath, rootPath, cpSpy);
-        gitIsActiveValidator.validate().then(() => {
+        const gitIsActiveValidator: GitIsActiveValidator = new GitIsActiveValidator(cpSpy);
+        gitIsActiveValidator.validate(rootPath, gitPath).then(() => {
                 done("There should not be a git repo");
             }
         ).catch((err: Error) => {

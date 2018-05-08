@@ -1,12 +1,14 @@
 import {Logger} from "../utils/logger";
 import {CpProxy} from "../moduleproxies/cp-proxy";
 import {GitParser} from "./git-parser";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../utils/constants";
 
+@injectable()
 export class GitIsActiveValidator {
-    private readonly cpProxy: CpProxy;
 
-    constructor(cpProxy?: CpProxy) {
-        this.cpProxy = cpProxy || new CpProxy();
+    constructor(@inject(TYPES.CpProxy) private readonly cpProxy: CpProxy) {
+        //
     }
 
     public async validate(workspaceRootPath: string, gitPath: string): Promise<void> {

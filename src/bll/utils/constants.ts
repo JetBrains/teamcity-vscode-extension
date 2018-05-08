@@ -1,3 +1,5 @@
+import {GitPathFinder} from "../cvsutils/gitpathfinder";
+
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
@@ -134,6 +136,7 @@ export const TYPES = {
     FsProxy: Symbol("FsProxy"),
     PathProxy: Symbol("PathProxy"),
     CpProxy: Symbol("CpProxy"),
+    ProcessProxy: Symbol("ProcessProxy"),
     OsxKeychain: Symbol("OsxKeychain"),
     ProviderManager: Symbol("ProviderManager"),
     ResourceProvider: Symbol("ResourceProvider"),
@@ -152,7 +155,9 @@ export const TYPES = {
     WebLinkListener: Symbol("WebLinkListener"),
     HttpHostRequest: Symbol("HttpHostRequest"),
     UriProxy: Symbol("UriProxy"),
-    GitProviderActivator: Symbol("GitProviderActivator")
+    GitProviderActivator: Symbol("GitProviderActivator"),
+    GitIsActiveValidator: Symbol("GitIsActiveValidator"),
+    GitPathFinder: Symbol("GitPathFinder")
 };
 
 export enum CvsOperation {
