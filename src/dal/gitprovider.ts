@@ -4,7 +4,6 @@ import * as cp from "child_process";
 import {Logger} from "../bll/utils/logger";
 import {CvsSupportProvider} from "./cvsprovider";
 import * as cp_promise from "child-process-promise";
-import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
@@ -14,12 +13,14 @@ import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresou
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 import {GitParser} from "../bll/cvsutils/git-parser";
 import {Utils} from "../bll/utils/utils";
+import {UriProxy} from "../bll/moduleproxies/uri-proxy";
+import {Uri} from "vscode";
 
 export class GitProvider implements CvsSupportProvider {
 
     private readonly workspaceRootPath: string;
 
-    public constructor(private readonly workspaceRootPathAsUri: Uri,
+    public constructor(private readonly workspaceRootPathAsUri: UriProxy | Uri,
                        private readonly gitPath: string) {
         this.workspaceRootPath = workspaceRootPathAsUri.fsPath;
     }
