@@ -8,10 +8,6 @@ import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
-import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
-import {Finder} from "../bll/cvsutils/finder";
-import {Validator} from "../bll/cvsutils/validator";
-import {GitIsActiveValidator} from "../bll/cvsutils/gitisactivevalidator";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
 import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
@@ -21,23 +17,11 @@ import {Utils} from "../bll/utils/utils";
 
 export class GitProvider implements CvsSupportProvider {
 
-    private gitPath: string;
     private readonly workspaceRootPath: string;
-    private workspaceRootPathAsUri: Uri;
 
-    private constructor(rootPath: Uri) {
-        this.workspaceRootPathAsUri = rootPath;
-        this.workspaceRootPath = rootPath.fsPath;
-    }
-
-    public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
-        const instance: GitProvider = new GitProvider(workspaceRootPath);
-        const pathFinder: Finder = new GitPathFinder();
-        const gitPath: string = await pathFinder.find();
-        const isActiveValidator: Validator = new GitIsActiveValidator(gitPath, workspaceRootPath.fsPath);
-        await isActiveValidator.validate();
-        instance.gitPath = gitPath;
-        return instance;
+    public constructor(private readonly workspaceRootPathAsUri: Uri,
+                       private readonly gitPath: string) {
+        this.workspaceRootPath = workspaceRootPathAsUri.fsPath;
     }
 
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {

@@ -1,3 +1,7 @@
+import "reflect-metadata";
+
+const rmock = require("mock-require");
+rmock("vscode", { });
 import {assert} from "chai";
 import {GitIsActiveValidator} from "../../../src/bll/cvsutils/gitisactivevalidator";
 import {instance, mock, when} from "ts-mockito";

@@ -1,26 +1,21 @@
-import {Validator} from "./validator";
 import {Logger} from "../utils/logger";
 import {CpProxy} from "../moduleproxies/cp-proxy";
 import {GitParser} from "./git-parser";
 
-export class GitIsActiveValidator implements Validator {
-    private readonly path: string;
-    private readonly workspaceRootPath: string;
+export class GitIsActiveValidator {
     private readonly cpProxy: CpProxy;
 
-    constructor(gitPath: string, workspaceRootPath: string, cpProxy?: CpProxy) {
-        this.path = gitPath;
-        this.workspaceRootPath = workspaceRootPath;
+    constructor(cpProxy?: CpProxy) {
         this.cpProxy = cpProxy || new CpProxy();
     }
 
-    public async validate(): Promise<void> {
-        await this.checkVersionCompatibility();
-        await this.checkIsGitRepository();
+    public async validate(workspaceRootPath: string, gitPath: string): Promise<void> {
+        await this.checkVersionCompatibility(gitPath);
+        await this.checkIsGitRepository(workspaceRootPath, gitPath);
     }
 
-    private async checkVersionCompatibility() {
-        const version: string = await this.getVersion(this.path);
+    private async checkVersionCompatibility(path: string) {
+        const version: string = await this.getVersion(path);
         GitIsActiveValidator.checkVersion(version);
     }
 
@@ -41,8 +36,8 @@ export class GitIsActiveValidator implements Validator {
         return /^[01]/.test(version);
     }
 
-    private async checkIsGitRepository(): Promise<void> {
-        const revParseCommand: string = `"${this.path}" -C "${this.workspaceRootPath}" rev-parse --show-toplevel`;
+    private async checkIsGitRepository(workspaceRootPath: string, gitPath: string): Promise<void> {
+        const revParseCommand: string = `"${gitPath}" -C "${workspaceRootPath}" rev-parse --show-toplevel`;
         Logger.logDebug(`GitUtils#collectInfo: revParseCommand is ${revParseCommand}`);
         try {
             await this.cpProxy.execAsync(revParseCommand);

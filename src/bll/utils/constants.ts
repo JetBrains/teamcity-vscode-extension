@@ -151,7 +151,8 @@ export const TYPES = {
     MessageManager: Symbol("MessageManager"),
     WebLinkListener: Symbol("WebLinkListener"),
     HttpHostRequest: Symbol("HttpHostRequest"),
-    UriProxy: Symbol("UriProxy")
+    UriProxy: Symbol("UriProxy"),
+    GitProviderActivator: Symbol("GitProviderActivator")
 };
 
 export enum CvsOperation {
