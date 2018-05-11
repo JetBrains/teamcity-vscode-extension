@@ -6,11 +6,17 @@ import * as path from "path";
 import {GitCommandArgumentsParser} from "./GitCommandArgumentsParser";
 import {DeletedCvsResource} from "../../bll/entities/cvsresources/deletedcvsresource";
 import {Logger} from "../../bll/utils/logger";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
 import {Utils} from "../../bll/utils/utils";
+import {TYPES} from "../../bll/utils/constants";
+import {Settings} from "../../bll/entities/settings";
 
 @injectable()
 export class GitStatusRowsParser {
+
+    constructor(@inject(TYPES.Settings) private readonly settings: Settings) {
+        //
+    }
 
     public tryParseRows(workspaceRootPath: string, statusRows: string[]): CvsResource[] {
         const result: CvsResource[] = [];
@@ -29,9 +35,11 @@ export class GitStatusRowsParser {
     }
 
     private parseRow(workspaceRootPath: string, statusRow: string): CvsResource {
-        const {relativePath, indexStatus, prevRelativePath} = GitCommandArgumentsParser.parseStatusRow(statusRow);
+        const isFromIndex = this.settings.shouldCollectGitChangesFromIndex();
+        const {relativePath, indexStatus, workingTreeStatus, prevRelativePath} =
+            GitCommandArgumentsParser.parseStatusRow(statusRow);
 
-        switch (indexStatus) {
+        switch (isFromIndex ? indexStatus : workingTreeStatus) {
             case "M": {
                 const fileAbsPath: string = path.join(workspaceRootPath, relativePath);
                 return new ModifiedCvsResource(fileAbsPath, relativePath);

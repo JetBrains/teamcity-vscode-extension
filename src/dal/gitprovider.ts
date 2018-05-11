@@ -36,17 +36,17 @@ export class GitProvider implements CvsSupportProvider {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
-        const cvsLocalResource: CvsResource[] = await this.getChanges(this.workspaceRootPath, this.gitPath);
-        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo:absPaths is ${cvsLocalResource ? "not " : ""}empty`);
-        await this.fillInServerPaths(cvsLocalResource);
+        const cvsLocalResources: CvsResource[] = await this.getChanges(this.workspaceRootPath, this.gitPath);
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo:absPaths is ${cvsLocalResources ? "not " : ""}empty`);
+        await this.fillInServerPaths(cvsLocalResources);
 
         const cvsProvider: CvsSupportProvider = this;
-        return new CheckInInfo(cvsLocalResource, cvsProvider);
+        return new CheckInInfo(cvsLocalResources, cvsProvider);
     }
 
     private async getChanges(workspaceRootPath: string, gitPath: string): Promise<CvsResource[]> {
         const statusCommand: GitStatusCommand = this.commandFactory.getStatusCommand(workspaceRootPath, gitPath, true);
-        return await statusCommand.execute();
+        return statusCommand.execute();
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsResource[]): Promise<void> {
