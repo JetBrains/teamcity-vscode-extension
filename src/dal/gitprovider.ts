@@ -20,9 +20,9 @@ export class GitProvider implements CvsSupportProvider {
 
     public constructor(private readonly workspaceRootPathAsUri: UriProxy | Uri,
                        private readonly gitPath: string,
-                       commandFactory?: GitCommandsFactory) {
+                       commandFactory: GitCommandsFactory) {
         this.workspaceRootPath = workspaceRootPathAsUri.fsPath;
-        this.commandFactory = commandFactory || new GitCommandsFactory();
+        this.commandFactory = commandFactory;
     }
 
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {

@@ -3,30 +3,38 @@ import {ReplacedCvsResource} from "../../bll/entities/cvsresources/replacedcvsre
 import {ModifiedCvsResource} from "../../bll/entities/cvsresources/modifiedcvsresource";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 import * as path from "path";
-import {GitParser} from "../../bll/cvsutils/git-parser";
+import {GitCommandArgumentsParser} from "./GitCommandArgumentsParser";
 import {DeletedCvsResource} from "../../bll/entities/cvsresources/deletedcvsresource";
 import {Logger} from "../../bll/utils/logger";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../../bll/utils/constants";
+import {Utils} from "../../bll/utils/utils";
 
-export class StatusRowParser {
+@injectable()
+export class GitStatusRowsParser {
+
+    public constructor(@inject(TYPES.GitCommandArgumentsParser) private readonly argParser: GitCommandArgumentsParser) {
+        //
+    }
 
     public tryParseRows(workspaceRootPath: string, statusRows: string[]) {
         const result: CvsResource[] = [];
 
         statusRows.forEach((statusRow) => {
             try {
-                const resource = StatusRowParser.parseCvsResource(workspaceRootPath, statusRow);
+                const resource = this.parseRow(workspaceRootPath, statusRow);
                 result.push(resource);
             } catch (err) {
-                Logger.logDebug("salkdwasfoasdofoasd");
+                Logger.logDebug("GitStatusRowsParser#tryParseRows: row was not parsed with error: " +
+                    Utils.formatErrorMessage(err) );
             }
         });
 
         return result;
     }
 
-    private static parseCvsResource(workspaceRootPath: string,
-                                    statusRow: string): CvsResource {
-        const {relativePath, status} = GitParser.parseStatusRow(statusRow);
+    private parseRow(workspaceRootPath: string, statusRow: string): CvsResource {
+        const {relativePath, status, prevRelativePath} = this.argParser.parseStatusRow(statusRow);
 
         switch (status) {
             case "M": {
@@ -42,15 +50,13 @@ export class StatusRowParser {
                 return new DeletedCvsResource(fileAbsPath, relativePath);
             }
             case "R": {
-                const {relativePath: replacedPath, prevRelativePath} = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(workspaceRootPath, replacedPath);
+                const fileAbsPath: string = path.join(workspaceRootPath, relativePath);
                 const prevFileAbsPath: string = path.join(workspaceRootPath, prevRelativePath);
-                return new ReplacedCvsResource(fileAbsPath, replacedPath, prevFileAbsPath);
+                return new ReplacedCvsResource(fileAbsPath, relativePath, prevFileAbsPath);
             }
             case "C": {
-                const {relativePath: replacedPath} = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(workspaceRootPath, replacedPath);
-                return new AddedCvsResource(fileAbsPath, replacedPath);
+                const fileAbsPath: string = path.join(workspaceRootPath, relativePath);
+                return new AddedCvsResource(fileAbsPath, relativePath);
             }
             default: {
                 throw new Error(`Resource status for status row ${statusRow} is ` +

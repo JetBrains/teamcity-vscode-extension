@@ -60,6 +60,9 @@ import {GitProviderActivator} from "./dal/git/GitProviderActivator";
 import {GitIsActiveValidator} from "./bll/cvsutils/gitisactivevalidator";
 import {ProcessProxy} from "./bll/moduleproxies/process-proxy";
 import {GitPathFinder} from "./bll/cvsutils/gitpathfinder";
+import {GitStatusRowsParser} from "./dal/git/GitStatusRowsParser";
+import {GitCommandArgumentsParser} from "./dal/git/GitCommandArgumentsParser";
+import {GitCommandsFactory} from "./dal/git/GitCommandsFactory";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -113,3 +116,6 @@ myContainer.bind<UriProxy>(TYPES.UriProxy).to(UriProxy).inSingletonScope();
 myContainer.bind<GitProviderActivator>(TYPES.GitProviderActivator).to(GitProviderActivator).inSingletonScope();
 myContainer.bind<GitIsActiveValidator>(TYPES.GitIsActiveValidator).to(GitIsActiveValidator).inSingletonScope();
 myContainer.bind<GitPathFinder>(TYPES.GitPathFinder).to(GitPathFinder).inSingletonScope();
+myContainer.bind<GitStatusRowsParser>(TYPES.GitStatusRowsParser).to(GitStatusRowsParser).inSingletonScope();
+myContainer.bind<GitCommandArgumentsParser>(TYPES.GitCommandArgumentsParser).to(GitCommandArgumentsParser).inSingletonScope();
+myContainer.bind<GitCommandsFactory>(TYPES.GitCommandsFactory).to(GitCommandsFactory).inSingletonScope();

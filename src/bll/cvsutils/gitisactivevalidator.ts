@@ -1,8 +1,8 @@
 import {Logger} from "../utils/logger";
 import {CpProxy} from "../moduleproxies/cp-proxy";
-import {GitParser} from "./git-parser";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
+import {GitCommandArgumentsParser} from "../../dal/git/GitCommandArgumentsParser";
 
 @injectable()
 export class GitIsActiveValidator {
@@ -24,7 +24,7 @@ export class GitIsActiveValidator {
     private async getVersion(path: string): Promise<string> {
         const promiseResult = await this.cpProxy.execAsync(`"${path}" --version`);
         const versionCommandResult: string = promiseResult.stdout.toString("utf8").trim();
-        return GitParser.parseVersion(versionCommandResult);
+        return GitCommandArgumentsParser.parseVersion(versionCommandResult);
     }
 
     private static checkVersion(version: string): void {

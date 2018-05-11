@@ -1,18 +1,19 @@
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 import {Logger} from "../../bll/utils/logger";
 import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
-import {StatusRowParser} from "./StatusRowParser";
+import {GitStatusRowsParser} from "./GitStatusRowsParser";
 
 export class GitStatusCommand {
-    private readonly statusRowsParser: StatusRowParser;
+    private readonly statusRowsParser: GitStatusRowsParser;
     private cpProxy: CpProxy;
 
     constructor(private readonly workspaceRootPath: string,
                 private readonly gitPath: string,
                 private readonly isPorcelain: boolean,
-                cpProxy?: CpProxy) {
-        this.statusRowsParser = new StatusRowParser();
-        this.cpProxy = cpProxy || new CpProxy();
+                cpProxy: CpProxy,
+                statusRowParser: GitStatusRowsParser) {
+        this.cpProxy = cpProxy;
+        this.statusRowsParser = statusRowParser;
     }
 
     public async execute(): Promise<CvsResource[]> {

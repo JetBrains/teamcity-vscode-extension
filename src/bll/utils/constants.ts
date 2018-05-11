@@ -157,7 +157,10 @@ export const TYPES = {
     UriProxy: Symbol("UriProxy"),
     GitProviderActivator: Symbol("GitProviderActivator"),
     GitIsActiveValidator: Symbol("GitIsActiveValidator"),
-    GitPathFinder: Symbol("GitPathFinder")
+    GitPathFinder: Symbol("GitPathFinder"),
+    GitStatusRowsParser: Symbol("GitStatusRowsParser"),
+    GitCommandArgumentsParser: Symbol("GitCommandArgumentsParser"),
+    GitCommandsFactory: Symbol("GitCommandsFactory"),
 };
 
 export enum CvsOperation {
