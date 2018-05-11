@@ -35,10 +35,10 @@ export class GitStatusRowsParser {
     }
 
     private parseRow(workspaceRootPath: string, statusRow: string): CvsResource {
-        const isFromIndex = this.settings.shouldCollectGitChangesFromIndex();
+        let isFromIndex = this.settings.shouldCollectGitChangesFromIndex();
         const {relativePath, indexStatus, workingTreeStatus, prevRelativePath} =
             GitCommandArgumentsParser.parseStatusRow(statusRow);
-
+        isFromIndex = isFromIndex || (!isFromIndex && workingTreeStatus === undefined);
         switch (isFromIndex ? indexStatus : workingTreeStatus) {
             case "M": {
                 const fileAbsPath: string = path.join(workspaceRootPath, relativePath);
