@@ -6,18 +6,13 @@ import * as path from "path";
 import {GitCommandArgumentsParser} from "./GitCommandArgumentsParser";
 import {DeletedCvsResource} from "../../bll/entities/cvsresources/deletedcvsresource";
 import {Logger} from "../../bll/utils/logger";
-import {inject, injectable} from "inversify";
-import {TYPES} from "../../bll/utils/constants";
+import {injectable} from "inversify";
 import {Utils} from "../../bll/utils/utils";
 
 @injectable()
 export class GitStatusRowsParser {
 
-    public constructor(@inject(TYPES.GitCommandArgumentsParser) private readonly argParser: GitCommandArgumentsParser) {
-        //
-    }
-
-    public tryParseRows(workspaceRootPath: string, statusRows: string[]) {
+    public tryParseRows(workspaceRootPath: string, statusRows: string[]): CvsResource[] {
         const result: CvsResource[] = [];
 
         statusRows.forEach((statusRow) => {
@@ -34,7 +29,7 @@ export class GitStatusRowsParser {
     }
 
     private parseRow(workspaceRootPath: string, statusRow: string): CvsResource {
-        const {relativePath, indexStatus, prevRelativePath} = this.argParser.parseStatusRow(statusRow);
+        const {relativePath, indexStatus, prevRelativePath} = GitCommandArgumentsParser.parseStatusRow(statusRow);
 
         switch (indexStatus) {
             case "M": {

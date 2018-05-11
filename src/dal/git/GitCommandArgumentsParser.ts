@@ -4,7 +4,7 @@ import {injectable} from "inversify";
 @injectable()
 export class GitCommandArgumentsParser {
 
-    public parseStatusRow(statusRow: string): GitParsedStatusRow {
+    public static parseStatusRow(statusRow: string): GitParsedStatusRow {
         if (!statusRow) {
             throw new Error("GitCommandArgumentsParserStatus#parseStatusRow: row should not be empty.");
         }
@@ -16,7 +16,7 @@ export class GitCommandArgumentsParser {
         }
     }
 
-    private parseModifiedStatus(statusRow: string): GitParsedStatusRow {
+    private static parseModifiedStatus(statusRow: string): GitParsedStatusRow {
         const porcelainStatusGitRegExp: RegExp = /^([MAD\s])([MAD\s])\s(.*)$/;
         const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
         if (!parsedPorcelain || parsedPorcelain.length !== 4) {
@@ -29,7 +29,7 @@ export class GitCommandArgumentsParser {
         };
     }
 
-    private parseReplacedStatus(statusRow: string): GitParsedStatusRow {
+    private static parseReplacedStatus(statusRow: string): GitParsedStatusRow {
         const porcelainStatusGitRegExp: RegExp = /^([RC\s])([MAD\s])\s(.*)->(.*)$/;
         const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
         if (!parsedPorcelain || parsedPorcelain.length !== 5) {
