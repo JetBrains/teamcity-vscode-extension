@@ -3,7 +3,6 @@
 import "reflect-metadata";
 const rmock = require("mock-require");
 rmock("vscode", { });
-import {assert} from "chai";
 import * as http from "http";
 import {anyString, instance, mock, when} from "ts-mockito";
 import {InMemoryCredentialsStore} from "../../src/bll/credentialsstore/inmemorycredentialsstore";

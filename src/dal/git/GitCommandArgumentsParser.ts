@@ -17,27 +17,29 @@ export class GitCommandArgumentsParser {
     }
 
     private parseModifiedStatus(statusRow: string): GitParsedStatusRow {
-        const porcelainStatusGitRegExp: RegExp = /^([MAD]).\s(.*)$/;
+        const porcelainStatusGitRegExp: RegExp = /^([MAD\s])([MAD\s])\s(.*)$/;
         const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
-        if (!parsedPorcelain || parsedPorcelain.length !== 3) {
+        if (!parsedPorcelain || parsedPorcelain.length !== 4) {
             throw new Error(`Incorrect number of parsed arguments in the status row "${statusRow}"`);
         }
         return {
-            status: parsedPorcelain[1].trim(),
-            relativePath: parsedPorcelain[2].trim()
+            indexStatus: parsedPorcelain[1].trim() !== "" ? parsedPorcelain[1].trim() : undefined,
+            workingTreeStatus: parsedPorcelain[2].trim() !== "" ? parsedPorcelain[2].trim() : undefined,
+            relativePath: parsedPorcelain[3].trim()
         };
     }
 
     private parseReplacedStatus(statusRow: string): GitParsedStatusRow {
-        const porcelainStatusGitRegExp: RegExp = /^([RC]).\s(.*)->(.*)$/;
+        const porcelainStatusGitRegExp: RegExp = /^([RC\s])([MAD\s])\s(.*)->(.*)$/;
         const parsedPorcelain: string[] = porcelainStatusGitRegExp.exec(statusRow);
-        if (!parsedPorcelain || parsedPorcelain.length !== 4) {
+        if (!parsedPorcelain || parsedPorcelain.length !== 5) {
             throw new Error(`Incorrect number of parsed arguments in the replaced path "${statusRow}"`);
         }
         return {
-            status: parsedPorcelain[1].trim(),
-            relativePath: parsedPorcelain[3].trim(),
-            prevRelativePath: parsedPorcelain[2].trim()
+            indexStatus: parsedPorcelain[1].trim() !== "" ? parsedPorcelain[1].trim() : undefined,
+            workingTreeStatus: parsedPorcelain[2].trim() !== "" ? parsedPorcelain[2].trim() : undefined,
+            relativePath: parsedPorcelain[4].trim(),
+            prevRelativePath: parsedPorcelain[3].trim()
         };
     }
 

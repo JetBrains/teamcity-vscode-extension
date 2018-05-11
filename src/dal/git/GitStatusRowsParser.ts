@@ -34,9 +34,9 @@ export class GitStatusRowsParser {
     }
 
     private parseRow(workspaceRootPath: string, statusRow: string): CvsResource {
-        const {relativePath, status, prevRelativePath} = this.argParser.parseStatusRow(statusRow);
+        const {relativePath, indexStatus, prevRelativePath} = this.argParser.parseStatusRow(statusRow);
 
-        switch (status) {
+        switch (indexStatus) {
             case "M": {
                 const fileAbsPath: string = path.join(workspaceRootPath, relativePath);
                 return new ModifiedCvsResource(fileAbsPath, relativePath);
@@ -60,7 +60,7 @@ export class GitStatusRowsParser {
             }
             default: {
                 throw new Error(`Resource status for status row ${statusRow} is ` +
-                    `'${status}' and not recognised`);
+                    `'${indexStatus}' and not recognised`);
             }
         }
     }
