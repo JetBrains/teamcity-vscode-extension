@@ -6,22 +6,28 @@ import {CvsSupportProvider} from "../../dal/cvsprovider";
 import {CheckInInfo} from "../entities/checkininfo";
 import {CvsResource} from "../entities/cvsresources/cvsresource";
 import {ReadableSet} from "./readableset";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
 import {ReplacedCvsResource} from "../entities/cvsresources/replacedcvsresource";
 import {DeletedCvsResource} from "../entities/cvsresources/deletedcvsresource";
 import {Utils} from "./utils";
 import * as pify from "pify";
+import {TYPES} from "./constants";
+import {Settings} from "../entities/settings";
 
 const temp = require("temp").track();
 
 @injectable()
 export class PatchManager {
 
+    public constructor(@inject(TYPES.Settings) private readonly settings: Settings) {
+        //
+    }
+
     public async preparePatch(checkInArray: CheckInInfo[]): Promise<string> {
         if (!checkInArray && checkInArray.length === 0) {
             return;
         }
-        const patchBuilder: PatchBuilder = new PatchBuilder();
+        const patchBuilder: PatchBuilder = new PatchBuilder(this.settings);
         await patchBuilder.startPatching();
         for (let i = 0; i < checkInArray.length; i++) {
             const checkInInfo = checkInArray[i];
@@ -45,7 +51,7 @@ class PatchBuilder {
     private writeSteam: AsyncWriteStream;
     private patchAbsPath: string;
 
-    constructor() {
+    constructor(private readonly settings: Settings) {
         Logger.logDebug(`PatchBuilder#constructor: start construct patch`);
     }
 
@@ -83,7 +89,7 @@ class PatchBuilder {
             return;
         }
         let fileContentStream: ReadableSet;
-        if (cvsProvider.allowStaging()) {
+        if (cvsProvider.allowStaging() && this.settings.shouldCollectGitChangesFromIndex()) {
             fileContentStream = await cvsProvider.getStagedFileContentStream(cvsResource);
         } else {
             fileContentStream = await cvsResource.getContentForPatch();
