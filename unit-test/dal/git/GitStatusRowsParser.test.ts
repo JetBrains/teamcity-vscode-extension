@@ -116,7 +116,6 @@ suite("GitCommandArgumentsParser", () => {
 
         const rows: CvsResource[] = parser.tryParseRows(workspaceRootPath, [statusRow, statusRow2]);
 
-        assert.equal(rows.length, 1);
-        assert.equal(rows[0].fileName, "path3/path4/path5/file2");
+        assert.equal(rows.length, 2);
     });
 });
