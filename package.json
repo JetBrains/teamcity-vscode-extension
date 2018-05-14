@@ -271,7 +271,7 @@
     "typemoq": "^2.1.0",
     "typescript": "^2.0.3",
     "vsce": "^1.37.5",
-    "vscode": "^1.0.0"
+    "vscode": "^1.1.17"
   },
   "dependencies": {
     "async-file": "^2.0.2",
