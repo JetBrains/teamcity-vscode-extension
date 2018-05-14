@@ -54,9 +54,9 @@ export class SignIn implements Command {
             this.saveTargetNameToSettings(typedCredentials);
             Logger.logInfo("SignIn#exec: success.");
             if (!fromPersistence) {
-                await this.suggestToStoreCredentials(typedCredentials);
+                this.suggestToStoreCredentials(typedCredentials);
             } else if (!typedCredentials.equals(fromPersistence)) {
-                await this.suggestToUpdateCredentials(typedCredentials);
+                this.suggestToUpdateCredentials(typedCredentials);
             }
             return this.greetUser(typedCredentials);
         } else {
