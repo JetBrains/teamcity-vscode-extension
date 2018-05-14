@@ -43,5 +43,4 @@ export class GitStatusCommand {
         builder.push(`${this.isPorcelain ? "--porcelain" : ""}`);
         return builder.join(" ");
     }
-
 }
