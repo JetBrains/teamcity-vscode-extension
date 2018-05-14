@@ -116,7 +116,11 @@ export class CommandHolder {
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
         try {
-            await command.exec(args);
+            if (args && args.length > 0) {
+                await command.exec(args);
+            } else {
+                await command.exec();
+            }
         } catch (err) {
             Logger.logError(`[tryExecuteCommand] ${err}`);
             this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
