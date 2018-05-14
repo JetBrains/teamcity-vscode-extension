@@ -1,19 +1,20 @@
 import {CvsSupportProvider} from "./cvsprovider";
-import {CvsOperation} from "../bll/utils/constants";
+import {CvsOperation, TYPES} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {QuickPickItem, QuickPickOptions, Uri, window, workspace} from "vscode";
 import {GitProvider} from "./gitprovider";
 import {TfvcProvider} from "./tfsprovider";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
+import {GitProviderActivator} from "./git/GitProviderActivator";
 
 @injectable()
 export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
 
-    constructor() {
+    constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator) {
         const rootPaths: Uri[] = this.collectAllRootPaths();
         this.detectCvsProviders(rootPaths).then((detectedCvsProviders) => {
             this.actualProviders = detectedCvsProviders;
@@ -32,29 +33,31 @@ export class CvsProviderProxy {
     }
 
     private async detectCvsProviders(rootPaths: Uri[]): Promise<CvsSupportProvider[]> {
-        const detectedCvsProviders: CvsSupportProvider[] = [];
+        const providers: CvsSupportProvider[] = [];
         for (let i = 0; i < rootPaths.length; i++) {
-            const providers: CvsSupportProvider[] = await CvsProviderProxy.detectCvsProviderInParticularDirectory(rootPaths[i]);
-            providers.forEach((provider) => detectedCvsProviders.push(provider));
+            providers.push.apply(providers, await this.detectProvidersInDirectory(rootPaths[i]));
         }
-        return detectedCvsProviders;
+        return providers;
     }
 
-    private static async detectCvsProviderInParticularDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
-        const detectedCvsProviders: CvsSupportProvider[] = [];
-        try {
-            const gitProvider: CvsSupportProvider = await GitProvider.tryActivateInPath(rootPath);
-            detectedCvsProviders.push(gitProvider);
-        } catch (err) {
-            Logger.logError(Utils.formatErrorMessage(err));
+    private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
+        const providers: CvsSupportProvider[] = [];
+        const gitProvider: CvsSupportProvider = await this.gitProviderActivator.tryActivateInPath(rootPath);
+        if (gitProvider) {
+            providers.push(gitProvider);
+            Logger.logInfo(`Git provider was activated for ${rootPath.fsPath}`);
+        } else {
+            Logger.logWarning(`Could not activate git provider for ${rootPath.fsPath}`);
         }
         try {
             const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
-            detectedCvsProviders.push(tfvcProvider);
+            providers.push(tfvcProvider);
+            Logger.logInfo(`Tfvc provider was activated for ${rootPath.fsPath}`);
         } catch (err) {
-            Logger.logError(Utils.formatErrorMessage(err));
+            Logger.logWarning(`Could not activate tfvc provider for ${rootPath.fsPath}`);
+            Logger.logDebug(Utils.formatErrorMessage(err));
         }
-        return detectedCvsProviders;
+        return providers;
     }
 
     public async getFormattedFileNames(checkInArray: CheckInInfo[]): Promise<string[]> {

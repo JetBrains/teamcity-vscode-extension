@@ -18,7 +18,7 @@ import {DataProviderEnum} from "../src/bll/utils/constants";
 import {ChangesProvider} from "../src/view/dataproviders/changesprovider";
 import {MessageManager} from "../src/view/messagemanager";
 
-suite("DataProviders", () => {
+suite("CommandHolder", () => {
     test("should verify signIn success", function (done) {
         const mockedSignIn: SignIn = tsMockito.mock(SignIn);
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
@@ -96,7 +96,7 @@ suite("DataProviders", () => {
 
     test("should verify selectFilesForRemoteRun failed", function (done) {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
-        tsMockito.when(mockedSelectFilesForRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
         const dp = prepareProviderManager();
         dp.showEmptyDataProvider();
@@ -108,8 +108,8 @@ suite("DataProviders", () => {
                                      undefined, undefined, undefined, messageManagerSpy);
 
         ch.selectFilesForRemoteRun().then(() => {
-            verify(messageManagerMock.showErrorMessage(anything())).called();
             tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
+            verify(messageManagerMock.showErrorMessage(anything())).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
             done();
         }).catch((err) => {
@@ -134,7 +134,7 @@ suite("DataProviders", () => {
 
     test("should verify getSuitableConfigs failed", function (done) {
         const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
-        tsMockito.when(mockedGetSuitableConfigs.exec(anything())).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedGetSuitableConfigs.exec()).thenThrow(new Error("Any Exception"));
         const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
         const dp = prepareProviderManager();
         dp.showResourceProvider();
@@ -175,7 +175,7 @@ suite("DataProviders", () => {
 
     test("should verify remoteRun failed", function (done) {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
-        tsMockito.when(mockedRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
         const dp = prepareProviderManager();
         dp.showBuildProvider();

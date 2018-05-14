@@ -1,4 +1,6 @@
 export interface GitParsedStatusRow {
-    status: string;
+    indexStatus: string;
+    workingTreeStatus: string;
     relativePath: string;
+    prevRelativePath?: string;
 }

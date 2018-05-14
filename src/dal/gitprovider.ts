@@ -4,40 +4,25 @@ import * as cp from "child_process";
 import {Logger} from "../bll/utils/logger";
 import {CvsSupportProvider} from "./cvsprovider";
 import * as cp_promise from "child-process-promise";
-import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {ReadableSet} from "../bll/utils/readableset";
-import {GitPathFinder} from "../bll/cvsutils/gitpathfinder";
-import {Finder} from "../bll/cvsutils/finder";
-import {Validator} from "../bll/cvsutils/validator";
-import {GitIsActiveValidator} from "../bll/cvsutils/gitisactivevalidator";
-import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
-import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
-import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresource";
-import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
-import {GitParser} from "../bll/cvsutils/git-parser";
 import {Utils} from "../bll/utils/utils";
+import {UriProxy} from "../bll/moduleproxies/uri-proxy";
+import {Uri} from "vscode";
+import {GitStatusCommand} from "./git/GitStatusCommand";
+import {GitCommandsFactory} from "./git/GitCommandsFactory";
 
 export class GitProvider implements CvsSupportProvider {
 
-    private gitPath: string;
     private readonly workspaceRootPath: string;
-    private workspaceRootPathAsUri: Uri;
+    private commandFactory: GitCommandsFactory;
 
-    private constructor(rootPath: Uri) {
-        this.workspaceRootPathAsUri = rootPath;
-        this.workspaceRootPath = rootPath.fsPath;
-    }
-
-    public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
-        const instance: GitProvider = new GitProvider(workspaceRootPath);
-        const pathFinder: Finder = new GitPathFinder();
-        const gitPath: string = await pathFinder.find();
-        const isActiveValidator: Validator = new GitIsActiveValidator(gitPath, workspaceRootPath.fsPath);
-        await isActiveValidator.validate();
-        instance.gitPath = gitPath;
-        return instance;
+    public constructor(private readonly workspaceRootPathAsUri: UriProxy | Uri,
+                       private readonly gitPath: string,
+                       commandFactory: GitCommandsFactory) {
+        this.workspaceRootPath = workspaceRootPathAsUri.fsPath;
+        this.commandFactory = commandFactory;
     }
 
     public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
@@ -51,12 +36,17 @@ export class GitProvider implements CvsSupportProvider {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: should init checkIn info`);
-        const cvsLocalResource: CvsResource[] = await this.getLocalResources();
-        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo:absPaths is ${cvsLocalResource ? "not " : ""}empty`);
-        await this.fillInServerPaths(cvsLocalResource);
+        const cvsLocalResources: CvsResource[] = await this.getChanges(this.workspaceRootPath, this.gitPath);
+        Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo:absPaths is ${cvsLocalResources ? "not " :""}empty`);
+        await this.fillInServerPaths(cvsLocalResources);
 
         const cvsProvider: CvsSupportProvider = this;
-        return new CheckInInfo(cvsLocalResource, cvsProvider);
+        return new CheckInInfo(cvsLocalResources, cvsProvider);
+    }
+
+    private async getChanges(workspaceRootPath: string, gitPath: string): Promise<CvsResource[]> {
+        const statusCommand: GitStatusCommand = this.commandFactory.getStatusCommand(workspaceRootPath, gitPath, true);
+        return statusCommand.execute();
     }
 
     private async fillInServerPaths(cvsLocalResources: CvsResource[]): Promise<void> {
@@ -156,89 +146,6 @@ export class GitProvider implements CvsSupportProvider {
     private getNormalizedRelativePath(cvsResource: CvsResource) {
         const notNormalizedRelativePath: string = path.relative(this.workspaceRootPath, cvsResource.fileAbsPath);
         return notNormalizedRelativePath.replace(/\\/g, "/");
-    }
-
-    private async getLocalResources(): Promise<CvsResource[]> {
-        const resources: CvsResource[] = [];
-        const statusRows: string [] = await this.tryGetPorcelainStatusRows();
-
-        for (let i = 0; i < statusRows.length; i++) {
-            const statusRow = statusRows[i];
-            await this.tryParseAndAddStatusRow(statusRow, resources);
-        }
-        Logger.logDebug(`GitSupportProvider#getLocalResources: ${resources.length} changed resources was detected`);
-        return resources;
-    }
-
-    private async tryParseAndAddStatusRow(statusRow: string, resources: CvsResource[]): Promise<boolean> {
-        try {
-            const resource: CvsResource = await this.getCvsResourceByStatusRow(statusRow);
-            resources.push(resource);
-            return true;
-        } catch (err) {
-            Logger.logWarning(`[GitSupportProvider::tryParseAndAddStatusRow] The status raw ${statusRow} was not ` +
-                                                                                        `parsed with error: ${err}`);
-            return false;
-        }
-    }
-
-    private async tryGetPorcelainStatusRows(): Promise<string[]> {
-        try {
-            return await this.getPorcelainStatusRows();
-        } catch (err) {
-            Logger.logWarning(`GitSupportProvider#getLocalResources: ` +
-                                 `git status leads to the error: ${Utils.formatErrorMessage(err)}`);
-            return [];
-        }
-    }
-
-    private async getPorcelainStatusRows(): Promise<string[]> {
-        const END_SPACES_REGEXP: RegExp = /\s*$/;
-        let porcelainStatusResult: any;
-        const getPorcelainStatusCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" status --porcelain`;
-        porcelainStatusResult = await cp_promise.exec(getPorcelainStatusCommand);
-        if (!porcelainStatusResult || !porcelainStatusResult.stdout) {
-            throw new Error(`Git status haven't found any staged files`);
-        }
-        return porcelainStatusResult.stdout
-            .toString()
-            .replace(END_SPACES_REGEXP, "")
-            .split("\n");
-    }
-
-    private async getCvsResourceByStatusRow(statusRow: string): Promise<CvsResource> {
-
-        const {relativePath, status} = GitParser.parseStatusRow(statusRow);
-
-        switch (status) {
-            case "M": {
-                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
-                return new ModifiedCvsResource(fileAbsPath, relativePath);
-            }
-            case "A": {
-                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
-                return new AddedCvsResource(fileAbsPath, relativePath);
-            }
-            case "D": {
-                const fileAbsPath: string = path.join(this.workspaceRootPath, relativePath);
-                return new DeletedCvsResource(fileAbsPath, relativePath);
-            }
-            case "R": {
-                const {relativePath: replacedPath, prevRelativePath} = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath);
-                const prevFileAbsPath: string = path.join(this.workspaceRootPath, prevRelativePath);
-                return new ReplacedCvsResource(fileAbsPath, replacedPath, prevFileAbsPath);
-            }
-            case "C": {
-                const {relativePath: replacedPath} = GitParser.parseReplacedPath(relativePath);
-                const fileAbsPath: string = path.join(this.workspaceRootPath, replacedPath);
-                return new AddedCvsResource(fileAbsPath, replacedPath);
-            }
-            default: {
-                throw new Error(`Resource status for status row ${statusRow} is ` +
-                                                                    `'${status}' and not recognised`);
-            }
-        }
     }
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {

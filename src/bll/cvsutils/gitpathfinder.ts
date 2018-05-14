@@ -1,24 +1,22 @@
 import * as path from "path";
 import {Finder} from "./finder";
-import {Constants} from "../utils/constants";
+import {Constants, TYPES} from "../utils/constants";
 import {MessageConstants} from "../utils/messageconstants";
 import {FsProxy} from "../moduleproxies/fs-proxy";
 import {ProcessProxy} from "../moduleproxies/process-proxy";
 import {CpProxy} from "../moduleproxies/cp-proxy";
 import {WorkspaceProxy} from "../moduleproxies/workspace-proxy";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class GitPathFinder implements Finder {
-    private readonly fsProxy: FsProxy;
-    private readonly processProxy: ProcessProxy;
-    private readonly cpProxy: CpProxy;
-    private readonly workspaceProxy: WorkspaceProxy;
     private static readonly GIT_IS_NOT_INSTALLED_ERR_CODE: number = 2;
 
-    constructor(cpProxy?: CpProxy, processProxy?: ProcessProxy, fsProxy?: FsProxy, workspaceProxy?: WorkspaceProxy) {
-        this.fsProxy = fsProxy || new FsProxy();
-        this.processProxy = processProxy || new ProcessProxy();
-        this.cpProxy = cpProxy || new CpProxy();
-        this.workspaceProxy = workspaceProxy || new WorkspaceProxy();
+    constructor(@inject(TYPES.CpProxy) private readonly cpProxy: CpProxy,
+                @inject(TYPES.ProcessProxy) private readonly processProxy: ProcessProxy,
+                @inject(TYPES.FsProxy) private readonly fsProxy: FsProxy,
+                @inject(TYPES.WorkspaceProxy) private readonly workspaceProxy: WorkspaceProxy) {
+        //
     }
 
     public async find(): Promise<string> {

@@ -13,7 +13,7 @@ export class SettingsImpl implements Settings {
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
         this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
-        this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_ASK_STORE_CREDENTIALS, false);
+        this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_COLLECT_CHANGES_FROM_INDEX, false);
         this._lastLogin = SettingsImpl.getSettingsProperty<string>(Constants.LAST_LOGIN, "");
     }
 
@@ -59,5 +59,9 @@ export class SettingsImpl implements Settings {
     public set lastLogin(targetName: string) {
         this._lastLogin = targetName;
         SettingsImpl.setSettingsProperty(Constants.LAST_LOGIN, targetName, true);
+    }
+
+    shouldCollectGitChangesFromIndex(): boolean {
+        return SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_COLLECT_CHANGES_FROM_INDEX, false);
     }
 }
