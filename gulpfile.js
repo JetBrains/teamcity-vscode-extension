@@ -11,11 +11,12 @@ function errorHandler(err) {
     process.exit(1);
 }
 
-gulp.task('clean', function (done) {
-    return del(['out/**', '!out', '!out/src/bll/credentialsstore/linux', '!out/src/bll/credentialsstore/osx', '!out/src/bll/credentialsstore/win32'], done);
+gulp.task('clean', (done) => {
+    del.sync(['out/**']);
+    done();
 });
 
-gulp.task('build', ['clean'], function () {
+gulp.task('build', gulp.parallel('clean', function () {
     var tsProject = typescript.createProject('./tsconfig.json');
     var tsResult = tsProject.src()
         .pipe(sourcemaps.init())
@@ -31,14 +32,14 @@ gulp.task('build', ['clean'], function () {
             }
         }))
         .pipe(gulp.dest('./out'));
-});
+}));
 
-gulp.task('publishbuild', ['build'], function () {
+gulp.task('publishbuild', gulp.parallel('build', function () {
     gulp.src(['./src/bll/credentialsstore/**/*.js'])
         .pipe(gulp.dest('./out/src/bll/credentialsstore'));
-    gulp.src(['./src/bll/credentialsstore/bin/win32/*'])
+    return gulp.src(['./src/bll/credentialsstore/bin/win32/*'])
         .pipe(gulp.dest('./out/src/bll/credentialsstore/bin/win32'));
-});
+}));
 
 gulp.task('packageonly', function (cb) {
     exec('vsce package', function (err, stdout, stderr) {
@@ -48,13 +49,13 @@ gulp.task('packageonly', function (cb) {
     });
 });
 
-gulp.task('package', ['packageonly'], function (cb) {
+gulp.task('package', gulp.parallel('packageonly', function (cb) {
     exec('vsce package', function (err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
         cb(err);
     });
-});
+}));
 
 gulp.task('vsce-version', function (cb) {
     exec('vsce -Version', function (err, stdout, stderr) {
@@ -64,4 +65,4 @@ gulp.task('vsce-version', function (cb) {
     });
 });
 
-gulp.task('default', ['publishall']);
+gulp.task('default',  gulp.parallel('publishbuild'));
