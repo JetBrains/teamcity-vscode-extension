@@ -48,8 +48,11 @@ function setupServer(done: any): void {
             Assert.equal(req.headers["content-length"], EXPECTED_CONTENT_LENGTH);
             Assert.notEqual(req.headers["user-agent"].indexOf("TeamCity Integration"), -1, "User " +
                 "agent header should contain a corresponding string");
+            this.close();
             done();
         } catch (err) {
+            res.end("okay");
+            this.close();
             done(err);
         }
     }).listen(TestSettings.port);
