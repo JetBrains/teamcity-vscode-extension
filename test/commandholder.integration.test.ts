@@ -166,7 +166,23 @@ suite("CommandHolder", () => {
         assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
 
         ch.remoteRunWithChosenConfigs().then(() => {
-            tsMockito.verify(mockedRemoteRun.exec()).called();
+            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
+            done();
+        }).catch((err) => {
+            done(err);
+        });
+    });
+
+    test("should verify preTestedCommit success", function (done) {
+        const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
+        const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
+        const dp = prepareProviderManager();
+        dp.showBuildProvider();
+        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, undefined, dp);
+        assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
+
+        ch.preTestedCommit().then(() => {
+            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
             done();
         }).catch((err) => {
             done(err);
@@ -175,7 +191,7 @@ suite("CommandHolder", () => {
 
     test("should verify remoteRun failed", function (done) {
         const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
-        tsMockito.when(mockedRemoteRun.exec()).thenThrow(new Error("Any Exception"));
+        tsMockito.when(mockedRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
         const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
         const dp = prepareProviderManager();
         dp.showBuildProvider();
@@ -190,7 +206,7 @@ suite("CommandHolder", () => {
 
         ch.remoteRunWithChosenConfigs().then(() => {
             verify(messageManagerMock.showErrorMessage(anything())).called();
-            tsMockito.verify(mockedRemoteRun.exec()).called();
+            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
             done();
         }).catch((err) => {
             done(err);

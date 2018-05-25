@@ -95,6 +95,15 @@
         }
       },
       {
+        "command": "teamcity.preTestedCommit",
+        "title": "Perform pre-tested commit with selected build configurations",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/pretested-commit.svg",
+          "dark": "resources/icons/dark/pretested-commit.svg"
+        }
+      },
+      {
         "command": "teamcity.showOutput",
         "title": "Show TeamCity output",
         "category": "TeamCity"
@@ -184,6 +193,11 @@
           "command": "teamcity.remoteRun",
           "when": "view == teamcityBuildsExplorer",
           "group": "navigation@3"
+        },
+        {
+          "command": "teamcity.preTestedCommit",
+          "when": "view == teamcityBuildsExplorer",
+          "group": "navigation@4"
         },
         {
           "command": "teamcity.signOut",

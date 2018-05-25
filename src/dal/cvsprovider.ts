@@ -10,8 +10,6 @@ export interface CvsSupportProvider {
 
     commit(checkInInfo: CheckInInfo);
 
-    commitAndPush(checkInInfo: CheckInInfo);
-
     getStagedFileContentStream(fileAbsPath: CvsResource): Promise<ReadableSet> | undefined;
 
     getRootPath(): string;

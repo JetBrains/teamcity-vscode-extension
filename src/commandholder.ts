@@ -90,7 +90,11 @@ export class CommandHolder {
     }
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
-        await this.tryExecuteCommand(this._remoteRun);
+        await this.tryExecuteCommand(this._remoteRun, false);
+    }
+
+    public async preTestedCommit(): Promise<void> {
+        await this.tryExecuteCommand(this._remoteRun, true);
     }
 
     public backToEmptyDataProvider(): void {

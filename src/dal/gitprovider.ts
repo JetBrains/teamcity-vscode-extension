@@ -172,34 +172,6 @@ export class GitProvider implements CvsSupportProvider {
         }
     }
 
-    public async commitAndPush(checkInInfo: CheckInInfo): Promise<void> {
-        await this.commit(checkInInfo);
-        if (await this.remotesExist()) {
-            const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
-            await cp_promise.exec(pushCommand);
-        } else {
-            Logger.logWarning("[GitProvider::commitAndPush] there are no remotes to push into");
-        }
-    }
-
-    private async remotesExist(): Promise<boolean> {
-        const gitRemotes: GitRemote[] = await this.getRemotes();
-        return gitRemotes && gitRemotes.length > 0;
-    }
-
-    private async getRemotes(): Promise<GitRemote[]> {
-        const getRemotesCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" remote --verbose`;
-        const getRemotesOutput = await cp_promise.exec(getRemotesCommand);
-        const regex = /^([^\s]+)\s+([^\s]+)\s/;
-        const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
-            .filter((b) => !!b)
-            .map((line) => regex.exec(line))
-            .filter((g) => !!g)
-            .map((groups: RegExpExecArray) => ({name: groups[1], url: groups[2]}));
-
-        return Utils.uniqBy(rawRemotes, (remote) => remote.name);
-    }
-
     public getRootPath(): string {
         return this.workspaceRootPathAsUri.path;
     }
@@ -207,9 +179,4 @@ export class GitProvider implements CvsSupportProvider {
     public allowStaging(): boolean {
         return true;
     }
-}
-
-interface GitRemote {
-    name: string;
-    url: string;
 }

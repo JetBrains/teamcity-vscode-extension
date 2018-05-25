@@ -1,8 +1,7 @@
 import {CvsSupportProvider} from "./cvsprovider";
-import {CvsOperation, TYPES} from "../bll/utils/constants";
+import {TYPES} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {QuickPickItem, QuickPickOptions, Uri, window, workspace} from "vscode";
-import {GitProvider} from "./gitprovider";
+import {Uri, window, workspace} from "vscode";
 import {TfvcProvider} from "./tfsprovider";
 import {inject, injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
@@ -89,45 +88,7 @@ export class CvsProviderProxy {
     }
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
-        const nextOperation: string = await this.getNextOperation(checkInArray);
-        switch (nextOperation) {
-            case CvsOperation.DoCommitChanges: {
-                await this.doCommitOperation(checkInArray);
-                break;
-            }
-            case CvsOperation.DoCommitAndPushChanges: {
-                await this.doCommitAndPushOperation(checkInArray);
-                break;
-            }
-        }
-    }
-
-    private async getNextOperation(checkInArray: CheckInInfo[]): Promise<string> {
-        const choices: QuickPickItem[] = [];
-        choices.push({label: CvsOperation.DoNothing, description: undefined});
-        choices.push({label: CvsOperation.DoCommitChanges, description: undefined});
-        const shouldAddPushOption: boolean = CvsProviderProxy.isGitPresented(checkInArray);
-        if (shouldAddPushOption) {
-            choices.push({label: CvsOperation.DoCommitAndPushChanges, description: undefined});
-        }
-        const options: QuickPickOptions = {
-            ignoreFocusOut: true,
-            matchOnDescription: false,
-            placeHolder: MessageConstants.REQUEST_FOR_NEXT_OPERATION
-        };
-        const nextOperation: QuickPickItem = await window.showQuickPick(choices, options);
-        return nextOperation ? nextOperation.label : CvsOperation.DoNothing;
-    }
-
-    private static isGitPresented(checkInArray: CheckInInfo[]): boolean {
-        for (let i = 0; i < checkInArray.length; i++) {
-            const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-            if (provider instanceof GitProvider) {
-                return true;
-            }
-        }
-        return false;
+        return this.doCommitOperation(checkInArray);
     }
 
     private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
@@ -137,18 +98,6 @@ export class CvsProviderProxy {
             const checkInInfo: CheckInInfo = checkInArray[i];
             const provider: CvsSupportProvider = checkInInfo.cvsProvider;
             await provider.commit(checkInInfo);
-        }
-    }
-
-    private async doCommitAndPushOperation(checkInArray: CheckInInfo[]): Promise<void> {
-        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
-        this.setUpdatedCommitMessages(checkInArray, commitMessage);
-        for (let i = 0; i < checkInArray.length; i++) {
-            for (let i = 0; i < checkInArray.length; i++) {
-                const checkInInfo: CheckInInfo = checkInArray[i];
-                const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-                await provider.commitAndPush(checkInInfo);
-            }
         }
     }
 

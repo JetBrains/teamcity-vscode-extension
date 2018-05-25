@@ -94,10 +94,6 @@ export class TfvcProvider implements CvsSupportProvider {
         }
     }
 
-    public async commitAndPush(checkInInfo: CheckInInfo) {
-        return this.commit(checkInInfo);
-    }
-
     public getStagedFileContentStream(cvsResource: CvsResource): undefined {
         return undefined;
     }
