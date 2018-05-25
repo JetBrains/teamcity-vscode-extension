@@ -10,6 +10,8 @@ import {Output} from "../../view/output";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
+import {GitProvider} from "../../dal/gitprovider";
+import {Context} from "../../view/Context";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -26,7 +28,8 @@ export class GetSuitableConfigs implements Command {
                        @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) xmlParser: XmlParser,
-                       @inject(TYPES.Output) output: Output) {
+                       @inject(TYPES.Output) output: Output,
+                       @inject(TYPES.Context) private readonly context: Context) {
         this.cvsProvider = cvsProvider;
         this.resourceProvider = resourceProvider;
         this.buildProvider = buildProvider;
@@ -40,6 +43,8 @@ export class GetSuitableConfigs implements Command {
         const checkInArray: CheckInInfo[] = await this.getCheckInArray();
         const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);
         this.buildProvider.setContent(projects);
+        const showPreTestedCommit: boolean = this.shouldShowPreTestedCommit(checkInArray);
+        this.context.showPreTestedCommitButton(showPreTestedCommit);
         this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);
         this.output.show();
         Logger.logInfo("GetSuitableConfigs: finished");
@@ -63,5 +68,16 @@ export class GetSuitableConfigs implements Command {
         }
         const projectsWithRelatedBuildsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls);
+    }
+
+    private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
+        let shouldShow = false;
+        checkInArray.forEach((checkInInfo) => {
+            if (!(checkInInfo.cvsProvider instanceof GitProvider)) {
+                shouldShow = true;
+            }
+        });
+
+        return shouldShow;
     }
 }

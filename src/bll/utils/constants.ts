@@ -117,6 +117,7 @@ export const TYPES = {
     SummaryDao: Symbol("SummaryDao"),
     BuildDao: Symbol("BuildDao"),
     Output: Symbol("Output"),
+    Context: Symbol("Context"),
     PatchManager: Symbol("PatchManager"),
     XmlParser: Symbol("XmlParser"),
     GitProvider: Symbol("GitProvider"),

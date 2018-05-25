@@ -196,7 +196,7 @@
         },
         {
           "command": "teamcity.preTestedCommit",
-          "when": "view == teamcityBuildsExplorer",
+          "when": "view == teamcityBuildsExplorer && teamcity-show-pretested-commit == true",
           "group": "navigation@4"
         },
         {

@@ -63,6 +63,8 @@ import {GitPathFinder} from "./bll/cvsutils/gitpathfinder";
 import {GitStatusRowsParser} from "./dal/git/GitStatusRowsParser";
 import {GitCommandArgumentsParser} from "./dal/git/GitCommandArgumentsParser";
 import {GitCommandsFactory} from "./dal/git/GitCommandsFactory";
+import {Context} from "./view/Context";
+import {ContextImpl} from "./view/ContextImpl";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -119,3 +121,4 @@ myContainer.bind<GitPathFinder>(TYPES.GitPathFinder).to(GitPathFinder).inSinglet
 myContainer.bind<GitStatusRowsParser>(TYPES.GitStatusRowsParser).to(GitStatusRowsParser).inSingletonScope();
 myContainer.bind<GitCommandArgumentsParser>(TYPES.GitCommandArgumentsParser).to(GitCommandArgumentsParser).inSingletonScope();
 myContainer.bind<GitCommandsFactory>(TYPES.GitCommandsFactory).to(GitCommandsFactory).inSingletonScope();
+myContainer.bind<Context>(TYPES.Context).to(ContextImpl).inSingletonScope();
