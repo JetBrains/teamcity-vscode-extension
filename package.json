@@ -20,6 +20,15 @@
   },
   "main": "./out/src/extension",
   "contributes": {
+    "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "teamcity",
+                    "title": "TeamCity",
+                    "icon": "resources/icons/teamcity-logo.svg"
+                }
+            ]
+    },
     "commands": [
       {
         "command": "teamcity.signIn",
@@ -119,25 +128,25 @@
       }
     ],
     "views": {
-      "explorer": [
+      "teamcity": [
         {
           "id": "teamcityEmptyExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == EmptyDataProvider"
         },
         {
           "id": "teamcityResourceExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == ResourcesProvider"
         },
         {
           "id": "teamcityBuildsExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == BuildsProvider"
         },
         {
           "id": "teamcityChangesProvider",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == ChangesProvider"
         }
       ]
