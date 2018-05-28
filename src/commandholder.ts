@@ -59,20 +59,15 @@ export class CommandHolder {
         this.buildProvider = buildProvider;
         this.changesProvider = changesProvider;
         this.messageManager = messageManager;
+        this.providerManager.showEmptyDataProvider();
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
-        if (await this.tryExecuteCommand(this._signIn, fromPersistentStore)) {
-            if (this.credentialsStore.getCredentialsSilently()) {
-                this.providerManager.showEmptyDataProvider();
-            }
-        }
+        await this.tryExecuteCommand(this._signIn, fromPersistentStore);
     }
 
     public async signOut(): Promise<void> {
-        if (await this.tryExecuteCommand(this._signOut)) {
-            this.providerManager.hideProviders();
-        }
+        await this.tryExecuteCommand(this._signOut);
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
