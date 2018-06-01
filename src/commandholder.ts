@@ -15,6 +15,8 @@ import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider
 import {Logger} from "./bll/utils/logger";
 import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
+import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
+import {ConfigureBuild} from "./bll/commands/ConfigureBuild";
 
 @injectable()
 export class CommandHolder {
@@ -26,6 +28,7 @@ export class CommandHolder {
     private readonly _getSuitableConfigs: GetSuitableConfigs;
     private readonly _remoteRun: RemoteRun;
     private readonly _showMyChanges: ShowMyChanges;
+    private readonly _customizeBuild: ConfigureBuild;
     private providerManager: IProviderManager;
     private credentialsStore: CredentialsStore;
     private resourceProvider: IResourceProvider;
@@ -53,6 +56,7 @@ export class CommandHolder {
         this._getSuitableConfigs = getSuitableConfigs;
         this._remoteRun = remoteRun;
         this._showMyChanges = showMyChanges;
+        this._customizeBuild = new ConfigureBuild();
         this.providerManager = providerManager;
         this.credentialsStore = credentialsStore;
         this.resourceProvider = resourceProvider;
@@ -97,6 +101,10 @@ export class CommandHolder {
         this.providerManager.showEmptyDataProvider();
     }
 
+    public backToBuildExplorer(): void {
+        this.providerManager.showBuildProvider();
+    }
+
     public backToSelectFilesForRemoteRun(): void {
         this.buildProvider.resetTreeContent();
         this.providerManager.showResourceProvider();
@@ -126,5 +134,9 @@ export class CommandHolder {
             return false;
         }
         return true;
+    }
+
+    public async customizeBuild(buildConfigItem: BuildConfigItem) {
+        return this._customizeBuild.exec([buildConfigItem]);
     }
 }

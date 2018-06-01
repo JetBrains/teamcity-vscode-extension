@@ -125,6 +125,20 @@
           "light": "resources/icons/light/serverchanges.svg",
           "dark": "resources/icons/dark/serverchanges.svg"
         }
+      },
+      {
+        "command": "teamcity.customizeBuild",
+        "title": "Customize build",
+        "category": "TeamCity"
+      },
+      {
+        "command": "teamcity.backToBuildsExplorer",
+        "title": "Back to the previous step",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/back.svg",
+          "dark": "resources/icons/dark/back.svg"
+        }
       }
     ],
     "views": {
@@ -148,6 +162,11 @@
           "id": "teamcityChangesProvider",
           "name": "",
           "when": "teamcity-explorer == ChangesProvider"
+        },
+        {
+          "id": "teamcityBuildSettingsProvider",
+          "name": "",
+          "when": "teamcity-explorer == BuildSettingsProvider"
         }
       ]
     },
@@ -222,6 +241,18 @@
           "command": "teamcity.signOut",
           "when": "view == teamcityChangesProvider",
           "group": "@1"
+        },
+        {
+          "command": "teamcity.backToBuildsExplorer",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "view == teamcityBuildsExplorer",
+          "group": "inline"
         }
       ]
     },

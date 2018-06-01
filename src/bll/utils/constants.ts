@@ -30,7 +30,9 @@ export class Constants {
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
+    public static readonly BACK_TO_BUILD_EXPLORER_COMMAND_NAME = "teamcity.backToBuildsExplorer";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
+    public static readonly CUSTOMIZE_BUILD_COMMAND_NAME = "teamcity.customizeBuild";
     public static readonly ROOT_PROJECT_ID = "_Root";
     public static readonly TARGET_NAME_SEPARATOR = "|";
 }
@@ -175,7 +177,8 @@ export enum DataProviderEnum {
     EmptyDataProvider = "EmptyDataProvider",
     ResourcesProvider = "ResourcesProvider",
     BuildsProvider = "BuildsProvider",
-    ChangesProvider = "ChangesProvider"
+    ChangesProvider = "ChangesProvider",
+    BuildSettingsProvider = "BuildSettingsProvider"
 }
 
 export enum TimePeriodEnum {

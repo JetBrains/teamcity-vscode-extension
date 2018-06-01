@@ -7,6 +7,7 @@ import {myContainer} from "./inversify.config";
 import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
+import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -24,8 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REFRESH_SELECTED_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_OUTPUT_COMMAND_NAME, () => extensionManager.commandHolder.showOutput()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME, () => extensionManager.commandHolder.backToEmptyDataProvider()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_BUILD_EXPLORER_COMMAND_NAME, () => extensionManager.commandHolder.backToBuildExplorer()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.backToSelectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_MY_CHANGES_COMMAND_NAME, () => extensionManager.commandHolder.showMyChanges()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.CUSTOMIZE_BUILD_COMMAND_NAME, (
+        configurable: BuildConfigItem) => extensionManager.commandHolder.customizeBuild(configurable)));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {
         item.changeState();
         extensionManager.refreshAllProviders();
