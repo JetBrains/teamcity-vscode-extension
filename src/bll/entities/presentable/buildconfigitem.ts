@@ -4,6 +4,7 @@ import {LeaveSelectableItem} from "./leaveselectableitem";
 import {BuildConfig} from "../buildconfig";
 
 export class BuildConfigItem extends LeaveSelectableItem {
+
     private readonly buildConfig: BuildConfig;
 
     constructor(buildConfig: BuildConfig) {

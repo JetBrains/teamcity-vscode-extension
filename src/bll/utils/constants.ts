@@ -35,6 +35,9 @@ export class Constants {
     public static readonly BACK_TO_BUILD_EXPLORER_COMMAND_NAME = "teamcity.backToBuildsExplorer";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
     public static readonly CUSTOMIZE_BUILD_COMMAND_NAME = "teamcity.customizeBuild";
+    public static readonly ADD_CONFIG_PARAMETER_COMMAND_NAME = "teamcity.addConfigParameter";
+    public static readonly ADD_SYSTEM_PROPERTY_COMMAND_NAME = "teamcity.addSystemProperty";
+    public static readonly ADD_ENV_VARIABLE_COMMAND_NAME = "teamcity.addEnvVariable";
     public static readonly ROOT_PROJECT_ID = "_Root";
     public static readonly TARGET_NAME_SEPARATOR = "|";
 }
@@ -198,4 +201,10 @@ export enum UserChangeStatus {
     PENDING = "Pending", //at least one configuration has not bean run yet (no failed and no canceled)
     RUNNING_SUCCESSFULY = "Running successfully", //there are no failed, pending and canceled and there is at least one running
     RUNNING_FAILED = "Running failed"//there are no pending and canceled, but there is at least one failed and there is at least one running
+}
+
+export enum ParameterType {
+    ConfigParameter = 0,
+    SystemProperty = 1,
+    EnvVariable = 2
 }

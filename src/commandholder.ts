@@ -1,5 +1,5 @@
 import {inject, injectable} from "inversify";
-import {TYPES} from "./bll/utils/constants";
+import {ParameterType, TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
@@ -92,6 +92,10 @@ export class CommandHolder {
             this.providerManager.refreshAll();
             this.providerManager.showChangesProvider();
         }
+    }
+
+    public async addParameter(type: ParameterType): Promise<void> {
+        //
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {

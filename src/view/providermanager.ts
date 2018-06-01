@@ -57,7 +57,7 @@ export class ProviderManager implements IProviderManager {
     }
 
     public showBuildSettingsProvider(build: BuildConfig): void {
-        this.buildSettingsProvider.setContent(build);
+        this.buildSettingsProvider.setBuild(build);
         this.buildSettingsProvider.show();
         this.shownDataProvider = this.buildSettingsProvider;
     }

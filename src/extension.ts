@@ -2,7 +2,7 @@
 
 import "reflect-metadata";
 import * as vscode from "vscode";
-import {Constants, TYPES} from "./bll/utils/constants";
+import {Constants, ParameterType, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
 import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
@@ -28,6 +28,18 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_BUILD_EXPLORER_COMMAND_NAME, () => extensionManager.commandHolder.backToBuildExplorer()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.backToSelectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_MY_CHANGES_COMMAND_NAME, () => extensionManager.commandHolder.showMyChanges()));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.ADD_CONFIG_PARAMETER_COMMAND_NAME,
+        () => extensionManager.commandHolder.addParameter(ParameterType.ConfigParameter)));
+
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.ADD_SYSTEM_PROPERTY_COMMAND_NAME,
+        () => extensionManager.commandHolder.addParameter(ParameterType.SystemProperty)));
+
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.ADD_ENV_VARIABLE_COMMAND_NAME,
+        () => extensionManager.commandHolder.addParameter(ParameterType.EnvVariable)));
+
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CUSTOMIZE_BUILD_COMMAND_NAME, (
         configurable: BuildConfigItem) => extensionManager.commandHolder.customizeBuild(configurable)));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {

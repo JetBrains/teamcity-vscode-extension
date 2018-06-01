@@ -1,7 +1,6 @@
 import {DataProvider} from "./dataprovider";
 import {Event, EventEmitter, TreeItem} from "vscode";
 import {DataProviderEnum} from "../../bll/utils/constants";
-import {ParameterItem} from "../../bll/entities/presentable/ParameterItem";
 import {IBuildSettingsProvider} from "./interfaces/IBuildSettingsProvider";
 import {injectable} from "inversify";
 import {BuildConfig} from "../../bll/entities/buildconfig";
@@ -11,11 +10,11 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 
-    private readonly parameters: ParameterItem[] = [];
+    private build: BuildConfig;
 
     public getChildren(element?: TreeItem):  TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
-            return this.parameters;
+            return this.build.getConfigParameters();
         }
     }
 
@@ -27,14 +26,15 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
         this._onDidChangeTreeData.fire();
     }
 
-    public setContent(build: BuildConfig): void {
-        this.resetTreeContent();
-        //build.getConfigParameters();
-        //build.getSystemProperties();
-        //build.getEnvVariables();
-    }
-
     resetTreeContent(): void {
         //
+    }
+
+    getCurrentBuild(): BuildConfig {
+        return this.build;
+    }
+
+    setBuild(buildConfig: BuildConfig): void {
+        this.build = buildConfig;
     }
 }

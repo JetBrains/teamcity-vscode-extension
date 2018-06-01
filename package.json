@@ -139,6 +139,33 @@
           "light": "resources/icons/light/back.svg",
           "dark": "resources/icons/dark/back.svg"
         }
+      },
+      {
+        "command": "teamcity.addConfigParameter",
+        "title": "Add configuration parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "teamcity.addSystemProperty",
+        "title": "Add system property",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "teamcity.addEnvVariable",
+        "title": "Add environment variable",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
       }
     ],
     "views": {
@@ -246,6 +273,26 @@
           "command": "teamcity.backToBuildsExplorer",
           "when": "view == teamcityBuildSettingsProvider",
           "group": "navigation@1"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "navigation@3"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "navigation@4"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "@1"
         }
       ],
       "view/item/context": [
