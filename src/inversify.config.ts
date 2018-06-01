@@ -65,6 +65,9 @@ import {GitCommandArgumentsParser} from "./dal/git/GitCommandArgumentsParser";
 import {GitCommandsFactory} from "./dal/git/GitCommandsFactory";
 import {Context} from "./view/Context";
 import {ContextImpl} from "./view/ContextImpl";
+import {IBuildSettingsProvider} from "./view/dataproviders/interfaces/IBuildSettingsProvider";
+import {BuildSettingsProvider} from "./view/dataproviders/BuildSettingsProvider";
+import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -122,3 +125,5 @@ myContainer.bind<GitStatusRowsParser>(TYPES.GitStatusRowsParser).to(GitStatusRow
 myContainer.bind<GitCommandArgumentsParser>(TYPES.GitCommandArgumentsParser).to(GitCommandArgumentsParser).inSingletonScope();
 myContainer.bind<GitCommandsFactory>(TYPES.GitCommandsFactory).to(GitCommandsFactory).inSingletonScope();
 myContainer.bind<Context>(TYPES.Context).to(ContextImpl).inSingletonScope();
+myContainer.bind<IBuildSettingsProvider>(TYPES.BuildSettingsProvider).to(BuildSettingsProvider).inSingletonScope();
+myContainer.bind<CustomizeBuild>(TYPES.CustomizeBuild).to(CustomizeBuild).inSingletonScope();

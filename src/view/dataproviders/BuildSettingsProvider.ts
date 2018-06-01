@@ -2,9 +2,12 @@ import {DataProvider} from "./dataprovider";
 import {Event, EventEmitter, TreeItem} from "vscode";
 import {DataProviderEnum} from "../../bll/utils/constants";
 import {ParameterItem} from "../../bll/entities/presentable/ParameterItem";
-import {BuildConfigItem} from "../../bll/entities/presentable/buildconfigitem";
+import {IBuildSettingsProvider} from "./interfaces/IBuildSettingsProvider";
+import {injectable} from "inversify";
+import {BuildConfig} from "../../bll/entities/buildconfig";
 
-export class BuildSettingsProvider extends DataProvider {
+@injectable()
+export class BuildSettingsProvider extends DataProvider implements IBuildSettingsProvider {
     private _onDidChangeTreeData: EventEmitter<any> = new EventEmitter<any>();
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 
@@ -24,7 +27,7 @@ export class BuildSettingsProvider extends DataProvider {
         this._onDidChangeTreeData.fire();
     }
 
-    public setContent(build: BuildConfigItem): void {
+    public setContent(build: BuildConfig): void {
         this.resetTreeContent();
         //build.getConfigParameters();
         //build.getSystemProperties();

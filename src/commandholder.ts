@@ -16,53 +16,26 @@ import {Logger} from "./bll/utils/logger";
 import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
-import {ConfigureBuild} from "./bll/commands/ConfigureBuild";
+import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
 
 @injectable()
 export class CommandHolder {
 
-    private output: Output;
-    private readonly _signIn: SignIn;
-    private readonly _signOut: SignOut;
-    private readonly _selectFilesForRemoteRun: SelectFilesForRemoteRun;
-    private readonly _getSuitableConfigs: GetSuitableConfigs;
-    private readonly _remoteRun: RemoteRun;
-    private readonly _showMyChanges: ShowMyChanges;
-    private readonly _customizeBuild: ConfigureBuild;
-    private providerManager: IProviderManager;
-    private credentialsStore: CredentialsStore;
-    private resourceProvider: IResourceProvider;
-    private changesProvider: IChangesProvider;
-    private buildProvider: IBuildProvider;
-    private messageManager: MessageManager;
+    constructor(@inject(TYPES.Output) private readonly output: Output,
+                @inject(TYPES.SignIn) private readonly _signIn: SignIn,
+                @inject(TYPES.SignOut) private readonly _signOut: SignOut,
+                @inject(TYPES.SelectFilesForRemoteRun) private readonly _selectForRemoteRun: SelectFilesForRemoteRun,
+                @inject(TYPES.GetSuitableConfigs) private readonly _getSuitableConfigs: GetSuitableConfigs,
+                @inject(TYPES.RemoteRun) private readonly _remoteRun: RemoteRun,
+                @inject(TYPES.ShowMyChangesCommand) private readonly _showMyChanges: ShowMyChanges,
+                @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
+                @inject(TYPES.CredentialsStore) private readonly credentialsStore?: CredentialsStore,
+                @inject(TYPES.ResourceProvider) private readonly resourceProvider?: IResourceProvider,
+                @inject(TYPES.BuildProvider) private readonly buildProvider?: IBuildProvider,
+                @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
+                @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
+                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild) {
 
-    constructor(@inject(TYPES.Output) output: Output,
-                @inject(TYPES.SignIn) signInCommand: SignIn,
-                @inject(TYPES.SignOut) signOutCommand: SignOut,
-                @inject(TYPES.SelectFilesForRemoteRun) selectFilesForRemoteRun: SelectFilesForRemoteRun,
-                @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
-                @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
-                @inject(TYPES.ShowMyChangesCommand) showMyChanges: ShowMyChanges,
-                @inject(TYPES.ProviderManager) providerManager: IProviderManager,
-                @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
-                @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider,
-                @inject(TYPES.ChangesProvider) changesProvider?: IChangesProvider,
-                @inject(TYPES.MessageManager) messageManager?: MessageManager) {
-        this.output = output;
-        this._signIn = signInCommand;
-        this._signOut = signOutCommand;
-        this._selectFilesForRemoteRun = selectFilesForRemoteRun;
-        this._getSuitableConfigs = getSuitableConfigs;
-        this._remoteRun = remoteRun;
-        this._showMyChanges = showMyChanges;
-        this._customizeBuild = new ConfigureBuild();
-        this.providerManager = providerManager;
-        this.credentialsStore = credentialsStore;
-        this.resourceProvider = resourceProvider;
-        this.buildProvider = buildProvider;
-        this.changesProvider = changesProvider;
-        this.messageManager = messageManager;
         this.providerManager.showEmptyDataProvider();
     }
 
@@ -75,7 +48,7 @@ export class CommandHolder {
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        if (await this.tryExecuteCommand(this._selectFilesForRemoteRun)) {
+        if (await this.tryExecuteCommand(this._selectForRemoteRun)) {
             this.providerManager.refreshAll();
             this.providerManager.showResourceProvider();
         }

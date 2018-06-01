@@ -1,4 +1,6 @@
 import {GitPathFinder} from "../cvsutils/gitpathfinder";
+import {BuildSettingsProvider} from "../../view/dataproviders/BuildSettingsProvider";
+import {CustomizeBuild} from "../commands/CustomizeBuild";
 
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
@@ -165,6 +167,8 @@ export const TYPES = {
     GitStatusRowsParser: Symbol("GitStatusRowsParser"),
     GitCommandArgumentsParser: Symbol("GitCommandArgumentsParser"),
     GitCommandsFactory: Symbol("GitCommandsFactory"),
+    BuildSettingsProvider: Symbol("BuildSettingsProvider"),
+    CustomizeBuild: Symbol("CustomizeBuild"),
 };
 
 export enum CvsOperation {

@@ -17,6 +17,7 @@ import {ShowMyChanges} from "../src/bll/commands/showmychanges";
 import {DataProviderEnum} from "../src/bll/utils/constants";
 import {ChangesProvider} from "../src/view/dataproviders/changesprovider";
 import {MessageManager} from "../src/view/messagemanager";
+import {BuildSettingsProvider} from "../src/view/dataproviders/BuildSettingsProvider";
 
 suite("CommandHolder", () => {
     test("should verify signIn success", function (done) {
@@ -229,6 +230,9 @@ suite("CommandHolder", () => {
     });
 
     function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ResourceProvider(), new BuildProvider(), new ChangesProvider());
+        return new ProviderManager(new ResourceProvider(),
+                                   new BuildProvider(),
+                                   new ChangesProvider(),
+                                   new BuildSettingsProvider());
     }
 });
