@@ -2,7 +2,7 @@ import {Logger} from "../utils/logger";
 import {Credentials} from "../credentialsstore/credentials";
 import {MessageConstants} from "../utils/messageconstants";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
-import {MessageItem, window} from "vscode";
+import {MessageItem} from "vscode";
 import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
@@ -12,6 +12,7 @@ import {inject, injectable} from "inversify";
 import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
 import {Utils} from "../utils/utils";
+import {VsCodeUtils} from "../utils/vscodeutils";
 
 @injectable()
 export class SignIn implements Command {
@@ -134,38 +135,11 @@ export class SignIn implements Command {
         return this.validateAndGenerateUserCredentials(serverUrl, username, password);
     }
 
-    private static async requestMandatoryFiled(defaultValue: string = "",
-                                               basicPrompt: string = "",
-                                               isPassword: boolean): Promise<string> {
-        let operationWasAborted: boolean = false;
-        let fieldWasFilled: boolean = false;
-        let fieldValue: string;
-        let prompt = basicPrompt;
-        const placeHolder = MessageConstants.MANDATORY_FIELD;
-        while (!fieldWasFilled && !operationWasAborted) {
-            fieldValue = await window.showInputBox({
-                value: defaultValue,
-                prompt: prompt,
-                placeHolder: placeHolder,
-                password: isPassword,
-                ignoreFocusOut: true
-            });
-            operationWasAborted = fieldValue === undefined;
-            fieldWasFilled = fieldValue !== "";
-            prompt = `${MessageConstants.MANDATORY_FIELD} ${basicPrompt}`;
-        }
-
-        if (!operationWasAborted) {
-            return Promise.resolve<string>(fieldValue);
-        } else {
-            return Promise.reject(`Mandatory Value was not specified. basicPrompt: ${basicPrompt}`);
-        }
-    }
-
     private async requestServerUrl(defaultURL: string): Promise<string> {
         let messageToDisplay: string = MessageConstants.PROVIDE_URL;
         while (true) {
-            let serverUrl: string = await SignIn.requestMandatoryFiled(defaultURL, messageToDisplay, false);
+            let serverUrl: string =
+                await VsCodeUtils.requestMandatoryFiled(defaultURL, messageToDisplay, false);
             serverUrl = SignIn.removeSlashInTheEndIfExists(serverUrl);
             if (await this.remoteLogin.isServerReachable(serverUrl)) {
                 return serverUrl;
@@ -181,12 +155,12 @@ export class SignIn implements Command {
 
     private static async requestUsername(defaultUsername: string, serverUrl: string): Promise<string> {
         const defaultPrompt = `${MessageConstants.PROVIDE_USERNAME} ( URL: ${serverUrl} )`;
-        return SignIn.requestMandatoryFiled(defaultUsername, defaultPrompt, false);
+        return VsCodeUtils.requestMandatoryFiled(defaultUsername, defaultPrompt, false);
     }
 
     private static async requestPassword(username: string): Promise<string> {
         const defaultPrompt = `${MessageConstants.PROVIDE_PASSWORD} ( username: ${username} )`;
-        return SignIn.requestMandatoryFiled("", defaultPrompt, true);
+        return VsCodeUtils.requestMandatoryFiled("", defaultPrompt, true);
     }
 
     private async storeLastUserCredentials(credentials: Credentials): Promise<void> {
