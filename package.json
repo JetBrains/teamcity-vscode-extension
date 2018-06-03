@@ -357,6 +357,15 @@
           "when": "viewItem == buildConfigItem"
         },
         {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == changeItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == changeItem"
+        },
+        {
           "command": "teamcity.customizeBuild",
           "when": "viewItem == buildConfigItem",
           "group": "inline@2"

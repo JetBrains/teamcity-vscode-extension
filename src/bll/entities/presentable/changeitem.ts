@@ -7,6 +7,7 @@ export class ChangeItem extends TreeItem {
 
     constructor(private readonly change: Change) {
         super(Utils.formChangeLabel(change).replace("\n", " | "), TreeItemCollapsibleState.None);
+        this.contextValue = "changeItem";
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {

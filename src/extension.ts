@@ -9,6 +9,7 @@ import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
+import {ChangeItem} from "./bll/entities/presentable/changeitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -70,8 +71,8 @@ export function activate(context: vscode.ExtensionContext) {
             extensionManager.commandHolder.queueAtTop();
         }));
     context.subscriptions.push(vscode.commands.registerCommand(
-        Constants.OPEN_IN_BROWSER, (buildConfigItem: BuildConfigItem) => {
-            extensionManager.commandHolder.openInBrowser(buildConfigItem);
+        Constants.OPEN_IN_BROWSER, (presentableItem: BuildConfigItem | ChangeItem) => {
+            extensionManager.commandHolder.openInBrowser(presentableItem);
         }));
     context.subscriptions.push(extensionManager);
 }

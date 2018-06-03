@@ -22,6 +22,7 @@ import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
 import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
+import {ChangeItem} from "./bll/entities/presentable/changeitem";
 
 @injectable()
 export class CommandHolder {
@@ -123,8 +124,8 @@ export class CommandHolder {
         await this.tryExecuteCommand(this._queueAtTop);
     }
 
-    public async openInBrowser(buildConfig: BuildConfigItem): Promise<void> {
-        await this.tryExecuteCommand(this._openInBrowser, buildConfig);
+    public async openInBrowser(presentableItem: BuildConfigItem | ChangeItem): Promise<void> {
+        await this.tryExecuteCommand(this._openInBrowser, presentableItem);
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
