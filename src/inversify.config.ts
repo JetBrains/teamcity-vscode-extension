@@ -69,6 +69,7 @@ import {IBuildSettingsProvider} from "./view/dataproviders/interfaces/IBuildSett
 import {BuildSettingsProvider} from "./view/dataproviders/BuildSettingsProvider";
 import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
 import {AddBuildParameter} from "./bll/commands/AddBuildParameter";
+import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -129,3 +130,4 @@ myContainer.bind<Context>(TYPES.Context).to(ContextImpl).inSingletonScope();
 myContainer.bind<IBuildSettingsProvider>(TYPES.BuildSettingsProvider).to(BuildSettingsProvider).inSingletonScope();
 myContainer.bind<CustomizeBuild>(TYPES.CustomizeBuild).to(CustomizeBuild).inSingletonScope();
 myContainer.bind<AddBuildParameter>(TYPES.AddBuildParameter).to(AddBuildParameter).inSingletonScope();
+myContainer.bind<RemoveBuildParameter>(TYPES.RemoveBuildParameter).to(RemoveBuildParameter).inSingletonScope();

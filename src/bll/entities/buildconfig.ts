@@ -37,6 +37,16 @@ export class BuildConfig {
         this.parameters[paramType].push(param);
     }
 
+    public removeParameter(paramType: ParameterType, param: Parameter) {
+        if (!this.parameters[paramType]) {
+            return;
+        }
+        const index = this.parameters[paramType].indexOf(param);
+        if (index > -1) {
+            this.parameters[paramType].splice(index, 1);
+        }
+    }
+
     private getParameter(paramType: ParameterType) {
         if (!this.parameters[paramType]) {
             return [];

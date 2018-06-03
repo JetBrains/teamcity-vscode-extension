@@ -2,6 +2,7 @@ import {GitPathFinder} from "../cvsutils/gitpathfinder";
 import {BuildSettingsProvider} from "../../view/dataproviders/BuildSettingsProvider";
 import {CustomizeBuild} from "../commands/CustomizeBuild";
 import {AddBuildParameter} from "../commands/AddBuildParameter";
+import {RemoveBuildParameter} from "../commands/RemoveBuildParameter";
 
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
@@ -30,6 +31,7 @@ export class Constants {
     public static readonly CHANGE_CONFIG_STATE = "changeConfigState";
     public static readonly CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
+    public static readonly REMOVE_PARAMETER_COMMAND_NAME = "teamcity.removeParameter";
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
@@ -174,6 +176,7 @@ export const TYPES = {
     BuildSettingsProvider: Symbol("BuildSettingsProvider"),
     CustomizeBuild: Symbol("CustomizeBuild"),
     AddBuildParameter: Symbol("AddBuildParameter"),
+    RemoveBuildParameter: Symbol("RemoveBuildParameter"),
 };
 
 export enum CvsOperation {

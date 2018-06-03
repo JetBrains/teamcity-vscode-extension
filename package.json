@@ -170,6 +170,15 @@
           "light": "resources/icons/light/add-config-parameter.svg",
           "dark": "resources/icons/dark/add-config-parameter.svg"
         }
+      },
+      {
+        "command": "teamcity.removeParameter",
+        "title": "Remove this parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/remove-config-parameter.svg",
+          "dark": "resources/icons/dark/remove-config-parameter.svg"
+        }
       }
     ],
     "views": {
@@ -303,6 +312,11 @@
         {
           "command": "teamcity.customizeBuild",
           "when": "view == teamcityBuildsExplorer",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "view == teamcityBuildSettingsProvider",
           "group": "inline"
         }
       ]

@@ -8,6 +8,7 @@ import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
+import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -49,6 +50,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE, (project: ProjectItem) => {
         project.changeCollapsibleState();
         extensionManager.refreshAllProviders();
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.REMOVE_PARAMETER_COMMAND_NAME,
+        (parameter: ParameterItem) => {
+            extensionManager.commandHolder.removeParameter(parameter);
     }));
     context.subscriptions.push(extensionManager);
 }
