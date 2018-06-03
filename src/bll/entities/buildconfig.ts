@@ -1,10 +1,10 @@
-import {ParameterItem} from "./presentable/ParameterItem";
 import {ParameterType} from "../utils/constants";
+import {Parameter} from "./Parameter";
 
 export class BuildConfig {
 
     private queueAtTop: boolean = false;
-    private parameters: ParameterItem[][] = [];
+    private parameters: Parameter[][] = [];
 
     constructor(public readonly id: string, public readonly externalId: string, public readonly name: string) {
         //
@@ -18,31 +18,19 @@ export class BuildConfig {
         return this.queueAtTop;
     }
 
-    public addConfigParameters(param: ParameterItem) {
-        this.addParameter(param, ParameterType.ConfigParameter);
-    }
-
-    public getConfigParameters(): ParameterItem[] {
+    public getConfigParameters(): Parameter[] {
         return this.getParameter(ParameterType.ConfigParameter);
     }
 
-    public addSystemProperties(param: ParameterItem) {
-        this.addParameter(param, ParameterType.SystemProperty);
-    }
-
-    public getSystemProperties(): ParameterItem[] {
+    public getSystemProperties(): Parameter[] {
         return this.getParameter(ParameterType.SystemProperty);
     }
 
-    public addEnvVariables(param: ParameterItem) {
-        this.addParameter(param, ParameterType.EnvVariable);
-    }
-
-    public getEnvVariables(): ParameterItem[] {
+    public getEnvVariables(): Parameter[] {
         return this.getParameter(ParameterType.EnvVariable);
     }
 
-    private addParameter(param: ParameterItem, paramType: ParameterType) {
+    public addParameter(paramType: ParameterType, param: Parameter) {
         if (!this.parameters[paramType]) {
             this.parameters[paramType] = [];
         }
