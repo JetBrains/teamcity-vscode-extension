@@ -61,12 +61,14 @@ export class GetSuitableConfigs implements Command {
 
     private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<Project[]> {
         const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames(checkInArray);
-        const shortBuildConfigNames: string[] = await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
+        const shortBuildConfigNames: string[] =
+            await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         if (!shortBuildConfigNames || shortBuildConfigNames.length === 0) {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
             return Promise.reject(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
         }
-        const projectsWithRelatedBuildsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const projectsWithRelatedBuildsXmls: string[] =
+            await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls);
     }
 
