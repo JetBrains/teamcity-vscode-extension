@@ -348,40 +348,40 @@
       ],
       "view/item/context": [
         {
-          "command": "teamcity.customizeBuild",
-          "when": "view == teamcityBuildsExplorer && viewItem == buildConfigItem",
-          "group": "inline"
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == buildConfigItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == buildConfigItem"
         },
         {
           "command": "teamcity.customizeBuild",
-          "when": "view == teamcityBuildsExplorer && viewItem == buildConfigItem"
+          "when": "viewItem == buildConfigItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "viewItem == buildConfigItem"
         },
         {
           "command": "teamcity.editParameter",
-          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem",
+          "when": "viewItem == parameterItem",
           "group": "inline@1"
         },
         {
           "command": "teamcity.removeParameter",
-          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem",
-          "group": "inline@2"
+          "when": "viewItem == parameterItem",
+         "group": "inline@2"
         },
         {
           "command": "teamcity.editParameter",
-          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem"
+          "when": "viewItem == parameterItem"
         },
         {
           "command": "teamcity.removeParameter",
-          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem"
-        },
-        {
-          "command": "teamcity.openInBrowser",
-          "when": "view == teamcityBuildsExplorer",
-          "group": "inline"
-        },
-        {
-          "command": "teamcity.openInBrowser",
-          "when": "view == teamcityBuildsExplorer"
+          "when": "viewItem == parameterItem"
         }
       ]
     },
