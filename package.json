@@ -176,8 +176,8 @@
         "title": "Remove this parameter",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/remove-config-parameter.svg",
-          "dark": "resources/icons/dark/remove-config-parameter.svg"
+          "light": "resources/icons/light/remove-parameter.svg",
+          "dark": "resources/icons/dark/remove-parameter.svg"
         }
       }
     ],
