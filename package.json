@@ -129,7 +129,11 @@
       {
         "command": "teamcity.customizeBuild",
         "title": "Customize build",
-        "category": "TeamCity"
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/settings.svg",
+          "dark": "resources/icons/dark/settings.svg"
+        }
       },
       {
         "command": "teamcity.backToBuildsExplorer",
