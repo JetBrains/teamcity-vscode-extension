@@ -204,8 +204,8 @@
         "title": "Open In Browser",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/edit-parameter.svg",
-          "dark": "resources/icons/dark/edit-parameter.svg"
+          "light": "resources/icons/light/open-in-browser.svg",
+          "dark": "resources/icons/dark/open-in-browser.svg"
         }
       }
     ],
