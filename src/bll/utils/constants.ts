@@ -95,10 +95,10 @@ export enum ChangeListStatus {
 }
 
 export enum CvsFileStatusCode {
-    MODIFIED = <any>"M",
-    ADDED = <any>"A",
-    DELETED = <any>"D",
-    RENAMED = <any>"R"
+    MODIFIED = <any>"Modified",
+    ADDED = <any>"Added",
+    DELETED = <any>"Deleted",
+    RENAMED = <any>"Renamed"
 }
 
 export enum LoggingLevel {

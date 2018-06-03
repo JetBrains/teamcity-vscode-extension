@@ -12,11 +12,15 @@ export class CvsResourceItem extends LeaveSelectableItem {
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName: string = `status-${this.isIncluded ? this.cvsResource.status : "I"}.svg`;
+        const iconName: string = `status-${this.isIncluded ? this.cvsResource.status : "Ignored"}.svg`;
         return {
             light: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "light", iconName),
             dark: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "dark", iconName)
         };
+    }
+
+    public get tooltip() {
+        return `${this.cvsResource.fileName} • ${this.isIncluded ? this.cvsResource.status : "Ignored"}`;
     }
 
     public get item(): CvsResource {
