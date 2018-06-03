@@ -188,6 +188,16 @@
           "light": "resources/icons/light/edit-parameter.svg",
           "dark": "resources/icons/dark/edit-parameter.svg"
         }
+      },
+      {
+        "command": "teamcity.queueAtTop",
+        "title": "Put the build to the queue top",
+        "category": "TeamCity"
+      },
+      {
+        "command": "teamcity.unQueueFromTop",
+        "title": "✔ Put the build to the queue top",
+        "category": "TeamCity"
       }
     ],
     "views": {
@@ -312,26 +322,48 @@
           "group": "navigation@4"
         },
         {
+          "command": "teamcity.queueAtTop",
+          "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == false",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == true",
+          "group": "@1"
+        },
+        {
           "command": "teamcity.signOut",
           "when": "view == teamcityBuildSettingsProvider",
-          "group": "@1"
+          "group": "@2"
         }
       ],
       "view/item/context": [
         {
           "command": "teamcity.customizeBuild",
-          "when": "view == teamcityBuildsExplorer",
+          "when": "view == teamcityBuildsExplorer && viewItem == buildConfigItem",
           "group": "inline"
         },
         {
+          "command": "teamcity.customizeBuild",
+          "when": "view == teamcityBuildsExplorer && viewItem == buildConfigItem"
+        },
+        {
           "command": "teamcity.editParameter",
-          "when": "view == teamcityBuildSettingsProvider",
+          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem",
           "group": "inline@1"
         },
         {
           "command": "teamcity.removeParameter",
-          "when": "view == teamcityBuildSettingsProvider",
+          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem",
           "group": "inline@2"
+        },
+        {
+          "command": "teamcity.editParameter",
+          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem"
         }
       ]
     },

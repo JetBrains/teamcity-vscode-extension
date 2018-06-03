@@ -10,6 +10,7 @@ export class BuildConfigItem extends LeaveSelectableItem {
     constructor(buildConfig: BuildConfig) {
         super(buildConfig.name);
         this.buildConfig = buildConfig;
+        this.contextValue = "buildConfigItem";
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {

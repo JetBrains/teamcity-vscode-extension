@@ -20,6 +20,7 @@ import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
 import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
+import {QueueAtTop} from "./bll/commands/QueueAtTop";
 
 @injectable()
 export class CommandHolder {
@@ -39,7 +40,8 @@ export class CommandHolder {
                 @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
                 @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
                 @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
-                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter) {
+                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
+                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop) {
 
         this.providerManager.showEmptyDataProvider();
     }
@@ -115,6 +117,10 @@ export class CommandHolder {
         await this.tryExecuteCommand(this._removeBuildParameter, param);
     }
 
+    public async queueAtTop(): Promise<void> {
+        await this.tryExecuteCommand(this._queueAtTop);
+    }
+
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
         try {
             if (args && args.length > 0) {
@@ -129,4 +135,5 @@ export class CommandHolder {
         }
         return true;
     }
+
 }

@@ -55,11 +55,19 @@ export function activate(context: vscode.ExtensionContext) {
         Constants.REMOVE_PARAMETER_COMMAND_NAME,
         (parameter: ParameterItem) => {
             extensionManager.commandHolder.removeParameter(parameter);
-    }));
+        }));
     context.subscriptions.push(vscode.commands.registerCommand(
         Constants.EDIT_PARAMETER_COMMAND_NAME,
         (parameter: ParameterItem) => {
             extensionManager.commandHolder.editParameter(parameter);
-    }));
+        }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.QUEUE_AT_TOP_COMMAND_NAME, () => {
+            extensionManager.commandHolder.queueAtTop();
+        }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.UNQUEUE_FROM_TOP_COMMAND_NAME, () => {
+            extensionManager.commandHolder.queueAtTop();
+        }));
     context.subscriptions.push(extensionManager);
 }

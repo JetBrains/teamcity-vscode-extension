@@ -31,12 +31,12 @@ export class WebLinks {
         if (!buildConfig) {
             return undefined;
         }
+        const queueAtTop: boolean = buildConfig.shouldQueueAtTop();
         const credentials: Credentials = await this.credentialsStore.getCredentials();
         const url: string = `${credentials.serverURL}/app/rest/buildQueue`;
-        const data = `
-            <build personal="true">
+        const data = `<build personal="true">
                 <triggered type='idePlugin' details='Visual Studio Code'/>
-                <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="false"/>
+                <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="${queueAtTop}"/>
                 <buildType id="${buildConfig.externalId}"/>
                 <lastChanges>
                     <change id="${changeListId}" personal="true"/>

@@ -6,6 +6,7 @@ export class ParameterItem extends TreeItem {
 
     constructor(private readonly parameter: Parameter) {
         super(`${parameter.key}  =  ${parameter.value}`, TreeItemCollapsibleState.None);
+        this.contextValue = "parameterItem";
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {

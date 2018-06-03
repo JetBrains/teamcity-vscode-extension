@@ -1,3 +1,5 @@
+import {QueueAtTop} from "../commands/QueueAtTop";
+
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
@@ -27,6 +29,8 @@ export class Constants {
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
     public static readonly REMOVE_PARAMETER_COMMAND_NAME = "teamcity.removeParameter";
     public static readonly EDIT_PARAMETER_COMMAND_NAME = "teamcity.editParameter";
+    public static readonly QUEUE_AT_TOP_COMMAND_NAME = "teamcity.queueAtTop";
+    public static readonly UNQUEUE_FROM_TOP_COMMAND_NAME = "teamcity.unQueueFromTop";
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
@@ -172,6 +176,7 @@ export const TYPES = {
     CustomizeBuild: Symbol("CustomizeBuild"),
     AddEditBuildParameter: Symbol("AddEditBuildParameter"),
     RemoveBuildParameter: Symbol("RemoveBuildParameter"),
+    QueueAtTop: Symbol("QueueAtTop"),
 };
 
 export enum CvsOperation {

@@ -2,11 +2,13 @@ import {BuildConfigItem} from "../entities/presentable/buildconfigitem";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {IProviderManager} from "../../view/iprovidermanager";
+import {Context} from "../../view/Context";
 
 @injectable()
 export class CustomizeBuild implements Command {
 
-    constructor(@inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager) {
+    constructor(@inject(TYPES.Context) private readonly context: Context,
+                @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager) {
         //
     }
 
@@ -19,6 +21,7 @@ export class CustomizeBuild implements Command {
         }
 
         const build: BuildConfigItem = args[0];
+        this.context.setQueueAtTop(build.entity.shouldQueueAtTop());
         this.providerManager.showBuildSettingsProvider(build.entity);
     }
 }
