@@ -149,8 +149,8 @@
         "title": "Add configuration parameter",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/refresh.svg",
-          "dark": "resources/icons/dark/refresh.svg"
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
         }
       },
       {
@@ -158,8 +158,8 @@
         "title": "Add system property",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/refresh.svg",
-          "dark": "resources/icons/dark/refresh.svg"
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
         }
       },
       {
@@ -167,8 +167,8 @@
         "title": "Add environment variable",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/refresh.svg",
-          "dark": "resources/icons/dark/refresh.svg"
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
         }
       }
     ],
