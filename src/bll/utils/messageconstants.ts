@@ -2,7 +2,7 @@ export class MessageConstants {
     static readonly PROVIDE_USERNAME: string = "Provide the username for the TeamCity server.";
     static readonly PROVIDE_PASSWORD: string = "Provide the password for the username.";
     static readonly PROVIDE_URL: string = "Provide the URL for the TeamCity server.";
-    static readonly PROVIDE_KEY: string = "Provide the key of the parameter.";
+    static readonly PROVIDE_KEY: string = "Provide the name of the parameter.";
     static readonly PROVIDE_VALUE_OF_KEY: string = "Provide the value of the parameter.";
     static readonly URL_NOT_REACHABLE: string = "The TeamCity server cannot be reached.";
     static readonly PROVIDE_MESSAGE_FOR_REMOTE_RUN: string = "Provide the message for Remote Run.";

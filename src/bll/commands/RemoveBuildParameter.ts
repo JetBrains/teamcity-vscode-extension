@@ -17,14 +17,21 @@ export class RemoveBuildParameter implements Command {
             return Promise.reject("Illegal arguments");
         }
 
-        const build: BuildConfig = this.buildSettingsProvider.getCurrentBuild();
         const paramItem: ParameterItem = args[0];
-        const param: Parameter = paramItem.item;
-
-        build.removeParameter(ParameterType.SystemProperty, param);
-        build.removeParameter(ParameterType.ConfigParameter, param);
-        build.removeParameter(ParameterType.EnvVariable, param);
+        this.removeParameter(paramItem.item);
 
         this.buildSettingsProvider.refreshTreePresentation();
+    }
+
+    private removeParameter(param: Parameter) {
+        const build: BuildConfig = this.buildSettingsProvider.getCurrentBuild();
+
+        if (param.key.startsWith("system.")) {
+            build.removeParameter(ParameterType.SystemProperty, param);
+        } else if (param.key.startsWith("env.")) {
+            build.removeParameter(ParameterType.EnvVariable, param);
+        } else {
+            build.removeParameter(ParameterType.ConfigParameter, param);
+        }
     }
 }

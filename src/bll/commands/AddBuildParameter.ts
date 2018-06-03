@@ -4,7 +4,7 @@ import {BuildConfig} from "../entities/buildconfig";
 import {Parameter} from "../entities/Parameter";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {MessageConstants} from "../utils/messageconstants";
-import {TYPES} from "../utils/constants";
+import {ParameterType, TYPES} from "../utils/constants";
 
 @injectable()
 export class AddBuildParameter implements Command {
@@ -17,24 +17,44 @@ export class AddBuildParameter implements Command {
         if (!args || args.length !== 1) {
             return Promise.reject("Illegal arguments");
         }
-
-        const build: BuildConfig = this.buildSettingsProvider.getCurrentBuild();
-        const key = await AddBuildParameter.requestKey();
+        const key = await AddBuildParameter.requestKey(args[0]);
         const value = await AddBuildParameter.requestValue(key);
 
-        const param: Parameter = new Parameter(key, value);
-        build.addParameter(args[0], param);
+        this.addParameter(new Parameter(key, value));
         this.buildSettingsProvider.refreshTreePresentation();
     }
 
-    private static async requestKey(): Promise<string> {
+    private static async requestKey(type: ParameterType): Promise<string> {
+        const defaultValue = this.getDefaultValue(type);
         const defaultPrompt = `${MessageConstants.PROVIDE_KEY}`;
-        return VsCodeUtils.requestMandatoryFiled("", defaultPrompt, false);
+        return VsCodeUtils.requestMandatoryFiled( defaultValue, defaultPrompt, false);
+    }
+
+    private static getDefaultValue(type: ParameterType) {
+        if (type === ParameterType.ConfigParameter) {
+            return "";
+        } else if (type === ParameterType.SystemProperty) {
+            return "system.";
+        } else if (type === ParameterType.EnvVariable) {
+            return "env.";
+        }
     }
 
     private static async requestValue(key: string): Promise<string> {
         const defaultPrompt = `${MessageConstants.PROVIDE_VALUE_OF_KEY} ( Key: ${key} )`;
         return VsCodeUtils.requestMandatoryFiled("", defaultPrompt, false);
+    }
+
+    private addParameter(param: Parameter) {
+        const build: BuildConfig = this.buildSettingsProvider.getCurrentBuild();
+
+        if (param.key.startsWith("system.")) {
+            build.addParameter(ParameterType.SystemProperty, param);
+        } else if (param.key.startsWith("env.")) {
+            build.addParameter(ParameterType.EnvVariable, param);
+        } else {
+            build.addParameter(ParameterType.ConfigParameter, param);
+        }
     }
 
 }
