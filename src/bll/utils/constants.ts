@@ -1,6 +1,7 @@
 import {GitPathFinder} from "../cvsutils/gitpathfinder";
 import {BuildSettingsProvider} from "../../view/dataproviders/BuildSettingsProvider";
 import {CustomizeBuild} from "../commands/CustomizeBuild";
+import {AddBuildParameter} from "../commands/AddBuildParameter";
 
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
@@ -172,6 +173,7 @@ export const TYPES = {
     GitCommandsFactory: Symbol("GitCommandsFactory"),
     BuildSettingsProvider: Symbol("BuildSettingsProvider"),
     CustomizeBuild: Symbol("CustomizeBuild"),
+    AddBuildParameter: Symbol("AddBuildParameter"),
 };
 
 export enum CvsOperation {

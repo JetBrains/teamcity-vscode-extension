@@ -4,6 +4,7 @@ import {DataProviderEnum} from "../../bll/utils/constants";
 import {IBuildSettingsProvider} from "./interfaces/IBuildSettingsProvider";
 import {injectable} from "inversify";
 import {BuildConfig} from "../../bll/entities/buildconfig";
+import {ParametersSetItem} from "../../bll/entities/presentable/ParametersSetItem";
 
 @injectable()
 export class BuildSettingsProvider extends DataProvider implements IBuildSettingsProvider {
@@ -11,10 +12,17 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
     readonly onDidChangeTreeData: Event<any> = this._onDidChangeTreeData.event;
 
     private build: BuildConfig;
+    private configParameters: ParametersSetItem;
+    private systemProperties: ParametersSetItem;
+    private envVariables: ParametersSetItem;
 
     public getChildren(element?: TreeItem):  TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
-            return this.build.getConfigParameters();
+            return [this.configParameters, this.systemProperties, this.envVariables];
+        } else if (element instanceof ParametersSetItem) {
+            return element.children;
+        } else {
+            return [];
         }
     }
 
@@ -23,6 +31,9 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
     }
 
     refreshTreePresentation(): void {
+        this.systemProperties = new ParametersSetItem("System Properties", this.build.getSystemProperties());
+        this.configParameters = new ParametersSetItem("Configuration Parameters", this.build.getConfigParameters());
+        this.envVariables = new ParametersSetItem("Environment Variables", this.build.getEnvVariables());
         this._onDidChangeTreeData.fire();
     }
 
@@ -34,7 +45,8 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
         return this.build;
     }
 
-    setBuild(buildConfig: BuildConfig): void {
-        this.build = buildConfig;
+    setBuild(build: BuildConfig): void {
+        this.build = build;
+        this.refreshTreePresentation();
     }
 }

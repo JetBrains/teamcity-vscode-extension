@@ -17,6 +17,7 @@ import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
+import {AddBuildParameter} from "./bll/commands/AddBuildParameter";
 
 @injectable()
 export class CommandHolder {
@@ -34,7 +35,8 @@ export class CommandHolder {
                 @inject(TYPES.BuildProvider) private readonly buildProvider?: IBuildProvider,
                 @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
                 @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
-                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild) {
+                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
+                @inject(TYPES.AddBuildParameter) private readonly _addBuildParameter?: AddBuildParameter) {
 
         this.providerManager.showEmptyDataProvider();
     }
@@ -94,8 +96,12 @@ export class CommandHolder {
         }
     }
 
+    public async customizeBuild(buildConfigItem: BuildConfigItem) {
+        await this.tryExecuteCommand(this._customizeBuild, buildConfigItem);
+    }
+
     public async addParameter(type: ParameterType): Promise<void> {
-        //
+        await this.tryExecuteCommand(this._addBuildParameter, type);
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
@@ -111,9 +117,5 @@ export class CommandHolder {
             return false;
         }
         return true;
-    }
-
-    public async customizeBuild(buildConfigItem: BuildConfigItem) {
-        return this._customizeBuild.exec([buildConfigItem]);
     }
 }
