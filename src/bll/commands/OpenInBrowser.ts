@@ -24,9 +24,7 @@ export class OpenInBrowser implements Command {
         if (args[0] instanceof BuildConfigItem) {
             const buildConfigItem: BuildConfigItem = args[0];
             const buildConfig: BuildConfig = buildConfigItem.entity;
-
             targetUrl = `${credentials.serverURL}/viewType.html?buildTypeId=${buildConfig.externalId}`;
-            commands.executeCommand("vscode.open", Uri.parse(targetUrl));
         } else if (args[0] instanceof ChangeItem) {
             const changeItem: ChangeItem = args[0];
             const change: Change = changeItem.item;
