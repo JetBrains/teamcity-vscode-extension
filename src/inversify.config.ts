@@ -71,6 +71,7 @@ import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
 import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
+import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -133,3 +134,4 @@ myContainer.bind<CustomizeBuild>(TYPES.CustomizeBuild).to(CustomizeBuild).inSing
 myContainer.bind<AddEditBuildParameter>(TYPES.AddEditBuildParameter).to(AddEditBuildParameter).inSingletonScope();
 myContainer.bind<RemoveBuildParameter>(TYPES.RemoveBuildParameter).to(RemoveBuildParameter).inSingletonScope();
 myContainer.bind<QueueAtTop>(TYPES.QueueAtTop).to(QueueAtTop).inSingletonScope();
+myContainer.bind<OpenInBrowser>(TYPES.OpenInBrowser).to(OpenInBrowser).inSingletonScope();

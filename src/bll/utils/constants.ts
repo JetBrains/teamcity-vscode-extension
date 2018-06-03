@@ -1,4 +1,5 @@
 import {QueueAtTop} from "../commands/QueueAtTop";
+import {OpenInBrowser} from "../commands/OpenInBrowser";
 
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
@@ -31,6 +32,7 @@ export class Constants {
     public static readonly EDIT_PARAMETER_COMMAND_NAME = "teamcity.editParameter";
     public static readonly QUEUE_AT_TOP_COMMAND_NAME = "teamcity.queueAtTop";
     public static readonly UNQUEUE_FROM_TOP_COMMAND_NAME = "teamcity.unQueueFromTop";
+    public static readonly OPEN_IN_BROWSER = "teamcity.openInBrowser";
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
@@ -177,6 +179,7 @@ export const TYPES = {
     AddEditBuildParameter: Symbol("AddEditBuildParameter"),
     RemoveBuildParameter: Symbol("RemoveBuildParameter"),
     QueueAtTop: Symbol("QueueAtTop"),
+    OpenInBrowser: Symbol("OpenInBrowser"),
 };
 
 export enum CvsOperation {

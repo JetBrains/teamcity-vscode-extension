@@ -21,6 +21,7 @@ import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
+import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 
 @injectable()
 export class CommandHolder {
@@ -41,7 +42,8 @@ export class CommandHolder {
                 @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
                 @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
                 @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
-                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop) {
+                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop,
+                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser?: OpenInBrowser) {
 
         this.providerManager.showEmptyDataProvider();
     }
@@ -119,6 +121,10 @@ export class CommandHolder {
 
     public async queueAtTop(): Promise<void> {
         await this.tryExecuteCommand(this._queueAtTop);
+    }
+
+    public async openInBrowser(buildConfig: BuildConfigItem): Promise<void> {
+        await this.tryExecuteCommand(this._openInBrowser, buildConfig);
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {

@@ -198,6 +198,15 @@
         "command": "teamcity.unQueueFromTop",
         "title": "✔ Put the build to the queue top",
         "category": "TeamCity"
+      },
+      {
+        "command": "teamcity.openInBrowser",
+        "title": "Open In Browser",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/edit-parameter.svg",
+          "dark": "resources/icons/dark/edit-parameter.svg"
+        }
       }
     ],
     "views": {
@@ -364,6 +373,15 @@
         {
           "command": "teamcity.removeParameter",
           "when": "view == teamcityBuildSettingsProvider && viewItem == parameterItem"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "view == teamcityBuildsExplorer",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "view == teamcityBuildsExplorer"
         }
       ]
     },

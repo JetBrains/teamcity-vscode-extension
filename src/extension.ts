@@ -69,5 +69,9 @@ export function activate(context: vscode.ExtensionContext) {
         Constants.UNQUEUE_FROM_TOP_COMMAND_NAME, () => {
             extensionManager.commandHolder.queueAtTop();
         }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.OPEN_IN_BROWSER, (buildConfigItem: BuildConfigItem) => {
+            extensionManager.commandHolder.openInBrowser(buildConfigItem);
+        }));
     context.subscriptions.push(extensionManager);
 }
