@@ -56,5 +56,10 @@ export function activate(context: vscode.ExtensionContext) {
         (parameter: ParameterItem) => {
             extensionManager.commandHolder.removeParameter(parameter);
     }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.EDIT_PARAMETER_COMMAND_NAME,
+        (parameter: ParameterItem) => {
+            extensionManager.commandHolder.editParameter(parameter);
+    }));
     context.subscriptions.push(extensionManager);
 }

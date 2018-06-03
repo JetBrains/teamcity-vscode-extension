@@ -17,7 +17,7 @@ import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
-import {AddBuildParameter} from "./bll/commands/AddBuildParameter";
+import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 
@@ -38,7 +38,7 @@ export class CommandHolder {
                 @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
                 @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
                 @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
-                @inject(TYPES.AddBuildParameter) private readonly _addBuildParameter?: AddBuildParameter,
+                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
                 @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter) {
 
         this.providerManager.showEmptyDataProvider();
@@ -105,6 +105,10 @@ export class CommandHolder {
 
     public async addParameter(type: ParameterType): Promise<void> {
         await this.tryExecuteCommand(this._addBuildParameter, type);
+    }
+
+    public async editParameter(param: ParameterItem): Promise<void> {
+        await this.tryExecuteCommand(this._addBuildParameter, param);
     }
 
     public async removeParameter(param: ParameterItem): Promise<void> {

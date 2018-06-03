@@ -179,6 +179,15 @@
           "light": "resources/icons/light/remove-parameter.svg",
           "dark": "resources/icons/dark/remove-parameter.svg"
         }
+      },
+      {
+        "command": "teamcity.editParameter",
+        "title": "Edit this parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/edit-parameter.svg",
+          "dark": "resources/icons/dark/edit-parameter.svg"
+        }
       }
     ],
     "views": {
@@ -315,9 +324,14 @@
           "group": "inline"
         },
         {
+          "command": "teamcity.editParameter",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "inline@1"
+        },
+        {
           "command": "teamcity.removeParameter",
           "when": "view == teamcityBuildSettingsProvider",
-          "group": "inline"
+          "group": "inline@2"
         }
       ]
     },

@@ -68,7 +68,7 @@ import {ContextImpl} from "./view/ContextImpl";
 import {IBuildSettingsProvider} from "./view/dataproviders/interfaces/IBuildSettingsProvider";
 import {BuildSettingsProvider} from "./view/dataproviders/BuildSettingsProvider";
 import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
-import {AddBuildParameter} from "./bll/commands/AddBuildParameter";
+import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
 import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 
 export const myContainer = new Container();
@@ -129,5 +129,5 @@ myContainer.bind<GitCommandsFactory>(TYPES.GitCommandsFactory).to(GitCommandsFac
 myContainer.bind<Context>(TYPES.Context).to(ContextImpl).inSingletonScope();
 myContainer.bind<IBuildSettingsProvider>(TYPES.BuildSettingsProvider).to(BuildSettingsProvider).inSingletonScope();
 myContainer.bind<CustomizeBuild>(TYPES.CustomizeBuild).to(CustomizeBuild).inSingletonScope();
-myContainer.bind<AddBuildParameter>(TYPES.AddBuildParameter).to(AddBuildParameter).inSingletonScope();
+myContainer.bind<AddEditBuildParameter>(TYPES.AddEditBuildParameter).to(AddEditBuildParameter).inSingletonScope();
 myContainer.bind<RemoveBuildParameter>(TYPES.RemoveBuildParameter).to(RemoveBuildParameter).inSingletonScope();
