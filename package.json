@@ -239,6 +239,92 @@
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "teamcity.selectFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.findSuitableBuildConfigurations",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.refreshSuitableBuildConfigurations",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToEmptyDataProvider",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToSelectFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.remoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.showMyChanges",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.queueAtTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToBuildsExplorer",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.editParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.preTestedCommit",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.preTestedCommit",
+          "when": "never"
+        }
+      ],
       "view/title": [
         {
           "command": "teamcity.selectFilesForRemoteRun",
