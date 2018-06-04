@@ -6,7 +6,7 @@
   "publisher": "JetBrains",
   "icon": "assets/icon.png",
   "engines": {
-    "vscode": "^1.17.0"
+    "vscode": "^1.22.0"
   },
   "categories": [
     "Other"
@@ -21,13 +21,13 @@
   "main": "./out/src/extension",
   "contributes": {
     "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "teamcity",
-                    "title": "TeamCity",
-                    "icon": "resources/icons/teamcity-logo.svg"
-                }
-            ]
+      "activitybar": [
+        {
+          "id": "teamcity",
+          "title": "TeamCity",
+          "icon": "resources/icons/teamcity-logo.svg"
+        }
+      ]
     },
     "commands": [
       {
@@ -502,7 +502,7 @@
         {
           "command": "teamcity.removeParameter",
           "when": "viewItem == parameterItem",
-         "group": "inline@2"
+          "group": "inline@2"
         },
         {
           "command": "teamcity.editParameter",

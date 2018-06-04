@@ -13,32 +13,21 @@ import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
 import {Utils} from "../utils/utils";
 import {VsCodeUtils} from "../utils/vscodeutils";
+import {WindowProxy} from "../moduleproxies/window-proxy";
 
 @injectable()
 export class SignIn implements Command {
 
-    private remoteLogin: RemoteLogin;
-    private credentialsStore: CredentialsStore;
-    private settings: Settings;
-    private output: Output;
-    private persistentStorageManager: PersistentStorageManager;
-    private statusBarItem: TeamCityStatusBarItem;
-    private readonly messageManager: MessageManager;
-
-    public constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
-                       @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
-                       @inject(TYPES.Output) output: Output,
-                       @inject(TYPES.Settings) settings: Settings,
-                       @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
-                       @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
-                       @inject(TYPES.MessageManager) messageManager: MessageManager) {
-        this.remoteLogin = remoteLogin;
-        this.credentialsStore = credentialsStore;
-        this.output = output;
-        this.settings = settings;
-        this.persistentStorageManager = persistentStorageManager;
-        this.statusBarItem = statusBarItem;
-        this.messageManager = messageManager;
+    public constructor(@inject(TYPES.RemoteLogin) private readonly remoteLogin: RemoteLogin,
+                       @inject(TYPES.CredentialsStore) private readonly credentialsStore: CredentialsStore,
+                       @inject(TYPES.Output) private readonly output: Output,
+                       @inject(TYPES.Settings) private readonly settings: Settings,
+                       @inject(TYPES.PersistentStorageManager)
+                       private readonly persistentStorageManager: PersistentStorageManager,
+                       @inject(TYPES.TeamCityStatusBarItem) private readonly statusBarItem: TeamCityStatusBarItem,
+                       @inject(TYPES.MessageManager) private readonly messageManager: MessageManager,
+                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+        //
     }
 
     public async exec(args: any[] = undefined): Promise<void> {
@@ -87,25 +76,40 @@ export class SignIn implements Command {
 
     private async getCredentialsFromPersistence(): Promise<Credentials> {
         const creds: Credentials = await this.persistentStorageManager.getCredentials();
-        return creds ? this.validateAndGenerateUserCredentials(creds.serverURL, creds.user, creds.password) : undefined;
+        return creds ? this.validateAndGenerateUserCredentials(creds.serverURL, creds.user, creds.password, true) : undefined;
     }
 
-    private async validateAndGenerateUserCredentials(serverUrl: string, user: string, password: string): Promise<Credentials> {
-        if (serverUrl && user && password) {
-            Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials are not undefined and should be validated`);
-            const unParsedColonValues: string = await this.remoteLogin.authenticate(serverUrl, user, password);
-            const loginInfo: string[] = Utils.parseValueColonValue(unParsedColonValues);
-            const authenticationSuccessful = !!loginInfo;
-            if (authenticationSuccessful) {
-                const sessionId = loginInfo[0];
-                const userId = loginInfo[1];
-                return Promise.resolve<Credentials>(new Credentials(serverUrl, user, password, userId, sessionId));
-            }
-            Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials were not passed an authentication check.`);
-            return Promise.reject(MessageConstants.STATUS_CODE_401);
+    private async validateAndGenerateUserCredentials(serverUrl: string,
+                                                     user: string,
+                                                     password: string,
+                                                     silent: boolean = false): Promise<Credentials> {
+        if (!(serverUrl && user && password)) {
+            Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials are undefined.`);
+            return Promise.reject("Credentials are undefined.");
         }
-        Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials are undefined.`);
-        return Promise.reject("Credentials are undefined.");
+
+        const promise: Promise<Credentials> = new Promise<Credentials>((resolve, reject) => {
+            Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials are not undefined and should be validated`);
+            this.remoteLogin.authenticate(serverUrl, user, password).then((unParsedColonValues: string) => {
+                const loginInfo: string[] = Utils.parseValueColonValue(unParsedColonValues);
+                const authenticationSuccessful = !!loginInfo;
+                if (authenticationSuccessful) {
+                    const sessionId = loginInfo[0];
+                    const userId = loginInfo[1];
+                    resolve(new Credentials(serverUrl, user, password, userId, sessionId));
+                } else {
+                    Logger.logDebug(`SignIn#validateAndGenerateUserCredentials: credentials were not passed an authentication check.`);
+                    reject(MessageConstants.STATUS_CODE_401);
+                }
+            }).catch((err) => {
+                reject(err);
+            });
+        });
+        if (!silent) {
+            this.windowProxy.showWithProgress("Signing in to a TeamCity server", promise);
+        }
+
+        return promise;
     }
 
     private async requestTypingCredentials(fromPersistence: Credentials): Promise<Credentials> {
@@ -120,7 +124,7 @@ export class SignIn implements Command {
             suggestedUsername = fromPersistence.user;
         } else {
             const targetNameSettings = this.settings.lastLogin;
-            const targetName: {url, username} = Utils.tryParseTargetName(targetNameSettings);
+            const targetName: { url, username } = Utils.tryParseTargetName(targetNameSettings);
             suggestedUrl = targetName ? targetName.url : suggestedUrl;
             suggestedUsername = targetName ? targetName.username : suggestedUsername;
         }
@@ -221,6 +225,6 @@ export class SignIn implements Command {
     }
 
     private saveTargetNameToSettings(credentials: Credentials): void {
-        this.settings.lastLogin =  Utils.createTargetName(credentials.serverURL, credentials.user);
+        this.settings.lastLogin = Utils.createTargetName(credentials.serverURL, credentials.user);
     }
 }
