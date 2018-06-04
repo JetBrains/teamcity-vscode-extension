@@ -17,6 +17,10 @@ export class ChangeItem extends TreeItem {
         };
     }
 
+    public get tooltip(): string {
+        return Utils.formChangeTooltip(this.change);
+    }
+
     public get item(): Change {
         return this.change;
     }

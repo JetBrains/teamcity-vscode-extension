@@ -142,10 +142,23 @@ export class Utils {
     }
 
     public static formChangeLabel(change: Change): string {
+        const descriptionLines = change.myDescription.split("\n");
+        const firstDescriptionLine = descriptionLines[0].trim();
+        const firstLineCharacters = firstDescriptionLine.substring(0, 30);
+        const shouldAddDots = (descriptionLines.length > 1) || (firstDescriptionLine !== firstLineCharacters);
+        let shownDescription = firstLineCharacters + (shouldAddDots ? "..." : "");
+        shownDescription = shownDescription ? shownDescription : "<no comment>";
+        const myVersionControlName = change.myVersionControlName;
+        const changesCount = `${change.myChangesCount} file${change.myChangesCount === 0 ? "s" : ""}`;
+        return `${shownDescription}\n${myVersionControlName} | ${changesCount}`;
+    }
+
+    public static formChangeTooltip(change: Change): string {
         const description = change.myDescription ? change.myDescription : "<no comment>";
         const myVersionControlName = change.myVersionControlName;
         const changesCount = `${change.myChangesCount} file${change.myChangesCount === 0 ? "s" : ""}`;
-        return `${description}\n${myVersionControlName} | ${changesCount}`;
+        const displayVersion = change.isPersonal ? "|" : ("| " + change.displayVersion + " |");
+        return `${description}\n${myVersionControlName} ${displayVersion} ${changesCount}`;
     }
 
     public static createTargetName(url: string, username: string): string {
