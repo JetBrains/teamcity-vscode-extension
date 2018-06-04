@@ -45,6 +45,7 @@ export class Constants {
     public static readonly ROOT_PROJECT_ID = "_Root";
     public static readonly TARGET_NAME_SEPARATOR = "|";
     public static readonly REFRESH_MY_CHANGES: string = "teamcity.refreshMyChanges" ;
+    public static readonly RESET_BUILD_CONFIGURATION: string = "teamcity.resetBuildCustomization" ;
 }
 
 /**

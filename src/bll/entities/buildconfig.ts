@@ -53,4 +53,9 @@ export class BuildConfig {
         }
         return this.parameters[paramType];
     }
+
+    public resetCustomization() {
+        this.queueAtTop = false;
+        this.parameters = [];
+    }
 }

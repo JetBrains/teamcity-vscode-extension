@@ -23,6 +23,7 @@ import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
 import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 import {ChangeItem} from "./bll/entities/presentable/changeitem";
+import {BuildConfig} from "./bll/entities/buildconfig";
 
 @injectable()
 export class CommandHolder {
@@ -141,5 +142,10 @@ export class CommandHolder {
             return false;
         }
         return true;
+    }
+
+    public static resetBuildConfiguration(buildConfigItem: BuildConfigItem) {
+        const build: BuildConfig = buildConfigItem.entity;
+        build.resetCustomization();
     }
 }

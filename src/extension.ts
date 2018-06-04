@@ -10,6 +10,7 @@ import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableite
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {ChangeItem} from "./bll/entities/presentable/changeitem";
+import {CommandHolder} from "./commandholder";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -77,6 +78,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(
         Constants.REFRESH_MY_CHANGES, () => {
             extensionManager.commandHolder.showMyChanges();
+        }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.RESET_BUILD_CONFIGURATION, (buildConfigItem: BuildConfigItem) => {
+            CommandHolder.resetBuildConfiguration(buildConfigItem);
         }));
     context.subscriptions.push(extensionManager);
 }
