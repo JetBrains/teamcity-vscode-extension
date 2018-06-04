@@ -74,5 +74,9 @@ export function activate(context: vscode.ExtensionContext) {
         Constants.OPEN_IN_BROWSER, (presentableItem: BuildConfigItem | ChangeItem) => {
             extensionManager.commandHolder.openInBrowser(presentableItem);
         }));
+    context.subscriptions.push(vscode.commands.registerCommand(
+        Constants.REFRESH_MY_CHANGES, () => {
+            extensionManager.commandHolder.showMyChanges();
+        }));
     context.subscriptions.push(extensionManager);
 }

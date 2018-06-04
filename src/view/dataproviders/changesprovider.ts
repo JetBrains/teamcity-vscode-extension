@@ -26,6 +26,7 @@ export class ChangesProvider extends DataProvider implements IChangesProvider {
             }
             this.timePeriods.push(timePeriodItem);
         });
+        this.refreshTreePresentation();
     }
 
     public refreshTreePresentation(): void {

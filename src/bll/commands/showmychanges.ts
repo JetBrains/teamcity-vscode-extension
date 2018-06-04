@@ -33,7 +33,6 @@ export class ShowMyChanges implements Command {
             new TimePeriod(TimePeriodEnum.Yesterday, sortedChanges[TimePeriodEnum.Yesterday]),
             new TimePeriod(TimePeriodEnum.Older, sortedChanges[TimePeriodEnum.Older])];
         this.changesProvider.setContent(timePeriods);
-
         Logger.logDebug("ShowMyChanges::exec finished ");
     }
 

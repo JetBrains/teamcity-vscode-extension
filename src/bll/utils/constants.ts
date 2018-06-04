@@ -44,6 +44,7 @@ export class Constants {
     public static readonly ADD_ENV_VARIABLE_COMMAND_NAME = "teamcity.addEnvVariable";
     public static readonly ROOT_PROJECT_ID = "_Root";
     public static readonly TARGET_NAME_SEPARATOR = "|";
+    public static readonly REFRESH_MY_CHANGES: string = "teamcity.refreshMyChanges" ;
 }
 
 /**

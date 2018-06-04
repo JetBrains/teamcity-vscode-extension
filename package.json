@@ -201,11 +201,20 @@
       },
       {
         "command": "teamcity.openInBrowser",
-        "title": "Open In Browser",
+        "title": "Open in browser",
         "category": "TeamCity",
         "icon": {
           "light": "resources/icons/light/open-in-browser.svg",
           "dark": "resources/icons/dark/open-in-browser.svg"
+        }
+      },
+      {
+        "command": "teamcity.refreshMyChanges",
+        "title": "Refresh my changes",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
         }
       }
     ],
@@ -323,6 +332,10 @@
         {
           "command": "teamcity.preTestedCommit",
           "when": "never"
+        },
+        {
+          "command": "teamcity.refreshMyChanges",
+          "when": "never"
         }
       ],
       "view/title": [
@@ -430,6 +443,11 @@
           "command": "teamcity.signOut",
           "when": "view == teamcityBuildSettingsProvider",
           "group": "@2"
+        },
+        {
+          "command": "teamcity.refreshMyChanges",
+          "when": "view == teamcityChangesProvider",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
