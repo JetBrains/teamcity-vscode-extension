@@ -118,31 +118,6 @@ suite("ChangeItemProxy", () => {
         });
     });
 
-    test("should verify description contains only first line", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            obj.ChangeInfo.mod[0].myDescription[0] += "\n text should not be displayed";
-            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
-            assert.equal(changeItem.myDescription, "test description...");
-            assert.notEqual(changeItem.myDescription.indexOf("..."), -1);
-            done();
-        });
-    });
-
-    test("should verify too long description", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
-            obj.ChangeInfo.mod[0].myDescription[0] += "maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaany characters";
-            const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
-            assert.isTrue(changeItem.myDescription.length <= 33);
-            done();
-        });
-    });
-
     test("should verify version control name", function (done) {
         xml2js.parseString(changePersonalObjXml, (err, obj) => {
             if (err) {
