@@ -4,22 +4,23 @@ import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../utils/constants";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
+import {WindowProxy} from "../moduleproxies/window-proxy";
 
 @injectable()
 export class SelectFilesForRemoteRun implements Command {
 
-    private readonly cvsProvider: CvsProviderProxy;
-    private readonly resourceProvider: IResourceProvider;
-
-    public constructor(@inject(TYPES.CvsProviderProxy) providerProxy: CvsProviderProxy,
-                       @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider) {
-        this.cvsProvider = providerProxy;
-        this.resourceProvider = resourceProvider;
+    public constructor(@inject(TYPES.CvsProviderProxy) private readonly cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.ResourceProvider) private readonly resourceProvider: IResourceProvider,
+                       @inject(TYPES.WindowProxy) private readonly windowsProxy: WindowProxy) {
+        //
     }
 
     public async exec(args?: any[]): Promise<void> {
         Logger.logInfo("SelectFilesForRemoteRun#exec: start");
-        const checkInInfo: CheckInInfo[] = await this.cvsProvider.getRequiredCheckInInfo();
+        const checkInArrayPromise: Promise<CheckInInfo[]> = this.cvsProvider.getRequiredCheckInInfo();
+        this.windowsProxy.showWithProgress("Collecting changes...", checkInArrayPromise);
+
+        const checkInInfo: CheckInInfo[] = await checkInArrayPromise;
         this.resourceProvider.setContent(checkInInfo);
     }
 }

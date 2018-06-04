@@ -5,22 +5,24 @@ import {Change} from "../entities/change";
 import {Logger} from "../utils/logger";
 import {IChangesProvider} from "../../view/dataproviders/interfaces/ichangesprovider";
 import {TimePeriod} from "../entities/timeperiod";
+import {WindowProxy} from "../moduleproxies/window-proxy";
+import {Summary} from "../entities/summary";
 
 @injectable()
 export class ShowMyChanges implements Command {
 
-    private summaryDao: SummaryDao;
-    private changesProvider: IChangesProvider;
-
-    public constructor(@inject(TYPES.SummaryDao) summaryDao: SummaryDao,
-                       @inject(TYPES.ChangesProvider) changesProvider) {
-        this.summaryDao = summaryDao;
-        this.changesProvider = changesProvider;
+    public constructor(@inject(TYPES.SummaryDao) private readonly summaryDao: SummaryDao,
+                       @inject(TYPES.ChangesProvider) private readonly changesProvider: IChangesProvider,
+                       @inject(TYPES.WindowProxy) private readonly windowsProxy: WindowProxy) {
+        //
     }
 
     public async exec(): Promise<void> {
         Logger.logDebug("ShowMyChanges::exec start");
-        const summary = await this.summaryDao.get();
+        const summaryPromise: Promise<Summary> = this.summaryDao.get();
+        this.windowsProxy.showWithProgress("Receiving data from the server...", summaryPromise);
+        const summary: Summary = await summaryPromise;
+
         const changeSet = [summary.changes, summary.personalChanges];
         if ((!summary.changes || summary.changes.length === 0) &&
             (!summary.personalChanges || summary.personalChanges.length === 0)) {

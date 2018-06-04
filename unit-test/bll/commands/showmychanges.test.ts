@@ -10,17 +10,21 @@ import * as TypeMoq from "typemoq";
 import {IChangesProvider} from "../../../src/view/dataproviders/interfaces/ichangesprovider";
 import {TimePeriod} from "../../../src/bll/entities/timeperiod";
 import {TimePeriodEnum, UserChangeStatus} from "../../../src/bll/utils/constants";
+import * as tsMockito from "ts-mockito";
+import {WindowProxy} from "../../../src/bll/moduleproxies/window-proxy";
 
 const rmock = require("mock-require");
 rmock("vscode", { });
 
 suite("Show My Changes", () => {
+    const windowsProxy = mock(WindowProxy);
+    const windowSpy = tsMockito.instance(windowsProxy);
     test("should verify constructor", function () {
         const summaryDaoMock = mock(SummaryDao);
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
     });
 
     test("should verify simple command", function (done) {
@@ -29,7 +33,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             done();
         }).catch((err) => {
@@ -43,7 +47,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             changesProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
             done();
@@ -58,7 +62,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             changesProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
             done();
@@ -73,7 +77,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             changesProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
             done();
@@ -88,7 +92,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             changesProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.never());
             done();
@@ -103,7 +107,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             changesProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.never());
             done();
@@ -117,7 +121,7 @@ suite("Show My Changes", () => {
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             assert.equal(changesProviderSpy.allChanges.length, 2);
             done();
@@ -131,7 +135,7 @@ suite("Show My Changes", () => {
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             assert.equal(changesProviderSpy.allPeriods.length, 3);
             assert.include(changesProviderSpy.allPeriods, TimePeriodEnum.Today);
@@ -149,7 +153,7 @@ suite("Show My Changes", () => {
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             done("there should be an exception");
         }).catch(() => {
@@ -162,7 +166,7 @@ suite("Show My Changes", () => {
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Today].length, 2);
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Yesterday].length, 0);
@@ -178,7 +182,7 @@ suite("Show My Changes", () => {
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getYesterdaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Today].length, 0);
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Yesterday].length, 2);
@@ -194,7 +198,7 @@ suite("Show My Changes", () => {
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getOlderSummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
-        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy);
+        const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
         command.exec().then(() => {
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Today].length, 0);
             assert.equal(changesProviderSpy.allTimePeriods[TimePeriodEnum.Yesterday].length, 0);
