@@ -99,8 +99,8 @@
         "title": "Perform remote run with selected build configurations",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/remoterun.svg",
-          "dark": "resources/icons/dark/remoterun.svg"
+          "light": "resources/icons/light/run.svg",
+          "dark": "resources/icons/dark/run.svg"
         }
       },
       {
