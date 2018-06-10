@@ -197,12 +197,20 @@
       {
         "command": "teamcity.queueAtTop",
         "title": "Put the build to the queue top",
-        "category": "TeamCity"
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/move-to-top.svg",
+          "dark": "resources/icons/dark/move-to-top.svg"
+        }
       },
       {
         "command": "teamcity.unQueueFromTop",
-        "title": "✔ Put the build to the queue top",
-        "category": "TeamCity"
+        "title": "Don't put the build to the queue top",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/moved-to-top.svg",
+          "dark": "resources/icons/dark/moved-to-top.svg"
+        }
       },
       {
         "command": "teamcity.openInBrowser",
@@ -424,29 +432,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "teamcity.addConfigParameter",
-          "when": "view == teamcityBuildSettingsProvider",
-          "group": "navigation@2"
-        },
-        {
-          "command": "teamcity.addSystemProperty",
-          "when": "view == teamcityBuildSettingsProvider",
-          "group": "navigation@3"
-        },
-        {
-          "command": "teamcity.addEnvVariable",
-          "when": "view == teamcityBuildSettingsProvider",
-          "group": "navigation@4"
-        },
-        {
           "command": "teamcity.queueAtTop",
           "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == false",
-          "group": "@1"
+          "group": "navigation@2"
         },
         {
           "command": "teamcity.unQueueFromTop",
           "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == true",
-          "group": "@1"
+          "group": "navigation@2"
         },
         {
           "command": "teamcity.signOut",
@@ -511,6 +504,33 @@
         {
           "command": "teamcity.removeParameter",
           "when": "viewItem == parameterItem"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "viewItem == configuration_parameters",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "viewItem == configuration_parameters"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "viewItem == system_properties",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "viewItem == system_properties"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "viewItem == environment_variables",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "viewItem == environment_variables"
         }
       ]
     },

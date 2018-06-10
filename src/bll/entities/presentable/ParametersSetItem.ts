@@ -12,5 +12,7 @@ export class ParametersSetItem extends ExpandableItem {
         params.forEach((param) => {
             this.children.push(new ParameterItem(param));
         });
+
+        this.contextValue = label.toLowerCase().replace(" ", "_");
     }
 }
