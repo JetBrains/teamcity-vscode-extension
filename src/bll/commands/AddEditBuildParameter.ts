@@ -28,7 +28,9 @@ export class AddEditBuildParameter implements Command {
             value = await AddEditBuildParameter.requestValue(key, param.value);
             this.removeParameter(param);
         } else {
-            key = await AddEditBuildParameter.requestKey(args[0]);
+            const type: ParameterType = args[0];
+            key = await AddEditBuildParameter.requestKey(type);
+            key = AddEditBuildParameter.ensurePrefix(key, type);
             value = await AddEditBuildParameter.requestValue(key);
         }
 
@@ -40,6 +42,16 @@ export class AddEditBuildParameter implements Command {
         const defaultValue = this.getDefaultValue(type);
         const defaultPrompt = `${MessageConstants.PROVIDE_KEY}`;
         return VsCodeUtils.requestMandatoryFiled(defaultValue, defaultPrompt, false);
+    }
+
+    private static ensurePrefix(key: string, type: ParameterType) {
+        if (type === ParameterType.SystemProperty && !key.startsWith("system.")) {
+            key = "system." + key;
+        } else if (type === ParameterType.EnvVariable && !key.startsWith("env.")) {
+            key = "env." + key;
+        }
+
+        return key;
     }
 
     private static async editKey(parameter: Parameter): Promise<string> {
@@ -86,5 +98,4 @@ export class AddEditBuildParameter implements Command {
             build.addParameter(ParameterType.ConfigParameter, param);
         }
     }
-
 }
