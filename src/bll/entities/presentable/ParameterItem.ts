@@ -10,7 +10,7 @@ export class ParameterItem extends TreeItem {
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {
-        const iconName: string = "status-Added.svg";
+        const iconName: string = "parameter.svg";
         return {
             light: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "light", iconName),
             dark: path.join(__dirname, "..", "..", "..", "..", "..", "resources", "icons", "dark", iconName)
