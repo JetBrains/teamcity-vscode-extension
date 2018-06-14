@@ -271,7 +271,7 @@ suite("Git Path Finder", () => {
 function getSettedUpProcessSpy(platform: NodeJS.Platform): ProcessProxy {
     const processMock = mock(ProcessProxy);
     when(processMock.platform).thenReturn(platform);
-    const envArgs = [];
+    const envArgs = {};
     envArgs["ProgramW6432"] = "ProgramW6432Path";
     envArgs["ProgramFiles(x86)"] = "ProgramFiles(x86)Path";
     envArgs["ProgramFiles"] = "ProgramFilesPath";
