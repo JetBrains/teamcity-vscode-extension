@@ -7,29 +7,27 @@ import {BuildProvider} from "./dataproviders/buildprovider";
 import {DataProviderEnum, TYPES} from "../bll/utils/constants";
 import {IProviderManager} from "./iprovidermanager";
 import {ChangesProvider} from "./dataproviders/changesprovider";
+import {BuildSettingsProvider} from "./dataproviders/BuildSettingsProvider";
+import {BuildConfig} from "../bll/entities/buildconfig";
 
 @injectable()
 export class ProviderManager implements IProviderManager {
 
     private shownDataProvider: DataProvider;
     private readonly emptyDataProvider: EmptyDataProvider;
-    private readonly resourcesProvider: ResourceProvider;
-    private readonly changesProvider: ChangesProvider;
-    private readonly buildsProvider: BuildProvider;
     private readonly toDispose: Disposable[] = [];
 
-    constructor(@inject(TYPES.ResourceProvider) resourceProvider: ResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider: BuildProvider,
-                @inject(TYPES.ChangesProvider) changesProvider: ChangesProvider) {
+    constructor(@inject(TYPES.ResourceProvider) private readonly resourcesProvider: ResourceProvider,
+                @inject(TYPES.BuildProvider) private readonly buildsProvider: BuildProvider,
+                @inject(TYPES.ChangesProvider) private readonly changesProvider: ChangesProvider,
+                @inject(TYPES.BuildSettingsProvider) private readonly buildSettingsProvider: BuildSettingsProvider) {
         this.emptyDataProvider = new EmptyDataProvider();
-        this.resourcesProvider = resourceProvider;
-        this.buildsProvider = buildProvider;
-        this.changesProvider = changesProvider;
         this.hideProviders();
-        if (resourceProvider && buildProvider && changesProvider) {
-            this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourceProvider));
-            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildProvider));
+        if (resourcesProvider && buildsProvider && changesProvider && buildSettingsProvider) {
+            this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourcesProvider));
+            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildsProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityChangesProvider", changesProvider));
+            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
         }
     }
 
@@ -56,6 +54,12 @@ export class ProviderManager implements IProviderManager {
     public showChangesProvider(): void {
         this.changesProvider.show();
         this.shownDataProvider = this.changesProvider;
+    }
+
+    public showBuildSettingsProvider(build: BuildConfig): void {
+        this.buildSettingsProvider.setBuild(build);
+        this.buildSettingsProvider.show();
+        this.shownDataProvider = this.buildSettingsProvider;
     }
 
     public getShownDataProvider(): DataProviderEnum {

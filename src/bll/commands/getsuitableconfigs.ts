@@ -10,6 +10,9 @@ import {Output} from "../../view/output";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
+import {GitProvider} from "../../dal/gitprovider";
+import {Context} from "../../view/Context";
+import {WindowProxy} from "../moduleproxies/window-proxy";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -26,7 +29,9 @@ export class GetSuitableConfigs implements Command {
                        @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
                        @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) xmlParser: XmlParser,
-                       @inject(TYPES.Output) output: Output) {
+                       @inject(TYPES.Output) output: Output,
+                       @inject(TYPES.Context) private readonly context: Context,
+                       @inject(TYPES.WindowProxy) private readonly windowsProxy: WindowProxy) {
         this.cvsProvider = cvsProvider;
         this.resourceProvider = resourceProvider;
         this.buildProvider = buildProvider;
@@ -37,15 +42,20 @@ export class GetSuitableConfigs implements Command {
 
     public async exec(args?: any[]): Promise<void> {
         Logger.logInfo("GetSuitableConfigs: starts");
-        const checkInArray: CheckInInfo[] = await this.getCheckInArray();
-        const projects: Project[] = await this.getProjectsWithSuitableBuilds(checkInArray);
+        const checkInArray: CheckInInfo[] = this.getCheckInArray();
+        const projectPromise : Promise<Project[]> = this.getProjectsWithSuitableBuilds(checkInArray);
+        this.windowsProxy.showWithProgress("Looking for suitable build configurations...", projectPromise);
+
+        const projects: Project[] = await projectPromise;
         this.buildProvider.setContent(projects);
+        const showPreTestedCommit: boolean = this.shouldShowPreTestedCommit(checkInArray);
+        this.context.showPreTestedCommitButton(showPreTestedCommit);
         this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);
         this.output.show();
         Logger.logInfo("GetSuitableConfigs: finished");
     }
 
-    private async getCheckInArray(): Promise<CheckInInfo[]> {
+    private getCheckInArray(): CheckInInfo[] {
         const selectedResources: CheckInInfo[] = this.resourceProvider.getSelectedContent();
         if (!selectedResources || selectedResources.length === 0) {
             throw new Error(MessageConstants.NO_CHANGED_FILES_CHOSEN);
@@ -56,12 +66,25 @@ export class GetSuitableConfigs implements Command {
 
     private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<Project[]> {
         const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames(checkInArray);
-        const shortBuildConfigNames: string[] = await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
+        const shortBuildConfigNames: string[] =
+            await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         if (!shortBuildConfigNames || shortBuildConfigNames.length === 0) {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
             return Promise.reject(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
         }
-        const projectsWithRelatedBuildsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const projectsWithRelatedBuildsXmls: string[] =
+            await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls);
+    }
+
+    private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
+        let shouldShow = false;
+        checkInArray.forEach((checkInInfo) => {
+            if (!(checkInInfo.cvsProvider instanceof GitProvider)) {
+                shouldShow = true;
+            }
+        });
+
+        return shouldShow;
     }
 }

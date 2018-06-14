@@ -4,11 +4,13 @@ import {LeaveSelectableItem} from "./leaveselectableitem";
 import {BuildConfig} from "../buildconfig";
 
 export class BuildConfigItem extends LeaveSelectableItem {
+
     private readonly buildConfig: BuildConfig;
 
     constructor(buildConfig: BuildConfig) {
         super(buildConfig.name);
         this.buildConfig = buildConfig;
+        this.contextValue = "buildConfigItem";
     }
 
     public get iconPath(): string | Uri | { light: string | Uri; dark: string | Uri } {

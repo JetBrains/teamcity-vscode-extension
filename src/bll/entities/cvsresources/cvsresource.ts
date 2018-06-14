@@ -13,7 +13,7 @@ export abstract class CvsResource {
     prevServerFilePath?: string;
     prevFileAbsPath?: string;
 
-    constructor(status: CvsFileStatusCode, fileAbsPath: string, fileName: string, prevFileAbsPath?: string) {
+    protected constructor(status: CvsFileStatusCode, fileAbsPath: string, fileName: string, prevFileAbsPath?: string) {
         this.status = status;
         this.fileAbsPath = fileAbsPath;
         this.fileName = fileName;

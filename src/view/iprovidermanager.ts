@@ -1,4 +1,5 @@
 import {DataProviderEnum} from "../bll/utils/constants";
+import {BuildConfig} from "../bll/entities/buildconfig";
 
 export interface IProviderManager {
     hideProviders(): void;
@@ -10,6 +11,8 @@ export interface IProviderManager {
     showBuildProvider(): void;
 
     showChangesProvider(): void;
+
+    showBuildSettingsProvider(build: BuildConfig): void;
 
     getShownDataProvider(): DataProviderEnum;
 

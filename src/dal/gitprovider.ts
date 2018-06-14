@@ -149,55 +149,8 @@ export class GitProvider implements CvsSupportProvider {
     }
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {
-        const commitCommandBuilder: string[] = [];
-        commitCommandBuilder.push(`"${this.gitPath}" -C "${this.workspaceRootPath}" commit ` +
-                                        `-m "${checkInInfo.message}" --quiet --allow-empty-message`);
-        checkInInfo.cvsLocalResources.forEach((cvsLocalResource) => {
-            commitCommandBuilder.push(`"${cvsLocalResource.fileAbsPath}"`);
-            if (cvsLocalResource.prevFileAbsPath) {
-                commitCommandBuilder.push(`"${cvsLocalResource.prevFileAbsPath}"`);
-            }
-        });
-        try {
-            await cp_promise.exec(commitCommandBuilder.join(" "));
-        } catch (err) {
-            Logger.logError(`GitProvider#commit: ${err}`);
-            if (err.stderr && err.stderr.indexOf("Please tell me who you are.") !== -1) {
-                Logger.logError(`GitSupportProvider#commit: Unable to auto-detect email address for ${this.gitPath}. ` +
-                    `Run  git config --global user.email "you@example.com"  git config --global user.name "Your Name"` +
-                    ` to set your account's default identity. ${Utils.formatErrorMessage(err)}`);
-                throw new Error(`Unable to auto-detect email address for ${this.gitPath}`);
-            }
-            throw err;
-        }
-    }
-
-    public async commitAndPush(checkInInfo: CheckInInfo): Promise<void> {
-        await this.commit(checkInInfo);
-        if (await this.remotesExist()) {
-            const pushCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" push"`;
-            await cp_promise.exec(pushCommand);
-        } else {
-            Logger.logWarning("[GitProvider::commitAndPush] there are no remotes to push into");
-        }
-    }
-
-    private async remotesExist(): Promise<boolean> {
-        const gitRemotes: GitRemote[] = await this.getRemotes();
-        return gitRemotes && gitRemotes.length > 0;
-    }
-
-    private async getRemotes(): Promise<GitRemote[]> {
-        const getRemotesCommand: string = `"${this.gitPath}" -C "${this.workspaceRootPath}" remote --verbose`;
-        const getRemotesOutput = await cp_promise.exec(getRemotesCommand);
-        const regex = /^([^\s]+)\s+([^\s]+)\s/;
-        const rawRemotes = getRemotesOutput.stdout.trim().split("\n")
-            .filter((b) => !!b)
-            .map((line) => regex.exec(line))
-            .filter((g) => !!g)
-            .map((groups: RegExpExecArray) => ({name: groups[1], url: groups[2]}));
-
-        return Utils.uniqBy(rawRemotes, (remote) => remote.name);
+        Logger.logWarning("GitProvider#commit: the operation is not supported.");
+        return Promise.resolve();
     }
 
     public getRootPath(): string {
@@ -207,9 +160,4 @@ export class GitProvider implements CvsSupportProvider {
     public allowStaging(): boolean {
         return true;
     }
-}
-
-interface GitRemote {
-    name: string;
-    url: string;
 }

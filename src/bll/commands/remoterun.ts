@@ -41,10 +41,15 @@ export class RemoteRun implements Command {
     }
 
     public async exec(args?: any[]): Promise<void> {
+        if (!args || args.length !== 1) {
+            Logger.logError("RemoteRun#exec: incorrect arguments");
+        }
+        const isPreTestedCommit: boolean = !!args[0];
+
         Logger.logInfo("RemoteRun#exec: Personal Build started");
-        const includedBuildConfigs: BuildConfig[] = this.buildProvider.getSelectedContent();
+        const buildConfigs: BuildConfig[] = this.buildProvider.getSelectedContent();
         const checkInArray: CheckInInfo[] = this.resourceProvider.getSelectedContent();
-        if (!includedBuildConfigs || includedBuildConfigs.length === 0) {
+        if (!buildConfigs || buildConfigs.length === 0) {
             return Promise.reject(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
         }
         this.resourceProvider.resetTreeContent();
@@ -52,15 +57,17 @@ export class RemoteRun implements Command {
         this.providerManager.showEmptyDataProvider();
 
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
-        const commitMessage: string = await this.requestForCommitMessageIfRequired(checkInArray);
-        this.fillCommitMessage(checkInArray, commitMessage);
+        const message: string = await this.requestForCommitMessageIfRequired(checkInArray);
+        this.fillCommitMessage(checkInArray, message);
 
-        const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(includedBuildConfigs, patchAbsPath, commitMessage);
+        const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(buildConfigs, patchAbsPath, message);
         const changeListStatus: ChangeListStatus = await this.patchSender.waitForChangeFinish(queuedBuilds);
 
-        if (changeListStatus === ChangeListStatus.CHECKED) {
+        if (changeListStatus === ChangeListStatus.CHECKED ) {
             Logger.logInfo("RemoteRun#exec: Personal Build is successful");
-            return this.cvsProvider.requestForPostCommit(checkInArray);
+            if (isPreTestedCommit) {
+                return this.cvsProvider.requestForPostCommit(checkInArray);
+            }
         } else {
             Logger.logWarning("RemoteRun#exec: Personal Build failed");
             return Promise.reject("Personal Build failed");

@@ -31,16 +31,19 @@ export class WebLinks {
         if (!buildConfig) {
             return undefined;
         }
+        const queueAtTop: boolean = buildConfig.shouldQueueAtTop();
         const credentials: Credentials = await this.credentialsStore.getCredentials();
         const url: string = `${credentials.serverURL}/app/rest/buildQueue`;
-        const data = `
-            <build personal="true">
+        const data = `<build personal="true">
                 <triggered type='idePlugin' details='Visual Studio Code'/>
-                <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="false"/>
+                <triggeringOptions cleanSources="false" rebuildAllDependencies="false" queueAtTop="${queueAtTop}"/>
                 <buildType id="${buildConfig.externalId}"/>
                 <lastChanges>
                     <change id="${changeListId}" personal="true"/>
                 </lastChanges>
+                <properties>
+                    ${this.getPreparedProperties(buildConfig)}
+                </properties>
             </build>`;
         return new Promise<string>((resolve, reject) => {
             request.post(
@@ -60,9 +63,24 @@ export class WebLinks {
         });
     }
 
+    private getPreparedProperties(build: BuildConfig) {
+        const resultSB: string[] = [];
+        build.getConfigParameters().forEach((param) => {
+            resultSB.push(`<property name="${param.key}" value="${param.value}"/>`);
+        });
+        build.getSystemProperties().forEach((param) => {
+            resultSB.push(`<property name="${param.key}" value="${param.value}"/>`);
+        });
+        build.getEnvVariables().forEach((param) => {
+            resultSB.push(`<property name="${param.key}" value="${param.value}"/>`);
+        });
+        return resultSB.join("\n");
+    }
+
     async uploadChanges(patchAbsPath: string, message: string): Promise<string> {
         const credentials: Credentials = await this.credentialsStore.getCredentials();
-        const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?userId=${credentials.userId}&description=${message}&commitType=0`;
+        const patchDestinationUrl: string = `${credentials.serverURL}/uploadChanges.html?` +
+            `userId=${credentials.userId}&description=${message}&commitType=0`;
         const options = {
             url: patchDestinationUrl,
             headers: {

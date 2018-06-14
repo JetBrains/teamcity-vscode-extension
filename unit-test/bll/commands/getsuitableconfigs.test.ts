@@ -12,8 +12,15 @@ import {TeamCityOutput} from "../../../src/view/teamcityoutput";
 import {IResourceProvider} from "../../../src/view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../../src/view/dataproviders/interfaces/ibuildprovider";
 import * as TypeMoq from "typemoq";
+import {Context} from "../../../src/view/Context";
+import {WindowProxy} from "../../../src/bll/moduleproxies/window-proxy";
 
 suite("Get Suitable Configs", () => {
+    const contextMock: TypeMoq.IMock<Context> = TypeMoq.Mock.ofType<Context>();
+    const contextSpy: Context = contextMock.object;
+    const windowsProxy = mock(WindowProxy);
+    const windowSpy = tsMockito.instance(windowsProxy);
+
     test("should verify that we request data from resource provider", function (done) {
         const checkInInfoMock: CheckInInfo = mock(CheckInInfo);
         const checkInInfoSpy: CheckInInfo = tsMockito.instance(checkInInfoMock);
@@ -34,9 +41,15 @@ suite("Get Suitable Configs", () => {
         const buildProviderMock: TypeMoq.IMock<IBuildProvider> = TypeMoq.Mock.ofType<IBuildProvider>();
         const buildProviderSpy: IBuildProvider = buildProviderMock.object;
 
+        const contextMock: TypeMoq.IMock<Context> = TypeMoq.Mock.ofType<Context>();
+        const contextSpy: Context = contextMock.object;
+
         const outputMock = mock(TeamCityOutput);
         const outputSpy = tsMockito.instance(outputMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
+
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       contextSpy, windowSpy);
         testableCommand.exec().then(() => {
             resourceProviderMock.verify((bar) => bar.getSelectedContent(), TypeMoq.Times.atLeastOnce());
             done();
@@ -65,7 +78,11 @@ suite("Get Suitable Configs", () => {
 
         const outputMock = mock(TeamCityOutput);
         const outputSpy = tsMockito.instance(outputMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
+
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       contextSpy, windowSpy);
+
         testableCommand.exec().then(() => {
             done("An exception was expected");
         }).catch(() => {
@@ -93,7 +110,10 @@ suite("Get Suitable Configs", () => {
 
         const outputMock = mock(TeamCityOutput);
         const outputSpy = tsMockito.instance(outputMock);
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
+
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       contextSpy, windowSpy);
 
         testableCommand.exec().then(() => {
             verify(remoteBuildServerMock.getSuitableConfigurations(anything())).called();
@@ -125,7 +145,10 @@ suite("Get Suitable Configs", () => {
         const outputMock = mock(TeamCityOutput);
         const outputSpy = tsMockito.instance(outputMock);
 
-        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy, remoteBuildServerSpy, xmlParserSpy, outputSpy);
+        const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       contextSpy, windowSpy);
+
         testableCommand.exec().then(() => {
             buildProviderMock.verify((foo) => foo.setContent(TypeMoq.It.isAny()), TypeMoq.Times.atLeastOnce());
             done();

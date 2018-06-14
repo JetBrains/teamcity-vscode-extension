@@ -6,8 +6,8 @@ import {ImageConstants} from "../imageconstants";
 import {TimePeriodEnum} from "../../utils/constants";
 
 export class TimePeriodItem extends ExpandableItem {
-    public children: TreeItem[] = [];
-    private timePeriod: TimePeriodEnum;
+    public readonly children: TreeItem[] = [];
+    private readonly timePeriod: TimePeriodEnum;
 
     constructor(timePeriod: TimePeriod) {
         super(timePeriod.timePeriod, TreeItemCollapsibleState.Collapsed);

@@ -11,29 +11,19 @@ import {Output} from "../../view/output";
 import {PersistentStorageManager} from "./persistentstoragemanager";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 import {MessageManager} from "../../view/messagemanager";
+import {WindowProxy} from "../moduleproxies/window-proxy";
 
 @injectable()
 export class InMemoryCredentialsStore implements CredentialsStore {
 
-    private readonly remoteLogin: RemoteLogin;
-    private readonly output: Output;
-    private readonly settings: Settings;
-    private readonly persistentStorageManager: PersistentStorageManager;
-    private readonly statusBarItem: TeamCityStatusBarItem;
-    private readonly messageManager: MessageManager;
-
-    constructor(@inject(TYPES.RemoteLogin) remoteLogin: RemoteLogin,
-                @inject(TYPES.Output) output: Output,
-                @inject(TYPES.Settings) settings: Settings,
-                @inject(TYPES.PersistentStorageManager) persistentStorageManager: PersistentStorageManager,
-                @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
-                @inject(TYPES.MessageManager) messageManager: MessageManager) {
-        this.remoteLogin = remoteLogin;
-        this.output = output;
-        this.settings = settings;
-        this.persistentStorageManager = persistentStorageManager;
-        this.statusBarItem = statusBarItem;
-        this.messageManager = messageManager;
+    constructor(@inject(TYPES.RemoteLogin) private readonly remoteLogin: RemoteLogin,
+                @inject(TYPES.Output) private readonly output: Output,
+                @inject(TYPES.Settings) private readonly settings: Settings,
+                @inject(TYPES.PersistentStorageManager) private persistentStorageManager: PersistentStorageManager,
+                @inject(TYPES.TeamCityStatusBarItem) private readonly statusBarItem: TeamCityStatusBarItem,
+                @inject(TYPES.MessageManager) private readonly messageManager: MessageManager,
+                @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+        //
     }
 
     private credentials: Credentials;
@@ -58,7 +48,8 @@ export class InMemoryCredentialsStore implements CredentialsStore {
 
     private async signIn(): Promise<void> {
         const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings,
-                                         this.persistentStorageManager, this.statusBarItem, this.messageManager);
+                                         this.persistentStorageManager, this.statusBarItem,
+                                         this.messageManager, this.windowProxy);
         return signInCommand.exec();
     }
 

@@ -8,7 +8,7 @@ export class ProcessProxy {
         return process.platform;
     }
 
-    public get env(): string[] {
+    public get env(): { [variable: string]: string } {
         return process.env;
     }
 }

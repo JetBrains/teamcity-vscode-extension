@@ -6,7 +6,7 @@
   "publisher": "JetBrains",
   "icon": "assets/icon.png",
   "engines": {
-    "vscode": "^1.17.0"
+    "vscode": "^1.22.0"
   },
   "categories": [
     "Other"
@@ -20,6 +20,15 @@
   },
   "main": "./out/src/extension",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "teamcity",
+          "title": "TeamCity",
+          "icon": "resources/icons/teamcity-logo.svg"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "teamcity.signIn",
@@ -90,8 +99,17 @@
         "title": "Perform remote run with selected build configurations",
         "category": "TeamCity",
         "icon": {
-          "light": "resources/icons/light/remoterun.svg",
-          "dark": "resources/icons/dark/remoterun.svg"
+          "light": "resources/icons/light/run.svg",
+          "dark": "resources/icons/dark/run.svg"
+        }
+      },
+      {
+        "command": "teamcity.preTestedCommit",
+        "title": "Perform pre-tested commit with selected build configurations",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/pretested-commit.svg",
+          "dark": "resources/icons/dark/pretested-commit.svg"
         }
       },
       {
@@ -107,33 +125,236 @@
           "light": "resources/icons/light/serverchanges.svg",
           "dark": "resources/icons/dark/serverchanges.svg"
         }
+      },
+      {
+        "command": "teamcity.customizeBuild",
+        "title": "Customize build",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/settings.svg",
+          "dark": "resources/icons/dark/settings.svg"
+        }
+      },
+      {
+        "command": "teamcity.resetBuildCustomization",
+        "title": "Reset build customization",
+        "category": "TeamCity"
+      },
+      {
+        "command": "teamcity.backToBuildsExplorer",
+        "title": "Back to the previous step",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/back.svg",
+          "dark": "resources/icons/dark/back.svg"
+        }
+      },
+      {
+        "command": "teamcity.addConfigParameter",
+        "title": "Add configuration parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
+        }
+      },
+      {
+        "command": "teamcity.addSystemProperty",
+        "title": "Add system property",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
+        }
+      },
+      {
+        "command": "teamcity.addEnvVariable",
+        "title": "Add environment variable",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/add-config-parameter.svg",
+          "dark": "resources/icons/dark/add-config-parameter.svg"
+        }
+      },
+      {
+        "command": "teamcity.removeParameter",
+        "title": "Remove this parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/remove-parameter.svg",
+          "dark": "resources/icons/dark/remove-parameter.svg"
+        }
+      },
+      {
+        "command": "teamcity.editParameter",
+        "title": "Edit this parameter",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/edit-parameter.svg",
+          "dark": "resources/icons/dark/edit-parameter.svg"
+        }
+      },
+      {
+        "command": "teamcity.queueAtTop",
+        "title": "Put the build to the queue top",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/move-to-top.svg",
+          "dark": "resources/icons/dark/move-to-top.svg"
+        }
+      },
+      {
+        "command": "teamcity.unQueueFromTop",
+        "title": "Don't put the build to the queue top",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/moved-to-top.svg",
+          "dark": "resources/icons/dark/moved-to-top.svg"
+        }
+      },
+      {
+        "command": "teamcity.openInBrowser",
+        "title": "Open in browser",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/open-in-browser.svg",
+          "dark": "resources/icons/dark/open-in-browser.svg"
+        }
+      },
+      {
+        "command": "teamcity.refreshMyChanges",
+        "title": "Refresh my changes",
+        "category": "TeamCity",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
       }
     ],
     "views": {
-      "explorer": [
+      "teamcity": [
         {
           "id": "teamcityEmptyExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == EmptyDataProvider"
         },
         {
           "id": "teamcityResourceExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == ResourcesProvider"
         },
         {
           "id": "teamcityBuildsExplorer",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == BuildsProvider"
         },
         {
           "id": "teamcityChangesProvider",
-          "name": "TeamCity",
+          "name": "",
           "when": "teamcity-explorer == ChangesProvider"
+        },
+        {
+          "id": "teamcityBuildSettingsProvider",
+          "name": "",
+          "when": "teamcity-explorer == BuildSettingsProvider"
         }
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "teamcity.selectFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.refreshSelectedFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.findSuitableBuildConfigurations",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.refreshSuitableBuildConfigurations",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToEmptyDataProvider",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToSelectFilesForRemoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.remoteRun",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.showMyChanges",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.queueAtTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.backToBuildsExplorer",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.editParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.preTestedCommit",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.preTestedCommit",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.refreshMyChanges",
+          "when": "never"
+        },
+        {
+          "command": "teamcity.resetBuildCustomization",
+          "when": "never"
+        }
+      ],
       "view/title": [
         {
           "command": "teamcity.selectFilesForRemoteRun",
@@ -186,6 +407,11 @@
           "group": "navigation@3"
         },
         {
+          "command": "teamcity.preTestedCommit",
+          "when": "view == teamcityBuildsExplorer && teamcity-show-pretested-commit == true",
+          "group": "navigation@4"
+        },
+        {
           "command": "teamcity.signOut",
           "when": "view == teamcityBuildsExplorer",
           "group": "@1"
@@ -199,6 +425,112 @@
           "command": "teamcity.signOut",
           "when": "view == teamcityChangesProvider",
           "group": "@1"
+        },
+        {
+          "command": "teamcity.backToBuildsExplorer",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "navigation@1"
+        },
+        {
+          "command": "teamcity.queueAtTop",
+          "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == false",
+          "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.unQueueFromTop",
+          "when": "view == teamcityBuildSettingsProvider && teamcity-queue-at-top == true",
+          "group": "navigation@2"
+        },
+        {
+          "command": "teamcity.signOut",
+          "when": "view == teamcityBuildSettingsProvider",
+          "group": "@2"
+        },
+        {
+          "command": "teamcity.refreshMyChanges",
+          "when": "view == teamcityChangesProvider",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == buildConfigItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == changeItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == changeItem"
+        },
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "viewItem == buildConfigItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "teamcity.customizeBuild",
+          "when": "viewItem == buildConfigItem",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.resetBuildCustomization",
+          "when": "viewItem == buildConfigItem",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.openInBrowser",
+          "when": "viewItem == buildConfigItem",
+          "group": "@2"
+        },
+        {
+          "command": "teamcity.editParameter",
+          "when": "viewItem == parameterItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "viewItem == parameterItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "teamcity.editParameter",
+          "when": "viewItem == parameterItem"
+        },
+        {
+          "command": "teamcity.removeParameter",
+          "when": "viewItem == parameterItem"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "viewItem == configuration_parameters",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addConfigParameter",
+          "when": "viewItem == configuration_parameters"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "viewItem == system_properties",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addSystemProperty",
+          "when": "viewItem == system_properties"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "viewItem == environment_variables",
+          "group": "inline"
+        },
+        {
+          "command": "teamcity.addEnvVariable",
+          "when": "viewItem == environment_variables"
         }
       ]
     },

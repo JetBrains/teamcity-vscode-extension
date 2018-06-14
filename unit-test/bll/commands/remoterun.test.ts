@@ -44,7 +44,7 @@ suite("Run Remote Run", () => {
 
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
                                               providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy);
-        testableCommand.exec().then(() => {
+        testableCommand.exec([false]).then(() => {
             verify(patchManagerMock.preparePatch(anything())).called();
             buildProviderMock.verify((foo) => foo.getSelectedContent(), TypeMoq.Times.atLeastOnce());
             tsMockito.verify(patchSenderMock.sendPatch(anything(), anything(), anything())).called();
@@ -77,7 +77,7 @@ suite("Run Remote Run", () => {
 
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
                                               providerManagerSpy, patchSenderSpy, undefined, windowSpy);
-        testableCommand.exec().then(() => {
+        testableCommand.exec([false]).then(() => {
             done("There should be an error!");
         }).catch(() => {
             tsMockito.verify(patchSenderMock.sendPatch(anything(), anything(), anything())).never();
@@ -113,7 +113,7 @@ suite("Run Remote Run", () => {
 
         const testableCommand = new RemoteRun(cvsProviderProxySpy, buildProviderSpy, resourceProviderSpy,
                                               providerManagerSpy, patchSenderSpy, patchManagerSpy, windowSpy);
-        testableCommand.exec().then(() => {
+        testableCommand.exec([false]).then(() => {
             buildProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
             resourceProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
             providerManagerMock.verify((foo) => foo.showEmptyDataProvider(), TypeMoq.Times.atLeastOnce());

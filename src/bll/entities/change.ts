@@ -4,25 +4,16 @@ import {UserChangeStatus} from "../utils/constants";
 
 export class Change {
 
-    public readonly id: number;
-    public readonly isPersonal: boolean;
-    public readonly status: UserChangeStatus;
-    public readonly myChangesCount: number;
-    public readonly myDescription: string;
-    public readonly myVersionControlName: string;
-    public readonly vcsDate: Date;
-    public builds: Build[];
-
-    public constructor(id: number, isPersonal: boolean, status: UserChangeStatus, builds: Build[],
-                       changesCount: number, description: string, versionControlName: string, vcsDate: Date) {
-        this.id = id;
-        this.isPersonal = isPersonal;
-        this.status = status;
-        this.builds = builds;
-        this.myChangesCount = changesCount;
-        this.myDescription = description;
-        this.myVersionControlName = versionControlName;
-        this.vcsDate = vcsDate;
+    public constructor(public readonly id: number,
+                       public readonly isPersonal: boolean,
+                       public readonly status: UserChangeStatus,
+                       public builds: Build[],
+                       public readonly myChangesCount: number,
+                       public readonly myDescription: string,
+                       public readonly myVersionControlName: string,
+                       public readonly vcsDate: Date,
+                       public readonly displayVersion: string) {
+        //
     }
 
     public toString(): string {
@@ -40,8 +31,10 @@ export class Change {
         const changesCount: number = Change.getChangesCount(changeObj);
         const description: string = Change.getDescription(changeObj);
         const versionControlName: string = Change.getVersionControlName(changeObj);
-        const vcsDate : Date = Change.getVcsDate(changeObj);
-        return new Change(id, isPersonal, status, builds, changesCount, description, versionControlName, vcsDate);
+        const vcsDate: Date = Change.getVcsDate(changeObj);
+        const myDisplayVersion: string = Change.getDisplayVersion(changeObj);
+        return new Change(id, isPersonal, status, builds, changesCount,
+                          description, versionControlName, vcsDate, myDisplayVersion);
     }
 
     private static isPersonal(changeObj: any): boolean {
@@ -124,12 +117,7 @@ export class Change {
             Logger.logDebug(`Change#getDescription: description is not reachable. default: empty string`);
             return "";
         }
-        const description = changeObj.mod[0].myDescription[0].trim();
-        const descriptionLines = description.split("\n");
-        const firstDescriptionLine = descriptionLines[0].trim();
-        const firstLineCharacters = firstDescriptionLine.substring(0, 30);
-        const shouldAddDots = (descriptionLines.length > 1) || (firstDescriptionLine !== firstLineCharacters);
-        return firstLineCharacters + (shouldAddDots ? "..." : "");
+        return changeObj.mod[0].myDescription[0].trim();
     }
 
     private static getVersionControlName(changeObj: any): string {
@@ -165,7 +153,19 @@ export class Change {
             Logger.logDebug(`Change#getDate: vcsDate is not reachable. default: current date`);
             return new Date();
         }
-        const vcsDateInMilliseconds : number = +changeObj.mod[0].myVcsDate[0];
+        const vcsDateInMilliseconds: number = +changeObj.mod[0].myVcsDate[0];
         return new Date(vcsDateInMilliseconds);
+    }
+
+    private static getDisplayVersion(changeObj: any): string {
+        if (!changeObj ||
+            !changeObj.mod ||
+            !changeObj.mod[0] ||
+            !changeObj.mod[0].myDisplayVersion ||
+            changeObj.mod[0].myDisplayVersion[0] === undefined) {
+            Logger.logDebug(`Change#getDisplayVersion: displayVersion is not reachable. default: empty line`);
+            return "";
+        }
+        return changeObj.mod[0].myDisplayVersion[0];
     }
 }

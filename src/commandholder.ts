@@ -1,5 +1,5 @@
 import {inject, injectable} from "inversify";
-import {TYPES} from "./bll/utils/constants";
+import {ParameterType, TYPES} from "./bll/utils/constants";
 import {Output} from "./view/output";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
@@ -15,68 +15,51 @@ import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider
 import {Logger} from "./bll/utils/logger";
 import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
+import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
+import {CustomizeBuild} from "./bll/commands/CustomizeBuild";
+import {AddEditBuildParameter} from "./bll/commands/AddEditBuildParameter";
+import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
+import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
+import {QueueAtTop} from "./bll/commands/QueueAtTop";
+import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
+import {ChangeItem} from "./bll/entities/presentable/changeitem";
+import {BuildConfig} from "./bll/entities/buildconfig";
 
 @injectable()
 export class CommandHolder {
 
-    private output: Output;
-    private readonly _signIn: SignIn;
-    private readonly _signOut: SignOut;
-    private readonly _selectFilesForRemoteRun: SelectFilesForRemoteRun;
-    private readonly _getSuitableConfigs: GetSuitableConfigs;
-    private readonly _remoteRun: RemoteRun;
-    private readonly _showMyChanges: ShowMyChanges;
-    private providerManager: IProviderManager;
-    private credentialsStore: CredentialsStore;
-    private resourceProvider: IResourceProvider;
-    private changesProvider: IChangesProvider;
-    private buildProvider: IBuildProvider;
-    private messageManager: MessageManager;
+    constructor(@inject(TYPES.Output) private readonly output: Output,
+                @inject(TYPES.SignIn) private readonly _signIn: SignIn,
+                @inject(TYPES.SignOut) private readonly _signOut: SignOut,
+                @inject(TYPES.SelectFilesForRemoteRun) private readonly _selectForRemoteRun: SelectFilesForRemoteRun,
+                @inject(TYPES.GetSuitableConfigs) private readonly _getSuitableConfigs: GetSuitableConfigs,
+                @inject(TYPES.RemoteRun) private readonly _remoteRun: RemoteRun,
+                @inject(TYPES.ShowMyChangesCommand) private readonly _showMyChanges: ShowMyChanges,
+                @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
+                @inject(TYPES.CredentialsStore) private readonly credentialsStore?: CredentialsStore,
+                @inject(TYPES.ResourceProvider) private readonly resourceProvider?: IResourceProvider,
+                @inject(TYPES.BuildProvider) private readonly buildProvider?: IBuildProvider,
+                @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
+                @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
+                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
+                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
+                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
+                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop,
+                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser?: OpenInBrowser) {
 
-    constructor(@inject(TYPES.Output) output: Output,
-                @inject(TYPES.SignIn) signInCommand: SignIn,
-                @inject(TYPES.SignOut) signOutCommand: SignOut,
-                @inject(TYPES.SelectFilesForRemoteRun) selectFilesForRemoteRun: SelectFilesForRemoteRun,
-                @inject(TYPES.GetSuitableConfigs) getSuitableConfigs: GetSuitableConfigs,
-                @inject(TYPES.RemoteRun) remoteRun: RemoteRun,
-                @inject(TYPES.ShowMyChangesCommand) showMyChanges: ShowMyChanges,
-                @inject(TYPES.ProviderManager) providerManager: IProviderManager,
-                @inject(TYPES.CredentialsStore) credentialsStore?: CredentialsStore,
-                @inject(TYPES.ResourceProvider) resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) buildProvider?: IBuildProvider,
-                @inject(TYPES.ChangesProvider) changesProvider?: IChangesProvider,
-                @inject(TYPES.MessageManager) messageManager?: MessageManager) {
-        this.output = output;
-        this._signIn = signInCommand;
-        this._signOut = signOutCommand;
-        this._selectFilesForRemoteRun = selectFilesForRemoteRun;
-        this._getSuitableConfigs = getSuitableConfigs;
-        this._remoteRun = remoteRun;
-        this._showMyChanges = showMyChanges;
-        this.providerManager = providerManager;
-        this.credentialsStore = credentialsStore;
-        this.resourceProvider = resourceProvider;
-        this.buildProvider = buildProvider;
-        this.changesProvider = changesProvider;
-        this.messageManager = messageManager;
+        this.providerManager.showEmptyDataProvider();
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
-        if (await this.tryExecuteCommand(this._signIn, fromPersistentStore)) {
-            if (this.credentialsStore.getCredentialsSilently()) {
-                this.providerManager.showEmptyDataProvider();
-            }
-        }
+        await this.tryExecuteCommand(this._signIn, fromPersistentStore);
     }
 
     public async signOut(): Promise<void> {
-        if (await this.tryExecuteCommand(this._signOut)) {
-            this.providerManager.hideProviders();
-        }
+        await this.tryExecuteCommand(this._signOut);
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        if (await this.tryExecuteCommand(this._selectFilesForRemoteRun)) {
+        if (await this.tryExecuteCommand(this._selectForRemoteRun)) {
             this.providerManager.refreshAll();
             this.providerManager.showResourceProvider();
         }
@@ -90,12 +73,20 @@ export class CommandHolder {
     }
 
     public async remoteRunWithChosenConfigs(): Promise<void> {
-        await this.tryExecuteCommand(this._remoteRun);
+        await this.tryExecuteCommand(this._remoteRun, false);
+    }
+
+    public async preTestedCommit(): Promise<void> {
+        await this.tryExecuteCommand(this._remoteRun, true);
     }
 
     public backToEmptyDataProvider(): void {
         this.resourceProvider.resetTreeContent();
         this.providerManager.showEmptyDataProvider();
+    }
+
+    public backToBuildExplorer(): void {
+        this.providerManager.showBuildProvider();
     }
 
     public backToSelectFilesForRemoteRun(): void {
@@ -114,6 +105,30 @@ export class CommandHolder {
         }
     }
 
+    public async customizeBuild(buildConfigItem: BuildConfigItem) {
+        await this.tryExecuteCommand(this._customizeBuild, buildConfigItem);
+    }
+
+    public async addParameter(type: ParameterType): Promise<void> {
+        await this.tryExecuteCommand(this._addBuildParameter, type);
+    }
+
+    public async editParameter(param: ParameterItem): Promise<void> {
+        await this.tryExecuteCommand(this._addBuildParameter, param);
+    }
+
+    public async removeParameter(param: ParameterItem): Promise<void> {
+        await this.tryExecuteCommand(this._removeBuildParameter, param);
+    }
+
+    public async queueAtTop(): Promise<void> {
+        await this.tryExecuteCommand(this._queueAtTop);
+    }
+
+    public async openInBrowser(presentableItem: BuildConfigItem | ChangeItem): Promise<void> {
+        await this.tryExecuteCommand(this._openInBrowser, presentableItem);
+    }
+
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
         try {
             if (args && args.length > 0) {
@@ -127,5 +142,10 @@ export class CommandHolder {
             return false;
         }
         return true;
+    }
+
+    public static resetBuildConfiguration(buildConfigItem: BuildConfigItem) {
+        const build: BuildConfig = buildConfigItem.entity;
+        build.resetCustomization();
     }
 }

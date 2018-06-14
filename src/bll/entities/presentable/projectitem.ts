@@ -9,7 +9,7 @@ export class ProjectItem extends ExpandableItem {
     public children: TreeItem[] = [];
 
     constructor(project: Project) {
-        super(project.name, TreeItemCollapsibleState.Collapsed);
+        super(project.name, TreeItemCollapsibleState.Expanded);
         project.children.forEach((child) => {
            if (child instanceof Project) {
                this.children.push(new ProjectItem(child));

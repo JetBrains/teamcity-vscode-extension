@@ -1,4 +1,5 @@
-import {GitPathFinder} from "../cvsutils/gitpathfinder";
+import {QueueAtTop} from "../commands/QueueAtTop";
+import {OpenInBrowser} from "../commands/OpenInBrowser";
 
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
@@ -27,11 +28,24 @@ export class Constants {
     public static readonly CHANGE_CONFIG_STATE = "changeConfigState";
     public static readonly CHANGE_COLLAPSIBLE_STATE = "changeCollapsibleState";
     public static readonly REMOTE_RUN_WITH_CONFIGS_COMMAND_NAME = "teamcity.remoteRun";
+    public static readonly REMOVE_PARAMETER_COMMAND_NAME = "teamcity.removeParameter";
+    public static readonly EDIT_PARAMETER_COMMAND_NAME = "teamcity.editParameter";
+    public static readonly QUEUE_AT_TOP_COMMAND_NAME = "teamcity.queueAtTop";
+    public static readonly UNQUEUE_FROM_TOP_COMMAND_NAME = "teamcity.unQueueFromTop";
+    public static readonly OPEN_IN_BROWSER = "teamcity.openInBrowser";
+    public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
     public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
+    public static readonly BACK_TO_BUILD_EXPLORER_COMMAND_NAME = "teamcity.backToBuildsExplorer";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
+    public static readonly CUSTOMIZE_BUILD_COMMAND_NAME = "teamcity.customizeBuild";
+    public static readonly ADD_CONFIG_PARAMETER_COMMAND_NAME = "teamcity.addConfigParameter";
+    public static readonly ADD_SYSTEM_PROPERTY_COMMAND_NAME = "teamcity.addSystemProperty";
+    public static readonly ADD_ENV_VARIABLE_COMMAND_NAME = "teamcity.addEnvVariable";
     public static readonly ROOT_PROJECT_ID = "_Root";
     public static readonly TARGET_NAME_SEPARATOR = "|";
+    public static readonly REFRESH_MY_CHANGES: string = "teamcity.refreshMyChanges" ;
+    public static readonly RESET_BUILD_CONFIGURATION: string = "teamcity.resetBuildCustomization" ;
 }
 
 /**
@@ -83,10 +97,10 @@ export enum ChangeListStatus {
 }
 
 export enum CvsFileStatusCode {
-    MODIFIED = <any>"M",
-    ADDED = <any>"A",
-    DELETED = <any>"D",
-    RENAMED = <any>"R"
+    MODIFIED = <any>"Modified",
+    ADDED = <any>"Added",
+    DELETED = <any>"Deleted",
+    RENAMED = <any>"Renamed"
 }
 
 export enum LoggingLevel {
@@ -116,6 +130,7 @@ export const TYPES = {
     SummaryDao: Symbol("SummaryDao"),
     BuildDao: Symbol("BuildDao"),
     Output: Symbol("Output"),
+    Context: Symbol("Context"),
     PatchManager: Symbol("PatchManager"),
     XmlParser: Symbol("XmlParser"),
     GitProvider: Symbol("GitProvider"),
@@ -161,6 +176,12 @@ export const TYPES = {
     GitStatusRowsParser: Symbol("GitStatusRowsParser"),
     GitCommandArgumentsParser: Symbol("GitCommandArgumentsParser"),
     GitCommandsFactory: Symbol("GitCommandsFactory"),
+    BuildSettingsProvider: Symbol("BuildSettingsProvider"),
+    CustomizeBuild: Symbol("CustomizeBuild"),
+    AddEditBuildParameter: Symbol("AddEditBuildParameter"),
+    RemoveBuildParameter: Symbol("RemoveBuildParameter"),
+    QueueAtTop: Symbol("QueueAtTop"),
+    OpenInBrowser: Symbol("OpenInBrowser"),
 };
 
 export enum CvsOperation {
@@ -173,7 +194,8 @@ export enum DataProviderEnum {
     EmptyDataProvider = "EmptyDataProvider",
     ResourcesProvider = "ResourcesProvider",
     BuildsProvider = "BuildsProvider",
-    ChangesProvider = "ChangesProvider"
+    ChangesProvider = "ChangesProvider",
+    BuildSettingsProvider = "BuildSettingsProvider"
 }
 
 export enum TimePeriodEnum {
@@ -189,4 +211,10 @@ export enum UserChangeStatus {
     PENDING = "Pending", //at least one configuration has not bean run yet (no failed and no canceled)
     RUNNING_SUCCESSFULY = "Running successfully", //there are no failed, pending and canceled and there is at least one running
     RUNNING_FAILED = "Running failed"//there are no pending and canceled, but there is at least one failed and there is at least one running
+}
+
+export enum ParameterType {
+    ConfigParameter = 0,
+    SystemProperty = 1,
+    EnvVariable = 2
 }
