@@ -8,6 +8,7 @@ import {Utils} from "../bll/utils/utils";
 import {TYPES} from "../bll/utils/constants";
 import {IVsCodeUtils} from "../bll/utils/ivscodeutils";
 import {RequestProxy, RequestResult} from "../bll/moduleproxies/request-proxy";
+import * as url from "url";
 
 const BigInteger = forge.jsbn.BigInteger;
 const pki = forge.pki;
@@ -59,9 +60,15 @@ export class RemoteLogin {
     }
 
     public createClient(serverUrl: string): xmlrpc.Client {
+        const urlParts = url.parse(serverUrl);
         const headers = {};
         headers["User-Agent"] = this.vsCodeUtils.getUserAgentString();
-        return xmlrpc.createClient({url: serverUrl + "/RPC2", cookies: true, headers: headers});
+        const clientOptions = {url: serverUrl + "/RPC2", cookies: true, headers: headers};
+        if (urlParts.protocol !== "https:") {
+            return xmlrpc.createClient(clientOptions);
+        } else {
+            return xmlrpc.createSecureClient(clientOptions);
+        }
     }
 
     /**
