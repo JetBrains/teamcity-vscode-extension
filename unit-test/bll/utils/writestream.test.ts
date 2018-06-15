@@ -1,7 +1,4 @@
-"use strict";
-
 import * as path from "path";
-import {assert} from "chai";
 import * as fs_async from "async-file";
 import {AsyncWriteStream} from "../../../src/dal/asyncwritestream";
 

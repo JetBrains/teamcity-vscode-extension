@@ -12,12 +12,14 @@ import {BuildConfig} from "../entities/buildconfig";
 @injectable()
 export class XmlParser {
 
-    public async parseProjectsWithRelatedBuilds(buildsXml: string[]): Promise<Project[]> {
+    public async parseProjectsWithRelatedBuilds(
+        buildsXml: string[],
+        buildConfigFilter: (buildConfig: BuildConfig) => boolean): Promise<Project[]> {
         if (buildsXml === undefined) {
             Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
         }
-        const projectMap: Project[] = [];
+        const projectMap: any = {};
         Logger.logDebug("XmlParser#parseBuilds: start collect projects");
         for (let i: number = 0; i < buildsXml.length; i++) {
             const buildXml = buildsXml[i];
@@ -26,11 +28,14 @@ export class XmlParser {
                     if (err) {
                         reject(err);
                     }
-                    XmlParser.collectProject(project, projectMap);
+                    XmlParser.collectProject(project, projectMap, buildConfigFilter);
                     resolve();
                 });
             });
         }
+
+        XmlParser.buildProjectHierarchy(projectMap);
+
         const result: Project[] = projectMap[Constants.ROOT_PROJECT_ID].children;
         Logger.logDebug("XmlParser#parseBuilds: collected projects:");
         Logger.LogObject(result);
@@ -41,26 +46,24 @@ export class XmlParser {
      * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
      * @param xmlProject - project as a TeamCity project entity
      * @param projectMap - the result of the call of the method will be pushed to this object.
+     * @param buildConfigFilter - filter acceptable build configs
      */
-    private static collectProject(xmlProject: any, projectMap: Project[]) {
+    private static collectProject(xmlProject: any,
+                                  projectMap: any,
+                                  buildConfigFilter: (buildConfig: BuildConfig) => boolean) {
         if (!xmlProject || !xmlProject.Project || !xmlProject.Project.myProjectId ||
             !xmlProject.Project.name) {
             return;
         }
         const parentId = xmlProject.Project.myParentProjectId ? xmlProject.Project.myParentProjectId[0] : undefined;
-
         const project = new Project(xmlProject.Project.myProjectId[0], parentId, xmlProject.Project.name[0]);
-
-        const buildConfigs: BuildConfig[] = XmlParser.getBuildConfigs(xmlProject);
+        const buildConfigs: BuildConfig[] = XmlParser.getBuildConfigs(xmlProject, buildConfigFilter);
         buildConfigs.forEach((config) => project.addChildBuildConfig(config));
-
         projectMap[project.id] = project;
-        if (project.parentId && projectMap[project.parentId]) {
-            projectMap[project.parentId].addChildProject(project);
-        }
     }
 
-    private static getBuildConfigs(xmlProject: any) : BuildConfig[] {
+    private static getBuildConfigs(xmlProject: any,
+                                   buildConfigFilter: (buildConfig: BuildConfig) => boolean) : BuildConfig[] {
         const buildConfigs: BuildConfig[] = [];
         if (xmlProject.Project.configs &&
             xmlProject.Project.configs[0] && xmlProject.Project.configs[0].Configuration) {
@@ -72,10 +75,24 @@ export class XmlParser {
                     !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
                     continue;
                 }
-                buildConfigs.push(new BuildConfig(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
+                const buildConfig = new BuildConfig(xmlConfiguration.id[0],
+                                                    xmlConfiguration.myExternalId[0],
+                                                    xmlConfiguration.name[0]);
+                if (buildConfigFilter(buildConfig)) {
+                    buildConfigs.push(buildConfig);
+                }
             }
         }
         return buildConfigs;
+    }
+
+    private static buildProjectHierarchy(projectMap: any) {
+        for (const projectId of Object.keys(projectMap)) {
+            const project = projectMap[projectId];
+            if (project.parentId && projectMap[project.parentId]) {
+                projectMap[project.parentId].addChildProject(project);
+            }
+        }
     }
 
     /**
@@ -103,7 +120,8 @@ export class XmlParser {
         return new Promise<Summary>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
-                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + Utils.formatErrorMessage(err));
+                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: "
+                        + Utils.formatErrorMessage(err));
                     reject(err);
                 }
                 resolve(Summary.fromXmlRpcObject(obj));
@@ -115,7 +133,8 @@ export class XmlParser {
         return new Promise<QueuedBuild>((resolve, reject) => {
             xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
                 if (err) {
-                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo. An error occurs ${Utils.formatErrorMessage(err)}`);
+                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo.
+                     An error occurs ${Utils.formatErrorMessage(err)}`);
                     reject(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo`);
                 }
                 resolve(queuedBuildInfo.build.$);
