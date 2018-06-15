@@ -15,7 +15,7 @@ suite("XmlParser", () => {
         const level2Project = getProjectXml("project2", "project1");
         const level3Project = getProjectXml("project3", "project2", true);
         const result: Project[] = await xmlParser.parseProjectsWithRelatedBuilds(
-            [topProject, level1Project, level2Project, level3Project]);
+            [topProject, level1Project, level2Project, level3Project], () => {return true; });
         assert.equal(result.length, 1);
         assert.equal(result[0].id, "project1");
         assert.equal(result[0].children.length, 1);
@@ -32,7 +32,7 @@ suite("XmlParser", () => {
         const level2Project = getProjectXml("project2", "project1");
         const level3Project = getProjectXml("project3", "project2", true);
         const result: Project[] = await xmlParser.parseProjectsWithRelatedBuilds(
-            [level3Project, level1Project, topProject, level2Project]);
+            [level3Project, level1Project, topProject, level2Project], () => {return true; });
         assert.equal(result.length, 1);
         assert.equal(result[0].id, "project1");
         assert.equal(result[0].children.length, 1);

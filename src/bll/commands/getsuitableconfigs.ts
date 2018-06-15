@@ -13,6 +13,7 @@ import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider
 import {GitProvider} from "../../dal/gitprovider";
 import {Context} from "../../view/Context";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {BuildConfig} from "../entities/buildconfig";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -74,7 +75,9 @@ export class GetSuitableConfigs implements Command {
         }
         const projectsWithRelatedBuildsXmls: string[] =
             await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls);
+        const buildConfigFilter: (buildConfig: BuildConfig) => boolean
+            = this.buildConfigFilterWrapper(shortBuildConfigNames);
+        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls, buildConfigFilter);
     }
 
     private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
@@ -86,5 +89,11 @@ export class GetSuitableConfigs implements Command {
         });
 
         return shouldShow;
+    }
+
+    private buildConfigFilterWrapper(shortBuildConfigNames: string[]) {
+        return (buildConfig: BuildConfig) => {
+            return shortBuildConfigNames.indexOf(buildConfig.id) !== -1;
+        };
     }
 }
