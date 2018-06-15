@@ -36,3 +36,16 @@
 - Update icons for some actions
 - Support "Open in IDE" functionality
 - Fix different bugs
+
+## [v1.0.0-beta.7](https://github.com/JetBrains/teamcity-vscode-extension/tree/v1.0.0-beta.7) (2018-06-15)
+[Full Changelog](https://github.com/JetBrains/teamcity-vscode-extension/compare/v1.0.0-beta.6...v1.0.0-beta.7)
+- Use working-tree as default data source for git
+- Fix multiple vulnerabilities
+- Move teamcity data providers under the TeamCity view container
+- Add "Open In IDE" functionality
+- Add "Pre-tested commit" functionality for tfvc
+- Allow to customize builds
+- Support secure protocol for xmlrpc protocol 
+- Fix problems with building project hierarchy
+- Fix problems with filtering build configurations
+- Fix different other bugs
