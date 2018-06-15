@@ -17,7 +17,7 @@ export class XmlParser {
             Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
             return [];
         }
-        const projectMap: Project[] = [];
+        const projectMap: any = {};
         Logger.logDebug("XmlParser#parseBuilds: start collect projects");
         for (let i: number = 0; i < buildsXml.length; i++) {
             const buildXml = buildsXml[i];
@@ -31,6 +31,9 @@ export class XmlParser {
                 });
             });
         }
+
+        XmlParser.buildProjectHierarchy(projectMap);
+
         const result: Project[] = projectMap[Constants.ROOT_PROJECT_ID].children;
         Logger.logDebug("XmlParser#parseBuilds: collected projects:");
         Logger.LogObject(result);
@@ -42,22 +45,16 @@ export class XmlParser {
      * @param xmlProject - project as a TeamCity project entity
      * @param projectMap - the result of the call of the method will be pushed to this object.
      */
-    private static collectProject(xmlProject: any, projectMap: Project[]) {
+    private static collectProject(xmlProject: any, projectMap: any) {
         if (!xmlProject || !xmlProject.Project || !xmlProject.Project.myProjectId ||
             !xmlProject.Project.name) {
             return;
         }
         const parentId = xmlProject.Project.myParentProjectId ? xmlProject.Project.myParentProjectId[0] : undefined;
-
         const project = new Project(xmlProject.Project.myProjectId[0], parentId, xmlProject.Project.name[0]);
-
         const buildConfigs: BuildConfig[] = XmlParser.getBuildConfigs(xmlProject);
         buildConfigs.forEach((config) => project.addChildBuildConfig(config));
-
         projectMap[project.id] = project;
-        if (project.parentId && projectMap[project.parentId]) {
-            projectMap[project.parentId].addChildProject(project);
-        }
     }
 
     private static getBuildConfigs(xmlProject: any) : BuildConfig[] {
@@ -72,10 +69,21 @@ export class XmlParser {
                     !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
                     continue;
                 }
-                buildConfigs.push(new BuildConfig(xmlConfiguration.id[0], xmlConfiguration.myExternalId[0], xmlConfiguration.name[0]));
+                buildConfigs.push(new BuildConfig(xmlConfiguration.id[0],
+                                                  xmlConfiguration.myExternalId[0],
+                                                  xmlConfiguration.name[0]));
             }
         }
         return buildConfigs;
+    }
+
+    private static buildProjectHierarchy(projectMap: any) {
+        for (const projectId of Object.keys(projectMap)) {
+            const project = projectMap[projectId];
+            if (project.parentId && projectMap[project.parentId]) {
+                projectMap[project.parentId].addChildProject(project);
+            }
+        }
     }
 
     /**
@@ -103,7 +111,8 @@ export class XmlParser {
         return new Promise<Summary>((resolve, reject) => {
             xml2js.parseString(summeryXmlObj, (err, obj) => {
                 if (err) {
-                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: " + Utils.formatErrorMessage(err));
+                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: "
+                        + Utils.formatErrorMessage(err));
                     reject(err);
                 }
                 resolve(Summary.fromXmlRpcObject(obj));
@@ -115,7 +124,8 @@ export class XmlParser {
         return new Promise<QueuedBuild>((resolve, reject) => {
             xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
                 if (err) {
-                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo. An error occurs ${Utils.formatErrorMessage(err)}`);
+                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo.
+                     An error occurs ${Utils.formatErrorMessage(err)}`);
                     reject(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo`);
                 }
                 resolve(queuedBuildInfo.build.$);
