@@ -46,7 +46,6 @@ export class CommandHolder {
                 @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
                 @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop,
                 @inject(TYPES.OpenInBrowser) private readonly _openInBrowser?: OpenInBrowser) {
-
         this.providerManager.showEmptyDataProvider();
     }
 

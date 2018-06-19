@@ -77,8 +77,7 @@ export class GetSuitableConfigs implements Command {
             await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
         const buildConfigFilter: (buildConfig: BuildConfig) => boolean
             = this.buildConfigFilterWrapper(shortBuildConfigNames);
-        const result = await this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls, buildConfigFilter);
-        return result;
+        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls, buildConfigFilter);
     }
 
     private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
