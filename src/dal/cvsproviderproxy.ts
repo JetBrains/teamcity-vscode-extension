@@ -81,7 +81,9 @@ export class CvsProviderProxy {
             const provider: CvsSupportProvider = this.actualProviders[i];
             try {
                 const checkInInfo: CheckInInfo = await provider.getRequiredCheckInInfo();
-                result.push(checkInInfo);
+                if (checkInInfo.cvsLocalResources.length > 0) {
+                    result.push(checkInInfo);
+                }
             } catch (err) {
                 Logger.logError(Utils.formatErrorMessage(err));
             }
@@ -123,7 +125,7 @@ export class CvsProviderProxy {
 
     private ensureProvidersExist() {
         if (this.actualProviders.length === 0) {
-            throw new Error("No one cvs provider was found.");
+            throw new Error("No cvs provider found");
         }
     }
 }
