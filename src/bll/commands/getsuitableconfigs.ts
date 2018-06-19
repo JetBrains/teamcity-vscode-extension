@@ -18,27 +18,15 @@ import {BuildConfig} from "../entities/buildconfig";
 @injectable()
 export class GetSuitableConfigs implements Command {
 
-    private readonly cvsProvider: CvsProviderProxy;
-    private readonly resourceProvider: IResourceProvider;
-    private readonly buildProvider: IBuildProvider;
-    private readonly remoteBuildServer: RemoteBuildServer;
-    private readonly xmlParser: XmlParser;
-    private readonly output: Output;
-
-    public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
-                       @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
-                       @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
-                       @inject(TYPES.RemoteBuildServer) remoteBuildServer: RemoteBuildServer,
-                       @inject(TYPES.XmlParser) xmlParser: XmlParser,
-                       @inject(TYPES.Output) output: Output,
+    public constructor(@inject(TYPES.CvsProviderProxy) private readonly cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.ResourceProvider) private readonly resourceProvider: IResourceProvider,
+                       @inject(TYPES.BuildProvider) private readonly buildProvider: IBuildProvider,
+                       @inject(TYPES.RemoteBuildServer) private readonly remoteBuildServer: RemoteBuildServer,
+                       @inject(TYPES.XmlParser) private readonly xmlParser: XmlParser,
+                       @inject(TYPES.Output) private readonly output: Output,
                        @inject(TYPES.Context) private readonly context: Context,
                        @inject(TYPES.WindowProxy) private readonly windowsProxy: WindowProxy) {
-        this.cvsProvider = cvsProvider;
-        this.resourceProvider = resourceProvider;
-        this.buildProvider = buildProvider;
-        this.remoteBuildServer = remoteBuildServer;
-        this.xmlParser = xmlParser;
-        this.output = output;
+        //
     }
 
     public async exec(args?: any[]): Promise<void> {

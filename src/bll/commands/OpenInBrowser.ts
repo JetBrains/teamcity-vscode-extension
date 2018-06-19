@@ -6,7 +6,6 @@ import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {commands, Uri} from "vscode";
 import { ChangeItem } from "../entities/presentable/changeitem";
 import { Change } from "../entities/change";
-import {instance} from "ts-mockito";
 
 @injectable()
 export class OpenInBrowser implements Command {
