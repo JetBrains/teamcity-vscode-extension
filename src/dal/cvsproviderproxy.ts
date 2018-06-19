@@ -75,6 +75,8 @@ export class CvsProviderProxy {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo[]> {
         const result: CheckInInfo[] = [];
+        this.ensureProvidersExist();
+
         for (let i = 0; i < this.actualProviders.length; i++) {
             const provider: CvsSupportProvider = this.actualProviders[i];
             try {
@@ -117,5 +119,11 @@ export class CvsProviderProxy {
         checkInArray.forEach((checkInInfo) => {
             checkInInfo.message = commitMessage;
         });
+    }
+
+    private ensureProvidersExist() {
+        if (this.actualProviders.length === 0) {
+            throw new Error("No one cvs provider was found.");
+        }
     }
 }
