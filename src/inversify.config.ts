@@ -71,10 +71,12 @@ import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
 import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
+import {NotificationManager} from "./view/NotificationManager";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
 myContainer.bind<Output>(TYPES.Output).to(TeamCityOutput).inSingletonScope();
+myContainer.bind<NotificationManager>(TYPES.NotificationManager).to(NotificationManager).inSingletonScope();
 myContainer.bind<CredentialsStore>(TYPES.CredentialsStore).to(InMemoryCredentialsStore).inSingletonScope();
 myContainer.bind<ExtensionManager>(TYPES.ExtensionManager).to(ExtensionManager).inSingletonScope();
 myContainer.bind<CommandHolder>(TYPES.CommandHolder).to(CommandHolder).inSingletonScope();

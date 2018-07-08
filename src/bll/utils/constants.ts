@@ -123,6 +123,7 @@ export const TYPES = {
     ExtensionManager: Symbol("ExtensionManager"),
     CommandHolder: Symbol("CommandHolder"),
     NotificationWatcher: Symbol("NotificationWatcher"),
+    NotificationManager: Symbol("NotificationManager"),
     RemoteLogin: Symbol("RemoteLogin"),
     RemoteBuildServer: Symbol("RemoteBuildServer"),
     WebLinks: Symbol("WebLinks"),

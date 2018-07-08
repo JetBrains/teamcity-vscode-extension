@@ -9,6 +9,7 @@ import {MessageConstants} from "../utils/messageconstants";
 import {Credentials} from "../credentialsstore/credentials";
 import {XmlParser} from "../utils/xmlparser";
 import {TcNotificationMessage} from "./TcNotificationMessage";
+import {NotificationManager} from "../../view/NotificationManager";
 
 @injectable()
 export class NewNotificationWatcher implements Disposable {
@@ -22,10 +23,11 @@ export class NewNotificationWatcher implements Disposable {
 
     constructor(@inject(TYPES.RemoteBuildServer) private readonly myRemoteBuildServer: RemoteBuildServer,
                 @inject(TYPES.CredentialsStore) private readonly myCredentialsStore: CredentialsStore,
-                @inject(TYPES.XmlParser) private readonly myXmlParser: XmlParser) {
-                this.activate().catch((err) => {
-                    console.error(err);
-                });
+                @inject(TYPES.XmlParser) private readonly myXmlParser: XmlParser,
+                @inject(TYPES.NotificationManager) private readonly myNotificationManager: NotificationManager) {
+        this.activate().catch((err) => {
+            console.error(err);
+        });
     }
 
     private async activate(): Promise<void> {
@@ -102,6 +104,7 @@ export class NewNotificationWatcher implements Disposable {
             this.myLastTimestamp = sortedMessages[sortedMessages.length - 1].myModificationCounter;
         }
     }
+
     // Major messages - messages that will be shown any way
     // Minor messages - messages that may be shown and may be not
     // Obsolete messages - messages that will not be shown any way
@@ -132,14 +135,16 @@ export class NewNotificationWatcher implements Disposable {
         });
 
         if (majorCount + minorProcessed > 0) {
-            Logger.logInfo(`${majorCount + minorProcessed + notProcessed} more notifications were received from TeamCity /` +
-                ` ${majorCount + minorProcessed} shown`);
+            Logger.logInfo(`${majorCount + minorProcessed + notProcessed} more notifications were ` +
+                `received from TeamCity / ${majorCount + minorProcessed} shown`);
         }
-     }
+    }
 
     private async processNewMessage(message: TcNotificationMessage, silent: boolean = false) {
         this.obsoleteNotificationIds.add(message.myModificationCounter);
-        console.log(JSON.stringify(message));
+        if (!silent) {
+            this.myNotificationManager.showNotificationMessage(message);
+        }
     }
 
     private async reinitWatcherMutableResources() {
