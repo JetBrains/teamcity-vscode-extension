@@ -1,5 +1,5 @@
 import {MessageItem, window} from "vscode";
-import {Constants, MessageTypes} from "../bll/utils/constants";
+import {MessageTypes} from "../bll/utils/constants";
 import {injectable} from "inversify";
 
 @injectable()
@@ -18,14 +18,14 @@ export class MessageManager {
     }
 
     private static async showMessage(message: string, type: MessageTypes, ...messageItems: MessageItem[]): Promise<MessageItem> {
-        const messageToDisplay: string = `(${Constants.EXTENSION_NAME_CAPITALIZED}) ${message}`;
+        const messageToDisplay: string = `${message}`;
         let chosenItem: MessageItem;
         switch (type) {
             case MessageTypes.Error:
                 chosenItem = await window.showErrorMessage(messageToDisplay, ...messageItems);
                 break;
             case MessageTypes.Info:
-                chosenItem = await window.showInformationMessage(messageToDisplay, ...messageItems);
+                chosenItem = await window.showInformationMessage(messageToDisplay, {modal: false}, ...messageItems);
                 break;
             case MessageTypes.Warn:
                 chosenItem = await window.showWarningMessage(messageToDisplay, ...messageItems);
