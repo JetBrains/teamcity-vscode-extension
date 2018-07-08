@@ -117,7 +117,9 @@ export class Change {
             Logger.logDebug(`Change#getDescription: description is not reachable. default: empty string`);
             return "";
         }
-        return changeObj.mod[0].myDescription[0].trim();
+
+        return changeObj.mod[0].myDescription[0].toString().trim();
+
     }
 
     private static getVersionControlName(changeObj: any): string {
