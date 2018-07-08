@@ -11,19 +11,19 @@ import {Disposable} from "vscode";
 import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 import {IProviderManager} from "./view/iprovidermanager";
 import {WebLinkListener} from "./dal/weblinklistener";
+import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
 
 @injectable()
 export class ExtensionManager {
     private credentialsStore: CredentialsStore;
     private readonly _commandHolder: CommandHolder;
-    private _notificationWatcher: NotificationWatcher;
     private readonly _disposables: Disposable[] = [];
     private readonly providerManager: IProviderManager;
 
     constructor(@inject(TYPES.Settings) settings: Settings,
                 @inject(TYPES.CredentialsStore) credentialsStore: CredentialsStore,
                 @inject(TYPES.CommandHolder) commandHolder: CommandHolder,
-                @inject(TYPES.NotificationWatcher) notificationWatcher: NotificationWatcher,
+                @inject(TYPES.NotificationWatcher) notificationWatcher: NewNotificationWatcher,
                 @inject(TYPES.Output) output: Output,
                 @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
@@ -31,8 +31,6 @@ export class ExtensionManager {
                 @inject(TYPES.WebLinkListener) webLinkListener: WebLinkListener) {
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
-        this._notificationWatcher = notificationWatcher;
-        notificationWatcher.activate();
         this._disposables.push(notificationWatcher);
         this._disposables.push(output);
         this._disposables.push(statusBarItem);

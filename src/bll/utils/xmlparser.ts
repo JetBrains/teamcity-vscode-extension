@@ -7,6 +7,7 @@ import {injectable} from "inversify";
 import {Project} from "../entities/project";
 import {BuildConfig} from "../entities/buildconfig";
 import {parseString} from "xml2js";
+import {TcNotificationMessage} from "../notifications/TcNotificationMessage";
 
 @injectable()
 export class XmlParser {
@@ -102,11 +103,21 @@ export class XmlParser {
 
         return buildInfoObj.build.$.status;
     }
+
+    public async parseNotificationMessage(messageXml: string): Promise<TcNotificationMessage> {
+        const wrapRoute: string = "jetbrains.buildServer.notification.NotificationMessage";
+        const resultWrapper: any = await parseStringAsync(messageXml, false);
+        if (!resultWrapper.hasOwnProperty(wrapRoute)) {
+            return Promise.reject("Result doesn't contain notification message");
+        } else {
+            return resultWrapper[wrapRoute];
+        }
+    }
 }
 
-async function parseStringAsync(data: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-        parseString(data, (err, result) => {
+async function parseStringAsync(data: string, explicitArray: boolean = true): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        parseString(data, {explicitArray: explicitArray, validator: preparator}, (err, result) => {
             if (err) {
                 return reject(err);
             } else {
@@ -114,4 +125,14 @@ async function parseStringAsync(data: string): Promise<any> {
             }
         });
     });
+}
+
+function preparator(xpath, currentValue, newValue) {
+    if (!isNaN(newValue)) {
+        return Number(newValue);
+    } else if (newValue === "false" || newValue === "true") {
+        return Boolean(newValue);
+    } else {
+        return newValue;
+    }
 }

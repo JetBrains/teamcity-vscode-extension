@@ -108,6 +108,35 @@ export class RemoteBuildServer {
         });
     }
 
+    public async getCurrentTimestamp(): Promise<number> {
+        const client: any = await this.createAndInitClient();
+        return new Promise<number>((resolve, reject) => {
+            client.methodCall("IDEPluginNotificator.getCurrentTimestamp", [], (err, data) => {
+                if (err || !data) {
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
+                    return reject(err);
+                }
+
+                resolve(data);
+            });
+        });
+    }
+
+    public async getBuildMessages(timestamp: number): Promise<string[]> {
+        const client: any = await this.createAndInitClient();
+        const userId: string = await this.getUserId();
+        return new Promise<string[]>((resolve, reject) => {
+            client.methodCall("IDEPluginNotificator.getBuildMessages", [userId, timestamp], (err, data) => {
+                if (err || !data) {
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
+                    return reject(err);
+                }
+
+                resolve(data);
+            });
+        });
+    }
+
     /**
      * @param suitableConfigurations - array of build configurations. Extension requests all related projects to collect full information
      * about build configurations (including projectNames and buildConfigurationName). The information is required to create label for BuildConfig.
