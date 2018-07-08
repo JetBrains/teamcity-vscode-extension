@@ -127,8 +127,11 @@ export class RemoteBuildServer {
         const userId: string = await this.getUserId();
         return new Promise<string[]>((resolve, reject) => {
             client.methodCall("IDEPluginNotificator.getBuildMessages", [userId, timestamp], (err, data) => {
-                if (err || !data) {
-                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
+                //sometimes it returns "Invalid XML-RPC message" just after timestamp was updated
+                if (err && err.message === "Invalid XML-RPC message") {
+                    return resolve([]);
+                } else if (err) {
+                    Logger.logError("IDEPluginNotificator.getBuildMessages: return an error: " + Utils.formatErrorMessage(err));
                     return reject(err);
                 }
 
