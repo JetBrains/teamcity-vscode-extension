@@ -1,142 +1,131 @@
+import "reflect-metadata";
 import {assert} from "chai";
-import * as xml2js from "xml2js";
 import {Change} from "../../../src/bll/entities/change";
 import {UserChangeStatus} from "../../../src/bll/utils/constants";
+import {parseStringAsync} from "../../../src/bll/utils/xmlparser";
 
 suite("ChangeItemProxy", () => {
     test("should verify constructor/changeId", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.id, 61);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify is Personal", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.isPersonal, true);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify is not Personal", function (done) {
-        xml2js.parseString(changeNonPersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changeNonPersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.isPersonal, false);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changeNonPersonalObjXml:" + err);
         });
     });
 
     test("should verify status", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.status, UserChangeStatus.CHECKED);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify builds", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.builds.length, 1);
             assert.equal(changeItem.builds[0].id, 87);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify builds", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.builds.length, 1);
             assert.equal(changeItem.builds[0].id, 87);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify builds", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.builds.length, 1);
             assert.equal(changeItem.builds[0].id, 87);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify changesCount", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.myChangesCount, 5);
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify description extract", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.myDescription, "test description");
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify description trim", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             obj.ChangeInfo.mod[0].myDescription[0] += "     ";
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.myDescription, "test description");
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify version control name", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.equal(changeItem.myVersionControlName, "Pre-Tested Commit");
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 
     test("should verify vcs date", function (done) {
-        xml2js.parseString(changePersonalObjXml, (err, obj) => {
-            if (err) {
-                done("Unexpected error during parse of changePersonalObjXml.");
-            }
+        parseStringAsync(changePersonalObjXml).then((obj) => {
             const changeItem: Change = Change.fromXmlRpcObject(obj.ChangeInfo);
             assert.deepEqual(changeItem.vcsDate, new Date(1500457539333));
             done();
+        }).catch((err) => {
+            done("Unexpected error during parse of changePersonalObjXml:" + err);
         });
     });
 });

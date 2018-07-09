@@ -115,7 +115,8 @@ export class XmlParser {
     }
 }
 
-async function parseStringAsync(data: string, explicitArray: boolean = true): Promise<any> {
+/*exported only for tests*/
+export async function parseStringAsync(data: string, explicitArray: boolean = true): Promise<any> {
     return new Promise<any>((resolve, reject) => {
         parseString(data, {explicitArray: explicitArray, validator: preparator}, (err, result) => {
             if (err) {
