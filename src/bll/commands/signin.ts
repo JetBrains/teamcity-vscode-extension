@@ -20,7 +20,6 @@ export class SignIn implements Command {
 
     public constructor(@inject(TYPES.RemoteLogin) private readonly remoteLogin: RemoteLogin,
                        @inject(TYPES.CredentialsStore) private readonly credentialsStore: CredentialsStore,
-                       @inject(TYPES.Output) private readonly output: Output,
                        @inject(TYPES.Settings) private readonly settings: Settings,
                        @inject(TYPES.PersistentStorageManager)
                        private readonly persistentStorageManager: PersistentStorageManager,
@@ -179,7 +178,6 @@ export class SignIn implements Command {
     }
 
     private async greetUser(credentials: Credentials): Promise<void> {
-        this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
         this.statusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
         if (this.settings.showSignInWelcome) {
             this.showWelcomeMessage();
