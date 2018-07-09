@@ -71,7 +71,7 @@ import {RemoveBuildParameter} from "./bll/commands/RemoveBuildParameter";
 import {QueueAtTop} from "./bll/commands/QueueAtTop";
 import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
-import {NotificationManager} from "./view/NotificationManager";
+import {NotificationManager} from "./bll/notifications/NotificationManager";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();

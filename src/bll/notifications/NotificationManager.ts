@@ -1,10 +1,9 @@
-import {TcNotificationMessage} from "../bll/notifications/TcNotificationMessage";
-import {MessageManager} from "./messagemanager";
-import {TYPES} from "../bll/utils/constants";
+import {TcNotificationMessage} from "./TcNotificationMessage";
+import {MessageManager} from "../../view/messagemanager";
+import {TYPES} from "../utils/constants";
 import {inject, injectable} from "inversify";
-import {MessageItem} from "vscode";
 import opn = require("opn");
-import {TcNotificationStatus} from "../bll/notifications/TcNotificationStatus";
+import {TcNotificationStatus} from "./TcNotificationStatus";
 
 @injectable()
 export class NotificationManager {
@@ -37,4 +36,8 @@ export class NotificationManager {
             opn(notificationMessage.myDetailLink);
         }
     }
+}
+
+interface MessageItem {
+    title: string;
 }

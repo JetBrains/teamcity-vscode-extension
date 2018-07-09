@@ -9,7 +9,7 @@ import {MessageConstants} from "../utils/messageconstants";
 import {Credentials} from "../credentialsstore/credentials";
 import {XmlParser} from "../utils/xmlparser";
 import {TcNotificationMessage} from "./TcNotificationMessage";
-import {NotificationManager} from "../../view/NotificationManager";
+import {NotificationManager} from "./NotificationManager";
 
 @injectable()
 export class NewNotificationWatcher implements Disposable {
