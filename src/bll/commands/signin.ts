@@ -14,6 +14,7 @@ import {PersistentStorageManager} from "../credentialsstore/persistentstorageman
 import {Utils} from "../utils/utils";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {Context} from "../../view/Context";
 
 @injectable()
 export class SignIn implements Command {
@@ -25,7 +26,8 @@ export class SignIn implements Command {
                        private readonly persistentStorageManager: PersistentStorageManager,
                        @inject(TYPES.TeamCityStatusBarItem) private readonly statusBarItem: TeamCityStatusBarItem,
                        @inject(TYPES.MessageManager) private readonly messageManager: MessageManager,
-                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy,
+                       @inject(TYPES.Context) private readonly myContext: Context) {
         //
     }
 
@@ -47,6 +49,7 @@ export class SignIn implements Command {
             } else if (!typedCredentials.equals(fromPersistence)) {
                 this.suggestToUpdateCredentials(typedCredentials);
             }
+            this.myContext.setSignIn(true);
             return this.greetUser(typedCredentials);
         } else {
             Logger.logWarning("SignIn#exec: operation was aborted by user");
@@ -59,6 +62,7 @@ export class SignIn implements Command {
         }
         this.credentialsStore.setCredentials(fromPersistence);
         Logger.logInfo("SignIn#exec: success.");
+        this.myContext.setSignIn(true);
         return this.greetUser(fromPersistence);
     }
 

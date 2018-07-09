@@ -378,7 +378,12 @@
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == teamcityResourceExplorer",
+          "when": "view == teamcityResourceExplorer && teamcity-signed-in == true",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.signIn",
+          "when": "view == teamcityResourceExplorer && teamcity-signed-in == false",
           "group": "@1"
         },
         {
@@ -403,17 +408,22 @@
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == teamcityBuildsExplorer",
+          "when": "view == teamcityBuildsExplorer && teamcity-signed-in == true",
           "group": "@1"
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == teamcityChangesProvider",
+          "when": "view == teamcityChangesProvider && teamcity-signed-in == true",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.signIn",
+          "when": "view == teamcityChangesProvider && teamcity-signed-in == false",
           "group": "@1"
         },
         {
           "command": "teamcity.backToBuildsExplorer",
-          "when": "view == teamcityBuildSettingsProvider",
+          "when": "view == teamcityBuildSettingsProvider && teamcity-signed-in == false",
           "group": "navigation@1"
         },
         {

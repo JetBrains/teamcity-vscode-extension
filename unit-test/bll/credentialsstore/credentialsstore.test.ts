@@ -38,5 +38,6 @@ suite("CredentialStore", function () {
 });
 
 function getImMemoryStorage(): InMemoryCredentialsStore {
-    return new InMemoryCredentialsStore(undefined, undefined, undefined, undefined, undefined, undefined, undefined);
+    return new InMemoryCredentialsStore(undefined, undefined, undefined, undefined,
+                                        undefined, undefined, undefined, undefined);
 }

@@ -12,6 +12,7 @@ import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 import {IProviderManager} from "./view/iprovidermanager";
 import {WebLinkListener} from "./dal/weblinklistener";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
+import {Context} from "./view/Context";
 
 @injectable()
 export class ExtensionManager {
@@ -28,7 +29,9 @@ export class ExtensionManager {
                 @inject(TYPES.ProviderManager) providerManager: IProviderManager,
                 @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
                 @inject(TYPES.WorkspaceProxy) workspaceProxy: WorkspaceProxy,
-                @inject(TYPES.WebLinkListener) webLinkListener: WebLinkListener) {
+                @inject(TYPES.WebLinkListener) webLinkListener: WebLinkListener,
+                @inject(TYPES.Context) myContext: Context) {
+        myContext.setSignIn(false);
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._disposables.push(notificationWatcher);
@@ -36,6 +39,7 @@ export class ExtensionManager {
         this._disposables.push(statusBarItem);
         this._disposables.push(providerManager);
         this._disposables.push(webLinkListener);
+        this._disposables.push(myContext);
         this.providerManager = providerManager;
         if (workspaceProxy.workspaceFolders && workspaceProxy.workspaceFolders.length !== 0) {
             const defaultWorkspace = workspaceProxy.workspaceFolders[0];

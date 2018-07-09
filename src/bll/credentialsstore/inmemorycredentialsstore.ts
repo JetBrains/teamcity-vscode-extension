@@ -12,6 +12,7 @@ import {PersistentStorageManager} from "./persistentstoragemanager";
 import {TeamCityStatusBarItem} from "../../view/teamcitystatusbaritem";
 import {MessageManager} from "../../view/messagemanager";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {Context} from "../../view/Context";
 
 @injectable()
 export class InMemoryCredentialsStore implements CredentialsStore {
@@ -22,7 +23,8 @@ export class InMemoryCredentialsStore implements CredentialsStore {
                 @inject(TYPES.PersistentStorageManager) private persistentStorageManager: PersistentStorageManager,
                 @inject(TYPES.TeamCityStatusBarItem) private readonly statusBarItem: TeamCityStatusBarItem,
                 @inject(TYPES.MessageManager) private readonly messageManager: MessageManager,
-                @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+                @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy,
+                @inject(TYPES.Context) private readonly myContext: Context) {
         //
     }
 
@@ -47,9 +49,9 @@ export class InMemoryCredentialsStore implements CredentialsStore {
     }
 
     private async signIn(): Promise<void> {
-        const signInCommand = new SignIn(this.remoteLogin, this, this.output, this.settings,
+        const signInCommand = new SignIn(this.remoteLogin, this, this.settings,
                                          this.persistentStorageManager, this.statusBarItem,
-                                         this.messageManager, this.windowProxy);
+                                         this.messageManager, this.windowProxy, this.myContext);
         return signInCommand.exec();
     }
 

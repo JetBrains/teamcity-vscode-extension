@@ -11,4 +11,13 @@ export class ContextImpl implements Context {
     setQueueAtTop(value: boolean) {
         commands.executeCommand("setContext", "teamcity-queue-at-top", value);
     }
+
+    setSignIn(value: boolean) {
+        commands.executeCommand("setContext", "teamcity-signed-in", value);
+    }
+
+    dispose(): any {
+        this.setQueueAtTop(false);
+        this.setSignIn(false);
+    }
 }
