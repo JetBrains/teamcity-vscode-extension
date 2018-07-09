@@ -131,7 +131,7 @@ function preparator(xpath, currentValue, newValue) {
     if (!isNaN(newValue)) {
         return Number(newValue);
     } else if (newValue === "false" || newValue === "true") {
-        return Boolean(newValue);
+        return newValue === "true";
     } else {
         return newValue;
     }
