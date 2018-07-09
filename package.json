@@ -250,7 +250,7 @@
         },
         {
           "id": "teamcityChangesProvider",
-          "name": "",
+          "name": "My Changes",
           "when": "teamcity-explorer == ChangesProvider"
         },
         {
