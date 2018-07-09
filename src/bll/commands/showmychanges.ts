@@ -23,33 +23,45 @@ export class ShowMyChanges implements Command {
         this.windowsProxy.showWithProgress("Receiving data from the server...", summaryPromise);
         const summary: Summary = await summaryPromise;
 
-        const changeSet = [summary.changes, summary.personalChanges];
         if ((!summary.changes || summary.changes.length === 0) &&
             (!summary.personalChanges || summary.personalChanges.length === 0)) {
             Logger.logDebug(`ShowMyChanges::exec: personal changes were not found`);
             return;
         }
 
-        const sortedChanges = ShowMyChanges.getSortedChanges(changeSet);
-        const timePeriods = [new TimePeriod(TimePeriodEnum.Today, sortedChanges[TimePeriodEnum.Today]),
-            new TimePeriod(TimePeriodEnum.Yesterday, sortedChanges[TimePeriodEnum.Yesterday]),
-            new TimePeriod(TimePeriodEnum.Older, sortedChanges[TimePeriodEnum.Older])];
+        const sortedChanges: Change[] = ShowMyChanges.getSortedChanges(summary);
+
+        const classifiedChanges: Map<TimePeriodEnum, Change[]> = ShowMyChanges.classifyChanges(sortedChanges);
+        const timePeriods = [new TimePeriod(TimePeriodEnum.Today, classifiedChanges.get(TimePeriodEnum.Today)),
+            new TimePeriod(TimePeriodEnum.Yesterday, classifiedChanges.get(TimePeriodEnum.Yesterday)),
+            new TimePeriod(TimePeriodEnum.Older, classifiedChanges.get(TimePeriodEnum.Older))];
         this.changesProvider.setContent(timePeriods);
         Logger.logDebug("ShowMyChanges::exec finished ");
     }
 
-    private static getSortedChanges(changeSet) {
-        const sortedChanges = [];
-        changeSet.forEach((changes) => {
-            changes.forEach((change) => {
-                const changeTimePeriod = ShowMyChanges.getTimePeriod(change);
-                if (!sortedChanges[changeTimePeriod]) {
-                    sortedChanges[changeTimePeriod] = [];
-                }
-                sortedChanges[changeTimePeriod].push(change);
-            });
+    private static getSortedChanges(summary: Summary): Change[] {
+        const sortedChanges: Change[] = summary.changes.concat(summary.personalChanges);
+
+        sortedChanges.sort((ch1, ch2) => {
+            return (ch1.vcsDate < ch2.vcsDate) ? 1 : ((ch1.vcsDate > ch2.vcsDate) ? -1 : 0);
         });
         return sortedChanges;
+    }
+
+    private static classifyChanges(changes: Change[]): Map<TimePeriodEnum, Change[]> {
+        const classifiedChanges: Map<TimePeriodEnum, Change[]> = new Map<TimePeriodEnum, Change[]>();
+
+        changes.forEach((change) => {
+            const changeTimePeriod = ShowMyChanges.getTimePeriod(change);
+            let changeSet: Change[] = classifiedChanges.get(changeTimePeriod);
+            if (!changeSet) {
+                changeSet = [];
+                classifiedChanges.set(changeTimePeriod, changeSet);
+            }
+            changeSet.push(change);
+        });
+
+        return classifiedChanges;
     }
 
     private static getTimePeriod(change: Change): TimePeriodEnum {
@@ -75,7 +87,7 @@ export class ShowMyChanges implements Command {
         return ShowMyChanges.isSameDay(date, yesterday);
     }
 
-    private static isSameDay(d1, d2) : boolean {
+    private static isSameDay(d1, d2): boolean {
         return d1.getFullYear() === d2.getFullYear() &&
             d1.getMonth() === d2.getMonth() &&
             d1.getDate() === d2.getDate();
