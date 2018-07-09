@@ -70,7 +70,11 @@ export class ExtensionManager {
         }
     }
 
-    private trySignInWithPersistentStorage() {
-        this.commandHolder.signIn(true);
+    private trySignInWithPersistentStorage(): void {
+        this.commandHolder.signIn(true).then(() => {
+            if (this.credentialsStore.getCredentialsSilently()) {
+                this.commandHolder.showMyChanges();
+            }
+        });
     }
 }

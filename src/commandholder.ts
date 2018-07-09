@@ -54,7 +54,9 @@ export class CommandHolder {
     }
 
     public async signOut(): Promise<void> {
-        await this.tryExecuteCommand(this._signOut);
+        if (await this.tryExecuteCommand(this._signOut)) {
+            this.providerManager.showEmptyChangesProvider();
+        }
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
@@ -79,9 +81,11 @@ export class CommandHolder {
         await this.tryExecuteCommand(this._remoteRun, true);
     }
 
-    public backToEmptyDataProvider(): void {
+    public async backToChangesDataProvider(): Promise<void> {
         this.resourceProvider.resetTreeContent();
-        this.providerManager.showEmptyDataProvider();
+        this.providerManager.showChangesProvider();
+
+        return this.showMyChanges();
     }
 
     public backToBuildExplorer(): void {

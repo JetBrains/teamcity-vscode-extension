@@ -116,7 +116,7 @@ suite("Run Remote Run", () => {
         testableCommand.exec([false]).then(() => {
             buildProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
             resourceProviderMock.verify((foo) => foo.resetTreeContent(), TypeMoq.Times.atLeastOnce());
-            providerManagerMock.verify((foo) => foo.showEmptyDataProvider(), TypeMoq.Times.atLeastOnce());
+            providerManagerMock.verify((foo) => foo.showChangesProvider(), TypeMoq.Times.atLeastOnce());
             done();
         }).catch((err) => {
             done("There is no reason for error: " + err);

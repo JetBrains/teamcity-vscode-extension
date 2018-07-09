@@ -34,7 +34,7 @@ export class Constants {
     public static readonly UNQUEUE_FROM_TOP_COMMAND_NAME = "teamcity.unQueueFromTop";
     public static readonly OPEN_IN_BROWSER = "teamcity.openInBrowser";
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
-    public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
+    public static readonly BACK_TO_CHANGES_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToChangesDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
     public static readonly BACK_TO_BUILD_EXPLORER_COMMAND_NAME = "teamcity.backToBuildsExplorer";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
@@ -192,7 +192,6 @@ export enum CvsOperation {
 }
 
 export enum DataProviderEnum {
-    EmptyDataProvider = "EmptyDataProvider",
     ResourcesProvider = "ResourcesProvider",
     BuildsProvider = "BuildsProvider",
     ChangesProvider = "ChangesProvider",

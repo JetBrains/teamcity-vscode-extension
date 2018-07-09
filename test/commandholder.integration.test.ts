@@ -31,11 +31,11 @@ suite("CommandHolder", () => {
         const dp = prepareProviderManager();
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined,
                                      undefined, undefined, undefined, dp, credentialsStoreSpy);
-        assert.equal(dp.getShownDataProvider(),  DataProviderEnum.EmptyDataProvider);
+        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
 
         ch.signIn().then(() => {
             tsMockito.verify(mockedSignIn.exec(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
+            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {
             done(err);
@@ -48,13 +48,13 @@ suite("CommandHolder", () => {
         const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
         const dp = prepareProviderManager();
         const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, undefined, dp);
-        assert.equal(dp.getShownDataProvider(),  DataProviderEnum.EmptyDataProvider);
+        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
 
         ch.signIn().then(() => {
             done("Expected an exception");
         }).catch(() => {
             tsMockito.verify(mockedSignIn.exec(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
+            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {
             done(err);
@@ -71,7 +71,7 @@ suite("CommandHolder", () => {
 
         ch.signOut().then(() => {
             tsMockito.verify(mockedSignOut.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
+            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {
             done(err);
@@ -82,8 +82,8 @@ suite("CommandHolder", () => {
         const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
         const dp = prepareProviderManager();
-        dp.showEmptyDataProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
+        dp.showChangesProvider();
+        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
         const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, undefined, dp);
 
         ch.selectFilesForRemoteRun().then(() => {
@@ -100,7 +100,7 @@ suite("CommandHolder", () => {
         tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
         const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
         const dp = prepareProviderManager();
-        dp.showEmptyDataProvider();
+        dp.showChangesProvider();
 
         const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
         const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
@@ -111,7 +111,7 @@ suite("CommandHolder", () => {
         ch.selectFilesForRemoteRun().then(() => {
             tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
             verify(messageManagerMock.showErrorMessage(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.EmptyDataProvider, "EmptyDataProvider should be shown");
+            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {
             done(err);

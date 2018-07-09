@@ -40,7 +40,7 @@ export class RemoteRun implements Command {
         }
         this.resourceProvider.resetTreeContent();
         this.buildProvider.resetTreeContent();
-        this.providerManager.showEmptyDataProvider();
+        this.providerManager.showChangesProvider();
 
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         const message: string = await this.requestForCommitMessageIfRequired(checkInArray);

@@ -1,5 +1,4 @@
 import {Disposable, window} from "vscode";
-import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
 import {DataProvider} from "./dataproviders/dataprovider";
 import {inject, injectable} from "inversify";
 import {ResourceProvider} from "./dataproviders/resourceprovider";
@@ -14,16 +13,12 @@ import {BuildConfig} from "../bll/entities/buildconfig";
 export class ProviderManager implements IProviderManager {
 
     private shownDataProvider: DataProvider;
-    private readonly emptyDataProvider: EmptyDataProvider;
     private readonly toDispose: Disposable[] = [];
 
     constructor(@inject(TYPES.ResourceProvider) private readonly resourcesProvider: ResourceProvider,
                 @inject(TYPES.BuildProvider) private readonly buildsProvider: BuildProvider,
                 @inject(TYPES.ChangesProvider) private readonly changesProvider: ChangesProvider,
                 @inject(TYPES.BuildSettingsProvider) private readonly buildSettingsProvider: BuildSettingsProvider) {
-
-        this.emptyDataProvider = new EmptyDataProvider();
-        this.toDispose.push(window.registerTreeDataProvider("teamcityEmptyExplorer", this.emptyDataProvider));
 
         if (resourcesProvider && buildsProvider && changesProvider && buildSettingsProvider) {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourcesProvider));
@@ -32,12 +27,7 @@ export class ProviderManager implements IProviderManager {
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
         }
 
-        this.showEmptyDataProvider();
-    }
-
-    public showEmptyDataProvider(): void {
-        this.emptyDataProvider.show();
-        this.shownDataProvider = this.emptyDataProvider;
+        this.showChangesProvider();
     }
 
     public showResourceProvider(): void {
@@ -48,6 +38,13 @@ export class ProviderManager implements IProviderManager {
     public showBuildProvider(): void {
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
+    }
+
+    public showEmptyChangesProvider(): void {
+        this.changesProvider.resetTreeContent();
+        this.changesProvider.refreshTreePresentation();
+        this.changesProvider.show();
+        this.shownDataProvider = this.changesProvider;
     }
 
     public showChangesProvider(): void {
@@ -66,9 +63,10 @@ export class ProviderManager implements IProviderManager {
     }
 
     public refreshAll() {
-        if (this.resourcesProvider) {
+        if (this.resourcesProvider && this.changesProvider && this.buildsProvider) {
             this.resourcesProvider.refreshTreePresentation();
             this.buildsProvider.refreshTreePresentation();
+            this.changesProvider.refreshTreePresentation();
         }
     }
 
