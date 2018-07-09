@@ -46,7 +46,7 @@ export class Change {
             Logger.logDebug(`Change#isPersonal: isPersonal is not reachable. default: false`);
             return false;
         }
-        return (changeObj.mod[0].personal[0] === "true");
+        return (changeObj.mod[0].personal[0] === true);
     }
 
     private static getId(changeObj: any): number {
