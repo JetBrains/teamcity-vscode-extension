@@ -38,18 +38,19 @@ export class RemoteRun implements Command {
         if (!buildConfigs || buildConfigs.length === 0) {
             return Promise.reject(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
         }
-        this.resourceProvider.resetTreeContent();
-        this.buildProvider.resetTreeContent();
-        this.providerManager.showChangesProvider();
 
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         const message: string = await this.requestForCommitMessageIfRequired(checkInArray);
         this.fillCommitMessage(checkInArray, message);
 
+        this.resourceProvider.resetTreeContent();
+        this.buildProvider.resetTreeContent();
+        this.providerManager.showChangesProvider();
+
         const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(buildConfigs, patchAbsPath, message);
         const changeListStatus: ChangeListStatus = await this.patchSender.waitForChangeFinish(queuedBuilds);
 
-        if (changeListStatus === ChangeListStatus.CHECKED ) {
+        if (changeListStatus === ChangeListStatus.CHECKED) {
             Logger.logInfo("RemoteRun#exec: Personal Build is successful");
             if (isPreTestedCommit) {
                 return this.cvsProvider.requestForPostCommit(checkInArray);
