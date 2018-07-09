@@ -234,11 +234,6 @@
     "views": {
       "teamcity": [
         {
-          "id": "teamcityEmptyExplorer",
-          "name": "",
-          "when": "teamcity-explorer == EmptyDataProvider"
-        },
-        {
           "id": "teamcityResourceExplorer",
           "name": "",
           "when": "teamcity-explorer == ResourcesProvider"
