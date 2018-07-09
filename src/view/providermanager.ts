@@ -1,4 +1,4 @@
-import {commands, Disposable, window} from "vscode";
+import {Disposable, window} from "vscode";
 import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
 import {DataProvider} from "./dataproviders/dataprovider";
 import {inject, injectable} from "inversify";
@@ -21,19 +21,18 @@ export class ProviderManager implements IProviderManager {
                 @inject(TYPES.BuildProvider) private readonly buildsProvider: BuildProvider,
                 @inject(TYPES.ChangesProvider) private readonly changesProvider: ChangesProvider,
                 @inject(TYPES.BuildSettingsProvider) private readonly buildSettingsProvider: BuildSettingsProvider) {
+
         this.emptyDataProvider = new EmptyDataProvider();
-        this.hideProviders();
+        this.toDispose.push(window.registerTreeDataProvider("teamcityEmptyExplorer", this.emptyDataProvider));
+
         if (resourcesProvider && buildsProvider && changesProvider && buildSettingsProvider) {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourcesProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildsProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityChangesProvider", changesProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
         }
-    }
 
-    public hideProviders(): void {
-        commands.executeCommand("setContext", "teamcity-explorer", "");
-        this.shownDataProvider = undefined;
+        this.showEmptyDataProvider();
     }
 
     public showEmptyDataProvider(): void {
