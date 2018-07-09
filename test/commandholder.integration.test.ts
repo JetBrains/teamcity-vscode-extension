@@ -217,11 +217,12 @@ suite("CommandHolder", () => {
     test("should verify showMyChanges", function (done) {
         const showMyChangesMock: ShowMyChanges = tsMockito.mock(ShowMyChanges);
         when(showMyChangesMock.exec()).thenReturn(Promise.resolve());
+        when(showMyChangesMock.exec(anything())).thenReturn(Promise.resolve());
         const showMyChangesSpy: ShowMyChanges = tsMockito.instance(showMyChangesMock);
         const dp = prepareProviderManager();
         const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, undefined, showMyChangesSpy, dp);
         ch.showMyChanges().then(() => {
-            verify(showMyChangesMock.exec()).called();
+            verify(showMyChangesMock.exec(anything())).called();
             assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
             done();
         }).catch((err) => {

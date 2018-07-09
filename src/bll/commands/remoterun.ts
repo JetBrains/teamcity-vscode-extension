@@ -12,6 +12,7 @@ import {CustomPatchSender} from "../remoterun/patchsender";
 import {PatchManager} from "../utils/patchmanager";
 import {QueuedBuild} from "../utils/queuedbuild";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {ShowMyChanges} from "./showmychanges";
 
 @injectable()
 export class RemoteRun implements Command {
@@ -22,7 +23,8 @@ export class RemoteRun implements Command {
                        @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
                        @inject(TYPES.PatchSender) private readonly patchSender: CustomPatchSender,
                        @inject(TYPES.PatchManager) private readonly patchManager: PatchManager,
-                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy,
+                       @inject(TYPES.ShowMyChangesCommand) private readonly showMyChangesCommand: ShowMyChanges) {
         //
     }
 
@@ -46,6 +48,10 @@ export class RemoteRun implements Command {
         this.resourceProvider.resetTreeContent();
         this.buildProvider.resetTreeContent();
         this.providerManager.showChangesProvider();
+        this.showMyChangesCommand.exec([true]).then(() => {
+            this.providerManager.refreshAll();
+            this.providerManager.showChangesProvider();
+        });
 
         const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(buildConfigs, patchAbsPath, message);
         const changeListStatus: ChangeListStatus = await this.patchSender.waitForChangeFinish(queuedBuilds);

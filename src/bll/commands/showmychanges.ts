@@ -17,11 +17,27 @@ export class ShowMyChanges implements Command {
         //
     }
 
-    public async exec(): Promise<void> {
+    public async exec(args?: any[]): Promise<void> {
         Logger.logDebug("ShowMyChanges::exec start");
-        const summaryPromise: Promise<Summary> = this.summaryDao.get();
-        this.windowsProxy.showWithProgress("Receiving data from the server...", summaryPromise);
-        const summary: Summary = await summaryPromise;
+        let isSilent: boolean = false;
+        if (args && args.length === 1 && args[0] === true) {
+            isSilent = true;
+        }
+
+        const summaryPromise: Promise<Summary> = this.summaryDao.get(isSilent);
+        if (!isSilent) {
+            this.windowsProxy.showWithProgress("Receiving data from the server...", summaryPromise);
+        }
+        let summary: Summary;
+        try {
+            summary = await summaryPromise;
+        } catch (err) {
+            if (isSilent) {
+                return;
+            } else {
+                throw err;
+            }
+        }
 
         if ((!summary.changes || summary.changes.length === 0) &&
             (!summary.personalChanges || summary.personalChanges.length === 0)) {

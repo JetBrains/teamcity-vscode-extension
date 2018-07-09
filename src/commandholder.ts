@@ -85,7 +85,7 @@ export class CommandHolder {
         this.resourceProvider.resetTreeContent();
         this.providerManager.showChangesProvider();
 
-        return this.showMyChanges();
+        return this.showMyChanges(true);
     }
 
     public backToBuildExplorer(): void {
@@ -101,8 +101,8 @@ export class CommandHolder {
         this.output.show();
     }
 
-    public async showMyChanges(): Promise<void> {
-        if (await this.tryExecuteCommand(this._showMyChanges)) {
+    public async showMyChanges(isSilent: boolean = false): Promise<void> {
+        if (await this.tryExecuteCommand(this._showMyChanges, isSilent)) {
             this.providerManager.refreshAll();
             this.providerManager.showChangesProvider();
         }
@@ -140,7 +140,7 @@ export class CommandHolder {
                 await command.exec();
             }
         } catch (err) {
-            Logger.logError(`[tryExecuteCommand] ${err}`);
+            Logger.logError(`[tryExecuteCommand]  ${err}`);
             this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
             return false;
         }
