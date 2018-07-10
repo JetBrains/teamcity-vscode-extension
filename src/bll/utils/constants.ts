@@ -6,7 +6,6 @@ export class Constants {
     public static readonly EXTENSION_ID: string = "JetBrains.teamcity-vscode-extension";
     public static readonly XMLRPC_SESSIONID_KEY: string = "xmlrpcsessionId";
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
-    public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
     public static readonly SHOULD_ASK_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
     public static readonly SHOULD_COLLECT_CHANGES_FROM_INDEX = `${Constants.EXTENSION_NAME_PREFIX}experimental.git.changesFromIndex`;
     public static readonly EXPERIMENTAL_GIT_SUPPORTED = `${Constants.EXTENSION_NAME_PREFIX}experimental.git.support`;

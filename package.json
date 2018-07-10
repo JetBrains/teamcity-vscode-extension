@@ -528,11 +528,6 @@
           "type": "string",
           "description": "Specifies the logging level for the extension (error, warn, info, debug)."
         },
-        "teamcity.show.welcome": {
-          "type": "boolean",
-          "default": true,
-          "description": "Specifies whether the extension should show the welcome message after the login operation or not."
-        },
         "teamcity.credentials.persistent": {
           "type": "boolean",
           "default": true,

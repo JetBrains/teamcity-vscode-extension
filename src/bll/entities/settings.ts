@@ -1,6 +1,5 @@
 export interface Settings {
     loggingLevel: string;
-    showSignInWelcome: boolean;
     lastLogin: string;
 
     shouldAskStoreCredentials(): boolean;

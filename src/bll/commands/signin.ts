@@ -183,17 +183,6 @@ export class SignIn implements Command {
 
     private async greetUser(credentials: Credentials): Promise<void> {
         this.statusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
-        if (this.settings.showSignInWelcome) {
-            this.showWelcomeMessage();
-        }
-    }
-
-    private async showWelcomeMessage(): Promise<void> {
-        const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
-        const chosenItem: MessageItem = await this.messageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
-        if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
-            this.settings.showSignInWelcome = false;
-        }
     }
 
     private async suggestToStoreCredentials(credentials: Credentials): Promise<void> {
