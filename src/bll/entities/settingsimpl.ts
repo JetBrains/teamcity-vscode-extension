@@ -64,4 +64,8 @@ export class SettingsImpl implements Settings {
     shouldCollectGitChangesFromIndex(): boolean {
         return SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_COLLECT_CHANGES_FROM_INDEX, false);
     }
+
+    isGitSupported(): boolean {
+        return SettingsImpl.getSettingsProperty<boolean>(Constants.EXPERIMENTAL_GIT_SUPPORTED, false);
+    }
 }

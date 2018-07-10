@@ -8,15 +8,28 @@ import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
 import {GitProviderActivator} from "./git/GitProviderActivator";
+import {Settings} from "../bll/entities/settings";
+import {Context} from "../view/Context";
 
 @injectable()
 export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
-
-    constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator) {
+    private readonly isGitSupported: boolean;
+    constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator,
+                @inject(TYPES.Settings) private readonly mySettings: Settings,
+                @inject(TYPES.Context) context: Context) {
         const rootPaths: Uri[] = this.collectAllRootPaths();
-        this.detectCvsProviders(rootPaths).then((detectedCvsProviders) => {
+        this.isGitSupported = mySettings.isGitSupported();
+        if (this.isGitSupported) {
+            Logger.logWarning("Experimental git support is enabled.");
+        } else {
+            Logger.logInfo("Experimental git support is disabled.");
+        }
+        this.detectCvsProviders(rootPaths).then((detectedCvsProviders: CvsSupportProvider[]) => {
             this.actualProviders = detectedCvsProviders;
+            if (this.actualProviders && this.actualProviders.length > 0) {
+                context.setShowRemoteRunButton(true);
+            }
         });
     }
 
@@ -41,13 +54,6 @@ export class CvsProviderProxy {
 
     private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const providers: CvsSupportProvider[] = [];
-        const gitProvider: CvsSupportProvider = await this.gitProviderActivator.tryActivateInPath(rootPath);
-        if (gitProvider) {
-            providers.push(gitProvider);
-            Logger.logInfo(`Git provider was activated for ${rootPath.fsPath}`);
-        } else {
-            Logger.logWarning(`Could not activate git provider for ${rootPath.fsPath}`);
-        }
         try {
             const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
             providers.push(tfvcProvider);
@@ -55,6 +61,17 @@ export class CvsProviderProxy {
         } catch (err) {
             Logger.logWarning(`Could not activate tfvc provider for ${rootPath.fsPath}`);
             Logger.logDebug(Utils.formatErrorMessage(err));
+        }
+        if (!this.isGitSupported) {
+            return providers;
+        }
+
+        const gitProvider: CvsSupportProvider = await this.gitProviderActivator.tryActivateInPath(rootPath);
+        if (gitProvider) {
+            providers.push(gitProvider);
+            Logger.logInfo(`Git provider was activated for ${rootPath.fsPath}`);
+        } else {
+            Logger.logWarning(`Could not activate git provider for ${rootPath.fsPath}`);
         }
         return providers;
     }

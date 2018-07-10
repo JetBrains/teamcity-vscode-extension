@@ -353,7 +353,7 @@
       "view/title": [
         {
           "command": "teamcity.selectFilesForRemoteRun",
-          "when": "view == teamcityChangesProvider",
+          "when": "view == teamcityChangesProvider && teamcity-show-remote-run-button == true",
           "group": "navigation@1"
         },
         {
@@ -546,7 +546,12 @@
           "type": "string",
           "description": "Stores the last used url and username."
         },
-        "teamcity.git.changesFromIndex": {
+        "teamcity.experimental.git.support": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable an experimental git support."
+        },
+        "teamcity.experimental.git.changesFromIndex": {
           "type": "boolean",
           "default": false,
           "description": "Git specific. Specifies whether the extension should collect changes from the index or not. When set to false, changes are collected from the working tree."

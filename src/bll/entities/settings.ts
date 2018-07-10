@@ -8,4 +8,6 @@ export interface Settings {
     setShouldAskStoreCredentials(newValue: boolean): Promise<void>;
 
     shouldCollectGitChangesFromIndex(): boolean;
+
+    isGitSupported(): boolean;
 }

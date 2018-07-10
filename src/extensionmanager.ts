@@ -6,7 +6,6 @@ import {Settings} from "./bll/entities/settings";
 import {Output} from "./view/output";
 import {TeamCityStatusBarItem} from "./view/teamcitystatusbaritem";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
-import {NotificationWatcher} from "./bll/notifications/notificationwatcher";
 import {Disposable} from "vscode";
 import {WorkspaceProxy} from "./bll/moduleproxies/workspace-proxy";
 import {IProviderManager} from "./view/iprovidermanager";
@@ -31,7 +30,6 @@ export class ExtensionManager {
                 @inject(TYPES.WorkspaceProxy) workspaceProxy: WorkspaceProxy,
                 @inject(TYPES.WebLinkListener) webLinkListener: WebLinkListener,
                 @inject(TYPES.Context) myContext: Context) {
-        myContext.setSignIn(false);
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._disposables.push(notificationWatcher);
