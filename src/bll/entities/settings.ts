@@ -10,4 +10,6 @@ export interface Settings {
     shouldCollectGitChangesFromIndex(): boolean;
 
     isGitSupported(): boolean;
+
+    isTfvcPreTestedSupported(): boolean;
 }

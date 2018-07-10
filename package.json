@@ -338,10 +338,6 @@
           "when": "never"
         },
         {
-          "command": "teamcity.preTestedCommit",
-          "when": "never"
-        },
-        {
           "command": "teamcity.refreshMyChanges",
           "when": "never"
         },
@@ -555,6 +551,11 @@
           "type": "boolean",
           "default": false,
           "description": "Git specific. Specifies whether the extension should collect changes from the index or not. When set to false, changes are collected from the working tree."
+        },
+        "teamcity.experimental.tfvc.pretestedSupport": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable an experimental tfvc pre-tested commit support."
         }
       }
     }

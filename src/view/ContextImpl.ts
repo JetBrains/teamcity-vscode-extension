@@ -1,10 +1,13 @@
 import {Context} from "./Context";
 import {commands} from "vscode";
-import {injectable} from "inversify";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../bll/utils/constants";
+import {Settings} from "../bll/entities/settings";
 
 @injectable()
 export class ContextImpl implements Context {
-    constructor() {
+
+    constructor(@inject(TYPES.Settings) private readonly mySettings: Settings) {
         this.setQueueAtTop(false);
         this.showPreTestedCommitButton(false);
         this.setSignIn(false);
@@ -12,7 +15,8 @@ export class ContextImpl implements Context {
     }
 
     showPreTestedCommitButton(show: boolean) {
-        commands.executeCommand("setContext", "teamcity-show-pretested-commit", show);
+        const shouldShow: boolean = this.mySettings.isTfvcPreTestedSupported() && show;
+        commands.executeCommand("setContext", "teamcity-show-pretested-commit", shouldShow);
     }
 
     setQueueAtTop(value: boolean) {

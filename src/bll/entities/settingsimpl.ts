@@ -68,4 +68,8 @@ export class SettingsImpl implements Settings {
     isGitSupported(): boolean {
         return SettingsImpl.getSettingsProperty<boolean>(Constants.EXPERIMENTAL_GIT_SUPPORTED, false);
     }
+
+    isTfvcPreTestedSupported(): boolean {
+        return SettingsImpl.getSettingsProperty<boolean>(Constants.EXPERIMENTAL_TFVC_PRETESTED_SUPPORTED, false);
+    }
 }
