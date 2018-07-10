@@ -22,6 +22,9 @@ suite("Get Suitable Configs", () => {
     const windowSpy = tsMockito.instance(windowsProxy);
     const messageManagerMock = mock(MessageManager);
     const messageManagerSpy = tsMockito.instance(messageManagerMock);
+    const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
+    when(xmlParserMock.parseProjectsWithRelatedBuilds(anything(), anything())).thenReturn(Promise.resolve([anything()]));
+    const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
 
     test("should verify that we request data from resource provider", function (done) {
         const checkInInfoMock: CheckInInfo = mock(CheckInInfo);
@@ -32,9 +35,6 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
-
-        const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
-        const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
 
         const resourceProviderMock: TypeMoq.IMock<IResourceProvider> = TypeMoq.Mock.ofType<IResourceProvider>();
         resourceProviderMock.setup((bar) => bar.getSelectedContent()).returns(() => [checkInInfoSpy, checkInInfoSpy]);
@@ -65,9 +65,6 @@ suite("Get Suitable Configs", () => {
         when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
 
-        const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
-        const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
-
         const resourceProviderMock: TypeMoq.IMock<IResourceProvider> = TypeMoq.Mock.ofType<IResourceProvider>();
         resourceProviderMock.setup((bar) => bar.getSelectedContent()).returns(() => []);
         const resourceProviderSpy: IResourceProvider = resourceProviderMock.object;
@@ -94,8 +91,6 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
-        const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
-        const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
 
         const resourceProviderMock: TypeMoq.IMock<IResourceProvider> = TypeMoq.Mock.ofType<IResourceProvider>();
         resourceProviderMock.setup((bar) => bar.getSelectedContent()).returns(() => [checkInInfoSpy, checkInInfoSpy]);
@@ -124,9 +119,6 @@ suite("Get Suitable Configs", () => {
         const remoteBuildServerMock: RemoteBuildServer = tsMockito.mock(RemoteBuildServer);
         when(remoteBuildServerMock.getSuitableConfigurations(anything())).thenReturn(Promise.resolve(["anyData"]));
         const remoteBuildServerSpy: RemoteBuildServer = tsMockito.instance(remoteBuildServerMock);
-
-        const xmlParserMock: XmlParser = tsMockito.mock(XmlParser);
-        const xmlParserSpy: XmlParser = tsMockito.instance(xmlParserMock);
 
         const resourceProviderMock: TypeMoq.IMock<IResourceProvider> = TypeMoq.Mock.ofType<IResourceProvider>();
         resourceProviderMock.setup((bar) => bar.getSelectedContent()).returns(() => [checkInInfoSpy, checkInInfoSpy]);
