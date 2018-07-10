@@ -15,6 +15,7 @@ export class Constants {
     public static readonly GIT_PATH_SETTING_NAME = "git.path";
     public static readonly DEFAULT_URL = "http://buildserver";
     public static readonly SERVICE_PREFIX = "jetbrains.teamcity.vscode";
+    public static readonly GIT_SUPPORT_WIKI_PAGE = "https://github.com/JetBrains/teamcity-vscode-extension/wiki/Git-Support";
 
     public static readonly SIGNIN_COMMAND_NAME = "teamcity.signIn";
     public static readonly SIGNOUT_COMMAND_NAME = "teamcity.signOut";

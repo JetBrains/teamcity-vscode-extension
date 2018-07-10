@@ -8,18 +8,20 @@ import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
 import {XmlParser} from "../../../src/bll/utils/xmlparser";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
-import {TeamCityOutput} from "../../../src/view/teamcityoutput";
 import {IResourceProvider} from "../../../src/view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../../src/view/dataproviders/interfaces/ibuildprovider";
 import * as TypeMoq from "typemoq";
 import {Context} from "../../../src/view/Context";
 import {WindowProxy} from "../../../src/bll/moduleproxies/window-proxy";
+import {MessageManager} from "../../../src/view/messagemanager";
 
 suite("Get Suitable Configs", () => {
     const contextMock: TypeMoq.IMock<Context> = TypeMoq.Mock.ofType<Context>();
     const contextSpy: Context = contextMock.object;
     const windowsProxy = mock(WindowProxy);
     const windowSpy = tsMockito.instance(windowsProxy);
+    const messageManagerMock = mock(MessageManager);
+    const messageManagerSpy = tsMockito.instance(messageManagerMock);
 
     test("should verify that we request data from resource provider", function (done) {
         const checkInInfoMock: CheckInInfo = mock(CheckInInfo);
@@ -44,11 +46,8 @@ suite("Get Suitable Configs", () => {
         const contextMock: TypeMoq.IMock<Context> = TypeMoq.Mock.ofType<Context>();
         const contextSpy: Context = contextMock.object;
 
-        const outputMock = mock(TeamCityOutput);
-        const outputSpy = tsMockito.instance(outputMock);
-
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
-                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, messageManagerSpy,
                                                        contextSpy, windowSpy);
         testableCommand.exec().then(() => {
             resourceProviderMock.verify((bar) => bar.getSelectedContent(), TypeMoq.Times.atLeastOnce());
@@ -76,11 +75,8 @@ suite("Get Suitable Configs", () => {
         const buildProviderMock: TypeMoq.IMock<IBuildProvider> = TypeMoq.Mock.ofType<IBuildProvider>();
         const buildProviderSpy: IBuildProvider = buildProviderMock.object;
 
-        const outputMock = mock(TeamCityOutput);
-        const outputSpy = tsMockito.instance(outputMock);
-
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
-                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, messageManagerSpy,
                                                        contextSpy, windowSpy);
 
         testableCommand.exec().then(() => {
@@ -108,11 +104,8 @@ suite("Get Suitable Configs", () => {
         const buildProviderMock: TypeMoq.IMock<IBuildProvider> = TypeMoq.Mock.ofType<IBuildProvider>();
         const buildProviderSpy: IBuildProvider = buildProviderMock.object;
 
-        const outputMock = mock(TeamCityOutput);
-        const outputSpy = tsMockito.instance(outputMock);
-
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
-                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, messageManagerSpy,
                                                        contextSpy, windowSpy);
 
         testableCommand.exec().then(() => {
@@ -142,11 +135,8 @@ suite("Get Suitable Configs", () => {
         const buildProviderMock: TypeMoq.IMock<IBuildProvider> = TypeMoq.Mock.ofType<IBuildProvider>();
         const buildProviderSpy: IBuildProvider = buildProviderMock.object;
 
-        const outputMock = mock(TeamCityOutput);
-        const outputSpy = tsMockito.instance(outputMock);
-
         const testableCommand = new GetSuitableConfigs(providerProxySpy, resourceProviderSpy, buildProviderSpy,
-                                                       remoteBuildServerSpy, xmlParserSpy, outputSpy,
+                                                       remoteBuildServerSpy, xmlParserSpy, messageManagerSpy,
                                                        contextSpy, windowSpy);
 
         testableCommand.exec().then(() => {

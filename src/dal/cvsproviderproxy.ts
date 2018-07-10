@@ -10,6 +10,7 @@ import {Utils} from "../bll/utils/utils";
 import {GitProviderActivator} from "./git/GitProviderActivator";
 import {Settings} from "../bll/entities/settings";
 import {Context} from "../view/Context";
+import {GitProvider} from "./gitprovider";
 
 @injectable()
 export class CvsProviderProxy {
@@ -27,7 +28,7 @@ export class CvsProviderProxy {
         }
         this.detectCvsProviders(rootPaths).then((detectedCvsProviders: CvsSupportProvider[]) => {
             this.actualProviders = detectedCvsProviders;
-            if (this.actualProviders && this.actualProviders.length > 0) {
+            if (this.actualProviders.length > 0) {
                 context.setShowRemoteRunButton(true);
             }
         });
@@ -110,6 +111,16 @@ export class CvsProviderProxy {
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
         return this.doCommitOperation(checkInArray);
+    }
+
+    public hasGitProvider(): boolean {
+        for (const provider of this.actualProviders) {
+            if (provider instanceof GitProvider) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {

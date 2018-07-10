@@ -5,8 +5,7 @@ import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
-import {TYPES} from "../utils/constants";
-import {Output} from "../../view/output";
+import {Constants, TYPES} from "../utils/constants";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
@@ -14,6 +13,8 @@ import {GitProvider} from "../../dal/gitprovider";
 import {Context} from "../../view/Context";
 import {WindowProxy} from "../moduleproxies/window-proxy";
 import {BuildConfig} from "../entities/buildconfig";
+import {MessageManager} from "../../view/messagemanager";
+import opn = require("opn");
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -23,7 +24,7 @@ export class GetSuitableConfigs implements Command {
                        @inject(TYPES.BuildProvider) private readonly buildProvider: IBuildProvider,
                        @inject(TYPES.RemoteBuildServer) private readonly remoteBuildServer: RemoteBuildServer,
                        @inject(TYPES.XmlParser) private readonly xmlParser: XmlParser,
-                       @inject(TYPES.Output) private readonly output: Output,
+                       @inject(TYPES.MessageManager) private readonly myMessageManager: MessageManager,
                        @inject(TYPES.Context) private readonly context: Context,
                        @inject(TYPES.WindowProxy) private readonly windowsProxy: WindowProxy) {
         //
@@ -34,13 +35,25 @@ export class GetSuitableConfigs implements Command {
         const checkInArray: CheckInInfo[] = this.getCheckInArray();
         const projectPromise : Promise<Project[]> = this.getProjectsWithSuitableBuilds(checkInArray);
         this.windowsProxy.showWithProgress("Looking for suitable build configurations...", projectPromise);
-
         const projects: Project[] = await projectPromise;
+
+        if (!projects && this.cvsProvider.hasGitProvider()) {
+            const learnMore: {title: string} = {title: "Learn More..."};
+            const textToShow: string = `${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}. ` +
+                `${MessageConstants.GIT_SUPPORT_LIMITATIONS_WARNING}`;
+            const result = await this.myMessageManager.showErrorMessage(textToShow, learnMore);
+            if (result && result.title === learnMore.title) {
+                opn(Constants.GIT_SUPPORT_WIKI_PAGE);
+            }
+            return;
+        } else if (!projects) {
+            throw new Error(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
+        }
+
         this.buildProvider.setContent(projects);
         const showPreTestedCommit: boolean = this.shouldShowPreTestedCommit(checkInArray);
         this.context.showPreTestedCommitButton(showPreTestedCommit);
-        this.output.appendLine(MessageConstants.PLEASE_SPECIFY_BUILDS);
-        this.output.show();
+
         Logger.logInfo("GetSuitableConfigs: finished");
     }
 
@@ -53,13 +66,13 @@ export class GetSuitableConfigs implements Command {
         }
     }
 
-    private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<Project[]> {
+    private async getProjectsWithSuitableBuilds(checkInArray: CheckInInfo[]): Promise<Project[] | undefined> {
         const tcFormattedFilePaths: string[] = await this.cvsProvider.getFormattedFileNames(checkInArray);
         const shortBuildConfigNames: string[] =
             await this.remoteBuildServer.getSuitableConfigurations(tcFormattedFilePaths);
         if (!shortBuildConfigNames || shortBuildConfigNames.length === 0) {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
-            return Promise.reject(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
+            return undefined;
         }
         const projectsWithRelatedBuildsXmls: string[] =
             await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
