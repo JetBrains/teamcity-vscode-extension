@@ -251,10 +251,6 @@ export class TfvcProvider implements CvsSupportProvider {
     public getRootPath(): string {
         return this.workspaceRootPath;
     }
-
-    public allowStaging(): boolean {
-        return false;
-    }
 }
 
 class TfsChangeType {

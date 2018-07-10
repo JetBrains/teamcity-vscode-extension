@@ -13,6 +13,4 @@ export interface CvsSupportProvider {
     getStagedFileContentStream(fileAbsPath: CvsResource): Promise<ReadableSet> | undefined;
 
     getRootPath(): string;
-
-    allowStaging(): boolean;
 }
