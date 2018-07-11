@@ -1,3 +1,3 @@
 interface Command {
-    exec(args?: any[]): Promise<void>;
+    exec(args?: any[]): Promise<void | boolean>;
 }

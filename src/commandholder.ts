@@ -133,11 +133,15 @@ export class CommandHolder {
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
+        let result:boolean | void;
         try {
             if (args && args.length > 0) {
-                await command.exec(args);
+                result = await command.exec(args);
             } else {
-                await command.exec();
+                result = await command.exec();
+            }
+            if (typeof result === "boolean") {
+                return result;
             }
         } catch (err) {
             Logger.logError(`[tryExecuteCommand]  ${err}`);

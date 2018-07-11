@@ -30,7 +30,7 @@ export class GetSuitableConfigs implements Command {
         //
     }
 
-    public async exec(args?: any[]): Promise<void> {
+    public async exec(args?: any[]): Promise<void | boolean> {
         Logger.logInfo("GetSuitableConfigs: starts");
         const checkInArray: CheckInInfo[] = this.getCheckInArray();
         const projectPromise : Promise<Project[]> = this.getProjectsWithSuitableBuilds(checkInArray);
@@ -45,7 +45,7 @@ export class GetSuitableConfigs implements Command {
             if (result && result.title === learnMore.title) {
                 opn(Constants.GIT_SUPPORT_WIKI_PAGE);
             }
-            return;
+            return false;
         } else if (!projects) {
             throw new Error(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
         }
