@@ -1,3 +1,4 @@
+/*
 import "reflect-metadata";
 const rmock = require("mock-require");
 rmock("vscode", { });
@@ -175,3 +176,4 @@ suite("Notification Watcher Implementation", () => {
         return tsMockito.instance(mockedOutputImpl);
     }
 });
+*/
