@@ -65,10 +65,15 @@ export class CommandHolder {
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        const loggedIn = await this.credentialsStore.getCredentials();
-        if (loggedIn && await this.tryExecuteCommand(this._selectForRemoteRun)) {
-            this.providerManager.refreshAll();
-            this.providerManager.showResourceProvider();
+        try {
+            const loggedIn = await this.credentialsStore.getCredentials();
+            if (loggedIn && await this.tryExecuteCommand(this._selectForRemoteRun)) {
+                this.providerManager.refreshAll();
+                this.providerManager.showResourceProvider();
+            }
+        } catch (err) {
+            Logger.logError(`[selectFilesForRemoteRun]  ${err}`);
+            this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
         }
     }
 
