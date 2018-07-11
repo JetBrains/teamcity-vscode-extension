@@ -77,10 +77,6 @@ export class ExtensionManager {
     }
 
     private trySignInWithPersistentStorage(): void {
-        this.commandHolder.signIn(true).then(() => {
-            if (this.credentialsStore.getCredentialsSilently()) {
-                this.commandHolder.showMyChanges();
-            }
-        });
+        this.commandHolder.signIn(true);
     }
 }

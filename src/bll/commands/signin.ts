@@ -7,7 +7,6 @@ import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {Settings} from "../entities/settings";
-import {Output} from "../../view/output";
 import {inject, injectable} from "inversify";
 import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";

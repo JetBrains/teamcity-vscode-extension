@@ -50,7 +50,10 @@ export class CommandHolder {
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
-        await this.tryExecuteCommand(this._signIn, fromPersistentStore);
+        if (await this.tryExecuteCommand(this._signIn, fromPersistentStore) &&
+            this.credentialsStore.getCredentialsSilently()) {
+            await this.showMyChanges(true);
+        }
     }
 
     public async signOut(): Promise<void> {
