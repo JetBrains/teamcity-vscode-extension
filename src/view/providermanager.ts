@@ -40,13 +40,6 @@ export class ProviderManager implements IProviderManager {
         this.shownDataProvider = this.buildsProvider;
     }
 
-    public showEmptyChangesProvider(): void {
-        this.changesProvider.resetTreeContent();
-        this.changesProvider.refreshTreePresentation();
-        this.changesProvider.show();
-        this.shownDataProvider = this.changesProvider;
-    }
-
     public showChangesProvider(): void {
         this.changesProvider.show();
         this.shownDataProvider = this.changesProvider;
@@ -67,6 +60,14 @@ export class ProviderManager implements IProviderManager {
             this.resourcesProvider.refreshTreePresentation();
             this.buildsProvider.refreshTreePresentation();
             this.changesProvider.refreshTreePresentation();
+        }
+    }
+
+    public resetAll() {
+        if (this.resourcesProvider && this.changesProvider && this.buildsProvider) {
+            this.resourcesProvider.resetTreeContent();
+            this.buildsProvider.resetTreeContent();
+            this.changesProvider.resetTreeContent();
         }
     }
 

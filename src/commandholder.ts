@@ -58,12 +58,15 @@ export class CommandHolder {
 
     public async signOut(): Promise<void> {
         if (await this.tryExecuteCommand(this._signOut)) {
-            this.providerManager.showEmptyChangesProvider();
+            this.providerManager.resetAll();
+            this.providerManager.refreshAll();
+            this.providerManager.showChangesProvider();
         }
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        if (await this.tryExecuteCommand(this._selectForRemoteRun)) {
+        const loggedIn = await this.credentialsStore.getCredentials();
+        if (loggedIn && await this.tryExecuteCommand(this._selectForRemoteRun)) {
             this.providerManager.refreshAll();
             this.providerManager.showResourceProvider();
         }

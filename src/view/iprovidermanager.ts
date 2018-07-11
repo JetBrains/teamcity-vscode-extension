@@ -8,13 +8,13 @@ export interface IProviderManager {
 
     showChangesProvider(): void;
 
-    showEmptyChangesProvider(): void;
-
     showBuildSettingsProvider(build: BuildConfig): void;
 
     getShownDataProvider(): DataProviderEnum;
 
     refreshAll(): void;
+
+    resetAll(): void;
 
     dispose();
 }
