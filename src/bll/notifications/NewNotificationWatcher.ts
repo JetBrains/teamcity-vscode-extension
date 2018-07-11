@@ -150,6 +150,7 @@ export class NewNotificationWatcher implements Disposable {
     private async reinitWatcherMutableResources() {
         Logger.logDebug("NotificationWatcherImpl#reinitWatcherMutableResources: start.");
         this.storedCredentials = await this.waitAndGetCredentials();
+        this.obsoleteNotificationIds.clear();
         this.myLastTimestamp = await this.myRemoteBuildServer.getCurrentTimestamp();
         Logger.logDebug("NotificationWatcherImpl#reinitWatcherMutableResources: finish.");
     }
