@@ -21,9 +21,6 @@ export class Change {
     }
 
     public static fromXmlRpcObject(changeObj: any): Change {
-        if (!changeObj) {
-            throw "Not Change Object Error";
-        }
         const isPersonal: boolean = Change.isPersonal(changeObj);
         const id: number = Change.getId(changeObj);
         const status: UserChangeStatus = Change.getStatus(changeObj);
@@ -38,36 +35,14 @@ export class Change {
     }
 
     private static isPersonal(changeObj: any): boolean {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            changeObj.mod[0].personal === undefined ||
-            changeObj.mod[0].personal[0] === undefined) {
-            Logger.logDebug(`Change#isPersonal: isPersonal is not reachable. default: false`);
-            return false;
-        }
-        return (changeObj.mod[0].personal[0] === true);
+        return changeObj.mod[0].personal[0] === true;
     }
 
     private static getId(changeObj: any): number {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            changeObj.mod[0].id === undefined ||
-            changeObj.mod[0].id[0] === undefined) {
-            Logger.logDebug(`Change#id: id is not reachable. default: -1`);
-            return -1;
-        }
         return changeObj.mod[0].id[0];
     }
 
     private static getStatus(changeObj: any): UserChangeStatus {
-        if (!changeObj ||
-            !changeObj.myStatus ||
-            !changeObj.myStatus[0]) {
-            Logger.logDebug(`Change#status: status is not reachable. default: UNKNOWN`);
-            return undefined;
-        }
         const text = changeObj.myStatus[0];
 
         switch (text) {
@@ -109,54 +84,20 @@ export class Change {
     }
 
     private static getDescription(changeObj: any): string {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            changeObj.mod[0].myDescription === undefined ||
-            changeObj.mod[0].myDescription[0] === undefined) {
-            Logger.logDebug(`Change#getDescription: description is not reachable. default: empty string`);
-            return "";
-        }
-
         return changeObj.mod[0].myDescription[0].toString().trim();
 
     }
 
     private static getVersionControlName(changeObj: any): string {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            !changeObj.mod[0].myVersionControlName ||
-            changeObj.mod[0].myVersionControlName[0] === undefined) {
-            Logger.logDebug(`Change#getVersionControlName: versionControlName is not reachable. default: empty string`);
-            return "";
-        }
         return changeObj.mod[0].myVersionControlName[0];
     }
 
     private static getChangesCount(changeObj: any): number {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            !changeObj.mod[0].myChangesCount ||
-            changeObj.mod[0].myChangesCount[0] === undefined) {
-            Logger.logDebug(`Change#getChangesCount: changesCount is not reachable. default: 0`);
-            return 0;
-        }
         return changeObj.mod[0].myChangesCount[0];
     }
 
     private static getVcsDate(changeObj: any): Date {
-        if (!changeObj ||
-            !changeObj.mod ||
-            !changeObj.mod[0] ||
-            !changeObj.mod[0].myVcsDate ||
-            changeObj.mod[0].myVcsDate[0] === undefined) {
-            Logger.logDebug(`Change#getDate: vcsDate is not reachable. default: current date`);
-            return new Date();
-        }
-        const vcsDateInMilliseconds: number = +changeObj.mod[0].myVcsDate[0];
-        return new Date(vcsDateInMilliseconds);
+        return new Date(+changeObj.mod[0].myVcsDate[0]);
     }
 
     private static getDisplayVersion(changeObj: any): string {
