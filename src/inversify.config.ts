@@ -72,6 +72,8 @@ import {QueueAtTop} from "./bll/commands/QueueAtTop";
 import {OpenInBrowser} from "./bll/commands/OpenInBrowser";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
 import {NotificationManager} from "./bll/notifications/NotificationManager";
+import {MyChangesWorker} from "./bll/mychanges/MyChangesWorker";
+import {Worker} from "./bll/mychanges/Worker";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -136,3 +138,4 @@ myContainer.bind<AddEditBuildParameter>(TYPES.AddEditBuildParameter).to(AddEditB
 myContainer.bind<RemoveBuildParameter>(TYPES.RemoveBuildParameter).to(RemoveBuildParameter).inSingletonScope();
 myContainer.bind<QueueAtTop>(TYPES.QueueAtTop).to(QueueAtTop).inSingletonScope();
 myContainer.bind<OpenInBrowser>(TYPES.OpenInBrowser).to(OpenInBrowser).inSingletonScope();
+myContainer.bind<Worker>(TYPES.MyChangesWorker).to(MyChangesWorker).inSingletonScope();

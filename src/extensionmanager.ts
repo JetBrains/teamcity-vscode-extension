@@ -12,6 +12,7 @@ import {IProviderManager} from "./view/iprovidermanager";
 import {WebLinkListener} from "./dal/weblinklistener";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
 import {Context} from "./view/Context";
+import {Worker} from "./bll/mychanges/Worker";
 
 @injectable()
 export class ExtensionManager {
@@ -29,10 +30,12 @@ export class ExtensionManager {
                 @inject(TYPES.TeamCityStatusBarItem) statusBarItem: TeamCityStatusBarItem,
                 @inject(TYPES.WorkspaceProxy) workspaceProxy: WorkspaceProxy,
                 @inject(TYPES.WebLinkListener) webLinkListener: WebLinkListener,
-                @inject(TYPES.Context) myContext: Context) {
+                @inject(TYPES.Context) myContext: Context,
+                @inject(TYPES.MyChangesWorker) worker: Worker) {
         this.credentialsStore = credentialsStore;
         this._commandHolder = commandHolder;
         this._disposables.push(notificationWatcher);
+        this._disposables.push(worker);
         this._disposables.push(output);
         this._disposables.push(statusBarItem);
         this._disposables.push(providerManager);
@@ -44,6 +47,7 @@ export class ExtensionManager {
             this.initLogger(settings.loggingLevel, defaultWorkspace.uri.fsPath);
         }
         this.trySignInWithPersistentStorage();
+        worker.work();
     }
 
     public refreshAllProviders() {

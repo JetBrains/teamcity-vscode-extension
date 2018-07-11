@@ -182,6 +182,7 @@ export const TYPES = {
     RemoveBuildParameter: Symbol("RemoveBuildParameter"),
     QueueAtTop: Symbol("QueueAtTop"),
     OpenInBrowser: Symbol("OpenInBrowser"),
+    MyChangesWorker: Symbol("MyChangesWorker"),
 };
 
 export enum CvsOperation {
