@@ -13,6 +13,13 @@ import {WebLinkListener} from "./dal/weblinklistener";
 import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher";
 import {Context} from "./view/Context";
 import {Worker} from "./bll/mychanges/Worker";
+import {ExpandableItem} from "./bll/entities/presentable/expandableitem";
+import {TimePeriodItem} from "./bll/entities/presentable/timeperioditem";
+import {CheckInInfoItem} from "./bll/entities/presentable/checkininfoitem";
+import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
+import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
+import {ProjectItem} from "./bll/entities/presentable/projectitem";
+import {CvsResourceItem} from "./bll/entities/cvsresources/cvsresourceitem";
 
 @injectable()
 export class ExtensionManager {
@@ -50,12 +57,14 @@ export class ExtensionManager {
         worker.work();
     }
 
-    public updateChangesProvider() {
-        this.providerManager.showBuildProvider();
-    }
-
-    public refreshAllProviders() {
-        this.providerManager.refreshAll();
+    public smartUpdateProvider(treeItem: ExpandableItem | LeaveSelectableItem | CvsResourceItem) {
+        if (treeItem instanceof TimePeriodItem) {
+            this.providerManager.showChangesProvider();
+        } else if (treeItem instanceof CheckInInfoItem || treeItem instanceof CvsResourceItem) {
+            this.providerManager.showResourceProvider();
+        } else if (treeItem instanceof ProjectItem || treeItem instanceof BuildConfigItem) {
+            this.providerManager.showBuildProvider();
+        }
     }
 
     public dispose(): void {

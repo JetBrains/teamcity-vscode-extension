@@ -46,12 +46,12 @@ export function activate(context: vscode.ExtensionContext) {
         configurable: BuildConfigItem) => extensionManager.commandHolder.customizeBuild(configurable)));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {
         item.changeState();
-        extensionManager.updateChangesProvider();
+        extensionManager.smartUpdateProvider(item);
     }));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE,
-        (project: ExpandableItem) => {
-            project.changeCollapsibleState();
-            extensionManager.refreshAllProviders();
+        (expandableItem: ExpandableItem) => {
+            expandableItem.changeCollapsibleState();
+            extensionManager.smartUpdateProvider(expandableItem);
         }));
     context.subscriptions.push(vscode.commands.registerCommand(
         Constants.REMOVE_PARAMETER_COMMAND_NAME,
