@@ -24,7 +24,7 @@ export class ParametersSetItem extends ExpandableItem {
         if (params.length === 0) {
             this.collapsibleState = TreeItemCollapsibleState.None;
         } else if (this.collapsibleState === TreeItemCollapsibleState.None) {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
+            this.collapsibleState = TreeItemCollapsibleState.Expanded;
         }
 
         this.children.length = 0;
