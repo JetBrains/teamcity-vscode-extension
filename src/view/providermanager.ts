@@ -24,13 +24,15 @@ export class ProviderManager implements IProviderManager {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourcesProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildsProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityChangesProvider", changesProvider));
-            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
+            this.toDispose.push(
+                window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
         }
 
         this.showChangesProvider();
     }
 
     public showResourceProvider(): void {
+        this.buildsProvider.resetTreeContent();
         this.resourcesProvider.show();
         this.shownDataProvider = this.resourcesProvider;
     }
@@ -41,6 +43,8 @@ export class ProviderManager implements IProviderManager {
     }
 
     public showChangesProvider(): void {
+        this.buildsProvider.resetTreeContent();
+        this.resourcesProvider.resetTreeContent();
         this.changesProvider.show();
         this.shownDataProvider = this.changesProvider;
     }

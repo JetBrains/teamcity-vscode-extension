@@ -198,6 +198,11 @@ suite("CommandHolder", () => {
             showMyChangesSpy,
             providerManagerObj,
             credentialsStoreSpy,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
             messageManagerSpy);
     }
 

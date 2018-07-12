@@ -7,10 +7,7 @@ import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
-import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
-import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
-import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
 import {Logger} from "./bll/utils/logger";
 import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
@@ -34,16 +31,13 @@ export class CommandHolder {
                 @inject(TYPES.RemoteRun) private readonly _remoteRun: RemoteRun,
                 @inject(TYPES.ShowMyChangesCommand) private readonly _showMyChanges: ShowMyChanges,
                 @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
-                @inject(TYPES.CredentialsStore) private readonly credentialsStore?: CredentialsStore,
-                @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
-                @inject(TYPES.ResourceProvider) private readonly resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) private readonly buildProvider?: IBuildProvider,
-                @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
-                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
-                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
-                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
-                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop,
-                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser?: OpenInBrowser) {
+                @inject(TYPES.CredentialsStore) private readonly credentialsStore: CredentialsStore,
+                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild: CustomizeBuild,
+                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter: AddEditBuildParameter,
+                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter: RemoveBuildParameter,
+                @inject(TYPES.QueueAtTop) private readonly _queueAtTop: QueueAtTop,
+                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser: OpenInBrowser,
+                @inject(TYPES.MessageManager) private readonly messageManager: MessageManager) {
         //
     }
 
@@ -91,7 +85,6 @@ export class CommandHolder {
     }
 
     public async backToChangesDataProvider(): Promise<void> {
-        this.resourceProvider.resetTreeContent();
         this.providerManager.showChangesProvider();
 
         return this.showMyChanges(true);
@@ -102,7 +95,6 @@ export class CommandHolder {
     }
 
     public backToSelectFilesForRemoteRun(): void {
-        this.buildProvider.resetTreeContent();
         this.providerManager.showResourceProvider();
     }
 
