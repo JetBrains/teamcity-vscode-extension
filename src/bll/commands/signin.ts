@@ -46,6 +46,7 @@ export class SignIn implements Command {
             if (!fromPersistence) {
                 this.suggestToStoreCredentials(typedCredentials);
             } else if (!typedCredentials.equals(fromPersistence)) {
+                await this.persistentStorageManager.removeCredentials();
                 this.suggestToUpdateCredentials(typedCredentials);
             }
             this.myContext.setSignIn(true);
