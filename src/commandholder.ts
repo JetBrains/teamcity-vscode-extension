@@ -62,7 +62,7 @@ export class CommandHolder {
                 this.providerManager.showResourceProvider();
             }
         } catch (err) {
-            Logger.logError(`[selectFilesForRemoteRun]  ${err}`);
+            Logger.logError(`[selectFilesForRemoteRun]  ${Utils.formatErrorMessageForLogging(err)}`);
             this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
         }
     }
@@ -137,7 +137,7 @@ export class CommandHolder {
                 return result;
             }
         } catch (err) {
-            Logger.logError(`[tryExecuteCommand]  ${err}`);
+            Logger.logError(`[tryExecuteCommand] ${Utils.formatErrorMessageForLogging(err)}`);
             this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
             return false;
         }

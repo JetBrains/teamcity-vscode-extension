@@ -95,6 +95,21 @@ export class Utils {
         return formattedMsg;
     }
 
+    public static formatErrorMessageForLogging(err): string {
+        if (!err) {
+            return "";
+        }
+
+        let formattedMsg = err.message ? err.message : err;
+        if (err.stderr) {
+            formattedMsg = `${formattedMsg} ${err.stderr}`;
+        }
+        if (err.stack) {
+            formattedMsg = `${formattedMsg} ${err.stack}`;
+        }
+        return formattedMsg;
+    }
+
     /**
      * This method filters an array and returns elements which has only uniq keys
      * @param arr - an array which should be filtered
