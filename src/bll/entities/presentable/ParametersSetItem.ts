@@ -27,6 +27,7 @@ export class ParametersSetItem extends ExpandableItem {
             this.collapsibleState = TreeItemCollapsibleState.Collapsed;
         }
 
+        this.children.length = 0;
         params.forEach((param) => {
             this.children.push(new ParameterItem(param));
         });
