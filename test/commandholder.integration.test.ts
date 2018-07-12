@@ -10,7 +10,6 @@ import {SignIn} from "../src/bll/commands/signin";
 import {SignOut} from "../src/bll/commands/signout";
 import {ResourceProvider} from "../src/view/dataproviders/resourceprovider";
 import {BuildProvider} from "../src/view/dataproviders/buildprovider";
-import {CredentialsStore} from "../src/bll/credentialsstore/credentialsstore";
 import {InMemoryCredentialsStore} from "../src/bll/credentialsstore/inmemorycredentialsstore";
 import {Credentials} from "../src/bll/credentialsstore/credentials";
 import {ShowMyChanges} from "../src/bll/commands/showmychanges";
@@ -20,220 +19,216 @@ import {MessageManager} from "../src/view/messagemanager";
 import {BuildSettingsProvider} from "../src/view/dataproviders/BuildSettingsProvider";
 
 suite("CommandHolder", () => {
-    test("should verify signIn success", function (done) {
-        const mockedSignIn: SignIn = tsMockito.mock(SignIn);
-        const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
 
-        const credentialsStoreMock: CredentialsStore = tsMockito.mock(InMemoryCredentialsStore);
-        when(credentialsStoreMock.getCredentialsSilently()).thenReturn(new Credentials("server", "user", "password", "userId", "sessionId"));
-        const credentialsStoreSpy: CredentialsStore = tsMockito.instance(credentialsStoreMock);
+    let mockedSignIn: SignIn;
+    let signInSpy: SignIn;
 
-        const dp = prepareProviderManager();
-        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined,
-                                     undefined, undefined, undefined, dp, credentialsStoreSpy);
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
+    let mockedSignOut: SignOut;
+    let signOutSpy: SignOut;
 
-        ch.signIn().then(() => {
-            tsMockito.verify(mockedSignIn.exec(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+    let mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun;
+    let selectFilesForRemoteRunSpy: SelectFilesForRemoteRun;
+
+    let mockedGetSuitableConfigs: GetSuitableConfigs;
+    let getSuitableConfigsSpy: GetSuitableConfigs;
+
+    let mockedRemoteRun: RemoteRun;
+    let remoteRunSpy: RemoteRun;
+
+    let showMyChangesMock: ShowMyChanges;
+    let showMyChangesSpy: ShowMyChanges;
+
+    let credentialsStoreMock: InMemoryCredentialsStore;
+    let credentialsStoreSpy: InMemoryCredentialsStore;
+
+    let messageManagerMock: MessageManager;
+    let messageManagerSpy: MessageManager;
+
+    let providerManagerObj: ProviderManager;
+    const credsObj: Credentials =
+        new Credentials("server", "user", "password", "userId", "sessionId");
+
+    test("should verify init configuration", () => {
+        reinitMocks();
+        getCommandHolder();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify signIn failed", function (done) {
-        const mockedSignIn: SignIn = tsMockito.mock(SignIn);
+    test("should verify signIn success", async () => {
+        reinitMocks();
+        when(credentialsStoreMock.getCredentialsSilently()).thenReturn(credsObj);
+        const ch: CommandHolder = getCommandHolder();
+
+        await ch.signIn();
+        tsMockito.verify(mockedSignIn.exec(anything())).called();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
+    });
+
+    test("should verify signIn failed", async () => {
+        reinitMocks();
         tsMockito.when(mockedSignIn.exec(anything())).thenThrow(new Error("Any Exception"));
-        const signInSpy: SignIn = tsMockito.instance(mockedSignIn);
-        const dp = prepareProviderManager();
-        const ch = new CommandHolder(undefined, signInSpy, undefined, undefined, undefined, undefined, undefined, dp);
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
+        const ch: CommandHolder = getCommandHolder();
 
-        ch.signIn().then(() => {
-            done("Expected an exception");
-        }).catch(() => {
-            tsMockito.verify(mockedSignIn.exec(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.signIn();
+        tsMockito.verify(mockedSignIn.exec(anything())).called();
+        tsMockito.verify(messageManagerMock.showErrorMessage(anything())).called();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify signOut success", function (done) {
-        const mockedSignOut: SignOut = tsMockito.mock(SignOut);
-        const signOutSpy: SignOut = tsMockito.instance(mockedSignOut);
-        const dp = prepareProviderManager();
-        dp.showResourceProvider();
-        assert.notEqual(dp.getShownDataProvider, undefined);
-        const ch = new CommandHolder(undefined, undefined, signOutSpy, undefined, undefined, undefined, undefined, dp);
+    test("should verify signOut success", async () => {
+        reinitMocks();
+        const ch: CommandHolder = getCommandHolder();
 
-        ch.signOut().then(() => {
-            tsMockito.verify(mockedSignOut.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.signOut();
+        tsMockito.verify(mockedSignOut.exec()).called();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify selectFilesForRemoteRun success", function (done) {
-        const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
-        const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
-        const dp = prepareProviderManager();
-        dp.showChangesProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-        const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy, undefined, undefined, undefined, dp);
+    test("should verify selectFilesForRemoteRun DO require credentials", async () => {
+        reinitMocks();
+        when(credentialsStoreMock.getCredentials()).thenReturn(undefined);
+        const ch: CommandHolder = getCommandHolder();
 
-        ch.selectFilesForRemoteRun().then(() => {
-            tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.selectFilesForRemoteRun();
+        tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).never();
     });
 
-    test("should verify selectFilesForRemoteRun failed", function (done) {
-        const mockedSelectFilesForRemoteRun: SelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
+    test("should verify selectFilesForRemoteRun success", async () => {
+        reinitMocks();
+        when(credentialsStoreMock.getCredentials()).thenReturn(Promise.resolve(credsObj));
+        const ch: CommandHolder = getCommandHolder();
+
+        await ch.selectFilesForRemoteRun();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
+});
+
+    test("should verify selectFilesForRemoteRun failed", async () => {
+        reinitMocks();
         tsMockito.when(mockedSelectFilesForRemoteRun.exec()).thenThrow(new Error("Any Exception"));
-        const selectFilesForRemoteRunSpy: SelectFilesForRemoteRun = tsMockito.instance(mockedSelectFilesForRemoteRun);
-        const dp = prepareProviderManager();
-        dp.showChangesProvider();
+        when(credentialsStoreMock.getCredentials()).thenReturn(Promise.resolve(credsObj));
+        const ch = getCommandHolder();
 
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
-        const ch = new CommandHolder(undefined, undefined, undefined, selectFilesForRemoteRunSpy,
-                                     undefined, undefined, undefined, dp, undefined,
-                                     undefined, undefined, undefined, messageManagerSpy);
-
-        ch.selectFilesForRemoteRun().then(() => {
-            tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
-            verify(messageManagerMock.showErrorMessage(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.selectFilesForRemoteRun();
+        tsMockito.verify(mockedSelectFilesForRemoteRun.exec()).called();
+        verify(messageManagerMock.showErrorMessage(anything())).called();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify getSuitableConfigs success", function (done) {
-        const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
-        const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
-        const dp = prepareProviderManager();
+    test("should verify getSuitableConfigs success", async () => {
+        reinitMocks();
+        const ch = getCommandHolder();
+        providerManagerObj.showResourceProvider();
+        assert.equal(DataProviderEnum.ResourcesProvider, providerManagerObj.getShownDataProvider());
 
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, getSuitableConfigsSpy, undefined, undefined, dp);
-        ch.getSuitableConfigs().then(() => {
-            tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.getSuitableConfigs();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
+        assert.equal(DataProviderEnum.BuildsProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify getSuitableConfigs failed", function (done) {
-        const mockedGetSuitableConfigs: GetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
+    test("should verify getSuitableConfigs failed", async () => {
+        reinitMocks();
         tsMockito.when(mockedGetSuitableConfigs.exec()).thenThrow(new Error("Any Exception"));
-        const getSuitableConfigsSpy: GetSuitableConfigs = tsMockito.instance(mockedGetSuitableConfigs);
-        const dp = prepareProviderManager();
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
+        const ch = getCommandHolder();
+        providerManagerObj.showResourceProvider();
+        assert.equal(DataProviderEnum.ResourcesProvider, providerManagerObj.getShownDataProvider());
 
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined,
-                                     getSuitableConfigsSpy, undefined, undefined, dp, undefined,
-                                     undefined, undefined, undefined, messageManagerSpy);
-
-        dp.showResourceProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
-
-        ch.getSuitableConfigs().then(() => {
-            verify(messageManagerMock.showErrorMessage(anything())).called();
-            tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ResourcesProvider, "ResourcesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.getSuitableConfigs();
+        verify(messageManagerMock.showErrorMessage(anything())).called();
+        tsMockito.verify(mockedGetSuitableConfigs.exec()).called();
+        assert.equal(DataProviderEnum.ResourcesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    test("should verify remoteRun success", function (done) {
-        const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
-        const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = prepareProviderManager();
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, undefined, dp);
-        dp.showBuildProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
+    test("should verify remoteRun success", async () => {
+        reinitMocks();
+        const ch = getCommandHolder();
+        providerManagerObj.showBuildProvider();
 
-        ch.remoteRunWithChosenConfigs().then(() => {
-            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.remoteRunWithChosenConfigs();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        tsMockito.verify(mockedRemoteRun.exec(anything())).called();
     });
 
-    test("should verify preTestedCommit success", function (done) {
-        const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
-        const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = prepareProviderManager();
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, remoteRunSpy, undefined, dp);
+    test("should verify preTestedCommit success", async () => {
+        reinitMocks();
+        const ch = getCommandHolder();
+        providerManagerObj.showBuildProvider();
+        assert.equal(DataProviderEnum.BuildsProvider, providerManagerObj.getShownDataProvider());
 
-        dp.showBuildProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
-
-        ch.preTestedCommit().then(() => {
-            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.preTestedCommit();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        tsMockito.verify(mockedRemoteRun.exec(anything())).called();
     });
 
-    test("should verify remoteRun failed", function (done) {
-        const mockedRemoteRun: RemoteRun = tsMockito.mock(RemoteRun);
+    test("should verify remoteRun failed", async () => {
+        reinitMocks();
         tsMockito.when(mockedRemoteRun.exec(anything())).thenThrow(new Error("Any Exception"));
-        const remoteRunSpy: RemoteRun = tsMockito.instance(mockedRemoteRun);
-        const dp = prepareProviderManager();
-        const messageManagerMock: MessageManager = tsMockito.mock(MessageManager);
-        const messageManagerSpy: MessageManager = tsMockito.instance(messageManagerMock);
+        const ch = getCommandHolder();
 
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined,
-                                     undefined, remoteRunSpy, undefined, dp, undefined,
-                                     undefined, undefined, undefined, messageManagerSpy);
-        dp.showBuildProvider();
-        assert.equal(dp.getShownDataProvider(), DataProviderEnum.BuildsProvider, "BuildsProvider should be shown");
+        providerManagerObj.showBuildProvider();
+        assert.equal(DataProviderEnum.BuildsProvider, providerManagerObj.getShownDataProvider());
 
-        ch.remoteRunWithChosenConfigs().then(() => {
-            verify(messageManagerMock.showErrorMessage(anything())).called();
-            tsMockito.verify(mockedRemoteRun.exec(anything())).called();
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        await ch.remoteRunWithChosenConfigs();
+        verify(messageManagerMock.showErrorMessage(anything())).called();
+        tsMockito.verify(mockedRemoteRun.exec(anything())).called();
     });
 
-    test("should verify showMyChanges", function (done) {
-        const showMyChangesMock: ShowMyChanges = tsMockito.mock(ShowMyChanges);
+    test("should verify showMyChanges success", async () => {
+        reinitMocks();
         when(showMyChangesMock.exec()).thenReturn(Promise.resolve());
         when(showMyChangesMock.exec(anything())).thenReturn(Promise.resolve());
-        const showMyChangesSpy: ShowMyChanges = tsMockito.instance(showMyChangesMock);
-        const dp = prepareProviderManager();
-        const ch = new CommandHolder(undefined, undefined, undefined, undefined, undefined, undefined, showMyChangesSpy, dp);
-        ch.showMyChanges().then(() => {
-            verify(showMyChangesMock.exec(anything())).called();
-            assert.equal(dp.getShownDataProvider(), DataProviderEnum.ChangesProvider, "ChangesProvider should be shown");
-            done();
-        }).catch((err) => {
-            done(err);
-        });
+        const ch = getCommandHolder();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
+
+        await ch.showMyChanges();
+        verify(showMyChangesMock.exec(anything())).called();
+        verify(messageManagerMock.showErrorMessage(anything())).never();
+        assert.equal(DataProviderEnum.ChangesProvider, providerManagerObj.getShownDataProvider());
     });
 
-    function prepareProviderManager(): ProviderManager {
-        return new ProviderManager(new ResourceProvider(),
-                                   new BuildProvider(),
-                                   new ChangesProvider(),
-                                   new BuildSettingsProvider());
+    function getCommandHolder() {
+        return new CommandHolder(signInSpy,
+            signOutSpy,
+            selectFilesForRemoteRunSpy,
+            getSuitableConfigsSpy,
+            remoteRunSpy,
+            showMyChangesSpy,
+            providerManagerObj,
+            credentialsStoreSpy,
+            messageManagerSpy);
+    }
+
+    function reinitMocks() {
+        mockedSignIn = tsMockito.mock(SignIn);
+        signInSpy = tsMockito.instance(mockedSignIn);
+
+        mockedSignOut = tsMockito.mock(SignOut);
+        signOutSpy = tsMockito.instance(mockedSignOut);
+
+        mockedSelectFilesForRemoteRun = tsMockito.mock(SelectFilesForRemoteRun);
+        selectFilesForRemoteRunSpy = tsMockito.instance(mockedSelectFilesForRemoteRun);
+
+        mockedGetSuitableConfigs = tsMockito.mock(GetSuitableConfigs);
+        getSuitableConfigsSpy = tsMockito.instance(mockedGetSuitableConfigs);
+
+        mockedRemoteRun = tsMockito.mock(RemoteRun);
+        remoteRunSpy = tsMockito.instance(mockedRemoteRun);
+
+        showMyChangesMock = tsMockito.mock(ShowMyChanges);
+        showMyChangesSpy = tsMockito.instance(showMyChangesMock);
+
+        messageManagerMock = tsMockito.mock(MessageManager);
+        messageManagerSpy = tsMockito.instance(messageManagerMock);
+
+        credentialsStoreMock = tsMockito.mock(InMemoryCredentialsStore);
+        credentialsStoreSpy = tsMockito.instance(credentialsStoreMock);
+
+        providerManagerObj = new ProviderManager(new ResourceProvider(),
+            new BuildProvider(),
+            new ChangesProvider(),
+            new BuildSettingsProvider());
     }
 });
