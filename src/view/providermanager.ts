@@ -33,11 +33,13 @@ export class ProviderManager implements IProviderManager {
 
     public showResourceProvider(): void {
         this.buildsProvider.resetTreeContent();
+        this.resourcesProvider.refreshTreePresentation();
         this.resourcesProvider.show();
         this.shownDataProvider = this.resourcesProvider;
     }
 
     public showBuildProvider(): void {
+        this.buildsProvider.refreshTreePresentation();
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
     }
@@ -45,12 +47,14 @@ export class ProviderManager implements IProviderManager {
     public showChangesProvider(): void {
         this.buildsProvider.resetTreeContent();
         this.resourcesProvider.resetTreeContent();
+        this.changesProvider.refreshTreePresentation();
         this.changesProvider.show();
         this.shownDataProvider = this.changesProvider;
     }
 
     public showBuildSettingsProvider(build: BuildConfig): void {
         this.buildSettingsProvider.setBuild(build);
+        this.buildSettingsProvider.refreshTreePresentation();
         this.buildSettingsProvider.show();
         this.shownDataProvider = this.buildSettingsProvider;
     }
@@ -60,19 +64,17 @@ export class ProviderManager implements IProviderManager {
     }
 
     public refreshAll() {
-        if (this.resourcesProvider && this.changesProvider && this.buildsProvider) {
-            this.resourcesProvider.refreshTreePresentation();
-            this.buildsProvider.refreshTreePresentation();
-            this.changesProvider.refreshTreePresentation();
-        }
+        this.resourcesProvider.refreshTreePresentation();
+        this.buildsProvider.refreshTreePresentation();
+        this.changesProvider.refreshTreePresentation();
+        this.buildSettingsProvider.refreshTreePresentation();
     }
 
     public resetAll() {
-        if (this.resourcesProvider && this.changesProvider && this.buildsProvider) {
-            this.resourcesProvider.resetTreeContent();
-            this.buildsProvider.resetTreeContent();
-            this.changesProvider.resetTreeContent();
-        }
+        this.resourcesProvider.resetTreeContent();
+        this.buildsProvider.resetTreeContent();
+        this.changesProvider.resetTreeContent();
+        this.buildSettingsProvider.resetTreeContent();
     }
 
     public dispose() {

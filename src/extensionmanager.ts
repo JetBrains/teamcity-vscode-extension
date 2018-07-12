@@ -50,6 +50,10 @@ export class ExtensionManager {
         worker.work();
     }
 
+    public updateChangesProvider() {
+        this.providerManager.showBuildProvider();
+    }
+
     public refreshAllProviders() {
         this.providerManager.refreshAll();
     }

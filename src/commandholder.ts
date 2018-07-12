@@ -51,7 +51,6 @@ export class CommandHolder {
     public async signOut(): Promise<void> {
         if (await this.tryExecuteCommand(this._signOut)) {
             this.providerManager.resetAll();
-            this.providerManager.refreshAll();
             this.providerManager.showChangesProvider();
         }
     }
@@ -60,7 +59,6 @@ export class CommandHolder {
         try {
             const loggedIn = await this.credentialsStore.getCredentials();
             if (loggedIn && await this.tryExecuteCommand(this._selectForRemoteRun)) {
-                this.providerManager.refreshAll();
                 this.providerManager.showResourceProvider();
             }
         } catch (err) {
@@ -71,7 +69,6 @@ export class CommandHolder {
 
     public async getSuitableConfigs(): Promise<void> {
         if (await this.tryExecuteCommand(this._getSuitableConfigs)) {
-            this.providerManager.refreshAll();
             this.providerManager.showBuildProvider();
         }
     }
@@ -100,7 +97,6 @@ export class CommandHolder {
 
     public async showMyChanges(isSilent: boolean = false): Promise<void> {
         if (await this.tryExecuteCommand(this._showMyChanges, isSilent)) {
-            this.providerManager.refreshAll();
             this.providerManager.showChangesProvider();
         }
     }

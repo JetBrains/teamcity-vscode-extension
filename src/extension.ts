@@ -4,13 +4,13 @@ import "reflect-metadata";
 import * as vscode from "vscode";
 import {Constants, ParameterType, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
-import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {ChangeItem} from "./bll/entities/presentable/changeitem";
 import {CommandHolder} from "./commandholder";
+import {ExpandableItem} from "./bll/entities/presentable/expandableitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -46,12 +46,13 @@ export function activate(context: vscode.ExtensionContext) {
         configurable: BuildConfigItem) => extensionManager.commandHolder.customizeBuild(configurable)));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {
         item.changeState();
-        extensionManager.refreshAllProviders();
+        extensionManager.updateChangesProvider();
     }));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE, (project: ProjectItem) => {
-        project.changeCollapsibleState();
-        extensionManager.refreshAllProviders();
-    }));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE,
+        (project: ExpandableItem) => {
+            project.changeCollapsibleState();
+            extensionManager.refreshAllProviders();
+        }));
     context.subscriptions.push(vscode.commands.registerCommand(
         Constants.REMOVE_PARAMETER_COMMAND_NAME,
         (parameter: ParameterItem) => {
