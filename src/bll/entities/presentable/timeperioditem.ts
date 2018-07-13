@@ -27,16 +27,7 @@ export class TimePeriodItem extends ExpandableItem {
         };
     }
 
-    public changeCollapsibleState(): void {
-        if (this.children.length === 0) {
-            this.collapsibleState = TreeItemCollapsibleState.None;
-            return;
-        }
-
-        if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
-            this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        } else {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
+    public hasChildren() {
+        return this.children && this.children.length !== 0;
     }
 }

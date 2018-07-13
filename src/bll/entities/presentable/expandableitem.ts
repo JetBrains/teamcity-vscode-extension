@@ -2,19 +2,17 @@ import {Command, TreeItem, TreeItemCollapsibleState} from "vscode";
 
 export abstract class ExpandableItem extends TreeItem {
 
-    public get command(): Command {
-        return {
-            command: "changeCollapsibleState",
-            arguments: [this],
-            title: "Change Collapsible State"
-        };
+    public readonly command = this.preCommandProcessing;
+
+    private get preCommandProcessing(): Command {
+        if (this.hasChildren() && this.collapsibleState === TreeItemCollapsibleState.None) {
+            this.collapsibleState = TreeItemCollapsibleState.Expanded;
+        }
+
+        return undefined;
     }
 
-    public changeCollapsibleState(): void {
-        if (this.collapsibleState === TreeItemCollapsibleState.Collapsed) {
-            this.collapsibleState = TreeItemCollapsibleState.Expanded;
-        } else {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
+    public hasChildren(): boolean {
+        return true;
     }
 }
