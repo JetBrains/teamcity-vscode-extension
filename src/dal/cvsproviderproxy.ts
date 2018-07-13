@@ -8,15 +8,29 @@ import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
 import {Utils} from "../bll/utils/utils";
 import {GitProviderActivator} from "./git/GitProviderActivator";
+import {Settings} from "../bll/entities/settings";
+import {Context} from "../view/Context";
+import {GitProvider} from "./gitprovider";
 
 @injectable()
 export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
-
-    constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator) {
+    private readonly isGitSupported: boolean;
+    constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator,
+                @inject(TYPES.Settings) private readonly mySettings: Settings,
+                @inject(TYPES.Context) context: Context) {
         const rootPaths: Uri[] = this.collectAllRootPaths();
-        this.detectCvsProviders(rootPaths).then((detectedCvsProviders) => {
+        this.isGitSupported = mySettings.isGitSupported();
+        if (this.isGitSupported) {
+            Logger.logWarning("Experimental git support is enabled.");
+        } else {
+            Logger.logInfo("Experimental git support is disabled.");
+        }
+        this.detectCvsProviders(rootPaths).then((detectedCvsProviders: CvsSupportProvider[]) => {
             this.actualProviders = detectedCvsProviders;
+            if (this.actualProviders.length > 0) {
+                context.setShowRemoteRunButton(true);
+            }
         });
     }
 
@@ -41,13 +55,6 @@ export class CvsProviderProxy {
 
     private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const providers: CvsSupportProvider[] = [];
-        const gitProvider: CvsSupportProvider = await this.gitProviderActivator.tryActivateInPath(rootPath);
-        if (gitProvider) {
-            providers.push(gitProvider);
-            Logger.logInfo(`Git provider was activated for ${rootPath.fsPath}`);
-        } else {
-            Logger.logWarning(`Could not activate git provider for ${rootPath.fsPath}`);
-        }
         try {
             const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
             providers.push(tfvcProvider);
@@ -55,6 +62,17 @@ export class CvsProviderProxy {
         } catch (err) {
             Logger.logWarning(`Could not activate tfvc provider for ${rootPath.fsPath}`);
             Logger.logDebug(Utils.formatErrorMessage(err));
+        }
+        if (!this.isGitSupported) {
+            return providers;
+        }
+
+        const gitProvider: CvsSupportProvider = await this.gitProviderActivator.tryActivateInPath(rootPath);
+        if (gitProvider) {
+            providers.push(gitProvider);
+            Logger.logInfo(`Git provider was activated for ${rootPath.fsPath}`);
+        } else {
+            Logger.logWarning(`Could not activate git provider for ${rootPath.fsPath}`);
         }
         return providers;
     }
@@ -75,11 +93,15 @@ export class CvsProviderProxy {
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo[]> {
         const result: CheckInInfo[] = [];
+        this.ensureProvidersExist();
+
         for (let i = 0; i < this.actualProviders.length; i++) {
             const provider: CvsSupportProvider = this.actualProviders[i];
             try {
                 const checkInInfo: CheckInInfo = await provider.getRequiredCheckInInfo();
-                result.push(checkInInfo);
+                if (checkInInfo.cvsLocalResources.length > 0) {
+                    result.push(checkInInfo);
+                }
             } catch (err) {
                 Logger.logError(Utils.formatErrorMessage(err));
             }
@@ -89,6 +111,16 @@ export class CvsProviderProxy {
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
         return this.doCommitOperation(checkInArray);
+    }
+
+    public hasGitProvider(): boolean {
+        for (const provider of this.actualProviders) {
+            if (provider instanceof GitProvider) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
@@ -117,5 +149,11 @@ export class CvsProviderProxy {
         checkInArray.forEach((checkInInfo) => {
             checkInInfo.message = commitMessage;
         });
+    }
+
+    private ensureProvidersExist() {
+        if (this.actualProviders.length === 0) {
+            throw new Error("No cvs provider found");
+        }
     }
 }

@@ -1,6 +1,3 @@
-import {QueueAtTop} from "../commands/QueueAtTop";
-import {OpenInBrowser} from "../commands/OpenInBrowser";
-
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
@@ -9,14 +6,16 @@ export class Constants {
     public static readonly EXTENSION_ID: string = "JetBrains.teamcity-vscode-extension";
     public static readonly XMLRPC_SESSIONID_KEY: string = "xmlrpcsessionId";
     public static readonly LOGGING_LEVEL_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}logging.level`;
-    public static readonly SIGNIN_WELCOME_SETTING_KEY = `${Constants.EXTENSION_NAME_PREFIX}show.welcome`;
     public static readonly SHOULD_ASK_STORE_CREDENTIALS = `${Constants.EXTENSION_NAME_PREFIX}credentials.persistent`;
-    public static readonly SHOULD_COLLECT_CHANGES_FROM_INDEX = `${Constants.EXTENSION_NAME_PREFIX}git.changesFromIndex`;
+    public static readonly SHOULD_COLLECT_CHANGES_FROM_INDEX = `${Constants.EXTENSION_NAME_PREFIX}experimental.git.changesFromIndex`;
+    public static readonly EXPERIMENTAL_GIT_SUPPORTED = `${Constants.EXTENSION_NAME_PREFIX}experimental.git.support`;
+    public static readonly EXPERIMENTAL_TFVC_PRETESTED_SUPPORTED = `${Constants.EXTENSION_NAME_PREFIX}experimental.tfvc.pretestedSupport`;
     public static readonly LAST_LOGIN = `${Constants.EXTENSION_NAME_PREFIX}credentials.lastLogin`;
     public static readonly TFS_LOCATION_SETTING_NAME = "tfvc.location";
     public static readonly GIT_PATH_SETTING_NAME = "git.path";
     public static readonly DEFAULT_URL = "http://buildserver";
     public static readonly SERVICE_PREFIX = "jetbrains.teamcity.vscode";
+    public static readonly GIT_SUPPORT_WIKI_PAGE = "https://github.com/JetBrains/teamcity-vscode-extension/wiki/Git-Support";
 
     public static readonly SIGNIN_COMMAND_NAME = "teamcity.signIn";
     public static readonly SIGNOUT_COMMAND_NAME = "teamcity.signOut";
@@ -34,7 +33,7 @@ export class Constants {
     public static readonly UNQUEUE_FROM_TOP_COMMAND_NAME = "teamcity.unQueueFromTop";
     public static readonly OPEN_IN_BROWSER = "teamcity.openInBrowser";
     public static readonly PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME = "teamcity.preTestedCommit";
-    public static readonly BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToEmptyDataProvider";
+    public static readonly BACK_TO_CHANGES_DATA_PROVIDER_COMMAND_NAME = "teamcity.backToChangesDataProvider";
     public static readonly BACK_TO_SELECT_FILES_COMMAND_NAME = "teamcity.backToSelectFilesForRemoteRun";
     public static readonly BACK_TO_BUILD_EXPLORER_COMMAND_NAME = "teamcity.backToBuildsExplorer";
     public static readonly SHOW_MY_CHANGES_COMMAND_NAME = "teamcity.showMyChanges";
@@ -123,6 +122,7 @@ export const TYPES = {
     ExtensionManager: Symbol("ExtensionManager"),
     CommandHolder: Symbol("CommandHolder"),
     NotificationWatcher: Symbol("NotificationWatcher"),
+    NotificationManager: Symbol("NotificationManager"),
     RemoteLogin: Symbol("RemoteLogin"),
     RemoteBuildServer: Symbol("RemoteBuildServer"),
     WebLinks: Symbol("WebLinks"),
@@ -182,16 +182,10 @@ export const TYPES = {
     RemoveBuildParameter: Symbol("RemoveBuildParameter"),
     QueueAtTop: Symbol("QueueAtTop"),
     OpenInBrowser: Symbol("OpenInBrowser"),
+    MyChangesWorker: Symbol("MyChangesWorker"),
 };
 
-export enum CvsOperation {
-    DoNothing = "No, thank you.",
-    DoCommitChanges = "Commit changes",
-    DoCommitAndPushChanges = "Commit and Push (if possible) changes"
-}
-
 export enum DataProviderEnum {
-    EmptyDataProvider = "EmptyDataProvider",
     ResourcesProvider = "ResourcesProvider",
     BuildsProvider = "BuildsProvider",
     ChangesProvider = "ChangesProvider",

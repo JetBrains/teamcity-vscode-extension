@@ -9,13 +9,25 @@ rmock("vscode", {});
 
 suite("XmlParser", () => {
     const xmlParser: XmlParser = new XmlParser();
+    test("should verify parseProjects when data is empty", function (done) {
+        xmlParser.parseProjectsWithRelatedBuilds(undefined, undefined)
+            .then(() => {
+                done("Exception expected");
+            })
+            .catch(() => {
+                done();
+            });
+    });
+
     test("should verify parseProjectsWithRelatedBuilds not shuffled", async function () {
         const topProject = getTopProjectXml();
         const level1Project = getProjectXml("project1", "_Root");
         const level2Project = getProjectXml("project2", "project1");
         const level3Project = getProjectXml("project3", "project2", true);
         const result: Project[] = await xmlParser.parseProjectsWithRelatedBuilds(
-            [topProject, level1Project, level2Project, level3Project], () => {return true; });
+            [topProject, level1Project, level2Project, level3Project], () => {
+                return true;
+            });
         assert.equal(result.length, 1);
         assert.equal(result[0].id, "project1");
         assert.equal(result[0].children.length, 1);
@@ -32,7 +44,9 @@ suite("XmlParser", () => {
         const level2Project = getProjectXml("project2", "project1");
         const level3Project = getProjectXml("project3", "project2", true);
         const result: Project[] = await xmlParser.parseProjectsWithRelatedBuilds(
-            [level3Project, level1Project, topProject, level2Project], () => {return true; });
+            [level3Project, level1Project, topProject, level2Project], () => {
+                return true;
+            });
         assert.equal(result.length, 1);
         assert.equal(result[0].id, "project1");
         assert.equal(result[0].children.length, 1);
@@ -57,13 +71,12 @@ function getProjectXml(projectId: string, parentId: string, withConfig = false) 
    <myExternalId>${externalId}</myExternalId>
    <myParentProjectId>${parentId}</myParentProjectId>
    <name>${name}</name>
-   ${withConfig ? getConfigXml("configId", "configExternalId", "configName", projectId) : ""}
+   <configs>${withConfig ? getConfigXml("configId", "configExternalId", "configName", projectId) : ""}</configs>
    </Project>`;
 }
 
 function getConfigXml(id: string, externalId: string, name: string, parentId: string) {
-    return `<configs>
-      <Configuration>
+    return `<Configuration>
          <id>${id}</id>
          <myExternalId>${externalId}</myExternalId>
          <projectName>any_name</projectName>
@@ -78,6 +91,5 @@ function getConfigXml(id: string, externalId: string, name: string, parentId: st
          <isLastSuccessfullyFinishedLoaded>false</isLastSuccessfullyFinishedLoaded>
          <paused>false</paused>
          <queued>false</queued>
-      </Configuration>
-   </configs>`;
+      </Configuration>`;
 }

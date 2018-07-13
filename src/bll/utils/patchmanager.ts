@@ -13,6 +13,7 @@ import {Utils} from "./utils";
 import * as pify from "pify";
 import {TYPES} from "./constants";
 import {Settings} from "../entities/settings";
+import {GitProvider} from "../../dal/gitprovider";
 
 const temp = require("temp").track();
 
@@ -89,7 +90,7 @@ class PatchBuilder {
             return;
         }
         let fileContentStream: ReadableSet;
-        if (cvsProvider.allowStaging() && this.settings.shouldCollectGitChangesFromIndex()) {
+        if (cvsProvider instanceof GitProvider && this.settings.shouldCollectGitChangesFromIndex()) {
             fileContentStream = await cvsProvider.getStagedFileContentStream(cvsResource);
         } else {
             fileContentStream = await cvsResource.getContentForPatch();

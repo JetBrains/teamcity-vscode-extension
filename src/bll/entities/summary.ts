@@ -46,7 +46,12 @@ export class Summary {
         }
         const changes: any[] = summaryObj.changes[0].ChangeInfo;
         changes.forEach((change) => {
-            result.push(Change.fromXmlRpcObject(change));
+            try {
+                const changeWrapped: Change = Change.fromXmlRpcObject(change);
+                result.push(changeWrapped);
+            } catch (err) {
+                Logger.logDebug("Can't wrap change. Initial error: " + err.stack);
+            }
         });
         return result;
     }
@@ -63,7 +68,12 @@ export class Summary {
         }
         const changes: any[] = summaryObj.personalChanges[0].ChangeInfo;
         changes.forEach((change) => {
-            result.push(Change.fromXmlRpcObject(change));
+            try {
+                const changeWrapped: Change = Change.fromXmlRpcObject(change);
+                result.push(changeWrapped);
+            } catch (err) {
+                Logger.logDebug("Can't wrap change. Initial error: " + err.stack);
+            }
         });
         return result;
     }

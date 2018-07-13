@@ -22,8 +22,8 @@ export class MessageConstants {
     static readonly UPDATE_CREDENTIALS_SUGGESTION =
         "Do you want Visual Studio Code to update the TeamCity URL and your credentials?";
     static readonly GIT_PATH_IS_NOT_FOUND = "Git path is not found!";
-    static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations with non-manual VCS checkout mode in " +
-        "where you have permissions to run builds were not found for the specified changes.";
+    static readonly SUITABLE_BUILDS_NOT_FOUND = "Suitable build configurations not found";
+    static readonly GIT_SUPPORT_LIMITATIONS_WARNING = "Please note that experimental Git support has some limitations.";
     static readonly MANDATORY_FIELD: string = "This field is mandatory.";
     static readonly NO_CHANGED_FILES_CHOSEN: string = "Choose at least one changed file.";
 }

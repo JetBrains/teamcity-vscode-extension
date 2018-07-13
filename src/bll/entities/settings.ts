@@ -1,6 +1,5 @@
 export interface Settings {
     loggingLevel: string;
-    showSignInWelcome: boolean;
     lastLogin: string;
 
     shouldAskStoreCredentials(): boolean;
@@ -8,4 +7,8 @@ export interface Settings {
     setShouldAskStoreCredentials(newValue: boolean): Promise<void>;
 
     shouldCollectGitChangesFromIndex(): boolean;
+
+    isGitSupported(): boolean;
+
+    isTfvcPreTestedSupported(): boolean;
 }

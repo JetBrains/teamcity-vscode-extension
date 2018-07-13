@@ -31,14 +31,20 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
     }
 
     refreshTreePresentation(): void {
-        this.systemProperties = new ParametersSetItem("System Properties", this.build.getSystemProperties());
-        this.configParameters = new ParametersSetItem("Configuration Parameters", this.build.getConfigParameters());
-        this.envVariables = new ParametersSetItem("Environment Variables", this.build.getEnvVariables());
+        if (this.build) {
+            this.systemProperties.updateParameters(this.build.getSystemProperties());
+            this.configParameters.updateParameters(this.build.getConfigParameters());
+            this.envVariables.updateParameters(this.build.getEnvVariables());
+        } else {
+            this.resetTreeContent();
+        }
         this._onDidChangeTreeData.fire();
     }
 
     resetTreeContent(): void {
-        //
+        this.systemProperties = new ParametersSetItem("System Properties", []);
+        this.configParameters = new ParametersSetItem("Configuration Parameters", []);
+        this.envVariables = new ParametersSetItem("Environment Variables", []);
     }
 
     getCurrentBuild(): BuildConfig {
@@ -47,6 +53,8 @@ export class BuildSettingsProvider extends DataProvider implements IBuildSetting
 
     setBuild(build: BuildConfig): void {
         this.build = build;
-        this.refreshTreePresentation();
+        this.systemProperties = new ParametersSetItem("System Properties", this.build.getSystemProperties());
+        this.configParameters = new ParametersSetItem("Configuration Parameters", this.build.getConfigParameters());
+        this.envVariables = new ParametersSetItem("Environment Variables", this.build.getEnvVariables());
     }
 }

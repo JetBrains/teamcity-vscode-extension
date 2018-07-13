@@ -12,7 +12,6 @@ export class SettingsImpl implements Settings {
 
     constructor() {
         this._loggingLevel = SettingsImpl.getSettingsProperty<string>(Constants.LOGGING_LEVEL_SETTING_KEY, undefined);
-        this._showSignInWelcome = SettingsImpl.getSettingsProperty<boolean>(Constants.SIGNIN_WELCOME_SETTING_KEY, true);
         this._shouldAskStoreCredentials = SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_ASK_STORE_CREDENTIALS, true);
         this._lastLogin = SettingsImpl.getSettingsProperty<string>(Constants.LAST_LOGIN, "");
     }
@@ -29,18 +28,6 @@ export class SettingsImpl implements Settings {
 
     public get loggingLevel(): string {
         return this._loggingLevel;
-    }
-
-    public get showSignInWelcome(): boolean {
-        return this._showSignInWelcome;
-    }
-
-    /**
-     * If undefined then signInWelcomeMessage = true
-     */
-    public set showSignInWelcome(newValue: boolean) {
-        this._showSignInWelcome = newValue !== undefined ? newValue : true;
-        SettingsImpl.setSettingsProperty(Constants.SIGNIN_WELCOME_SETTING_KEY, newValue, true /* global */);
     }
 
     public shouldAskStoreCredentials(): boolean {
@@ -63,5 +50,13 @@ export class SettingsImpl implements Settings {
 
     shouldCollectGitChangesFromIndex(): boolean {
         return SettingsImpl.getSettingsProperty<boolean>(Constants.SHOULD_COLLECT_CHANGES_FROM_INDEX, false);
+    }
+
+    isGitSupported(): boolean {
+        return SettingsImpl.getSettingsProperty<boolean>(Constants.EXPERIMENTAL_GIT_SUPPORTED, false);
+    }
+
+    isTfvcPreTestedSupported(): boolean {
+        return SettingsImpl.getSettingsProperty<boolean>(Constants.EXPERIMENTAL_TFVC_PRETESTED_SUPPORTED, false);
     }
 }

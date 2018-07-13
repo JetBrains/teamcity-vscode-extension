@@ -21,6 +21,14 @@ export class SelectFilesForRemoteRun implements Command {
         this.windowsProxy.showWithProgress("Collecting changes...", checkInArrayPromise);
 
         const checkInInfo: CheckInInfo[] = await checkInArrayPromise;
+        SelectFilesForRemoteRun.ensureChangesPresent(checkInInfo);
+
         this.resourceProvider.setContent(checkInInfo);
+    }
+
+    private static ensureChangesPresent(checkInInfo: CheckInInfo[]) {
+        if (checkInInfo.length === 0) {
+            throw new Error("No changes detected");
+        }
     }
 }

@@ -77,7 +77,7 @@
         }
       },
       {
-        "command": "teamcity.backToEmptyDataProvider",
+        "command": "teamcity.backToChangesDataProvider",
         "title": "Back to the previous step",
         "category": "TeamCity",
         "icon": {
@@ -111,11 +111,6 @@
           "light": "resources/icons/light/pretested-commit.svg",
           "dark": "resources/icons/dark/pretested-commit.svg"
         }
-      },
-      {
-        "command": "teamcity.showOutput",
-        "title": "Show TeamCity output",
-        "category": "TeamCity"
       },
       {
         "command": "teamcity.showMyChanges",
@@ -234,11 +229,6 @@
     "views": {
       "teamcity": [
         {
-          "id": "teamcityEmptyExplorer",
-          "name": "",
-          "when": "teamcity-explorer == EmptyDataProvider"
-        },
-        {
           "id": "teamcityResourceExplorer",
           "name": "",
           "when": "teamcity-explorer == ResourcesProvider"
@@ -250,7 +240,7 @@
         },
         {
           "id": "teamcityChangesProvider",
-          "name": "",
+          "name": "My Changes",
           "when": "teamcity-explorer == ChangesProvider"
         },
         {
@@ -279,7 +269,7 @@
           "when": "never"
         },
         {
-          "command": "teamcity.backToEmptyDataProvider",
+          "command": "teamcity.backToChangesDataProvider",
           "when": "never"
         },
         {
@@ -343,10 +333,6 @@
           "when": "never"
         },
         {
-          "command": "teamcity.preTestedCommit",
-          "when": "never"
-        },
-        {
           "command": "teamcity.refreshMyChanges",
           "when": "never"
         },
@@ -358,21 +344,11 @@
       "view/title": [
         {
           "command": "teamcity.selectFilesForRemoteRun",
-          "when": "view == teamcityEmptyExplorer",
+          "when": "view == teamcityChangesProvider && teamcity-show-remote-run-button == true",
           "group": "navigation@1"
         },
         {
-          "command": "teamcity.showMyChanges",
-          "when": "view == teamcityEmptyExplorer",
-          "group": "navigation@2"
-        },
-        {
-          "command": "teamcity.signOut",
-          "when": "view == teamcityEmptyExplorer",
-          "group": "@1"
-        },
-        {
-          "command": "teamcity.backToEmptyDataProvider",
+          "command": "teamcity.backToChangesDataProvider",
           "when": "view == teamcityResourceExplorer",
           "group": "navigation@1"
         },
@@ -388,7 +364,12 @@
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == teamcityResourceExplorer",
+          "when": "view == teamcityResourceExplorer && teamcity-signed-in == true",
+          "group": "@1"
+        },
+        {
+          "command": "teamcity.signIn",
+          "when": "view == teamcityResourceExplorer && teamcity-signed-in == false",
           "group": "@1"
         },
         {
@@ -413,17 +394,17 @@
         },
         {
           "command": "teamcity.signOut",
-          "when": "view == teamcityBuildsExplorer",
+          "when": "view == teamcityBuildsExplorer && teamcity-signed-in == true",
           "group": "@1"
         },
         {
-          "command": "teamcity.backToEmptyDataProvider",
-          "when": "view == teamcityChangesProvider",
-          "group": "navigation@1"
+          "command": "teamcity.signOut",
+          "when": "view == teamcityChangesProvider && teamcity-signed-in == true",
+          "group": "@1"
         },
         {
-          "command": "teamcity.signOut",
-          "when": "view == teamcityChangesProvider",
+          "command": "teamcity.signIn",
+          "when": "view == teamcityChangesProvider && teamcity-signed-in == false",
           "group": "@1"
         },
         {
@@ -542,11 +523,6 @@
           "type": "string",
           "description": "Specifies the logging level for the extension (error, warn, info, debug)."
         },
-        "teamcity.show.welcome": {
-          "type": "boolean",
-          "default": true,
-          "description": "Specifies whether the extension should show the welcome message after the login operation or not."
-        },
         "teamcity.credentials.persistent": {
           "type": "boolean",
           "default": true,
@@ -556,10 +532,20 @@
           "type": "string",
           "description": "Stores the last used url and username."
         },
-        "teamcity.git.changesFromIndex": {
+        "teamcity.experimental.git.support": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable an experimental git support."
+        },
+        "teamcity.experimental.git.changesFromIndex": {
           "type": "boolean",
           "default": false,
           "description": "Git specific. Specifies whether the extension should collect changes from the index or not. When set to false, changes are collected from the working tree."
+        },
+        "teamcity.experimental.tfvc.pretestedSupport": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable an experimental tfvc pre-tested commit support."
         }
       }
     }
@@ -578,6 +564,7 @@
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.40",
+    "@types/opn": "^5.1.0",
     "@types/pako": "^1.0.0",
     "@types/pify": "^3.0.1",
     "@types/portscanner": "^2.1.0",
@@ -613,6 +600,7 @@
     "mock-require": "^3.0.1",
     "node-forge": "^0.7.1",
     "node-gyp": "^3.6.2",
+    "opn": "^5.3.0",
     "pako": "^1.0.5",
     "path": "^0.12.7",
     "pify": "^3.0.0",

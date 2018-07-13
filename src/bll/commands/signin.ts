@@ -7,26 +7,26 @@ import {MessageManager} from "../../view/messagemanager";
 import {RemoteLogin} from "../../dal/remotelogin";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {Settings} from "../entities/settings";
-import {Output} from "../../view/output";
 import {inject, injectable} from "inversify";
 import {Constants, TYPES} from "../utils/constants";
 import {PersistentStorageManager} from "../credentialsstore/persistentstoragemanager";
 import {Utils} from "../utils/utils";
 import {VsCodeUtils} from "../utils/vscodeutils";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {Context} from "../../view/Context";
 
 @injectable()
 export class SignIn implements Command {
 
     public constructor(@inject(TYPES.RemoteLogin) private readonly remoteLogin: RemoteLogin,
                        @inject(TYPES.CredentialsStore) private readonly credentialsStore: CredentialsStore,
-                       @inject(TYPES.Output) private readonly output: Output,
                        @inject(TYPES.Settings) private readonly settings: Settings,
                        @inject(TYPES.PersistentStorageManager)
                        private readonly persistentStorageManager: PersistentStorageManager,
                        @inject(TYPES.TeamCityStatusBarItem) private readonly statusBarItem: TeamCityStatusBarItem,
                        @inject(TYPES.MessageManager) private readonly messageManager: MessageManager,
-                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy) {
+                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy,
+                       @inject(TYPES.Context) private readonly myContext: Context) {
         //
     }
 
@@ -46,8 +46,10 @@ export class SignIn implements Command {
             if (!fromPersistence) {
                 this.suggestToStoreCredentials(typedCredentials);
             } else if (!typedCredentials.equals(fromPersistence)) {
+                await this.persistentStorageManager.removeCredentials();
                 this.suggestToUpdateCredentials(typedCredentials);
             }
+            this.myContext.setSignIn(true);
             return this.greetUser(typedCredentials);
         } else {
             Logger.logWarning("SignIn#exec: operation was aborted by user");
@@ -60,6 +62,7 @@ export class SignIn implements Command {
         }
         this.credentialsStore.setCredentials(fromPersistence);
         Logger.logInfo("SignIn#exec: success.");
+        this.myContext.setSignIn(true);
         return this.greetUser(fromPersistence);
     }
 
@@ -179,19 +182,7 @@ export class SignIn implements Command {
     }
 
     private async greetUser(credentials: Credentials): Promise<void> {
-        this.output.appendLine(MessageConstants.WELCOME_MESSAGE);
         this.statusBarItem.setLoggedIn(credentials.serverURL, credentials.user);
-        if (this.settings.showSignInWelcome) {
-            this.showWelcomeMessage();
-        }
-    }
-
-    private async showWelcomeMessage(): Promise<void> {
-        const doNotShowAgainItem: MessageItem = {title: MessageConstants.DO_NOT_SHOW_AGAIN};
-        const chosenItem: MessageItem = await this.messageManager.showInfoMessage(MessageConstants.WELCOME_MESSAGE, doNotShowAgainItem);
-        if (chosenItem && chosenItem.title === doNotShowAgainItem.title) {
-            this.settings.showSignInWelcome = false;
-        }
     }
 
     private async suggestToStoreCredentials(credentials: Credentials): Promise<void> {

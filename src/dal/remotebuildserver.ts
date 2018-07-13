@@ -19,8 +19,13 @@ export class RemoteBuildServer {
         this.remoteLogin = remoteLogin;
     }
 
-    private async createAndInitClient(): Promise<any> {
-        const credentials: Credentials = await this.credentialsStore.getCredentials();
+    private async createAndInitClient(isSilent: boolean = false): Promise<any> {
+        let credentials: Credentials;
+        if (isSilent) {
+            credentials = this.credentialsStore.getCredentialsSilently();
+        } else {
+            credentials = await this.credentialsStore.getCredentials();
+        }
         if (credentials) {
             const client: any = this.remoteLogin.createClient(credentials.serverURL);
             client.setCookie(Constants.XMLRPC_SESSIONID_KEY, credentials.sessionId);
@@ -39,8 +44,8 @@ export class RemoteBuildServer {
         }
     }
 
-    public async getGZippedSummary(): Promise<Uint8Array> {
-        const client: any = await this.createAndInitClient();
+    public async getGZippedSummary(isSilent: boolean = false): Promise<Uint8Array> {
+        const client: any = await this.createAndInitClient(isSilent);
         const userId: string = await this.getUserId();
         return new Promise<Uint8Array>((resolve, reject) => {
             client.methodCall("UserSummaryRemoteManager2.getGZippedSummary", [userId], (err, data: Uint8Array) => {
@@ -104,6 +109,35 @@ export class RemoteBuildServer {
                 Logger.logDebug(`[RemoteBuildServer#requestConfigIds: changedFiles] was found ${configurationId.length}\n` +
                     `Suitable configuration loaded ID's: ${configurationId.join(";")}`);
                 resolve(configurationId);
+            });
+        });
+    }
+
+    public async getCurrentTimestamp(): Promise<number> {
+        const client: any = await this.createAndInitClient();
+        return new Promise<number>((resolve, reject) => {
+            client.methodCall("IDEPluginNotificator.getCurrentTimestamp", [], (err, data) => {
+                if (err || !data) {
+                    Logger.logError("UserSummaryRemoteManager2.getTotalNumberOfEvents: return an error: " + Utils.formatErrorMessage(err));
+                    return reject(err);
+                }
+
+                resolve(data);
+            });
+        });
+    }
+
+    public async getBuildMessages(timestamp: number): Promise<string[]> {
+        const client: any = await this.createAndInitClient();
+        const userId: string = await this.getUserId();
+        return new Promise<string[]>((resolve, reject) => {
+            client.methodCall("IDEPluginNotificator.getBuildMessages", [userId, timestamp.toString()], (err, data) => {
+                if (err) {
+                    Logger.logError("IDEPluginNotificator.getBuildMessages: return an error: " + Utils.formatErrorMessage(err));
+                    return reject(err);
+                }
+
+                resolve(data);
             });
         });
     }

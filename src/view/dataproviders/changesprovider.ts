@@ -21,9 +21,6 @@ export class ChangesProvider extends DataProvider implements IChangesProvider {
         this.resetTreeContent();
         timePeriods.forEach((timePeriod) => {
             const timePeriodItem = new TimePeriodItem(timePeriod);
-            if (!timePeriod.changes || timePeriod.changes.length === 0) {
-                timePeriodItem.collapsibleState = TreeItemCollapsibleState.Expanded;
-            }
             this.timePeriods.push(timePeriodItem);
         });
         this.refreshTreePresentation();

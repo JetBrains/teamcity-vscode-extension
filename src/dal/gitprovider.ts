@@ -157,7 +157,4 @@ export class GitProvider implements CvsSupportProvider {
         return this.workspaceRootPathAsUri.path;
     }
 
-    public allowStaging(): boolean {
-        return true;
-    }
 }

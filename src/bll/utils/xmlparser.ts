@@ -1,13 +1,13 @@
 import {Logger} from "./logger";
-import * as xml2js from "xml2js";
 import {QueuedBuild} from "./queuedbuild";
 import {Constants} from "./constants";
 import {Summary} from "../entities/summary";
 import {Build} from "../entities/build";
 import {injectable} from "inversify";
-import {Utils} from "./utils";
 import {Project} from "../entities/project";
 import {BuildConfig} from "../entities/buildconfig";
+import {parseString} from "xml2js";
+import {TcNotificationMessage} from "../notifications/TcNotificationMessage";
 
 @injectable()
 export class XmlParser {
@@ -15,149 +15,125 @@ export class XmlParser {
     public async parseProjectsWithRelatedBuilds(
         buildsXml: string[],
         buildConfigFilter: (buildConfig: BuildConfig) => boolean): Promise<Project[]> {
-        if (buildsXml === undefined) {
-            Logger.logWarning("XmlParser#parseBuilds: buildsXml is empty");
-            return [];
-        }
-        const projectMap: any = {};
+        XmlParser.ensureNotEmpty(buildsXml);
+
+        const projectMap: Map<string, Project> = new Map<string, Project>();
         Logger.logDebug("XmlParser#parseBuilds: start collect projects");
-        for (let i: number = 0; i < buildsXml.length; i++) {
-            const buildXml = buildsXml[i];
-            await new Promise<{}>((resolve, reject) => {
-                xml2js.parseString(buildXml, (err, project) => {
-                    if (err) {
-                        reject(err);
-                    }
-                    XmlParser.collectProject(project, projectMap, buildConfigFilter);
-                    resolve();
-                });
-            });
+        for (const projectXml of buildsXml) {
+            const projectData: any = await parseStringAsync(projectXml);
+            const project: Project = XmlParser.parseProject(projectData, buildConfigFilter);
+            projectMap.set(project.id, project);
         }
 
         XmlParser.buildProjectHierarchy(projectMap);
 
-        const result: Project[] = projectMap[Constants.ROOT_PROJECT_ID].children;
+        const result: Project[] = projectMap.get(Constants.ROOT_PROJECT_ID).children;
         Logger.logDebug("XmlParser#parseBuilds: collected projects:");
         Logger.LogObject(result);
         return result;
     }
 
-    /**
-     * This method receives a TeamCity project entity, extracts ProjectItem and pushes it to second argument.
-     * @param xmlProject - project as a TeamCity project entity
-     * @param projectMap - the result of the call of the method will be pushed to this object.
-     * @param buildConfigFilter - filter acceptable build configs
-     */
-    private static collectProject(xmlProject: any,
-                                  projectMap: any,
-                                  buildConfigFilter: (buildConfig: BuildConfig) => boolean) {
-        if (!xmlProject || !xmlProject.Project || !xmlProject.Project.myProjectId ||
-            !xmlProject.Project.name) {
-            return;
+    private static ensureNotEmpty(data?: string[]) {
+        if (!data) {
+            throw new Error("Related data were not found.");
         }
-        const parentId = xmlProject.Project.myParentProjectId ? xmlProject.Project.myParentProjectId[0] : undefined;
-        const project = new Project(xmlProject.Project.myProjectId[0], parentId, xmlProject.Project.name[0]);
-        const buildConfigs: BuildConfig[] = XmlParser.getBuildConfigs(xmlProject, buildConfigFilter);
-        buildConfigs.forEach((config) => project.addChildBuildConfig(config));
-        projectMap[project.id] = project;
     }
 
-    private static getBuildConfigs(xmlProject: any,
-                                   buildConfigFilter: (buildConfig: BuildConfig) => boolean) : BuildConfig[] {
+    private static parseProject(projectData: any, filterBuildConfig: (buildConfig: BuildConfig) => boolean): Project {
+        const parentId = projectData.Project.myParentProjectId ? projectData.Project.myParentProjectId[0] : undefined;
+        const project = new Project(projectData.Project.myProjectId[0], parentId, projectData.Project.name[0]);
+
+        if (projectData.Project.configs && projectData.Project.configs[0]) {
+            const buildConfigs: BuildConfig[] =
+                XmlParser.parseConfigurations(projectData.Project.configs[0].Configuration, filterBuildConfig);
+            buildConfigs.forEach((config) => project.addChildBuildConfig(config));
+        }
+        return project;
+    }
+
+    private static parseConfigurations(configDataArray: Array<any>,
+                                       filterBuildConfig: (buildConfig: BuildConfig) => boolean): BuildConfig[] {
         const buildConfigs: BuildConfig[] = [];
-        if (xmlProject.Project.configs &&
-            xmlProject.Project.configs[0] && xmlProject.Project.configs[0].Configuration) {
-            const xmlConfigurations: any = xmlProject.Project.configs[0].Configuration;
-            for (let i = 0; i < xmlConfigurations.length; i++) {
-                const xmlConfiguration = xmlConfigurations[i];
-                if (!xmlConfiguration.id || !xmlConfiguration.id[0] ||
-                    !xmlConfiguration.name || !xmlConfiguration.name[0] ||
-                    !xmlConfiguration.projectName || !xmlConfiguration.projectName[0]) {
-                    continue;
-                }
-                const buildConfig = new BuildConfig(xmlConfiguration.id[0],
-                                                    xmlConfiguration.myExternalId[0],
-                                                    xmlConfiguration.name[0]);
-                if (buildConfigFilter(buildConfig)) {
-                    buildConfigs.push(buildConfig);
-                }
+        for (const configData of configDataArray) {
+            const buildConfig = new BuildConfig(configData.id[0], configData.myExternalId[0], configData.name[0]);
+            if (filterBuildConfig(buildConfig)) {
+                buildConfigs.push(buildConfig);
             }
         }
+
         return buildConfigs;
     }
 
-    private static buildProjectHierarchy(projectMap: any) {
-        for (const projectId of Object.keys(projectMap)) {
-            const project = projectMap[projectId];
-            if (project.parentId && projectMap[project.parentId]) {
-                projectMap[project.parentId].addChildProject(project);
+    private static buildProjectHierarchy(projectMap: Map<string, Project>) {
+        projectMap.forEach((project) => {
+            if (project.parentId && projectMap.get(project.parentId)) {
+                projectMap.get(project.parentId).addChildProject(project);
             }
-        }
+        });
     }
 
-    /**
-     * @param buildXml - xml that contains all info about related projects.
-     * @return - list of ProjectItems that contain related buildConfigs.
-     */
     public async parseRestBuild(buildXml: string): Promise<Build> {
         if (buildXml === undefined) {
             Logger.logWarning("XmlParser#parseRestBuild: buildXml is empty");
             return;
         }
+
         Logger.logDebug("XmlParser#parseRestBuild: start collect projects");
-        return await new Promise<Build>((resolve, reject) => {
-            xml2js.parseString(buildXml, (err, buildObj) => {
-                if (err) {
-                    reject(err);
-                }
-                const build: Build = Build.fromRestParcedObject(buildObj);
-                resolve(build);
-            });
-        });
+        const buildObj: any = await parseStringAsync(buildXml);
+        return Build.fromRestParsedObject(buildObj);
     }
 
-    public parseSummary(summeryXmlObj: string): Promise<Summary> {
-        return new Promise<Summary>((resolve, reject) => {
-            xml2js.parseString(summeryXmlObj, (err, obj) => {
-                if (err) {
-                    Logger.logError("XmlParser#parseSummary: caught an error during parsing summary data: "
-                        + Utils.formatErrorMessage(err));
-                    reject(err);
-                }
-                resolve(Summary.fromXmlRpcObject(obj));
-            });
-        });
+    public async parseSummary(summeryXmlObj: string): Promise<Summary> {
+        const dataObj: any = await parseStringAsync(summeryXmlObj);
+
+        return Summary.fromXmlRpcObject(dataObj);
     }
 
-    public parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {
-        return new Promise<QueuedBuild>((resolve, reject) => {
-            xml2js.parseString(queuedBuildInfoXml, (err, queuedBuildInfo) => {
-                if (err) {
-                    Logger.logError(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo.
-                     An error occurs ${Utils.formatErrorMessage(err)}`);
-                    reject(`XmlParser#parseQueuedBuild: cannot parse queuedBuildInfo`);
-                }
-                resolve(queuedBuildInfo.build.$);
-            });
-        });
+    public async parseQueuedBuild(queuedBuildInfoXml: string): Promise<QueuedBuild> {
+        const queuedBuildObj: any = await parseStringAsync(queuedBuildInfoXml);
+
+        return queuedBuildObj.build.$;
     }
 
-    public parseBuildStatus(buildInfoXml: string): Promise<string> {
-        return new Promise<string>((resolve, reject) => {
-            xml2js.parseString(buildInfoXml, (err, buildInfo) => {
-                if (err) {
-                    reject(`XmlParser#parseBuildInfo: Can't parse buildInfoXml ${Utils.formatErrorMessage(err)}`);
-                }
-                if (!buildInfo
-                    || !buildInfo.build
-                    || !buildInfo.build.$
-                    || !buildInfo.build.$.state
-                    || !buildInfo.build.$.status
-                    || buildInfo.build.$.state !== "finished") {
-                    resolve(undefined);
-                }
-                resolve(buildInfo.build.$.status);
-            });
+    public async parseBuildStatus(buildInfoXml: string): Promise<string> {
+        const buildInfoObj: any = await parseStringAsync(buildInfoXml);
+        if (!(buildInfoObj.build.$.state === "finished" && buildInfoObj.build.$.status)) {
+            return undefined;
+        }
+
+        return buildInfoObj.build.$.status;
+    }
+
+    public async parseNotificationMessage(messageXml: string): Promise<TcNotificationMessage> {
+        const wrapRoute: string = "jetbrains.buildServer.notification.NotificationMessage";
+        const resultWrapper: any = await parseStringAsync(messageXml, false);
+        if (!resultWrapper.hasOwnProperty(wrapRoute)) {
+            return Promise.reject("Result doesn't contain notification message");
+        } else {
+            return resultWrapper[wrapRoute];
+        }
+    }
+}
+
+/*exported only for tests*/
+export async function parseStringAsync(data: string, explicitArray: boolean = true): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+        parseString(data, {explicitArray: explicitArray, validator: preparator}, (err, result) => {
+            if (err) {
+                return reject(err);
+            } else {
+                return resolve(result);
+            }
         });
+    });
+}
+
+function preparator(xpath, currentValue, newValue) {
+    if (!isNaN(newValue)) {
+        return Number(newValue);
+    } else if (newValue === "false" || newValue === "true") {
+        return newValue === "true";
+    } else {
+        return newValue;
     }
 }

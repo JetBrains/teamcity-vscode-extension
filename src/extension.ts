@@ -4,13 +4,13 @@ import "reflect-metadata";
 import * as vscode from "vscode";
 import {Constants, ParameterType, TYPES} from "./bll/utils/constants";
 import {myContainer} from "./inversify.config";
-import {ProjectItem} from "./bll/entities/presentable/projectitem";
 import {ExtensionManager} from "./extensionmanager";
 import {LeaveSelectableItem} from "./bll/entities/presentable/leaveselectableitem";
 import {BuildConfigItem} from "./bll/entities/presentable/buildconfigitem";
 import {ParameterItem} from "./bll/entities/presentable/ParameterItem";
 import {ChangeItem} from "./bll/entities/presentable/changeitem";
 import {CommandHolder} from "./commandholder";
+import {ExpandableItem} from "./bll/entities/presentable/expandableitem";
 
 // this method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -26,8 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(Constants.PRETESTED_COMMIT_WITH_CONFIGS_COMMAND_NAME, () => extensionManager.commandHolder.preTestedCommit()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.REFRESH_SELECTED_FILES_COMMAND_NAME, () => extensionManager.commandHolder.selectFilesForRemoteRun()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_OUTPUT_COMMAND_NAME, () => extensionManager.commandHolder.showOutput()));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_EMPTY_DATA_PROVIDER_COMMAND_NAME, () => extensionManager.commandHolder.backToEmptyDataProvider()));
+    context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_CHANGES_DATA_PROVIDER_COMMAND_NAME, () => extensionManager.commandHolder.backToChangesDataProvider()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_BUILD_EXPLORER_COMMAND_NAME, () => extensionManager.commandHolder.backToBuildExplorer()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.BACK_TO_SELECT_FILES_COMMAND_NAME, () => extensionManager.commandHolder.backToSelectFilesForRemoteRun()));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.SHOW_MY_CHANGES_COMMAND_NAME, () => extensionManager.commandHolder.showMyChanges()));
@@ -47,11 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
         configurable: BuildConfigItem) => extensionManager.commandHolder.customizeBuild(configurable)));
     context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_CONFIG_STATE, (item: LeaveSelectableItem) => {
         item.changeState();
-        extensionManager.refreshAllProviders();
-    }));
-    context.subscriptions.push(vscode.commands.registerCommand(Constants.CHANGE_COLLAPSIBLE_STATE, (project: ProjectItem) => {
-        project.changeCollapsibleState();
-        extensionManager.refreshAllProviders();
+        extensionManager.smartUpdateProvider(item);
     }));
     context.subscriptions.push(vscode.commands.registerCommand(
         Constants.REMOVE_PARAMETER_COMMAND_NAME,

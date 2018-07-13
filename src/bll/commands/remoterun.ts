@@ -12,32 +12,20 @@ import {CustomPatchSender} from "../remoterun/patchsender";
 import {PatchManager} from "../utils/patchmanager";
 import {QueuedBuild} from "../utils/queuedbuild";
 import {WindowProxy} from "../moduleproxies/window-proxy";
+import {ShowMyChanges} from "./showmychanges";
 
 @injectable()
 export class RemoteRun implements Command {
 
-    private readonly cvsProvider: CvsProviderProxy;
-    private readonly patchSender: CustomPatchSender;
-    private readonly buildProvider: IBuildProvider;
-    private readonly resourceProvider: IResourceProvider;
-    private readonly providerManager: IProviderManager;
-    private readonly patchManager: PatchManager;
-    private readonly windowProxy: WindowProxy;
-
-    public constructor(@inject(TYPES.CvsProviderProxy) cvsProvider: CvsProviderProxy,
-                       @inject(TYPES.BuildProvider) buildProvider: IBuildProvider,
-                       @inject(TYPES.ResourceProvider) resourceProvider: IResourceProvider,
-                       @inject(TYPES.ProviderManager) providerManager: IProviderManager,
-                       @inject(TYPES.PatchSender) patchSender: CustomPatchSender,
-                       @inject(TYPES.PatchManager) patchManager: PatchManager,
-                       @inject(TYPES.WindowProxy) windowProxy: WindowProxy) {
-        this.cvsProvider = cvsProvider;
-        this.buildProvider = buildProvider;
-        this.resourceProvider = resourceProvider;
-        this.providerManager = providerManager;
-        this.patchSender = patchSender;
-        this.patchManager = patchManager;
-        this.windowProxy = windowProxy;
+    public constructor(@inject(TYPES.CvsProviderProxy) private readonly cvsProvider: CvsProviderProxy,
+                       @inject(TYPES.BuildProvider) private readonly buildProvider: IBuildProvider,
+                       @inject(TYPES.ResourceProvider) private readonly resourceProvider: IResourceProvider,
+                       @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
+                       @inject(TYPES.PatchSender) private readonly patchSender: CustomPatchSender,
+                       @inject(TYPES.PatchManager) private readonly patchManager: PatchManager,
+                       @inject(TYPES.WindowProxy) private readonly windowProxy: WindowProxy,
+                       @inject(TYPES.ShowMyChangesCommand) private readonly showMyChangesCommand: ShowMyChanges) {
+        //
     }
 
     public async exec(args?: any[]): Promise<void> {
@@ -52,18 +40,23 @@ export class RemoteRun implements Command {
         if (!buildConfigs || buildConfigs.length === 0) {
             return Promise.reject(MessageConstants.NO_CONFIGS_RUN_REMOTERUN);
         }
-        this.resourceProvider.resetTreeContent();
-        this.buildProvider.resetTreeContent();
-        this.providerManager.showEmptyDataProvider();
 
         const patchAbsPath: string = await this.patchManager.preparePatch(checkInArray);
         const message: string = await this.requestForCommitMessageIfRequired(checkInArray);
         this.fillCommitMessage(checkInArray, message);
 
+        this.resourceProvider.resetTreeContent();
+        this.buildProvider.resetTreeContent();
+        this.providerManager.showChangesProvider();
+        this.showMyChangesCommand.exec([true]).then(() => {
+            this.providerManager.refreshAll();
+            this.providerManager.showChangesProvider();
+        });
+
         const queuedBuilds: QueuedBuild[] = await this.patchSender.sendPatch(buildConfigs, patchAbsPath, message);
         const changeListStatus: ChangeListStatus = await this.patchSender.waitForChangeFinish(queuedBuilds);
 
-        if (changeListStatus === ChangeListStatus.CHECKED ) {
+        if (changeListStatus === ChangeListStatus.CHECKED) {
             Logger.logInfo("RemoteRun#exec: Personal Build is successful");
             if (isPreTestedCommit) {
                 return this.cvsProvider.requestForPostCommit(checkInArray);

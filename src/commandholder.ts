@@ -1,6 +1,5 @@
 import {inject, injectable} from "inversify";
 import {ParameterType, TYPES} from "./bll/utils/constants";
-import {Output} from "./view/output";
 import {GetSuitableConfigs} from "./bll/commands/getsuitableconfigs";
 import {SelectFilesForRemoteRun} from "./bll/commands/selectfilesforremoterun";
 import {SignIn} from "./bll/commands/signin";
@@ -8,10 +7,7 @@ import {RemoteRun} from "./bll/commands/remoterun";
 import {SignOut} from "./bll/commands/signout";
 import {CredentialsStore} from "./bll/credentialsstore/credentialsstore";
 import {ShowMyChanges} from "./bll/commands/showmychanges";
-import {IResourceProvider} from "./view/dataproviders/interfaces/iresourceprovider";
-import {IBuildProvider} from "./view/dataproviders/interfaces/ibuildprovider";
 import {IProviderManager} from "./view/iprovidermanager";
-import {IChangesProvider} from "./view/dataproviders/interfaces/ichangesprovider";
 import {Logger} from "./bll/utils/logger";
 import {Utils} from "./bll/utils/utils";
 import {MessageManager} from "./view/messagemanager";
@@ -28,46 +24,51 @@ import {BuildConfig} from "./bll/entities/buildconfig";
 @injectable()
 export class CommandHolder {
 
-    constructor(@inject(TYPES.Output) private readonly output: Output,
-                @inject(TYPES.SignIn) private readonly _signIn: SignIn,
+    constructor(@inject(TYPES.SignIn) private readonly _signIn: SignIn,
                 @inject(TYPES.SignOut) private readonly _signOut: SignOut,
                 @inject(TYPES.SelectFilesForRemoteRun) private readonly _selectForRemoteRun: SelectFilesForRemoteRun,
                 @inject(TYPES.GetSuitableConfigs) private readonly _getSuitableConfigs: GetSuitableConfigs,
                 @inject(TYPES.RemoteRun) private readonly _remoteRun: RemoteRun,
                 @inject(TYPES.ShowMyChangesCommand) private readonly _showMyChanges: ShowMyChanges,
                 @inject(TYPES.ProviderManager) private readonly providerManager: IProviderManager,
-                @inject(TYPES.CredentialsStore) private readonly credentialsStore?: CredentialsStore,
-                @inject(TYPES.ResourceProvider) private readonly resourceProvider?: IResourceProvider,
-                @inject(TYPES.BuildProvider) private readonly buildProvider?: IBuildProvider,
-                @inject(TYPES.ChangesProvider) private readonly changesProvider?: IChangesProvider,
-                @inject(TYPES.MessageManager) private readonly messageManager?: MessageManager,
-                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild?: CustomizeBuild,
-                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter?: AddEditBuildParameter,
-                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter?: RemoveBuildParameter,
-                @inject(TYPES.QueueAtTop) private readonly _queueAtTop?: QueueAtTop,
-                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser?: OpenInBrowser) {
-
-        this.providerManager.showEmptyDataProvider();
+                @inject(TYPES.CredentialsStore) private readonly credentialsStore: CredentialsStore,
+                @inject(TYPES.CustomizeBuild) private readonly _customizeBuild: CustomizeBuild,
+                @inject(TYPES.AddEditBuildParameter) private readonly _addBuildParameter: AddEditBuildParameter,
+                @inject(TYPES.RemoveBuildParameter) private readonly _removeBuildParameter: RemoveBuildParameter,
+                @inject(TYPES.QueueAtTop) private readonly _queueAtTop: QueueAtTop,
+                @inject(TYPES.OpenInBrowser) private readonly _openInBrowser: OpenInBrowser,
+                @inject(TYPES.MessageManager) private readonly messageManager: MessageManager) {
+        //
     }
 
     public async signIn(fromPersistentStore: boolean = false): Promise<void> {
-        await this.tryExecuteCommand(this._signIn, fromPersistentStore);
+        if (await this.tryExecuteCommand(this._signIn, fromPersistentStore) &&
+            this.credentialsStore.getCredentialsSilently()) {
+            await this.showMyChanges(true);
+        }
     }
 
     public async signOut(): Promise<void> {
-        await this.tryExecuteCommand(this._signOut);
+        if (await this.tryExecuteCommand(this._signOut)) {
+            this.providerManager.resetAll();
+            this.providerManager.showChangesProvider();
+        }
     }
 
     public async selectFilesForRemoteRun(): Promise<void> {
-        if (await this.tryExecuteCommand(this._selectForRemoteRun)) {
-            this.providerManager.refreshAll();
-            this.providerManager.showResourceProvider();
+        try {
+            const loggedIn = await this.credentialsStore.getCredentials();
+            if (loggedIn && await this.tryExecuteCommand(this._selectForRemoteRun)) {
+                this.providerManager.showResourceProvider();
+            }
+        } catch (err) {
+            Logger.logError(`[selectFilesForRemoteRun]  ${Utils.formatErrorMessageForLogging(err)}`);
+            this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
         }
     }
 
     public async getSuitableConfigs(): Promise<void> {
         if (await this.tryExecuteCommand(this._getSuitableConfigs)) {
-            this.providerManager.refreshAll();
             this.providerManager.showBuildProvider();
         }
     }
@@ -80,9 +81,10 @@ export class CommandHolder {
         await this.tryExecuteCommand(this._remoteRun, true);
     }
 
-    public backToEmptyDataProvider(): void {
-        this.resourceProvider.resetTreeContent();
-        this.providerManager.showEmptyDataProvider();
+    public async backToChangesDataProvider(): Promise<void> {
+        this.providerManager.showChangesProvider();
+
+        return this.showMyChanges(true);
     }
 
     public backToBuildExplorer(): void {
@@ -90,17 +92,11 @@ export class CommandHolder {
     }
 
     public backToSelectFilesForRemoteRun(): void {
-        this.buildProvider.resetTreeContent();
         this.providerManager.showResourceProvider();
     }
 
-    public showOutput(): void {
-        this.output.show();
-    }
-
-    public async showMyChanges(): Promise<void> {
-        if (await this.tryExecuteCommand(this._showMyChanges)) {
-            this.providerManager.refreshAll();
+    public async showMyChanges(isSilent: boolean = false): Promise<void> {
+        if (await this.tryExecuteCommand(this._showMyChanges, isSilent)) {
             this.providerManager.showChangesProvider();
         }
     }
@@ -130,14 +126,18 @@ export class CommandHolder {
     }
 
     private async tryExecuteCommand(command: Command, ...args: any[]): Promise<boolean> {
+        let result:boolean | void;
         try {
             if (args && args.length > 0) {
-                await command.exec(args);
+                result = await command.exec(args);
             } else {
-                await command.exec();
+                result = await command.exec();
+            }
+            if (typeof result === "boolean") {
+                return result;
             }
         } catch (err) {
-            Logger.logError(`[tryExecuteCommand] ${err}`);
+            Logger.logError(`[tryExecuteCommand] ${Utils.formatErrorMessageForLogging(err)}`);
             this.messageManager.showErrorMessage(Utils.formatErrorMessage(err));
             return false;
         }

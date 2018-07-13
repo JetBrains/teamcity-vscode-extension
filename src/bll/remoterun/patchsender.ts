@@ -87,6 +87,7 @@ export class CustomPatchSender {
 
     private async getBuildStatus(build: QueuedBuild): Promise<string> {
         const buildInfoXml: string = await this.webLinks.getBuildInfo(build.id);
+
         return this.xmlParser.parseBuildStatus(buildInfoXml);
     }
 }

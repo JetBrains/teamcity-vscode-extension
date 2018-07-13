@@ -4,9 +4,8 @@ import {BuildConfig} from "../entities/buildconfig";
 import {TYPES} from "../utils/constants";
 import {CredentialsStore} from "../credentialsstore/credentialsstore";
 import {commands, Uri} from "vscode";
-import { ChangeItem } from "../entities/presentable/changeitem";
-import { Change } from "../entities/change";
-import {instance} from "ts-mockito";
+import {ChangeItem} from "../entities/presentable/changeitem";
+import {Change} from "../entities/change";
 
 @injectable()
 export class OpenInBrowser implements Command {

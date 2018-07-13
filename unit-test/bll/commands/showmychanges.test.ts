@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {assert} from "chai";
 import {ShowMyChanges} from "../../../src/bll/commands/showmychanges";
-import {instance, mock, when} from "ts-mockito";
+import {anything, instance, mock, when} from "ts-mockito";
 import {SummaryDao} from "../../../src/dal/summarydao";
 import {Summary} from "../../../src/bll/entities/summary";
 import {Change} from "../../../src/bll/entities/change";
@@ -30,6 +30,7 @@ suite("Show My Changes", () => {
     test("should verify simple command", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -44,6 +45,7 @@ suite("Show My Changes", () => {
     test("should verify changes Provider was called", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -59,6 +61,7 @@ suite("Show My Changes", () => {
     test("should verify changes Provider was called when only personal changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryOnlyPersonal()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getSummaryOnlyPersonal()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -74,6 +77,7 @@ suite("Show My Changes", () => {
     test("should verify changes Provider was called when only not personal changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryOnlyNotPersonal()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getSummaryOnlyNotPersonal()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -89,6 +93,7 @@ suite("Show My Changes", () => {
     test("should verify when there is no changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryWithoutChanges()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getSummaryWithoutChanges()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -104,6 +109,7 @@ suite("Show My Changes", () => {
     test("should verify all periods received", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getSummaryWithoutChanges()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getSummaryWithoutChanges()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -119,6 +125,7 @@ suite("Show My Changes", () => {
     test("should verify all changes were received by change provider", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
         const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
@@ -133,6 +140,7 @@ suite("Show My Changes", () => {
     test("should verify all changes were received by change provider", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
         const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
@@ -150,6 +158,7 @@ suite("Show My Changes", () => {
     test("should verify getSummary throws exception", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenThrow(new Error("any exception"));
+        when(summaryDaoMock.get(anything())).thenThrow(new Error("any exception"));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderMock: TypeMoq.IMock<IChangesProvider> = TypeMoq.Mock.ofType<IChangesProvider>();
         const changesProviderSpy: IChangesProvider = changesProviderMock.object;
@@ -164,6 +173,7 @@ suite("Show My Changes", () => {
     test("should verify today changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getTodaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getTodaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
         const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
@@ -180,6 +190,7 @@ suite("Show My Changes", () => {
     test("should verify yesterday changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getYesterdaySummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getYesterdaySummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
         const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);
@@ -196,6 +207,7 @@ suite("Show My Changes", () => {
     test("should verify yesterday changes", function (done) {
         const summaryDaoMock = mock(SummaryDao);
         when(summaryDaoMock.get()).thenReturn(Promise.resolve(getOlderSummary()));
+        when(summaryDaoMock.get(anything())).thenReturn(Promise.resolve(getOlderSummary()));
         const summaryDaoSpy = instance(summaryDaoMock);
         const changesProviderSpy = new ChangesProviderCustomSpy();
         const command = new ShowMyChanges(summaryDaoSpy, changesProviderSpy, windowSpy);

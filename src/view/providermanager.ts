@@ -1,5 +1,4 @@
-import {commands, Disposable, window} from "vscode";
-import {EmptyDataProvider} from "./dataproviders/emptydataprovider";
+import {Disposable, window} from "vscode";
 import {DataProvider} from "./dataproviders/dataprovider";
 import {inject, injectable} from "inversify";
 import {ResourceProvider} from "./dataproviders/resourceprovider";
@@ -14,50 +13,48 @@ import {BuildConfig} from "../bll/entities/buildconfig";
 export class ProviderManager implements IProviderManager {
 
     private shownDataProvider: DataProvider;
-    private readonly emptyDataProvider: EmptyDataProvider;
     private readonly toDispose: Disposable[] = [];
 
     constructor(@inject(TYPES.ResourceProvider) private readonly resourcesProvider: ResourceProvider,
                 @inject(TYPES.BuildProvider) private readonly buildsProvider: BuildProvider,
                 @inject(TYPES.ChangesProvider) private readonly changesProvider: ChangesProvider,
                 @inject(TYPES.BuildSettingsProvider) private readonly buildSettingsProvider: BuildSettingsProvider) {
-        this.emptyDataProvider = new EmptyDataProvider();
-        this.hideProviders();
+
         if (resourcesProvider && buildsProvider && changesProvider && buildSettingsProvider) {
             this.toDispose.push(window.registerTreeDataProvider("teamcityResourceExplorer", resourcesProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityBuildsExplorer", buildsProvider));
             this.toDispose.push(window.registerTreeDataProvider("teamcityChangesProvider", changesProvider));
-            this.toDispose.push(window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
+            this.toDispose.push(
+                window.registerTreeDataProvider("teamcityBuildSettingsProvider", buildSettingsProvider));
         }
-    }
 
-    public hideProviders(): void {
-        commands.executeCommand("setContext", "teamcity-explorer", "");
-        this.shownDataProvider = undefined;
-    }
-
-    public showEmptyDataProvider(): void {
-        this.emptyDataProvider.show();
-        this.shownDataProvider = this.emptyDataProvider;
+        this.showChangesProvider();
     }
 
     public showResourceProvider(): void {
+        this.buildsProvider.resetTreeContent();
+        this.resourcesProvider.refreshTreePresentation();
         this.resourcesProvider.show();
         this.shownDataProvider = this.resourcesProvider;
     }
 
     public showBuildProvider(): void {
+        this.buildsProvider.refreshTreePresentation();
         this.buildsProvider.show();
         this.shownDataProvider = this.buildsProvider;
     }
 
     public showChangesProvider(): void {
+        this.buildsProvider.resetTreeContent();
+        this.resourcesProvider.resetTreeContent();
+        this.changesProvider.refreshTreePresentation();
         this.changesProvider.show();
         this.shownDataProvider = this.changesProvider;
     }
 
     public showBuildSettingsProvider(build: BuildConfig): void {
         this.buildSettingsProvider.setBuild(build);
+        this.buildSettingsProvider.refreshTreePresentation();
         this.buildSettingsProvider.show();
         this.shownDataProvider = this.buildSettingsProvider;
     }
@@ -67,10 +64,17 @@ export class ProviderManager implements IProviderManager {
     }
 
     public refreshAll() {
-        if (this.resourcesProvider) {
-            this.resourcesProvider.refreshTreePresentation();
-            this.buildsProvider.refreshTreePresentation();
-        }
+        this.resourcesProvider.refreshTreePresentation();
+        this.buildsProvider.refreshTreePresentation();
+        this.changesProvider.refreshTreePresentation();
+        this.buildSettingsProvider.refreshTreePresentation();
+    }
+
+    public resetAll() {
+        this.resourcesProvider.resetTreeContent();
+        this.buildsProvider.resetTreeContent();
+        this.changesProvider.resetTreeContent();
+        this.buildSettingsProvider.resetTreeContent();
     }
 
     public dispose() {

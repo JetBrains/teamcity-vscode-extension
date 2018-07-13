@@ -91,7 +91,7 @@ export class Build {
         return buildObj.build.buildType[0].$.projectName;
     }
 
-    public static fromRestParcedObject(buildObj: any): Build {
+    public static fromRestParsedObject(buildObj: any): Build {
         const id: number = this.getRestXmlId(buildObj);
         const buildNumber: number = this.getRestXmlNumber(buildObj);
         const isPersonal: boolean = this.isPersonalRestXml(buildObj);
