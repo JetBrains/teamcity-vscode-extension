@@ -409,7 +409,7 @@
         },
         {
           "command": "teamcity.backToBuildsExplorer",
-          "when": "view == teamcityBuildSettingsProvider && teamcity-signed-in == false",
+          "when": "view == teamcityBuildSettingsProvider",
           "group": "navigation@1"
         },
         {
