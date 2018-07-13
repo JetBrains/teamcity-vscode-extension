@@ -185,12 +185,6 @@ export const TYPES = {
     MyChangesWorker: Symbol("MyChangesWorker"),
 };
 
-export enum CvsOperation {
-    DoNothing = "No, thank you.",
-    DoCommitChanges = "Commit changes",
-    DoCommitAndPushChanges = "Commit and Push (if possible) changes"
-}
-
 export enum DataProviderEnum {
     ResourcesProvider = "ResourcesProvider",
     BuildsProvider = "BuildsProvider",
