@@ -2,7 +2,7 @@
   "name": "teamcity-vscode-extension",
   "displayName": "TeamCity Integration",
   "description": "TeamCity integration for Visual Studio Code",
-  "version": "1.0.0-beta.7",
+  "version": "0.0.8-beta",
   "publisher": "JetBrains",
   "icon": "assets/icon.png",
   "engines": {

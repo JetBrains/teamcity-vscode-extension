@@ -1,18 +1,19 @@
 # TeamCity Extension for Visual Studio Code [![JetBrains incubator project](assets/project-incubator-brightgreen.png)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
-This extension allows you to connect to a TeamCity Server and run personal builds on the TeamCity server without leaving Visual Studio Code.
+This extension allows you to connect to a TeamCity Server, receive notification messages from TeamCity
+and run personal builds on the TeamCity server without leaving Visual Studio Code.
 
 ## Prerequisites
-### Git Version Control
-If you are planning on using the extension with Git, ensure your Git version is equal or greater than 2.0.0. The extension uses the Git command line to collect staged resources and process git commit/push operations. 
 
 ### Team Foundation Version Control
 Once you have a local TFVC workspace available, you must configure the TFVC support in Visual Studio Code. Details (including demo videos) are available in the [TFVC documentation](https://github.com/microsoft/vsts-vscode/blob/master/TFVC_README.md).
 
+Because the extension uses TF command line client, the client should be logged on the server for Team Foundation version control. Execute `tf workfold` command in the project directory.
+
 ## Installation
 First, you will need to install [Visual Studio Code](https://code.visualstudio.com/download) `1.23.0` or later.
 
-To install the extension with the latest version of Visual Studio Code (version `1.24.1` is the latest as of this writing), download the last pre-release version of the TeamCity extension from the [corresponding page](https://github.com/JetBrains/teamcity-vscode-extension/releases), bring up the Visual Studio Code Command Palette (`F1`), type `Install from VSIX` and choose the `teamcity-vscode-extension-***.vsix` file in the opened dialoge box. Restart Visual Studio Code.
+To install the extension with the latest version of Visual Studio Code (version `1.25.0` is the latest as of this writing), download the last pre-release version of the TeamCity extension from the [corresponding page](https://github.com/JetBrains/teamcity-vscode-extension/releases), bring up the Visual Studio Code Command Palette (`F1`), type `Install from VSIX` and choose the `teamcity-vscode-extension-***.vsix` file in the opened dialoge box. Restart Visual Studio Code.
 
 Alternatively, you can also install using the VS Code ```--install-extension``` command line switch providing the path to the .vsix: 
 ```
@@ -40,11 +41,6 @@ the computer and used to connect to the TeamCity server.
 The extension uses custom tree data providers under the TeamCity view container to provide most of features.
 
 ![Tree Data Provider](assets/tc-view-container.png)
-
-## Detailed Remote Run Results
-The extension writes personal build statuses into the TeamCity output. This is a simple and convenient way to navigate to the Build Overview page.
-
-![TeamCity Output](assets/tc-notifications.png)
 
 ## Logging
 You may need to enable file logging to troubleshoot an issue. There are four levels of logging (`error`,

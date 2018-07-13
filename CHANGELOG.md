@@ -49,3 +49,11 @@
 - Fix problems with building project hierarchy
 - Fix problems with filtering build configurations
 - Fix different other bugs
+
+## [v0.0.8-beta](https://github.com/JetBrains/teamcity-vscode-extension/tree/v0.0.8-beta) (2018-07-13)
+[Full Changelog](https://github.com/JetBrains/teamcity-vscode-extension/compare/v1.0.0-beta.7...v0.0.8-beta)
+- Rework TeamCity Message Notifier
+- Rework My Changes tab
+- Mark git-support and pre-tested commit functionality as experimental
+- Improve general UI of the extension
+- Fix different other bugs
