@@ -4,16 +4,13 @@ import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
 import {GitStatusRowsParser} from "./GitStatusRowsParser";
 
 export class GitStatusCommand {
-    private readonly statusRowsParser: GitStatusRowsParser;
-    private cpProxy: CpProxy;
 
     constructor(private readonly workspaceRootPath: string,
                 private readonly gitPath: string,
                 private readonly isPorcelain: boolean,
-                cpProxy: CpProxy,
-                statusRowParser: GitStatusRowsParser) {
-        this.cpProxy = cpProxy;
-        this.statusRowsParser = statusRowParser;
+                private cpProxy: CpProxy,
+                private readonly statusRowParser: GitStatusRowsParser) {
+        //
     }
 
     public async execute(): Promise<CvsResource[]> {
@@ -31,7 +28,7 @@ export class GitStatusCommand {
             .replace(END_SPACES_REGEXP, "")
             .split("\n");
 
-        return this.statusRowsParser.tryParseRows(this.workspaceRootPath, statusRows);
+        return this.statusRowParser.tryParseRows(this.workspaceRootPath, statusRows);
 
     }
 

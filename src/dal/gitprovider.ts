@@ -157,4 +157,8 @@ export class GitProvider implements CvsSupportProvider {
         return this.workspaceRootPathAsUri.path;
     }
 
+    public async getRepoBranchName(): Promise<string> {
+        return this.commandFactory.getRepoBranchNameCommand(this.workspaceRootPath, this.gitPath).execute();
+    }
+
 }

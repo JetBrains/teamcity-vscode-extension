@@ -123,6 +123,25 @@ export class CvsProviderProxy {
         return false;
     }
 
+    public async getGitBranch(): Promise<string> {
+        const results: string[] = [];
+        for (const provider of this.actualProviders) {
+            if (provider instanceof GitProvider) {
+                results.push(await provider.getRepoBranchName());
+            }
+        }
+        if (results.length === 0) {
+            throw new Error("No branch name was collected!");
+        } else if (results.length === 1 || this.isAllElementsTheSame(results)) {
+            return results[0];
+        } else {
+            throw new Error("There are more then one git branch, this case is currently unsupported.");
+        }
+    }
+
+    private isAllElementsTheSame(anyArray: any[]): boolean {
+        return !!anyArray.reduce((a, b) => {return (a === b) ? a : NaN; });
+    }
     private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
         const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
         this.setUpdatedCommitMessages(checkInArray, commitMessage);
