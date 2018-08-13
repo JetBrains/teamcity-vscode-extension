@@ -123,6 +123,7 @@ export class WebLinks {
                 if (err) {
                     err = err.code === ("ENOENT" || "ENOTFOUND") ? MessageConstants.URL_NOT_REACHABLE : err;
                     reject(err);
+                    return;
                 }
                 if (response.statusCode >= 200 && response.statusCode < 300) {
                     resolve(body);
