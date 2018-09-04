@@ -5,7 +5,7 @@ import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
-import {Constants, TYPES} from "../utils/constants";
+import {Constants, ParameterType, TYPES} from "../utils/constants";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
@@ -15,6 +15,8 @@ import {WindowProxy} from "../moduleproxies/window-proxy";
 import {BuildConfig} from "../entities/buildconfig";
 import {MessageManager} from "../../view/messagemanager";
 import opn = require("opn");
+import {Utils} from "../utils/utils";
+import {Parameter} from "../entities/Parameter";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -48,6 +50,13 @@ export class GetSuitableConfigs implements Command {
             return false;
         } else if (!projects) {
             throw new Error(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
+        } else if (this.cvsProvider.hasGitProvider()) {
+            const allSuitableBuilds: BuildConfig[] = Utils.flattenBuildConfigArray(projects);
+            const gitBranchName: string = await this.cvsProvider.getGitBranch();
+            const branchNameParameter: Parameter = new Parameter("teamcity.build.branch", gitBranchName);
+            allSuitableBuilds.forEach((buildConfig: BuildConfig) => {
+                buildConfig.addParameter(ParameterType.ConfigParameter, branchNameParameter);
+            });
         }
 
         this.buildProvider.setContent(projects);
@@ -74,11 +83,9 @@ export class GetSuitableConfigs implements Command {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
             return undefined;
         }
-        const projectsWithRelatedBuildsXmls: string[] =
-            await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        const buildConfigFilter: (buildConfig: BuildConfig) => boolean
-            = this.buildConfigFilterWrapper(shortBuildConfigNames);
-        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls, buildConfigFilter);
+        const relatedProjectsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const buildConfigFilter: (buildConfig: BuildConfig) => boolean = this.buildConfigFilterWrapper(shortBuildConfigNames);
+        return this.xmlParser.parseProjectsWithRelatedBuilds(relatedProjectsXmls, buildConfigFilter);
     }
 
     private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {

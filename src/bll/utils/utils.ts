@@ -3,6 +3,8 @@ import {Logger} from "./logger";
 import {Change} from "../entities/change";
 import {Build} from "../entities/build";
 import {Constants} from "./constants";
+import {Project} from "../entities/project";
+import {BuildConfig} from "../entities/buildconfig";
 
 export class Utils {
 
@@ -207,5 +209,30 @@ export class Utils {
             url: url,
             username: username
         };
+    }
+
+    static flattenBuildConfigArray(projects: Project[]): BuildConfig[] {
+        if (!projects) {
+            return [];
+        }
+        const result: BuildConfig[] = [];
+        projects.forEach((project: Project) => {
+            result.push(...this.extractBuildConfigs(project));
+        });
+
+        return result;
+    }
+
+    private static extractBuildConfigs(project: Project): BuildConfig[] {
+        const result: BuildConfig[] = [];
+        project.children.forEach((child: Project | BuildConfig) => {
+            if (child instanceof BuildConfig) {
+                result.push(child);
+            }
+            if (child instanceof Project) {
+                result.push(...this.extractBuildConfigs(child));
+            }
+        });
+        return result;
     }
 }
