@@ -102,8 +102,9 @@ class PatchBuilder {
 
     private async appendReplacedFileAsRemoved(cvsProvider: CvsSupportProvider, cvsResource: CvsResource) {
         const label: string = "";
-        const removedResource: CvsResource = new DeletedCvsResource(cvsResource.prevFileAbsPath, label);
-        removedResource.serverFilePath = cvsResource.prevServerFilePath;
+        const removedResource: CvsResource = new DeletedCvsResource(cvsResource.prevFileAbsPath,
+            label,
+            cvsResource.prevServerFilePath);
         return this.appendCvsResource(cvsProvider, removedResource);
     }
 

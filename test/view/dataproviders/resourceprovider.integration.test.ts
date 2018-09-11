@@ -60,7 +60,7 @@ suite("ResourceProviders", () => {
         const cvsProviderMock: CvsSupportProvider = mock(GitProvider);
         when(cvsProviderMock.getRootPath()).thenReturn("");
         const cvsProviderSpy: CvsSupportProvider = instance(cvsProviderMock);
-        const aResources: CvsResource[] = [new AddedCvsResource(undefined, undefined)];
+        const aResources: CvsResource[] = [new AddedCvsResource(undefined, undefined, undefined)];
         const aResourceItems: CvsResourceItem[] = [];
         aResources.forEach((resource) => aResourceItems.push(new CvsResourceItem(resource)));
         const stabbedCheckInInfo: CheckInInfo = new CheckInInfo(aResources, cvsProviderSpy);
@@ -72,8 +72,8 @@ suite("ResourceProviders", () => {
         const resourceProvider = new ResourceProvider();
         const mockedCvsProvider: CvsSupportProvider = tsMockito.mock(GitProvider);
         const cvsProviderSpy: CvsSupportProvider = tsMockito.instance(mockedCvsProvider);
-        const includedResource = new AddedCvsResource(undefined, undefined);
-        const includedResource2 = new AddedCvsResource(undefined, undefined);
+        const includedResource = new AddedCvsResource(undefined, undefined, undefined);
+        const includedResource2 = new AddedCvsResource(undefined, undefined, undefined);
 
         const mockedCheckInInfo: CheckInInfo = new CheckInInfo([includedResource, includedResource2], cvsProviderSpy);
         const expectedCheckInInfo: CheckInInfo = new CheckInInfo([includedResource, includedResource2], cvsProviderSpy);

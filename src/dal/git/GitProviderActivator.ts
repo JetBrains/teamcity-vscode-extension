@@ -9,6 +9,7 @@ import {Utils} from "../../bll/utils/utils";
 import {UriProxy} from "../../bll/moduleproxies/uri-proxy";
 import {Uri} from "vscode";
 import {GitCommandsFactory} from "./GitCommandsFactory";
+import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
 
 @injectable()
 export class GitProviderActivator {
@@ -16,7 +17,7 @@ export class GitProviderActivator {
     public constructor(@inject(TYPES.Settings) private readonly settings: Settings,
                        @inject(TYPES.GitIsActiveValidator) private readonly isActiveValidator: GitIsActiveValidator,
                        @inject(TYPES.GitPathFinder) private readonly pathFinder: GitPathFinder,
-                       @inject(TYPES.GitCommandsFactory) private readonly gitCommandsFactory: GitCommandsFactory) {
+                       @inject(TYPES.CpProxy) private readonly cpProxy: CpProxy) {
         //
     }
 
@@ -24,7 +25,9 @@ export class GitProviderActivator {
         try {
             const gitPath: string = await this.pathFinder.find();
             await this.isActiveValidator.validate(workspaceRootPath.fsPath, gitPath);
-            return new GitProvider(workspaceRootPath, gitPath, this.gitCommandsFactory);
+            const gitCommandsFactory: GitCommandsFactory =
+                GitCommandsFactory.getInstance(this.cpProxy, this.settings, workspaceRootPath.fsPath, gitPath);
+            return new GitProvider(workspaceRootPath, gitPath, gitCommandsFactory);
         } catch (err) {
             Logger.logDebug(Utils.formatErrorMessage(err));
             return undefined;

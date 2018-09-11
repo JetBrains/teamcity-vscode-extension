@@ -1,10 +1,11 @@
 import * as pako from "pako";
 import {Logger} from "./logger";
 import {Change} from "../entities/change";
-import {Build} from "../entities/build";
 import {Constants} from "./constants";
 import {Project} from "../entities/project";
 import {BuildConfig} from "../entities/buildconfig";
+import {CvsResource} from "../entities/cvsresources/cvsresource";
+import * as path from "path";
 
 export class Utils {
 
@@ -38,48 +39,6 @@ export class Utils {
         }
         Logger.logDebug(`VsCodeUtils#gzip2Str: finishes unzipping gzip`);
         return buffer.join("");
-    }
-
-    /**
-     * This method prepares message to display from change items and serverUrl.
-     * @param change - changeItemProxy
-     * @param serverURL - serverURL
-     */
-    public static formMessage(change: Change, serverURL: string): string {
-        const messageSB: string[] = [];
-        if (change.id !== -1) {
-            const changePrefix = change.isPersonal ? "Personal build for change" : "Build for change";
-            const changeUrl: string = `${serverURL}/viewModification.html?modId=${change.id}&personal=${change.isPersonal}`;
-            messageSB.push(`${changePrefix} #${change.id} has "${change.status}" status. ${changeUrl}`);
-        }
-        const builds: Build[] = change.builds;
-        if (!builds) {
-            return messageSB.join("\n");
-        }
-
-        builds.forEach((build) => {
-            if (!build || build.id === -1) {
-                return;
-            }
-            let buildStatus: string;
-            switch (build.status) {
-                case ("SUCCESS"): {
-                    buildStatus = "successful";
-                    break;
-                }
-                case ("FAILURE"): {
-                    buildStatus = `failed (${build.statusText})`;
-                    break;
-                }
-                default:
-                    buildStatus = `has "${build.status}" status`;
-            }
-            const buildPrefix = build.isPersonal ? "Personal build" : "Build";
-            const buildChangeUrl = build.webUrl || `${serverURL}/viewLog.html?buildId=${build.id}`;
-            messageSB.push(`${buildPrefix} ${build.projectName} :: ${build.name} ` +
-                `#${build.buildNumber} ${buildStatus}. More details: ${buildChangeUrl}`);
-        });
-        return messageSB.join("\n");
     }
 
     /**
@@ -234,5 +193,10 @@ export class Utils {
             }
         });
         return result;
+    }
+
+    public static getNormalizedRelativePath(cvsResource: CvsResource, workspaceRootPath: string) {
+        const notNormalizedRelativePath: string = path.relative(workspaceRootPath, cvsResource.fileAbsPath);
+        return notNormalizedRelativePath.replace(/\\/g, "/");
     }
 }

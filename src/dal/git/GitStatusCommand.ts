@@ -7,9 +7,9 @@ export class GitStatusCommand {
 
     constructor(private readonly workspaceRootPath: string,
                 private readonly gitPath: string,
-                private readonly isPorcelain: boolean,
                 private cpProxy: CpProxy,
-                private readonly statusRowParser: GitStatusRowsParser) {
+                private readonly statusRowParser: GitStatusRowsParser,
+                private readonly isPorcelain: boolean = true) {
         //
     }
 

@@ -60,23 +60,8 @@ export class TfvcProvider implements CvsSupportProvider {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const cvsLocalResources: CvsResource[] = await this.getLocalResources();
         const serverItems: string[] = await this.getServerItems(cvsLocalResources);
-        await this.fillInServerPaths(cvsLocalResources);
         const cvsProvider: CvsSupportProvider = this;
         return new CheckInInfo(cvsLocalResources, cvsProvider, serverItems);
-    }
-
-    private async fillInServerPaths(cvsLocalResources: CvsResource[]): Promise<void> {
-        const tfsInfo: TfsWorkFoldInfo = this.tfsInfo;
-        cvsLocalResources.forEach((localResource) => {
-            const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
-            const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
-            localResource.serverFilePath = `tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/");
-            if (localResource.prevFileAbsPath) {
-                const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.prevFileAbsPath);
-                const serverItems = tfsInfo.projectRemotePath + "/" + relativePath;
-                localResource.prevServerFilePath = `tfs://${tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/");
-            }
-        });
     }
 
     public async commit(checkInInfo: CheckInInfo) {
@@ -152,25 +137,38 @@ export class TfvcProvider implements CvsSupportProvider {
     private async getCvsResource(changeType: string, fileAbsPath: string): Promise<CvsResource> {
         const relativePath: string = path.relative(this.tfsInfo.projectLocalPath, fileAbsPath);
         let resource: CvsResource;
+
         if (changeType.indexOf(TfsChangeType.DELETE) !== -1) {
-            resource = new DeletedCvsResource(fileAbsPath, relativePath);
+            resource = new DeletedCvsResource(fileAbsPath, relativePath, this.getServerFilePath(relativePath));
         } else if (changeType.indexOf(TfsChangeType.ADD) !== -1
             || changeType.indexOf(TfsChangeType.BRANCH) !== -1
             || changeType.indexOf(TfsChangeType.UNDELETE) !== -1) {
             //undelete means restore items that were previously deleted
-            resource = new AddedCvsResource(fileAbsPath, relativePath);
+            resource = new AddedCvsResource(fileAbsPath, relativePath, this.getServerFilePath(relativePath));
         } else if (changeType.indexOf(TfsChangeType.RENAME) !== -1) {
             const prevFileAbsPath = await this.getPrevFileNameIfExist(fileAbsPath);
             if (prevFileAbsPath === fileAbsPath
                 && changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-                resource = new ModifiedCvsResource(fileAbsPath, relativePath);
+                resource = new ModifiedCvsResource(fileAbsPath, relativePath, this.getServerFilePath(relativePath));
             } else if (prevFileAbsPath) {
-                resource = new ReplacedCvsResource(fileAbsPath, relativePath, prevFileAbsPath);
+                const prevFileRelativePath: string = path.relative(this.tfsInfo.projectLocalPath, prevFileAbsPath);
+                resource = new ReplacedCvsResource(fileAbsPath,
+                    relativePath,
+                    this.getServerFilePath(relativePath),
+                    prevFileAbsPath,
+                    this.getServerFilePath(prevFileRelativePath)
+                );
             }
         } else if (changeType.indexOf(TfsChangeType.EDIT) !== -1) {
-            resource = new ModifiedCvsResource(fileAbsPath, relativePath);
+            resource = new ModifiedCvsResource(fileAbsPath, relativePath, this.getServerFilePath(relativePath));
         }
+
         return resource;
+    }
+
+    private getServerFilePath(relativePath: string) {
+        const serverItems = this.tfsInfo.projectRemotePath + "/" + relativePath;
+        return `tfs://${this.tfsInfo.repositoryUrl}${serverItems}`.replace(/\\/g, "/");
     }
 
     private async getPrevFileNameIfExist(fileAbsPath: string): Promise<string> {
@@ -251,6 +249,7 @@ export class TfvcProvider implements CvsSupportProvider {
     public getRootPath(): string {
         return this.workspaceRootPath;
     }
+
 }
 
 class TfsChangeType {

@@ -5,15 +5,14 @@ export class GetLocalBranchNameCommand {
 
     constructor(private readonly workspaceRootPath: string,
                 private readonly gitPath: string,
-                private cpProxy: CpProxy) {
+                private readonly cpProxy: CpProxy) {
         //
     }
 
     public async execute(): Promise<string> {
         const END_SPACES_REGEXP: RegExp = /\s*$/;
-        let getLocalBranchResult: any;
 
-        getLocalBranchResult = await this.cpProxy.execAsync(this.getCommand());
+        const getLocalBranchResult: {stdout: string} = await this.cpProxy.execAsync(this.getCommand());
         if (!getLocalBranchResult || !getLocalBranchResult.stdout) {
             Logger.logWarning(`GetLocalBranchNameCommand#exec: result is empty`);
             throw new Error("Can't determine a local branch name.");
