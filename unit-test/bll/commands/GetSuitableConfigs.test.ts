@@ -4,7 +4,7 @@ rmock("vscode", {});
 
 import {GetSuitableConfigs} from "../../../src/bll/commands/getsuitableconfigs";
 import * as tsMockito from "ts-mockito";
-import {anyOfClass, anything, mock, verify, when} from "ts-mockito";
+import {anything, mock, verify, when} from "ts-mockito";
 import {CvsProviderProxy} from "../../../src/dal/cvsproviderproxy";
 import {RemoteBuildServer} from "../../../src/dal/remotebuildserver";
 import {XmlParser} from "../../../src/bll/utils/xmlparser";
@@ -17,9 +17,6 @@ import {WindowProxy} from "../../../src/bll/moduleproxies/window-proxy";
 import {MessageManager} from "../../../src/view/messagemanager";
 import * as assert from "assert";
 import {Project} from "../../../src/bll/entities/project";
-import {CvsResource} from "../../../src/bll/entities/cvsresources/cvsresource";
-import {AddedCvsResource} from "../../../src/bll/entities/cvsresources/addedcvsresource";
-import {TfvcProvider} from "../../../src/dal/tfsprovider";
 
 suite("Get Suitable Configs", () => {
     let myTestableCommand: GetSuitableConfigs;
@@ -90,10 +87,10 @@ suite("Get Suitable Configs", () => {
         when(myProviderProxyMock.hasGitProvider()).thenReturn(false);
 
         myTestableCommand.exec().then(() => {
-            done("An exception was expected");
-        }).catch(() => {
-            verify(myMessageManagerMock.showErrorMessage(anything(), anything())).never();
+            verify(myMessageManagerMock.showErrorMessage(anything())).called();
             done();
+        }).catch((err) => {
+            done(err);
         });
     });
 
