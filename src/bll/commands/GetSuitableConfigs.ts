@@ -33,37 +33,29 @@ export class GetSuitableConfigs implements Command {
     }
 
     public async exec(args?: any[]): Promise<void | boolean> {
-        Logger.logInfo("GetSuitableConfigs: starts");
+        Logger.logDebug("GetSuitableConfigs: starts");
         const checkInArray: CheckInInfo[] = this.getCheckInArray();
         const projectPromise : Promise<Project[]> = this.getProjectsWithSuitableBuilds(checkInArray);
         this.windowsProxy.showWithProgress("Looking for suitable build configurations...", projectPromise);
         const projects: Project[] = await projectPromise;
 
-        if (!projects && this.cvsProvider.hasGitProvider()) {
-            const learnMore: {title: string} = {title: "Learn More..."};
-            const textToShow: string = `${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}. ` +
-                `${MessageConstants.GIT_SUPPORT_LIMITATIONS_WARNING}`;
-            const result = await this.myMessageManager.showErrorMessage(textToShow, learnMore);
-            if (result && result.title === learnMore.title) {
-                opn(Constants.GIT_SUPPORT_WIKI_PAGE);
+        if (!projects) {
+            if (this.cvsProvider.hasGitProvider()) {
+                await this.showWarningGitExperimental();
+            } else {
+                await this.myMessageManager.showErrorMessage(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
             }
+
             return false;
-        } else if (!projects) {
-            throw new Error(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
-        } else if (this.cvsProvider.hasGitProvider()) {
-            const allSuitableBuilds: BuildConfig[] = Utils.flattenBuildConfigArray(projects);
-            const gitBranchName: string = await this.cvsProvider.getGitBranch();
-            const branchNameParameter: Parameter = new Parameter("teamcity.build.branch", gitBranchName);
-            allSuitableBuilds.forEach((buildConfig: BuildConfig) => {
-                buildConfig.addParameter(ParameterType.ConfigParameter, branchNameParameter);
-            });
+        }
+
+        if (this.cvsProvider.hasGitProvider()) {
+            await this.specifyGitLogicalBranch(projects);
         }
 
         this.buildProvider.setContent(projects);
-        const showPreTestedCommit: boolean = this.shouldShowPreTestedCommit(checkInArray);
-        this.context.showPreTestedCommitButton(showPreTestedCommit);
-
-        Logger.logInfo("GetSuitableConfigs: finished");
+        this.context.showPreTestedCommitButton(this.shouldShowPreTestedCommit(checkInArray));
+        Logger.logDebug("GetSuitableConfigs: finished");
     }
 
     private getCheckInArray(): CheckInInfo[] {
@@ -84,7 +76,8 @@ export class GetSuitableConfigs implements Command {
             return undefined;
         }
         const relatedProjectsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        const buildConfigFilter: (buildConfig: BuildConfig) => boolean = this.buildConfigFilterWrapper(shortBuildConfigNames);
+        const buildConfigFilter: (buildConfig: BuildConfig) =>
+            boolean = this.buildConfigFilterWrapper(shortBuildConfigNames);
         return this.xmlParser.parseProjectsWithRelatedBuilds(relatedProjectsXmls, buildConfigFilter);
     }
 
@@ -103,5 +96,24 @@ export class GetSuitableConfigs implements Command {
         return (buildConfig: BuildConfig) => {
             return shortBuildConfigNames.indexOf(buildConfig.id) !== -1;
         };
+    }
+
+    private async showWarningGitExperimental() {
+        const learnMoreButton: {title: string} = {title: "Learn More..."};
+        const textToShow: string = `${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}. ` +
+            `${MessageConstants.GIT_SUPPORT_LIMITATIONS_WARNING}`;
+        const result = await this.myMessageManager.showErrorMessage(textToShow, learnMoreButton);
+        if (result && result.title === learnMoreButton.title) {
+            opn(Constants.GIT_SUPPORT_WIKI_PAGE);
+        }
+    }
+
+    private async specifyGitLogicalBranch(projects: Project[]) {
+        const allSuitableBuilds: BuildConfig[] = Utils.flattenBuildConfigArray(projects);
+        const gitBranchName: string = await this.cvsProvider.getGitBranch();
+        const branchNameParameter: Parameter = new Parameter("teamcity.build.branch", gitBranchName);
+        allSuitableBuilds.forEach((buildConfig: BuildConfig) => {
+            buildConfig.addParameter(ParameterType.ConfigParameter, branchNameParameter);
+        });
     }
 }
