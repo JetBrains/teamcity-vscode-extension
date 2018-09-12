@@ -72,6 +72,8 @@ import {NewNotificationWatcher} from "./bll/notifications/NewNotificationWatcher
 import {NotificationManager} from "./bll/notifications/NotificationManager";
 import {MyChangesWorker} from "./bll/mychanges/MyChangesWorker";
 import {Worker} from "./bll/mychanges/Worker";
+import {TfvcPathFinder} from "./bll/cvsutils/tfvcpathfinder";
+import {TfvcProviderActivator} from "./dal/tfs/TfvcProviderActivator";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -135,3 +137,5 @@ myContainer.bind<RemoveBuildParameter>(TYPES.RemoveBuildParameter).to(RemoveBuil
 myContainer.bind<QueueAtTop>(TYPES.QueueAtTop).to(QueueAtTop).inSingletonScope();
 myContainer.bind<OpenInBrowser>(TYPES.OpenInBrowser).to(OpenInBrowser).inSingletonScope();
 myContainer.bind<Worker>(TYPES.MyChangesWorker).to(MyChangesWorker).inSingletonScope();
+myContainer.bind<TfvcPathFinder>(TYPES.TfvcPathFinder).to(TfvcPathFinder).inSingletonScope();
+myContainer.bind<TfvcProviderActivator>(TYPES.TfvcProviderActivator).to(TfvcProviderActivator).inSingletonScope();

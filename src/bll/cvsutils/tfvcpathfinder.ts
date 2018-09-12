@@ -1,19 +1,17 @@
 import {Finder} from "./finder";
-import {Constants} from "../utils/constants";
+import {Constants, TYPES} from "../utils/constants";
 import {OsProxy} from "../moduleproxies/os-proxy";
 import {CpProxy} from "../moduleproxies/cp-proxy";
 import {WorkspaceProxy} from "../moduleproxies/workspace-proxy";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class TfvcPathFinder implements Finder {
 
-    private readonly cp: CpProxy;
-    private readonly os: OsProxy;
-    private readonly workspaceProxy: WorkspaceProxy;
-
-    constructor(osProxy?: OsProxy, cpProxy?: CpProxy, workspaceProxy?: WorkspaceProxy) {
-        this.os = osProxy || new OsProxy();
-        this.cp = cpProxy || new CpProxy();
-        this.workspaceProxy = workspaceProxy || new WorkspaceProxy();
+    constructor(@inject(TYPES.OsProxy) private readonly os: OsProxy,
+                @inject(TYPES.CpProxy) private readonly cp: CpProxy,
+                @inject(TYPES.WorkspaceProxy) private readonly workspaceProxy: WorkspaceProxy) {
+        //
     }
 
     public async find(): Promise<string> {
@@ -52,7 +50,7 @@ export class TfvcPathFinder implements Finder {
 
     private async checkPath(path: string): Promise<string> {
         const promiseResult = await this.cp.execAsync(`"${path}"`);
-        const tfCommandResult: string = promiseResult.stdout.toString("utf8").trim();
+        const tfCommandResult: string = promiseResult.stdout.toString().trim();
         if (!tfCommandResult) {
             return Promise.reject<string>(undefined);
         }

@@ -1,3 +1,5 @@
+import {TfvcPathFinder} from "../cvsutils/tfvcpathfinder";
+
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
@@ -181,6 +183,8 @@ export const TYPES = {
     QueueAtTop: Symbol("QueueAtTop"),
     OpenInBrowser: Symbol("OpenInBrowser"),
     MyChangesWorker: Symbol("MyChangesWorker"),
+    TfvcPathFinder: Symbol("TfvcPathFinder"),
+    TfvcProviderActivator: Symbol("TfvcProviderActivator"),
 };
 
 export enum DataProviderEnum {

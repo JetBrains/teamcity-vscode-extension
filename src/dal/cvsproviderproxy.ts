@@ -2,7 +2,6 @@ import {CvsSupportProvider} from "./cvsprovider";
 import {TYPES} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {Uri, window, workspace} from "vscode";
-import {TfvcProvider} from "./tfsprovider";
 import {inject, injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
@@ -18,6 +17,7 @@ export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
     private readonly isGitSupported: boolean;
     constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator,
+                @inject(TYPES.TfvcProviderActivator) private readonly tfvcProviderActivator: TfvcProviderActivator,
                 @inject(TYPES.Settings) private readonly mySettings: Settings,
                 @inject(TYPES.Context) context: Context) {
         const rootPaths: Uri[] = this.collectAllRootPaths();
@@ -56,7 +56,7 @@ export class CvsProviderProxy {
 
     private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const providers: CvsSupportProvider[] = [];
-        const tfvcProvider: CvsSupportProvider = await new TfvcProviderActivator().tryActivateInPath(rootPath);
+        const tfvcProvider: CvsSupportProvider = await this.tfvcProviderActivator.tryActivateInPath(rootPath);
         if (tfvcProvider) {
             providers.push(tfvcProvider);
             Logger.logInfo(`Tfvc provider was activated for ${rootPath.fsPath}`);
