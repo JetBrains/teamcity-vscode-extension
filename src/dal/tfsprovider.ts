@@ -3,13 +3,8 @@ import * as path from "path";
 import {Logger} from "../bll/utils/logger";
 import * as cp from "child-process-promise";
 import {CvsSupportProvider} from "./cvsprovider";
-import {Uri} from "vscode";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {TfvcPathFinder} from "../bll/cvsutils/tfvcpathfinder";
-import {Finder} from "../bll/cvsutils/finder";
-import {Validator} from "../bll/cvsutils/validator";
-import {TfvcIsActiveValidator} from "../bll/cvsutils/tfvcisactivevalidator";
 import {DeletedCvsResource} from "../bll/entities/cvsresources/deletedcvsresource";
 import {AddedCvsResource} from "../bll/entities/cvsresources/addedcvsresource";
 import {ModifiedCvsResource} from "../bll/entities/cvsresources/modifiedcvsresource";
@@ -17,27 +12,16 @@ import {ReplacedCvsResource} from "../bll/entities/cvsresources/replacedcvsresou
 import {Utils} from "../bll/utils/utils";
 
 export class TfvcProvider implements CvsSupportProvider {
-    private workspaceRootPath: string;
-    private workspaceRootPathAsUri: Uri;
-    private tfsInfo: TfsWorkFoldInfo;
-    private tfPath: string;
 
-    private constructor(rootPath: Uri) {
-        this.workspaceRootPathAsUri = rootPath;
-        this.workspaceRootPath = rootPath.fsPath;
+    public constructor(private readonly workspaceRootPath: string,
+                       private readonly tfPath: string,
+                       private readonly tfsInfo) {
+        //
     }
 
-    public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
-        const instance: TfvcProvider = new TfvcProvider(workspaceRootPath);
-        const pathFinder: Finder = new TfvcPathFinder();
-        const tfPath: string = await pathFinder.find();
-        const isActiveValidator: Validator = new TfvcIsActiveValidator(tfPath, workspaceRootPath.fsPath);
-        await isActiveValidator.validate();
-        const tfsInfo: TfsWorkFoldInfo = await TfvcProvider.getTfsWorkFoldInfo(tfPath, instance.workspaceRootPath);
-        instance.tfPath = tfPath;
-        instance.tfsInfo = tfsInfo;
-        return instance;
-    }
+    // public static async tryActivateInPath(workspaceRootPath: Uri): Promise<CvsSupportProvider> {
+    //
+    // }
 
     /**
      * There are two allowed tfs file path formats:
@@ -192,7 +176,7 @@ export class TfvcProvider implements CvsSupportProvider {
         }
     }
 
-    private static async getTfsWorkFoldInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
+    public static async getTfsWorkFoldInfo(tfPath: string, workspaceRootPath: string): Promise<TfsWorkFoldInfo> {
         const parseWorkFoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
         const getLocalRepoInfoCommand: string = `"${tfPath}" workfold "${workspaceRootPath}"`;
         try {
@@ -261,7 +245,7 @@ class TfsChangeType {
     public static readonly RENAME = "rename";
 }
 
-interface TfsWorkFoldInfo {
+export interface TfsWorkFoldInfo {
     repositoryUrl: string;
     collectionName: string;
     projectLocalPath: string;

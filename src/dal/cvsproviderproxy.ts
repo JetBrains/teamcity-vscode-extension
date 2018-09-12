@@ -11,6 +11,7 @@ import {GitProviderActivator} from "./git/GitProviderActivator";
 import {Settings} from "../bll/entities/settings";
 import {Context} from "../view/Context";
 import {GitProvider} from "./git/GitProvider";
+import {TfvcProviderActivator} from "./tfs/TfvcProviderActivator";
 
 @injectable()
 export class CvsProviderProxy {
@@ -55,13 +56,12 @@ export class CvsProviderProxy {
 
     private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const providers: CvsSupportProvider[] = [];
-        try {
-            const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
+        const tfvcProvider: CvsSupportProvider = await new TfvcProviderActivator().tryActivateInPath(rootPath);
+        if (tfvcProvider) {
             providers.push(tfvcProvider);
             Logger.logInfo(`Tfvc provider was activated for ${rootPath.fsPath}`);
-        } catch (err) {
+        } else {
             Logger.logWarning(`Could not activate tfvc provider for ${rootPath.fsPath}`);
-            Logger.logDebug(Utils.formatErrorMessage(err));
         }
         if (!this.isGitSupported) {
             return providers;
