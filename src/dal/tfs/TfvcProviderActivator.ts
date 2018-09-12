@@ -4,14 +4,18 @@ import {UriProxy} from "../../bll/moduleproxies/uri-proxy";
 import {Uri} from "vscode";
 import {TfvcPathFinder} from "../../bll/cvsutils/tfvcpathfinder";
 import {TfvcIsActiveValidator} from "../../bll/cvsutils/tfvcisactivevalidator";
-import {TfsWorkFoldInfo, TfvcProvider} from "../tfsprovider";
+import {TfvcProvider} from "../tfsprovider";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../bll/utils/constants";
+import {ITfsWorkFoldInfo} from "./ITfsWorkFoldInfo";
+import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
+import {GetTfsWorkFoldInfo} from "./GetTfsWorkFoldInfo";
 
 @injectable()
 export class TfvcProviderActivator {
 
-    public constructor(@inject(TYPES.TfvcPathFinder) private readonly tfvcPathFinder: TfvcPathFinder,
+    public constructor(@inject(TYPES.CpProxy) private readonly cpProxy: CpProxy,
+                       @inject(TYPES.TfvcPathFinder) private readonly tfvcPathFinder: TfvcPathFinder,
                        @inject(TYPES.TfvcIsActiveValidator) private readonly isActiveValidator: TfvcIsActiveValidator) {
         //
     }
@@ -20,8 +24,11 @@ export class TfvcProviderActivator {
         try {
             const tfPath: string = await this.tfvcPathFinder.find();
             await this.isActiveValidator.validate(workspaceRootPath.fsPath, tfPath);
-            const tfsInfo: TfsWorkFoldInfo = await TfvcProvider.getTfsWorkFoldInfo(tfPath, workspaceRootPath.fsPath);
-            return new TfvcProvider(workspaceRootPath.fsPath, tfPath, tfsInfo);
+            const getTfsWorkFoldInfo: GetTfsWorkFoldInfo =
+                new GetTfsWorkFoldInfo(workspaceRootPath.fsPath, tfPath, this.cpProxy);
+            const tfsInfo: ITfsWorkFoldInfo = await getTfsWorkFoldInfo.execute();
+
+            return new TfvcProvider(workspaceRootPath.fsPath, tfPath, tfsInfo, this.cpProxy);
         } catch (err) {
             Logger.logDebug(Utils.formatErrorMessage(err));
             return undefined;

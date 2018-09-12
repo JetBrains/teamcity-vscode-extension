@@ -1,6 +1,4 @@
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {ReadableSet} from "../bll/utils/readableset";
-import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 
 export interface CvsSupportProvider {
 
@@ -9,8 +7,6 @@ export interface CvsSupportProvider {
     getRequiredCheckInInfo(): Promise<CheckInInfo>;
 
     commit(checkInInfo: CheckInInfo);
-
-    getStagedFileContentStream(fileAbsPath: CvsResource): Promise<ReadableSet> | undefined;
 
     getRootPath(): string;
 }
