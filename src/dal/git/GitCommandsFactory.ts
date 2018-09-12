@@ -38,7 +38,7 @@ export class GitCommandsFactory {
         return new GetRemoteNameCommand(this.workspaceRootPath, this.gitPath, this.cpProxy, getLocalBranchNameCommand);
     }
 
-    public getLocalBranchNameCommand(): GetLocalBranchNameCommand {
+    private getLocalBranchNameCommand(): GetLocalBranchNameCommand {
         return new GetLocalBranchNameCommand(this.workspaceRootPath, this.gitPath, this.cpProxy);
     }
 
