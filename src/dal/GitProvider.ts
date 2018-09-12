@@ -32,8 +32,7 @@ export class GitProvider implements CvsSupportProvider {
         const cvsLocalResources: CvsResource[] = await this.getChanges();
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: found ${cvsLocalResources ? "not " : ""}empty`);
 
-        const cvsProvider: CvsSupportProvider = this;
-        return new CheckInInfo(cvsLocalResources, cvsProvider);
+        return new CheckInInfo(cvsLocalResources, this);
     }
 
     private async getChanges(): Promise<CvsResource[]> {
