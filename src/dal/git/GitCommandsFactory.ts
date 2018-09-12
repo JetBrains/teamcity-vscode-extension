@@ -22,14 +22,10 @@ export class GitCommandsFactory {
     }
 
     public async getStatusCommand(): Promise<GitStatusCommand> {
-        const statusRowsParser: GitStatusRowsParser = await this.gitStatusRowsParser();
-        return new GitStatusCommand(this.workspaceRootPath, this.gitPath, this.cpProxy, statusRowsParser);
-    }
-
-    private gitStatusRowsParser(): Promise<GitStatusRowsParser> {
-        return GitStatusRowsParser.getInstance(this.settings,
+        const statusRowsParser: GitStatusRowsParser = await GitStatusRowsParser.prepareInstance(this.settings,
             this.getFirstMonthRevCommand(),
             this.getLastCompatibleMergeBaseRevCommand());
+        return new GitStatusCommand(this.workspaceRootPath, this.gitPath, this.cpProxy, statusRowsParser);
     }
 
     public getRepoBranchNameCommand(): GetRepoBranchNameCommand {

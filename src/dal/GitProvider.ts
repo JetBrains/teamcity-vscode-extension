@@ -37,7 +37,7 @@ export class GitProvider implements CvsSupportProvider {
 
     private async getChanges(): Promise<CvsResource[]> {
         const statusCommand: GitStatusCommand = await this.commandFactory.getStatusCommand();
-        return await statusCommand.execute();
+        return statusCommand.execute();
     }
 
     public async getStagedFileContentStream(cvsResource: CvsResource): Promise<ReadableSet> {

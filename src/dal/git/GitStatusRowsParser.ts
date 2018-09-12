@@ -19,9 +19,9 @@ export class GitStatusRowsParser {
         //
     }
 
-    public static async getInstance(settings: Settings,
-                                    getFirstMonthRevCommand: GetFirstMonthRev,
-                                    getLastCompatibleMergeBaseRevCommand: GetLastCompatibleMergeBaseRev
+    public static async prepareInstance(settings: Settings,
+                                        getFirstMonthRevCommand: GetFirstMonthRev,
+                                        getLastCompatibleMergeBaseRevCommand: GetLastCompatibleMergeBaseRev
     ): Promise<GitStatusRowsParser> {
         let firstMonthRevHash = await getFirstMonthRevCommand.execute();
         firstMonthRevHash = firstMonthRevHash ? firstMonthRevHash + "-" : "";

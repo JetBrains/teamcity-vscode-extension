@@ -29,7 +29,7 @@ suite("GitCommandArgumentsParser", () => {
     const workspaceRootPath = "workspaceRootPath";
 
     async function getParser() {
-        return GitStatusRowsParser.getInstance(settingsSpy, getFirstMonthRevSpy, getLastCompatibleMergeBaseRevSpy);
+        return GitStatusRowsParser.prepareInstance(settingsSpy, getFirstMonthRevSpy, getLastCompatibleMergeBaseRevSpy);
     }
 
     test("should verify parsing of one correct row from index | changes from index", async () => {
