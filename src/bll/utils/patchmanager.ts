@@ -13,7 +13,7 @@ import {Utils} from "./utils";
 import * as pify from "pify";
 import {TYPES} from "./constants";
 import {Settings} from "../entities/settings";
-import {GitProvider} from "../../dal/gitprovider";
+import {GitProvider} from "../../dal/git/GitProvider";
 
 const temp = require("temp").track();
 

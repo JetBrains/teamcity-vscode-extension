@@ -4,7 +4,7 @@ import {instance, mock, when} from "ts-mockito";
 import {ResourceProvider} from "../../../src/view/dataproviders/resourceprovider";
 import {CheckInInfo} from "../../../src/bll/entities/checkininfo";
 import {CvsSupportProvider} from "../../../src/dal/cvsprovider";
-import {GitProvider} from "../../../src/dal/gitprovider";
+import {GitProvider} from "../../../src/dal/git/GitProvider";
 import {CvsResource} from "../../../src/bll/entities/cvsresources/cvsresource";
 import {AddedCvsResource} from "../../../src/bll/entities/cvsresources/addedcvsresource";
 import {CheckInInfoItem} from "../../../src/bll/entities/presentable/checkininfoitem";

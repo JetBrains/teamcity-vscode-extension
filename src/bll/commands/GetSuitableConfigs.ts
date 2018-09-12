@@ -9,7 +9,7 @@ import {Constants, ParameterType, TYPES} from "../utils/constants";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
-import {GitProvider} from "../../dal/gitprovider";
+import {GitProvider} from "../../dal/git/GitProvider";
 import {Context} from "../../view/Context";
 import {WindowProxy} from "../moduleproxies/window-proxy";
 import {BuildConfig} from "../entities/buildconfig";

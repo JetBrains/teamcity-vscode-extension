@@ -1,12 +1,12 @@
-import {Logger} from "../bll/utils/logger";
-import {CvsSupportProvider} from "./cvsprovider";
-import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
-import {CheckInInfo} from "../bll/entities/checkininfo";
-import {ReadableSet} from "../bll/utils/readableset";
-import {UriProxy} from "../bll/moduleproxies/uri-proxy";
+import {Logger} from "../../bll/utils/logger";
+import {CvsSupportProvider} from "../cvsprovider";
+import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
+import {CheckInInfo} from "../../bll/entities/checkininfo";
+import {ReadableSet} from "../../bll/utils/readableset";
+import {UriProxy} from "../../bll/moduleproxies/uri-proxy";
 import {Uri} from "vscode";
-import {GitStatusCommand} from "./git/GitStatusCommand";
-import {GitCommandsFactory} from "./git/GitCommandsFactory";
+import {GitStatusCommand} from "./GitStatusCommand";
+import {GitCommandsFactory} from "./GitCommandsFactory";
 
 export class GitProvider implements CvsSupportProvider {
 

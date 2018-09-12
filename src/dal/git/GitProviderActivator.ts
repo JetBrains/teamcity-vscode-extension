@@ -2,7 +2,7 @@ import {inject, injectable} from "inversify";
 import {Settings} from "../../bll/entities/settings";
 import {GitIsActiveValidator} from "../../bll/cvsutils/gitisactivevalidator";
 import {GitPathFinder} from "../../bll/cvsutils/gitpathfinder";
-import {GitProvider} from "../gitprovider";
+import {GitProvider} from "./GitProvider";
 import {TYPES} from "../../bll/utils/constants";
 import {Logger} from "../../bll/utils/logger";
 import {Utils} from "../../bll/utils/utils";

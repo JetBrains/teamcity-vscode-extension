@@ -10,7 +10,7 @@ import {Utils} from "../bll/utils/utils";
 import {GitProviderActivator} from "./git/GitProviderActivator";
 import {Settings} from "../bll/entities/settings";
 import {Context} from "../view/Context";
-import {GitProvider} from "./gitprovider";
+import {GitProvider} from "./git/GitProvider";
 
 @injectable()
 export class CvsProviderProxy {
