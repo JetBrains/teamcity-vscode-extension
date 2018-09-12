@@ -84,7 +84,7 @@ export class GetSuitableConfigs implements Command {
     private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
         let shouldShow = false;
         checkInArray.forEach((checkInInfo) => {
-            if (!(checkInInfo.cvsProvider instanceof GitProvider)) {
+            if (!(checkInInfo.getCvsProvider() instanceof GitProvider)) {
                 shouldShow = true;
             }
         });

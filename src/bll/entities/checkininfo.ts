@@ -6,12 +6,17 @@ export class CheckInInfo {
     public message: string;
 
     constructor(public readonly cvsLocalResources: CvsResource[],
-                public readonly cvsProvider: CvsSupportProvider) {
+                private readonly cvsProvider: CvsSupportProvider,
+                private readonly workspaceRootPath: string) {
         //
     }
 
-    public get rootPath() {
-        return this.cvsProvider.getRootPath();
+    public getWorkspaceRootPath(): string {
+        return this.workspaceRootPath;
+    }
+
+    public getCvsProvider(): CvsSupportProvider {
+        return this.cvsProvider;
     }
 
     /**

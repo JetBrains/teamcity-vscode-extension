@@ -10,6 +10,7 @@ import {TYPES} from "../../bll/utils/constants";
 import {ITfsWorkFoldInfo} from "./ITfsWorkFoldInfo";
 import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
 import {GetTfsWorkFoldInfo} from "./GetTfsWorkFoldInfo";
+import {TfvcCommandFactory} from "./TfvcCommandFactory";
 
 @injectable()
 export class TfvcProviderActivator {
@@ -27,8 +28,10 @@ export class TfvcProviderActivator {
             const getTfsWorkFoldInfo: GetTfsWorkFoldInfo =
                 new GetTfsWorkFoldInfo(workspaceRootPath.fsPath, tfPath, this.cpProxy);
             const tfsInfo: ITfsWorkFoldInfo = await getTfsWorkFoldInfo.execute();
+            const tfvcCommandFactory: TfvcCommandFactory =
+                new TfvcCommandFactory(workspaceRootPath.fsPath, tfPath, tfsInfo, this.cpProxy);
 
-            return new TfvcProvider(workspaceRootPath.fsPath, tfPath, tfsInfo, this.cpProxy);
+            return new TfvcProvider(workspaceRootPath.fsPath, tfvcCommandFactory);
         } catch (err) {
             Logger.logDebug(Utils.formatErrorMessage(err));
             return undefined;

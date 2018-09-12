@@ -38,7 +38,7 @@ export class PatchManager {
     }
 
     private static async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo): Promise<void> {
-        const cvsProvider = checkInInfo.cvsProvider;
+        const cvsProvider = checkInInfo.getCvsProvider();
         const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
         for (let i: number = 0; i < cvsResources.length; i++) {
             const cvsResource: CvsResource = cvsResources[i];

@@ -113,7 +113,7 @@ export class CvsProviderProxy {
         const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
         this.setUpdatedCommitMessages(checkInArray, commitMessage);
         checkInArray.forEach((checkInInfo: CheckInInfo) => {
-            checkInInfo.cvsProvider.commit(checkInInfo);
+            checkInInfo.getCvsProvider().commit(checkInInfo);
         });
     }
 

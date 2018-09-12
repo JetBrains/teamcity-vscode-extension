@@ -10,7 +10,7 @@ export class CheckInInfoItem extends ExpandableItem {
     public readonly cvsLocalResources: CvsResourceItem[] = [];
 
     constructor(checkInInfo: CheckInInfo) {
-        super(checkInInfo.rootPath, TreeItemCollapsibleState.Expanded);
+        super(checkInInfo.getWorkspaceRootPath(), TreeItemCollapsibleState.Expanded);
         this.checkInInfo = checkInInfo;
         checkInInfo.cvsLocalResources.forEach((resource) => this.cvsLocalResources.push(new CvsResourceItem(resource)));
     }

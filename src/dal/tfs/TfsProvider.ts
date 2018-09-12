@@ -3,23 +3,18 @@ import {CvsSupportProvider} from "../cvsprovider";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../../bll/entities/checkininfo";
 import {TfvcCommandFactory} from "./TfvcCommandFactory";
-import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
-import {ITfsWorkFoldInfo} from "./ITfsWorkFoldInfo";
 
 export class TfvcProvider implements CvsSupportProvider {
 
-    private readonly tfvcCommandFactory: TfvcCommandFactory;
     public constructor(private readonly workspaceRootPath: string,
-                       private readonly tfPath: string,
-                       private readonly tfsInfo: ITfsWorkFoldInfo,
-                       private readonly cpProxy: CpProxy) {
-        this.tfvcCommandFactory = new TfvcCommandFactory(workspaceRootPath, tfPath, tfsInfo, cpProxy);
+                       private readonly tfvcCommandFactory: TfvcCommandFactory) {
+        //
     }
 
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const cvsLocalResources: CvsResource[] = await this.getLocalResources();
-        return new CheckInInfo(cvsLocalResources, this);
+        return new CheckInInfo(cvsLocalResources, this, this.workspaceRootPath);
     }
 
     private async getLocalResources(): Promise<CvsResource[]> {

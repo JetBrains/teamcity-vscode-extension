@@ -62,7 +62,9 @@ export class ResourceProvider extends DataProvider implements IResourceProvider 
             }
         });
 
-        return new CheckInInfo(includedResources, checkInInfo.item.cvsProvider);
+        return new CheckInInfo(includedResources,
+            checkInInfo.item.getCvsProvider(),
+            checkInInfo.item.getWorkspaceRootPath());
     }
 
     public getType(): DataProviderEnum {
