@@ -16,6 +16,7 @@ import {TfvcProviderActivator} from "./tfs/TfvcProviderActivator";
 export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
     private readonly isGitSupported: boolean;
+
     constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator,
                 @inject(TYPES.TfvcProviderActivator) private readonly tfvcProviderActivator: TfvcProviderActivator,
                 @inject(TYPES.Settings) private readonly mySettings: Settings,
@@ -82,12 +83,11 @@ export class CvsProviderProxy {
         if (!checkInArray) {
             return [];
         }
-        for (let i = 0; i < checkInArray.length; i++) {
-            const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = this.actualProviders[i];
-            const formattedFileNamesFromOneProvider = await provider.getFormattedFileNames(checkInInfo);
-            formattedFileNamesFromOneProvider.forEach((fileName) => formattedFileNames.push(fileName));
-        }
+        checkInArray.forEach((checkInInfo: CheckInInfo) => {
+            checkInInfo.getFormattedFileNames().forEach((fileName: string) => {
+                formattedFileNames.push(fileName);
+            });
+        });
         return formattedFileNames;
     }
 
@@ -110,7 +110,11 @@ export class CvsProviderProxy {
     }
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
-        return this.doCommitOperation(checkInArray);
+        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
+        this.setUpdatedCommitMessages(checkInArray, commitMessage);
+        checkInArray.forEach((checkInInfo: CheckInInfo) => {
+            checkInInfo.cvsProvider.commit(checkInInfo);
+        });
     }
 
     public hasGitProvider(): boolean {
@@ -140,16 +144,9 @@ export class CvsProviderProxy {
     }
 
     private isAllElementsTheSame(anyArray: any[]): boolean {
-        return !!anyArray.reduce((a, b) => {return (a === b) ? a : NaN; });
-    }
-    private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
-        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
-        this.setUpdatedCommitMessages(checkInArray, commitMessage);
-        for (let i = 0; i < checkInArray.length; i++) {
-            const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-            await provider.commit(checkInInfo);
-        }
+        return !!anyArray.reduce((a, b) => {
+            return (a === b) ? a : NaN;
+        });
     }
 
     private static async getUpdatedCommitMessages(checkInArray: CheckInInfo[]): Promise<string> {

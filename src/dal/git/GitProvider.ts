@@ -18,15 +18,6 @@ export class GitProvider implements CvsSupportProvider {
         this.workspaceRootPath = workspaceRootPathAsUri.fsPath;
     }
 
-    public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
-        const cvsLocalResources: CvsResource[] = checkInInfo.cvsLocalResources;
-        const formattedChangedFiles = [];
-        cvsLocalResources.forEach((localResource) => {
-            formattedChangedFiles.push(localResource.serverFilePath);
-        });
-        return formattedChangedFiles;
-    }
-
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`GitSupportProvider#getRequiredCheckinInfo: start getting local cvs resources`);
         const cvsLocalResources: CvsResource[] = await this.getChanges();

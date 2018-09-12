@@ -17,23 +17,6 @@ export class TfvcProvider implements CvsSupportProvider {
         this.tfvcCommandFactory = new TfvcCommandFactory(workspaceRootPath, tfPath, tfsInfo, cpProxy);
     }
 
-    /**
-     * There are two allowed tfs file path formats:
-     * * File path format : http[s]://<server-path>:<server-port>/$foo/bar
-     * * File path format : guid://guid/$foo/bar
-     * We use first, because we can get user collection guid without his credential.
-     * @return - A promise for array of formatted names of files, that are required for TeamCity remote run.
-     */
-    public async getFormattedFileNames(checkInInfo: CheckInInfo): Promise<string[]> {
-        const formatFileNames: string[] = [];
-        const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
-        cvsResources.forEach((localResource) => {
-            formatFileNames.push(localResource.serverFilePath);
-        });
-        Logger.logDebug(`TfsSupportProvider#getFormattedFilenames: formatFileNames: ${formatFileNames.join(" ")}`);
-        return formatFileNames;
-    }
-
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const cvsLocalResources: CvsResource[] = await this.getLocalResources();
