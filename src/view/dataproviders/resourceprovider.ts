@@ -30,7 +30,7 @@ export class ResourceProvider extends DataProvider implements IResourceProvider 
         this._onDidChangeTreeData.fire();
     }
 
-    getChildren(element?: CheckInInfoItem):  TreeItem[] | Thenable<TreeItem[]> {
+    getChildren(element?: CheckInInfoItem | any):  TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
             return this.checkInArray;
         } else if (element instanceof CheckInInfoItem) {
