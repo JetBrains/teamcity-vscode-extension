@@ -98,10 +98,13 @@ myContainer.bind<SignOut>(TYPES.SignOut).to(SignOut).inSingletonScope();
 myContainer.bind<SelectFilesForRemoteRun>(TYPES.SelectFilesForRemoteRun).to(SelectFilesForRemoteRun).inSingletonScope();
 myContainer.bind<GetSuitableConfigs>(TYPES.GetSuitableConfigs).to(GetSuitableConfigs).inSingletonScope();
 myContainer.bind<RemoteRun>(TYPES.RemoteRun).to(RemoteRun).inSingletonScope();
-myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager).to(PersistentStorageManager).inSingletonScope();
-myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi).to(WindowsCredentialStoreApi).inSingletonScope();
+myContainer.bind<PersistentStorageManager>(TYPES.PersistentStorageManager)
+    .to(PersistentStorageManager).inSingletonScope();
+myContainer.bind<WindowsCredentialStoreApi>(TYPES.WindowsCredentialStoreApi)
+    .to(WindowsCredentialStoreApi).inSingletonScope();
 myContainer.bind<LinuxFileApi>(TYPES.LinuxFileApi).to(LinuxFileApi).inSingletonScope();
-myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore).to(WinPersistentCredentialsStore).inSingletonScope();
+myContainer.bind<WinPersistentCredentialsStore>(TYPES.WinPersistentCredentialsStore)
+    .to(WinPersistentCredentialsStore).inSingletonScope();
 myContainer.bind<OsProxy>(TYPES.OsProxy).to(OsProxy).inSingletonScope();
 myContainer.bind<FsProxy>(TYPES.FsProxy).to(FsProxy).inSingletonScope();
 myContainer.bind<PathProxy>(TYPES.PathProxy).to(PathProxy).inSingletonScope();
@@ -113,8 +116,10 @@ myContainer.bind<IBuildProvider>(TYPES.BuildProvider).to(BuildProvider).inSingle
 myContainer.bind<OsxKeychainApi>(TYPES.OsxKeychainApi).to(OsxKeychainApi).inSingletonScope();
 myContainer.bind<OsxKeychain>(TYPES.OsxKeychain).to(OsxKeychain).inSingletonScope();
 myContainer.bind<FileTokenStorage>(TYPES.FileTokenStorage).to(FileTokenStorage).inSingletonScope();
-myContainer.bind<WinCredStoreParsingStreamWrapper>(TYPES.WinCredStoreParsingStreamWrapper).to(WinCredStoreParsingStreamWrapper).inSingletonScope();
-myContainer.bind<OsxSecurityParsingStreamWrapper>(TYPES.OsxSecurityParsingStreamWrapper).to(OsxSecurityParsingStreamWrapper).inSingletonScope();
+myContainer.bind<WinCredStoreParsingStreamWrapper>(TYPES.WinCredStoreParsingStreamWrapper)
+    .to(WinCredStoreParsingStreamWrapper).inSingletonScope();
+myContainer.bind<OsxSecurityParsingStreamWrapper>(TYPES.OsxSecurityParsingStreamWrapper)
+    .to(OsxSecurityParsingStreamWrapper).inSingletonScope();
 myContainer.bind<IVsCodeUtils>(TYPES.VsCodeUtils).to(VsCodeUtils).inSingletonScope();
 myContainer.bind<TeamCityStatusBarItem>(TYPES.TeamCityStatusBarItem).to(TeamCityStatusBarItem).inSingletonScope();
 myContainer.bind<WorkspaceProxy>(TYPES.WorkspaceProxy).to(WorkspaceProxy).inSingletonScope();
@@ -129,7 +134,8 @@ myContainer.bind<UriProxy>(TYPES.UriProxy).to(UriProxy).inSingletonScope();
 myContainer.bind<GitProviderActivator>(TYPES.GitProviderActivator).to(GitProviderActivator).inSingletonScope();
 myContainer.bind<GitIsActiveValidator>(TYPES.GitIsActiveValidator).to(GitIsActiveValidator).inSingletonScope();
 myContainer.bind<GitPathFinder>(TYPES.GitPathFinder).to(GitPathFinder).inSingletonScope();
-myContainer.bind<GitCommandArgumentsParser>(TYPES.GitCommandArgumentsParser).to(GitCommandArgumentsParser).inSingletonScope();
+myContainer.bind<GitCommandArgumentsParser>(TYPES.GitCommandArgumentsParser)
+    .to(GitCommandArgumentsParser).inSingletonScope();
 myContainer.bind<Context>(TYPES.Context).to(ContextImpl).inSingletonScope();
 myContainer.bind<IBuildSettingsProvider>(TYPES.BuildSettingsProvider).to(BuildSettingsProvider).inSingletonScope();
 myContainer.bind<CustomizeBuild>(TYPES.CustomizeBuild).to(CustomizeBuild).inSingletonScope();
