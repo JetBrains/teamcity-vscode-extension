@@ -6,9 +6,7 @@ export class CheckInInfo {
     public message: string;
 
     constructor(public readonly cvsLocalResources: CvsResource[],
-                public readonly cvsProvider: CvsSupportProvider,
-                public readonly serverItems: string[] = [],
-                public readonly workItemIds: number[] = []) {
+                public readonly cvsProvider: CvsSupportProvider) {
         //
     }
 

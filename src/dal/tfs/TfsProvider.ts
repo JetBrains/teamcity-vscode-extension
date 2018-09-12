@@ -1,4 +1,3 @@
-import * as path from "path";
 import {Logger} from "../../bll/utils/logger";
 import {CvsSupportProvider} from "../cvsprovider";
 import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
@@ -20,8 +19,7 @@ export class TfvcProvider implements CvsSupportProvider {
     public async getRequiredCheckInInfo(): Promise<CheckInInfo> {
         Logger.logDebug(`TfsSupportProvider#getRequiredCheckinInfo: should get checkIn info`);
         const cvsLocalResources: CvsResource[] = await this.getLocalResources();
-        const serverItems: string[] = await this.calculateServerItems(cvsLocalResources);
-        return new CheckInInfo(cvsLocalResources, this, serverItems);
+        return new CheckInInfo(cvsLocalResources, this);
     }
 
     private async getLocalResources(): Promise<CvsResource[]> {
@@ -30,16 +28,6 @@ export class TfvcProvider implements CvsSupportProvider {
 
     public async commit(checkInInfo: CheckInInfo): Promise<void> {
         return this.tfvcCommandFactory.getTfvcCommitCommand(checkInInfo).execute();
-    }
-
-    private async calculateServerItems(cvsLocalResources: CvsResource[]): Promise<string[]> {
-        const tfsInfo: ITfsWorkFoldInfo = this.tfsInfo;
-        const serverItems: string[] = [];
-        cvsLocalResources.forEach((localResource) => {
-            const relativePath = path.relative(tfsInfo.projectLocalPath, localResource.fileAbsPath);
-            serverItems.push(path.join(tfsInfo.projectRemotePath, relativePath));
-        });
-        return serverItems;
     }
 
     public getRootPath(): string {
