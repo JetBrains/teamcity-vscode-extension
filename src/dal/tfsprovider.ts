@@ -3,7 +3,6 @@ import {Logger} from "../bll/utils/logger";
 import {CvsSupportProvider} from "./cvsprovider";
 import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
 import {CheckInInfo} from "../bll/entities/checkininfo";
-import {Utils} from "../bll/utils/utils";
 import {TfvcCommandFactory} from "./tfs/TfvcCommandFactory";
 import {CpProxy} from "../bll/moduleproxies/cp-proxy";
 import {ITfsWorkFoldInfo} from "./tfs/ITfsWorkFoldInfo";
@@ -58,32 +57,6 @@ export class TfvcProvider implements CvsSupportProvider {
             serverItems.push(path.join(tfsInfo.projectRemotePath, relativePath));
         });
         return serverItems;
-    }
-
-    /**
-     *  Find all the work item mentions in the string.
-     *  This returns an array like: ["#1", "#12", "#33"]
-     */
-    private static getWorkItemIdsFromMessage(message: string): number[] {
-        const ids: number[] = [];
-        try {
-            const matches: string[] = message ? message.match(/#(\d+)/gm) : [];
-            if (!matches) {
-                Logger.logDebug("TfvcProvider#getWorkItemIdsFromMessage: no one work item was found");
-                return [];
-            }
-            for (let i: number = 0; i < matches.length; i++) {
-                const id: number = parseInt(matches[i].slice(1));
-                if (!isNaN(id)) {
-                    ids.push(id);
-                }
-            }
-            Logger.logDebug(`TfsSupportProvider#getWorkItemIdsFromMessage:found next workItems ${ids.join(",")}`);
-        } catch (err) {
-            Logger.logError(`TfsSupportProvider#getWorkItemIdsFromMessage: failed to get all workitems from message:` +
-             ` ${message} with error: ${Utils.formatErrorMessage(err)}`);
-        }
-        return ids;
     }
 
     public getRootPath(): string {
