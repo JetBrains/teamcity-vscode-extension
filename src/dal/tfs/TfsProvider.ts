@@ -1,11 +1,11 @@
 import * as path from "path";
-import {Logger} from "../bll/utils/logger";
-import {CvsSupportProvider} from "./cvsprovider";
-import {CvsResource} from "../bll/entities/cvsresources/cvsresource";
-import {CheckInInfo} from "../bll/entities/checkininfo";
-import {TfvcCommandFactory} from "./tfs/TfvcCommandFactory";
-import {CpProxy} from "../bll/moduleproxies/cp-proxy";
-import {ITfsWorkFoldInfo} from "./tfs/ITfsWorkFoldInfo";
+import {Logger} from "../../bll/utils/logger";
+import {CvsSupportProvider} from "../cvsprovider";
+import {CvsResource} from "../../bll/entities/cvsresources/cvsresource";
+import {CheckInInfo} from "../../bll/entities/checkininfo";
+import {TfvcCommandFactory} from "./TfvcCommandFactory";
+import {CpProxy} from "../../bll/moduleproxies/cp-proxy";
+import {ITfsWorkFoldInfo} from "./ITfsWorkFoldInfo";
 
 export class TfvcProvider implements CvsSupportProvider {
 

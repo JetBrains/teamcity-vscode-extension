@@ -4,7 +4,7 @@ import {UriProxy} from "../../bll/moduleproxies/uri-proxy";
 import {Uri} from "vscode";
 import {TfvcPathFinder} from "../../bll/cvsutils/tfvcpathfinder";
 import {TfvcIsActiveValidator} from "../../bll/cvsutils/tfvcisactivevalidator";
-import {TfvcProvider} from "../tfsprovider";
+import {TfvcProvider} from "./TfsProvider";
 import {inject, injectable} from "inversify";
 import {TYPES} from "../../bll/utils/constants";
 import {ITfsWorkFoldInfo} from "./ITfsWorkFoldInfo";
