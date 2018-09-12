@@ -74,6 +74,7 @@ import {MyChangesWorker} from "./bll/mychanges/MyChangesWorker";
 import {Worker} from "./bll/mychanges/Worker";
 import {TfvcPathFinder} from "./bll/cvsutils/tfvcpathfinder";
 import {TfvcProviderActivator} from "./dal/tfs/TfvcProviderActivator";
+import {TfvcIsActiveValidator} from "./bll/cvsutils/tfvcisactivevalidator";
 
 export const myContainer = new Container();
 myContainer.bind<Settings>(TYPES.Settings).to(SettingsImpl).inSingletonScope();
@@ -138,4 +139,5 @@ myContainer.bind<QueueAtTop>(TYPES.QueueAtTop).to(QueueAtTop).inSingletonScope()
 myContainer.bind<OpenInBrowser>(TYPES.OpenInBrowser).to(OpenInBrowser).inSingletonScope();
 myContainer.bind<Worker>(TYPES.MyChangesWorker).to(MyChangesWorker).inSingletonScope();
 myContainer.bind<TfvcPathFinder>(TYPES.TfvcPathFinder).to(TfvcPathFinder).inSingletonScope();
+myContainer.bind<TfvcIsActiveValidator>(TYPES.TfvcIsActiveValidator).to(TfvcIsActiveValidator).inSingletonScope();
 myContainer.bind<TfvcProviderActivator>(TYPES.TfvcProviderActivator).to(TfvcProviderActivator).inSingletonScope();

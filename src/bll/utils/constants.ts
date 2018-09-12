@@ -185,6 +185,7 @@ export const TYPES = {
     MyChangesWorker: Symbol("MyChangesWorker"),
     TfvcPathFinder: Symbol("TfvcPathFinder"),
     TfvcProviderActivator: Symbol("TfvcProviderActivator"),
+    TfvcIsActiveValidator: Symbol("TfvcIsActiveValidator"),
 };
 
 export enum DataProviderEnum {
