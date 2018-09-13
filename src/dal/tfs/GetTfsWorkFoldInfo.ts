@@ -11,8 +11,8 @@ export class GetTfsWorkFoldInfo {
         //
     }
 
-    public async execute(): Promise<ITfsWorkFoldInfo> {
-        const parseWorkFoldRegexp = /Collection: (.*?)\r\n\s(.*?):\s(.*)/;
+    public async execute(): Promise<ITfsWorkFoldInfo | undefined> {
+        const parseWorkFoldRegexp = /Collection: (.*?)\r?\n\s(.*?):\s(.*)/;
 
         try {
             const result: {stdout: string} = await this.cpProxy.execAsync(this.getCommand());

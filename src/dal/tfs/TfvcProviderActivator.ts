@@ -21,20 +21,27 @@ export class TfvcProviderActivator {
         //
     }
 
-    public async tryActivateInPath(workspaceRootPath: UriProxy | Uri): Promise<TfvcProvider> | undefined {
+    public async tryActivateInPath(workspaceRootPath: UriProxy | Uri): Promise<TfvcProvider | undefined> {
         try {
-            const tfPath: string = await this.tfvcPathFinder.find();
-            await this.isActiveValidator.validate(workspaceRootPath.fsPath, tfPath);
-            const getTfsWorkFoldInfo: GetTfsWorkFoldInfo =
-                new GetTfsWorkFoldInfo(workspaceRootPath.fsPath, tfPath, this.cpProxy);
-            const tfsInfo: ITfsWorkFoldInfo = await getTfsWorkFoldInfo.execute();
+            //await should be here to ensure no error
+            return await this.activateInPath(workspaceRootPath);
+        } catch (err) {
+            Logger.logDebug(Utils.formatErrorMessage(err));
+            return undefined;
+        }
+    }
+
+    private async activateInPath(workspaceRootPath: UriProxy | Uri): Promise<TfvcProvider | undefined> {
+        const tfPath: string = await this.tfvcPathFinder.find();
+        await this.isActiveValidator.validate(workspaceRootPath.fsPath, tfPath);
+        const getTfsWorkFoldInfo: GetTfsWorkFoldInfo =
+            new GetTfsWorkFoldInfo(workspaceRootPath.fsPath, tfPath, this.cpProxy);
+        const tfsInfo: ITfsWorkFoldInfo = await getTfsWorkFoldInfo.execute();
+        if (tfsInfo) {
             const tfvcCommandFactory: TfvcCommandFactory =
                 new TfvcCommandFactory(workspaceRootPath.fsPath, tfPath, tfsInfo, this.cpProxy);
 
             return new TfvcProvider(workspaceRootPath.fsPath, tfvcCommandFactory);
-        } catch (err) {
-            Logger.logDebug(Utils.formatErrorMessage(err));
-            return undefined;
         }
     }
 }
