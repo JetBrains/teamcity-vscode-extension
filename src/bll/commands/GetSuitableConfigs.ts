@@ -5,16 +5,18 @@ import {RemoteBuildServer} from "../../dal/remotebuildserver";
 import {XmlParser} from "../utils/xmlparser";
 import {CvsProviderProxy} from "../../dal/cvsproviderproxy";
 import {inject, injectable} from "inversify";
-import {Constants, TYPES} from "../utils/constants";
+import {Constants, ParameterType, TYPES} from "../utils/constants";
 import {Project} from "../entities/project";
 import {IResourceProvider} from "../../view/dataproviders/interfaces/iresourceprovider";
 import {IBuildProvider} from "../../view/dataproviders/interfaces/ibuildprovider";
-import {GitProvider} from "../../dal/gitprovider";
+import {GitProvider} from "../../dal/git/GitProvider";
 import {Context} from "../../view/Context";
 import {WindowProxy} from "../moduleproxies/window-proxy";
 import {BuildConfig} from "../entities/buildconfig";
 import {MessageManager} from "../../view/messagemanager";
 import opn = require("opn");
+import {Utils} from "../utils/utils";
+import {Parameter} from "../entities/Parameter";
 
 @injectable()
 export class GetSuitableConfigs implements Command {
@@ -31,30 +33,29 @@ export class GetSuitableConfigs implements Command {
     }
 
     public async exec(args?: any[]): Promise<void | boolean> {
-        Logger.logInfo("GetSuitableConfigs: starts");
+        Logger.logDebug("GetSuitableConfigs: starts");
         const checkInArray: CheckInInfo[] = this.getCheckInArray();
         const projectPromise : Promise<Project[]> = this.getProjectsWithSuitableBuilds(checkInArray);
         this.windowsProxy.showWithProgress("Looking for suitable build configurations...", projectPromise);
         const projects: Project[] = await projectPromise;
 
-        if (!projects && this.cvsProvider.hasGitProvider()) {
-            const learnMore: {title: string} = {title: "Learn More..."};
-            const textToShow: string = `${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}. ` +
-                `${MessageConstants.GIT_SUPPORT_LIMITATIONS_WARNING}`;
-            const result = await this.myMessageManager.showErrorMessage(textToShow, learnMore);
-            if (result && result.title === learnMore.title) {
-                opn(Constants.GIT_SUPPORT_WIKI_PAGE);
+        if (!projects) {
+            if (this.cvsProvider.hasGitProvider()) {
+                await this.showWarningGitExperimental();
+            } else {
+                await this.myMessageManager.showErrorMessage(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
             }
+
             return false;
-        } else if (!projects) {
-            throw new Error(MessageConstants.SUITABLE_BUILDS_NOT_FOUND);
+        }
+
+        if (this.cvsProvider.hasGitProvider()) {
+            await this.specifyGitLogicalBranch(projects);
         }
 
         this.buildProvider.setContent(projects);
-        const showPreTestedCommit: boolean = this.shouldShowPreTestedCommit(checkInArray);
-        this.context.showPreTestedCommitButton(showPreTestedCommit);
-
-        Logger.logInfo("GetSuitableConfigs: finished");
+        this.context.showPreTestedCommitButton(this.shouldShowPreTestedCommit(checkInArray));
+        Logger.logDebug("GetSuitableConfigs: finished");
     }
 
     private getCheckInArray(): CheckInInfo[] {
@@ -74,17 +75,16 @@ export class GetSuitableConfigs implements Command {
             Logger.logError(`[GetSuitableConfig]: ${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}`);
             return undefined;
         }
-        const projectsWithRelatedBuildsXmls: string[] =
-            await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
-        const buildConfigFilter: (buildConfig: BuildConfig) => boolean
-            = this.buildConfigFilterWrapper(shortBuildConfigNames);
-        return this.xmlParser.parseProjectsWithRelatedBuilds(projectsWithRelatedBuildsXmls, buildConfigFilter);
+        const relatedProjectsXmls: string[] = await this.remoteBuildServer.getRelatedBuilds(shortBuildConfigNames);
+        const buildConfigFilter: (buildConfig: BuildConfig) =>
+            boolean = this.buildConfigFilterWrapper(shortBuildConfigNames);
+        return this.xmlParser.parseProjectsWithRelatedBuilds(relatedProjectsXmls, buildConfigFilter);
     }
 
     private shouldShowPreTestedCommit(checkInArray: CheckInInfo[]): boolean {
         let shouldShow = false;
         checkInArray.forEach((checkInInfo) => {
-            if (!(checkInInfo.cvsProvider instanceof GitProvider)) {
+            if (!(checkInInfo.getCvsProvider() instanceof GitProvider)) {
                 shouldShow = true;
             }
         });
@@ -96,5 +96,24 @@ export class GetSuitableConfigs implements Command {
         return (buildConfig: BuildConfig) => {
             return shortBuildConfigNames.indexOf(buildConfig.id) !== -1;
         };
+    }
+
+    private async showWarningGitExperimental() {
+        const learnMoreButton: {title: string} = {title: "Learn More..."};
+        const textToShow: string = `${MessageConstants.SUITABLE_BUILDS_NOT_FOUND}. ` +
+            `${MessageConstants.GIT_SUPPORT_LIMITATIONS_WARNING}`;
+        const result = await this.myMessageManager.showErrorMessage(textToShow, learnMoreButton);
+        if (result && result.title === learnMoreButton.title) {
+            opn(Constants.GIT_SUPPORT_WIKI_PAGE);
+        }
+    }
+
+    private async specifyGitLogicalBranch(projects: Project[]) {
+        const allSuitableBuilds: BuildConfig[] = Utils.flattenBuildConfigArray(projects);
+        const gitBranchName: string = await this.cvsProvider.getGitBranch();
+        const branchNameParameter: Parameter = new Parameter("teamcity.build.branch", gitBranchName);
+        allSuitableBuilds.forEach((buildConfig: BuildConfig) => {
+            buildConfig.addParameter(ParameterType.ConfigParameter, branchNameParameter);
+        });
     }
 }

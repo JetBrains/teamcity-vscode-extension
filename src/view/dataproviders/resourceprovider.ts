@@ -30,7 +30,7 @@ export class ResourceProvider extends DataProvider implements IResourceProvider 
         this._onDidChangeTreeData.fire();
     }
 
-    getChildren(element?: CheckInInfoItem):  TreeItem[] | Thenable<TreeItem[]> {
+    getChildren(element?: CheckInInfoItem | any):  TreeItem[] | Thenable<TreeItem[]> {
         if (!element) {
             return this.checkInArray;
         } else if (element instanceof CheckInInfoItem) {
@@ -62,11 +62,12 @@ export class ResourceProvider extends DataProvider implements IResourceProvider 
             }
         });
 
-        return new CheckInInfo(includedResources, checkInInfo.item.cvsProvider, checkInInfo.item.serverItems, checkInInfo.item.workItemIds);
+        return new CheckInInfo(includedResources,
+            checkInInfo.item.getCvsProvider(),
+            checkInInfo.item.getWorkspaceRootPath());
     }
 
     public getType(): DataProviderEnum {
         return DataProviderEnum.ResourcesProvider;
     }
-
 }

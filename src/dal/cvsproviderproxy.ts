@@ -2,7 +2,6 @@ import {CvsSupportProvider} from "./cvsprovider";
 import {TYPES} from "../bll/utils/constants";
 import {CheckInInfo} from "../bll/entities/checkininfo";
 import {Uri, window, workspace} from "vscode";
-import {TfvcProvider} from "./tfsprovider";
 import {inject, injectable} from "inversify";
 import {Logger} from "../bll/utils/logger";
 import {MessageConstants} from "../bll/utils/messageconstants";
@@ -10,13 +9,16 @@ import {Utils} from "../bll/utils/utils";
 import {GitProviderActivator} from "./git/GitProviderActivator";
 import {Settings} from "../bll/entities/settings";
 import {Context} from "../view/Context";
-import {GitProvider} from "./gitprovider";
+import {GitProvider} from "./git/GitProvider";
+import {TfvcProviderActivator} from "./tfs/TfvcProviderActivator";
 
 @injectable()
 export class CvsProviderProxy {
     private actualProviders: CvsSupportProvider[] = [];
     private readonly isGitSupported: boolean;
+
     constructor(@inject(TYPES.GitProviderActivator) private readonly gitProviderActivator: GitProviderActivator,
+                @inject(TYPES.TfvcProviderActivator) private readonly tfvcProviderActivator: TfvcProviderActivator,
                 @inject(TYPES.Settings) private readonly mySettings: Settings,
                 @inject(TYPES.Context) context: Context) {
         const rootPaths: Uri[] = this.collectAllRootPaths();
@@ -55,13 +57,12 @@ export class CvsProviderProxy {
 
     private async detectProvidersInDirectory(rootPath: Uri): Promise<CvsSupportProvider[]> {
         const providers: CvsSupportProvider[] = [];
-        try {
-            const tfvcProvider: CvsSupportProvider = await TfvcProvider.tryActivateInPath(rootPath);
+        const tfvcProvider: CvsSupportProvider = await this.tfvcProviderActivator.tryActivateInPath(rootPath);
+        if (tfvcProvider) {
             providers.push(tfvcProvider);
             Logger.logInfo(`Tfvc provider was activated for ${rootPath.fsPath}`);
-        } catch (err) {
+        } else {
             Logger.logWarning(`Could not activate tfvc provider for ${rootPath.fsPath}`);
-            Logger.logDebug(Utils.formatErrorMessage(err));
         }
         if (!this.isGitSupported) {
             return providers;
@@ -82,12 +83,11 @@ export class CvsProviderProxy {
         if (!checkInArray) {
             return [];
         }
-        for (let i = 0; i < checkInArray.length; i++) {
-            const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = this.actualProviders[i];
-            const formattedFileNamesFromOneProvider = await provider.getFormattedFileNames(checkInInfo);
-            formattedFileNamesFromOneProvider.forEach((fileName) => formattedFileNames.push(fileName));
-        }
+        checkInArray.forEach((checkInInfo: CheckInInfo) => {
+            checkInInfo.getFormattedFileNames().forEach((fileName: string) => {
+                formattedFileNames.push(fileName);
+            });
+        });
         return formattedFileNames;
     }
 
@@ -110,7 +110,11 @@ export class CvsProviderProxy {
     }
 
     public async requestForPostCommit(checkInArray: CheckInInfo[]): Promise<void> {
-        return this.doCommitOperation(checkInArray);
+        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
+        this.setUpdatedCommitMessages(checkInArray, commitMessage);
+        checkInArray.forEach((checkInInfo: CheckInInfo) => {
+            checkInInfo.getCvsProvider().commit(checkInInfo);
+        });
     }
 
     public hasGitProvider(): boolean {
@@ -123,14 +127,26 @@ export class CvsProviderProxy {
         return false;
     }
 
-    private async doCommitOperation(checkInArray: CheckInInfo[]): Promise<void> {
-        const commitMessage: string = await CvsProviderProxy.getUpdatedCommitMessages(checkInArray);
-        this.setUpdatedCommitMessages(checkInArray, commitMessage);
-        for (let i = 0; i < checkInArray.length; i++) {
-            const checkInInfo: CheckInInfo = checkInArray[i];
-            const provider: CvsSupportProvider = checkInInfo.cvsProvider;
-            await provider.commit(checkInInfo);
+    public async getGitBranch(): Promise<string> {
+        const results: string[] = [];
+        for (const provider of this.actualProviders) {
+            if (provider instanceof GitProvider) {
+                results.push(await provider.getRepoBranchName());
+            }
         }
+        if (results.length === 0) {
+            throw new Error("No branch name was collected!");
+        } else if (results.length === 1 || this.isAllElementsTheSame(results)) {
+            return results[0];
+        } else {
+            throw new Error("There are more then one git branch, this case is currently unsupported.");
+        }
+    }
+
+    private isAllElementsTheSame(anyArray: any[]): boolean {
+        return !!anyArray.reduce((a, b) => {
+            return (a === b) ? a : NaN;
+        });
     }
 
     private static async getUpdatedCommitMessages(checkInArray: CheckInInfo[]): Promise<string> {

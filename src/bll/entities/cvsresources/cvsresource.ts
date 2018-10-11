@@ -6,18 +6,14 @@ import * as fs from "fs";
 import * as stream from "stream";
 
 export abstract class CvsResource {
-    status: CvsFileStatusCode;
-    fileAbsPath: string;
-    fileName: string;
-    serverFilePath?: string;
-    prevServerFilePath?: string;
-    prevFileAbsPath?: string;
 
-    protected constructor(status: CvsFileStatusCode, fileAbsPath: string, fileName: string, prevFileAbsPath?: string) {
-        this.status = status;
-        this.fileAbsPath = fileAbsPath;
-        this.fileName = fileName;
-        this.prevFileAbsPath = prevFileAbsPath;
+    protected constructor(public readonly status: CvsFileStatusCode,
+                          public readonly fileAbsPath: string,
+                          public readonly fileName: string,
+                          public readonly serverFilePath: string,
+                          public readonly prevFileAbsPath?: string,
+                          public readonly prevServerFilePath?: string) {
+        //
     }
 
     public abstract getPrefix(): number;

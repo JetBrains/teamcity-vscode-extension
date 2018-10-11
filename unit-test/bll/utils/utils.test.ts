@@ -2,6 +2,8 @@
 
 import {assert} from "chai";
 import {Utils} from "../../../src/bll/utils/utils";
+import {Project} from "../../../src/bll/entities/project";
+import {BuildConfig} from "../../../src/bll/entities/buildconfig";
 
 suite("VSCodeUtils", () => {
 
@@ -69,6 +71,20 @@ suite("VSCodeUtils", () => {
         assert.isTrue(uuidRegExpMask.test(Utils.uuidv4()));
         assert.isTrue(uuidRegExpMask.test(Utils.uuidv4()));
         assert.isTrue(uuidRegExpMask.test(Utils.uuidv4()));
+    });
+
+    test("should verify flattenBuildConfigArray method", function () {
+        const project = new Project("project_id", "project_parent_id", "project_name");
+        const childProject = new Project("project_id2", "project_id", "project_name2");
+        const project2 = new Project("project_id3", "project_parent_id3", "project_name3");
+        project.addChildBuildConfig(new BuildConfig("bc_id", "bc_eid", "bc_name"));
+        project.addChildBuildConfig(new BuildConfig("bc_id2", "bc_eid2", "bc_name2"));
+
+        childProject.addChildBuildConfig(new BuildConfig("bc_id3", "bc_eid3", "bc_name3"));
+        project.addChildProject(childProject);
+
+        project2.addChildBuildConfig(new BuildConfig("bc_id4", "bc_eid4", "bc_name4"));
+        assert.equal(Utils.flattenBuildConfigArray([project, project2]).length, 4);
     });
 });
 

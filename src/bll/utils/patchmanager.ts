@@ -13,7 +13,7 @@ import {Utils} from "./utils";
 import * as pify from "pify";
 import {TYPES} from "./constants";
 import {Settings} from "../entities/settings";
-import {GitProvider} from "../../dal/gitprovider";
+import {GitProvider} from "../../dal/git/GitProvider";
 
 const temp = require("temp").track();
 
@@ -38,7 +38,7 @@ export class PatchManager {
     }
 
     private static async appendCheckInInfo(patchBuilder: PatchBuilder, checkInInfo: CheckInInfo): Promise<void> {
-        const cvsProvider = checkInInfo.cvsProvider;
+        const cvsProvider = checkInInfo.getCvsProvider();
         const cvsResources: CvsResource[] = checkInInfo.cvsLocalResources;
         for (let i: number = 0; i < cvsResources.length; i++) {
             const cvsResource: CvsResource = cvsResources[i];
@@ -102,8 +102,9 @@ class PatchBuilder {
 
     private async appendReplacedFileAsRemoved(cvsProvider: CvsSupportProvider, cvsResource: CvsResource) {
         const label: string = "";
-        const removedResource: CvsResource = new DeletedCvsResource(cvsResource.prevFileAbsPath, label);
-        removedResource.serverFilePath = cvsResource.prevServerFilePath;
+        const removedResource: CvsResource = new DeletedCvsResource(cvsResource.prevFileAbsPath,
+            label,
+            cvsResource.prevServerFilePath);
         return this.appendCvsResource(cvsProvider, removedResource);
     }
 

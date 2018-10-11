@@ -11,14 +11,13 @@ import * as assert from "assert";
 suite("GitStatusCommand", () => {
     const workSpaceRootPath = "myWorkSpaceRootPath";
     const gitPath = "myGitPath";
-    const isPorcelain = false;
     const cpMock: CpProxy = mock(CpProxy);
     const cpSpy: CpProxy = instance(cpMock);
     const gitStatusRowsParserMock: GitStatusRowsParser = mock(GitStatusRowsParser);
     const gitStatusRowsParserSpy: GitStatusRowsParser = instance(gitStatusRowsParserMock);
 
     test("should verify status returns none rows", function (done) {
-        const command = new GitStatusCommand(workSpaceRootPath, gitPath, isPorcelain, cpSpy, gitStatusRowsParserSpy);
+        const command = new GitStatusCommand(workSpaceRootPath, gitPath, cpSpy, gitStatusRowsParserSpy);
         when(cpMock.execAsync(anyString())).thenReturn(Promise.resolve({}));
         command.execute().then((results) => {
             verify(cpMock.execAsync(anyString())).called();
@@ -31,7 +30,7 @@ suite("GitStatusCommand", () => {
     });
 
     test("should verify status returns some rows", function (done) {
-        const command = new GitStatusCommand(workSpaceRootPath, gitPath, isPorcelain, cpSpy, gitStatusRowsParserSpy);
+        const command = new GitStatusCommand(workSpaceRootPath, gitPath, cpSpy, gitStatusRowsParserSpy);
         when(cpMock.execAsync(anyString())).thenReturn(Promise.resolve({stdout: "any rows"}));
         command.execute().then((results) => {
             verify(cpMock.execAsync(anyString())).called();

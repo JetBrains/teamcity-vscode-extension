@@ -1,3 +1,5 @@
+import {TfvcPathFinder} from "../cvsutils/tfvcpathfinder";
+
 export class Constants {
     public static readonly VISUAL_STUDIO_CODE: string = "Visual Studio Code";
     public static readonly EXTENSION_NAME: string = "teamcity";
@@ -173,9 +175,7 @@ export const TYPES = {
     GitProviderActivator: Symbol("GitProviderActivator"),
     GitIsActiveValidator: Symbol("GitIsActiveValidator"),
     GitPathFinder: Symbol("GitPathFinder"),
-    GitStatusRowsParser: Symbol("GitStatusRowsParser"),
     GitCommandArgumentsParser: Symbol("GitCommandArgumentsParser"),
-    GitCommandsFactory: Symbol("GitCommandsFactory"),
     BuildSettingsProvider: Symbol("BuildSettingsProvider"),
     CustomizeBuild: Symbol("CustomizeBuild"),
     AddEditBuildParameter: Symbol("AddEditBuildParameter"),
@@ -183,6 +183,9 @@ export const TYPES = {
     QueueAtTop: Symbol("QueueAtTop"),
     OpenInBrowser: Symbol("OpenInBrowser"),
     MyChangesWorker: Symbol("MyChangesWorker"),
+    TfvcPathFinder: Symbol("TfvcPathFinder"),
+    TfvcProviderActivator: Symbol("TfvcProviderActivator"),
+    TfvcIsActiveValidator: Symbol("TfvcIsActiveValidator"),
 };
 
 export enum DataProviderEnum {

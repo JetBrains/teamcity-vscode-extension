@@ -1,4 +1,6 @@
-"use strict";
+import "reflect-metadata";
+const rmock = require("mock-require");
+rmock("vscode", { });
 
 import {TfvcIsActiveValidator} from "../../../src/bll/cvsutils/tfvcisactivevalidator";
 import {instance, mock, when} from "ts-mockito";
@@ -13,11 +15,12 @@ suite("Tfvc Is Active Validator", () => {
 
     test("should handle \"tf\" with valid params", function (done) {
         const cpMock = mock(CpProxy);
-        when(cpMock.execAsync(getArgumentForIsTfsRepository(tfvcPath, rootPath))).thenReturn(Promise.resolve(correctResult));
+        when(cpMock.execAsync(getArgumentForIsTfsRepository(tfvcPath, rootPath)))
+            .thenReturn(Promise.resolve(correctResult));
         const cpSpy = instance(cpMock);
 
-        const tfvcIsActiveValidator: TfvcIsActiveValidator = new TfvcIsActiveValidator(tfvcPath, rootPath, cpSpy);
-        tfvcIsActiveValidator.validate().then(() => {
+        const tfvcIsActiveValidator: TfvcIsActiveValidator = new TfvcIsActiveValidator(cpSpy);
+        tfvcIsActiveValidator.validate(rootPath, tfvcPath).then(() => {
             done();
         }).catch((err) => {
             done(err);
@@ -26,11 +29,12 @@ suite("Tfvc Is Active Validator", () => {
 
     test("should handle not tfvc repo", function (done) {
         const cpMock = mock(CpProxy);
-        when(cpMock.execAsync(getArgumentForIsTfsRepository(tfvcPath, rootPath))).thenReturn(Promise.reject(undefined));
+        when(cpMock.execAsync(getArgumentForIsTfsRepository(tfvcPath, rootPath)))
+            .thenReturn(Promise.reject(undefined));
         const cpSpy = instance(cpMock);
 
-        const tfvcIsActiveValidator: TfvcIsActiveValidator = new TfvcIsActiveValidator(tfvcPath, rootPath, cpSpy);
-        tfvcIsActiveValidator.validate().then(() => {
+        const tfvcIsActiveValidator: TfvcIsActiveValidator = new TfvcIsActiveValidator(cpSpy);
+        tfvcIsActiveValidator.validate(rootPath, tfvcPath).then(() => {
             done("Should not be tfvc repo");
         }).catch((err: Error) => {
             if (err.message === "Tfs repository was not determined") {

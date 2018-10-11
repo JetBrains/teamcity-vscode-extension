@@ -1,24 +1,21 @@
-import {Validator} from "./validator";
 import {CpProxy} from "../moduleproxies/cp-proxy";
+import {inject, injectable} from "inversify";
+import {TYPES} from "../utils/constants";
 
-export class TfvcIsActiveValidator implements Validator {
+@injectable()
+export class TfvcIsActiveValidator {
 
-    private readonly tfPath: string;
-    private readonly workspaceRootPath: string;
-    private readonly cpProxy: CpProxy;
-
-    constructor(tfPath: string, workspaceRootPath: string, cpProxy?: CpProxy) {
-        this.tfPath = tfPath;
-        this.workspaceRootPath = workspaceRootPath;
-        this.cpProxy = cpProxy || new CpProxy();
+    constructor(@inject(TYPES.CpProxy) private readonly cpProxy: CpProxy) {
+        //
     }
 
-    public async validate(): Promise<void> {
-        return this.checkIsTfsRepository();
+    public async validate(workspaceRootPath: string, tfPath: string): Promise<void> {
+        // here can be placed more checks
+        return this.checkIsTfsRepository(workspaceRootPath, tfPath);
     }
 
-    private async checkIsTfsRepository(): Promise<void> {
-        const briefDiffCommand: string = `"${this.tfPath}" diff /noprompt /format:brief /recursive "${this.workspaceRootPath}"`;
+    private async checkIsTfsRepository(workspaceRootPath: string, tfPath: string): Promise<void> {
+        const briefDiffCommand: string = `"${tfPath}" diff /noprompt /format:brief /recursive "${workspaceRootPath}"`;
         try {
             await this.cpProxy.execAsync(briefDiffCommand);
         } catch (err) {
