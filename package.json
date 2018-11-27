@@ -595,7 +595,7 @@
   "dependencies": {
     "async-file": "^2.0.2",
     "child-process-promise": "^2.2.1",
-    "event-stream": "^3.3.2",
+    "event-stream": "3.3.4",
     "inversify": "^4.3.0",
     "mock-require": "^3.0.1",
     "node-forge": "^0.7.1",
