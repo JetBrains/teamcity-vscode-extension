@@ -589,8 +589,8 @@
     "tslint": "^5.6.0",
     "typemoq": "^2.1.0",
     "typescript": "^2.0.3",
-    "vsce": "^1.56.0",
-    "vscode": "^1.1.29"
+    "vsce": "^1.59.0",
+    "vscode": "^1.1.33"
   },
   "dependencies": {
     "async-file": "^2.0.2",
@@ -599,7 +599,7 @@
     "inversify": "^4.3.0",
     "mock-require": "^3.0.1",
     "node-forge": "^0.7.1",
-    "node-gyp": "^3.6.2",
+    "node-gyp": "^3.8.0",
     "opn": "^5.3.0",
     "pako": "^1.0.5",
     "path": "^0.12.7",
