@@ -580,7 +580,6 @@
     "gulp-sourcemaps": "^2.4.0",
     "gulp-tslint": "^7.1.0",
     "gulp-typescript": "^5.0.0",
-    "gulp-util": "^3.0.7",
     "mocha": "^6.1.4",
     "mocha-teamcity-reporter": "^3.0.0",
     "ts-mockito": "^2.1.1",
