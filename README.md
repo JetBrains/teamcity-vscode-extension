@@ -1,4 +1,6 @@
-# TeamCity Extension for Visual Studio Code [![JetBrains incubator project](assets/project-incubator-brightgreen.png)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+# TeamCity Extension for Visual Studio Code ![Obsolete](https://jb.gg/badges/obsolete-plastic.svg)
+
+**This plugin is deprecated and no longer supported.**
 
 This extension allows you to connect to a TeamCity Server, receive notification messages from TeamCity
 and run personal builds on the TeamCity server without leaving Visual Studio Code.
